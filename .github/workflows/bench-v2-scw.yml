@@ -113,6 +113,7 @@ jobs:
           DIM_GEN_WINDOW: ${{ inputs.b1_dgw }}
           SYNC_CHUNK_WRITES: ${{ inputs.b1_scw }}
           DRAIN_CAP_POLLS: '240'
+          JOB_CAP_MIN: '72' # AG-5 w528: step timeout-minutes 75 - 3m runner slack; AG-432 guard reads budget-source (default 318m never fires on 75m steps)
           FAKE_PLAYERS: '0'
           SIM_DISTANCE: '32'
         run: |
@@ -143,6 +144,7 @@ jobs:
           DIM_GEN_WINDOW: ${{ inputs.b2_dgw }}
           SYNC_CHUNK_WRITES: ${{ inputs.b2_scw }}
           DRAIN_CAP_POLLS: '240'
+          JOB_CAP_MIN: '72' # AG-5 w528: step timeout-minutes 75 - 3m runner slack; AG-432 guard reads budget-source (default 318m never fires on 75m steps)
           FAKE_PLAYERS: '0'
           SIM_DISTANCE: '32'
         run: |
@@ -173,6 +175,7 @@ jobs:
           DIM_GEN_WINDOW: ${{ inputs.b3_dgw }}
           SYNC_CHUNK_WRITES: ${{ inputs.b3_scw }}
           DRAIN_CAP_POLLS: '240'
+          JOB_CAP_MIN: '72' # AG-5 w528: step timeout-minutes 75 - 3m runner slack; AG-432 guard reads budget-source (default 318m never fires on 75m steps)
           FAKE_PLAYERS: '0'
           SIM_DISTANCE: '32'
         run: |

@@ -19,9 +19,24 @@ REPO_ROOT="$PWD"
 AB_NULL="${AB_NULL:-0}"
 RUN_A="$REPO_ROOT/runA"; RUN_B="$REPO_ROOT/runB"
 
+# --- AG-5 w528: shared step-budget for both legs (drain deadline hook) ------
+# Both legs live in ONE GH step (bench-v2-sameboot.yml timeout-minutes 320).
+# run_benchv2.sh AG-432 guard is PER-LEG with own BENCH_T0: leg B restarts the
+# anchor and cannot see leg A's consumption -> leg A may drain to the cap and
+# GH-kill leg B mid-pregen = BOTH legs lost (r1152/dcp2100 kill-class, dual-leg
+# residual AG-432 does not cover). Wrapper hands each leg an ABSOLUTE deadline
+# (JOB_DEADLINE_TS): leg A = half the shared cap (static fair split), leg B =
+# full remaining cap (absolute deadline inherits leg-A savings automatically).
+SB_STEP_CAP_S=$(( ${JOB_CAP_MIN:-318} * 60 ))        # bench-v2-sameboot.yml step = 320m; AG-432 margin 318m
+SB_MERGE_RESERVE_S="${SB_MERGE_RESERVE_S:-300}"    # report_sameboot_ab.py + artifact head-room
+SB_T0_TS=$(date +%s)
+SB_HALF_S=$(( (SB_STEP_CAP_S - SB_MERGE_RESERVE_S) / 2 ))
+[ "$SB_HALF_S" -lt 600 ] && SB_HALF_S=600          # never hand a leg a <10min budget
+log "STEP-BUDGET AG-5 w528: cap=${SB_STEP_CAP_S}s half=${SB_HALF_S}s merge-reserve=${SB_MERGE_RESERVE_S}s deadline_B=$(( SB_T0_TS + SB_STEP_CAP_S - SB_MERGE_RESERVE_S ))"
+
 # --- leg A (control) ---------------------------------------------------------
 log "LEG-A start (base env) BENCH_WORK=$RUN_A"
-BENCH_WORK="$RUN_A" bash "$REPO_ROOT/bench/worldv2/run_benchv2.sh"; A_RC=$?
+JOB_DEADLINE_TS=$(( SB_T0_TS + SB_HALF_S )) BENCH_WORK="$RUN_A" bash "$REPO_ROOT/bench/worldv2/run_benchv2.sh"; A_RC=$?
 echo "ab_leg=A ab_null=$AB_NULL ab_vars=base" >> "$RUN_A/run-env.txt" 2>/dev/null || true
 cp "$RUN_A/server/BENCHV2.md" "$REPO_ROOT/BENCHV2_LEG_A.md" 2>/dev/null || true
 log "LEG-A rc=$A_RC"
@@ -36,7 +51,7 @@ else
   done
 fi
 log "LEG-B start (BENCH_WORK=$RUN_B)"
-BENCH_WORK="$RUN_B" bash "$REPO_ROOT/bench/worldv2/run_benchv2.sh"; B_RC=$?
+JOB_DEADLINE_TS=$(( SB_T0_TS + SB_STEP_CAP_S - SB_MERGE_RESERVE_S )) BENCH_WORK="$RUN_B" bash "$REPO_ROOT/bench/worldv2/run_benchv2.sh"; B_RC=$?
 echo "ab_leg=B ab_null=$AB_NULL ab_vars=${AB_LEG_B_VARS:-none}" >> "$RUN_B/run-env.txt" 2>/dev/null || true
 cp "$RUN_B/server/BENCHV2.md" "$REPO_ROOT/BENCHV2_LEG_B.md" 2>/dev/null || true
 log "LEG-B rc=$B_RC"
