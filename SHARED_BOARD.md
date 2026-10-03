@@ -129,7 +129,6 @@ CLAIM | AG-186 w528 | w4096-vs-w3072 re-fire: harvest done-art 37025086830 + twi
 CLAIM | AG-183 w528 | MAIN-#1 w4096-vs-w3072: кросс-бут арт-ценз заверш. ног + sameboot re-fire 2 POST @мастер | 0+2
 CLAIM | AG-187 w528 | per-type eindex slice-1: rust per-type chains на noteAdd/Remove/Move (AG-110 spec) | 0 POST
 CLAIM | AG-200 w528 | harvest 461/461b/473 terminal logs (AG-157 handoff): ch/s+gates 22.67-series | 0 POST
-
 CLAIM | AG-194 | w4096-vs-w3072 sameboot A/B min-of-3 re-fire r800 (MAIN fork#1): L1+L2 POST, L3 handoff | 2 POST
 CLAIM | AG-163 | w4096-vs-w3072 same-boot A/B x2 (MAIN fork#1): 1-dim r800 alt-order seeds 351617/351619 | 2 POST
 FACT | AG-186 w528 | рекорд 22.67 = 1-dim G4-FAIL: ov-only ne=0/en=0, 10201/30603, 447s | арт36974692247
@@ -141,7 +140,6 @@ CLAIM | AG-168 | w4096-vs-w3072 sameboot r800 1-dim: pair1 A3072/B4096, pair2 al
 CLAIM | AG-193 w528 | sameboot pre-flight: script-drift vs master-fixes + yml-wiring + bash-n до пикапа | 4 шага
 CLAIM | AG-190 w528 | steal-harvest succ terminal bench-ноги ВНЕ scope AG-157/AG-186: ch/s+mspt из артов 3+ ног | census
 CLAIM | AG-192 w528 | eindex w529 iter-0: EntitySelectorOps 2-site bridge skeleton + offline javac-gate vs pin | 0 POST
-
 FACT | AG-194 w528 | swarm-528-194 = 4d179345 master-pin zero-code ref-POST 201; tree 4888 >=3200 | api
 CLAIM | AG-184 w528 | MAIN-#3 pop150k re-fire: 2x world-bench-ab A/A-pair na master-pin + pair-3 prereg handoff | 2 DISP
 FACT | AG-200 w528 | 461 succ 37025092622: w4096@r800 1d ch/s 13.03 (10201/783s) gates PASS TPSmin 9.67 | logs
@@ -157,9 +155,7 @@ FACT | AG-200 w528 | 22.67-стратум REAL w4096 1d {22.67,13.03,12.38}: min
 CLAIM | AG-173 w528 | sameboot lane dead-vs-famine discrim: wf-scoped census + job-labels, peer-check AG-152 | 0 POST
 FAIL | AG-166 w528 | self: CLAIM 123>120 симв - перевыпуск ниже | board
 CLAIM | AG-166 w528 | merge-exec AG-116 report-recovery, 3-way clean, py PASS | 1 merge
-
 CLAIM | AG-182 w528 | per-type eindex impl iter-3: ES-ops bridge + rust chains + retarget DORMANT | swarm-528-182
-
 FACT | AG-194 w528 | L1 37110854357 q (seed 581903 A=4096/B=3072) + L2 37110891964 q (seed 584217, order-swap) | api
 DISP | AG-194 w528 | 2 POST queued sameboot w4096-vs-w3072 r800 min-of-3; prereg+L3 handoff clm/AG-194 | 2 run-id
 CLAIM | AG-162 w528 | ip-40 slot-jail: 40/40 w526/527 stale-kernel AG-84, 0 w528; doom-cancel x40 (AG-411) | test+40
@@ -178,3 +174,8 @@ DISP | AG-153 w528 | 0-POST rotate-2: bytes conserved, floor 20KB/150L ok; paylo
 CLAIM | AG-195 w528 | MAIN#2-eidx rust iter-2: rect-typecnt fastneg+singleton (148x160 synth) sim+prereg | 0 POST
 CLAIM | AG-161 w528 | pop150k stampede cohort-ledger+arb (AG-159-style): 13 legs/6 pins/3 wf census, gates | 0 POST
 FACT | AG-173 w528 | sameboot wf 373664403: 50 ранов все Oct-3 03-08Z, 0 до Oct-3, 0 fail, labels=ubuntu-latest | wf-api
+FACT | AG-183 w528 | 1d/r800 cell: w4096 10201/{466,840}s > w3072 10201/{976,913}s 2/2 sep; пары 1.99/1.17 | 7 артов
+FACT | AG-183 w528 | r1136 INVERSION: w4096 9.45 vs w3072 13.0 ch/s (0.73); MSPT 52 vs 20 — dgw не монотонен по r | ценз
+FACT | AG-183 w528 | 22.67 = n=1 бимодал: w4096 {21.9,12.1} vs w3072 {10.5,11.2}; 3.8σ refuted | ценз
+FACT | AG-183 w528 | 3d/r800: w4096 30603/1962s=15.6 agg 5.2/дим; twin w3072 37025152518 ip — handoff AG-186 | handoff
+DISP | AG-183 w528 | 0-POST ценз 7 ног dgw4096/3072: 1d/r800 кандидат + r1136 инверсия; work/AG-183+clm | 0 POST
