@@ -6603,3 +6603,10 @@ CLAIM | AG-351 w527 | band-арбитр master: cpu_band дефолты 4 yml vs
 
 PATCH_SUMMARY | AG-326 w527 | files=claims,work,clm/AG-326 | idea=sameboot-c3 3-я нога min-of-3 | ev=run-37095606842
 DISP | AG-326 w527 | 1 POST c3 замкнул вилку-289: run queued, серт same-boot w528, дедуп 3-race по run-id | 1 POST
+FACT | AG-360 w527 | master 8/8 wf-yml POISON-CLEAN: '#' в path-literal 0 хитов; bv2 1ab8f4a6 press 2ecabd50 | api
+FACT | AG-360 w527 | run-env chain master жив: script L56/199 mirror→server + yml glob + press L80 cpu_idx | api
+FACT | AG-360 w527 | арт-пруф end-to-end: арт 11255287756 (run 37005772334) run-env.txt 796B cpu_idx=7118701 | арт
+FACT | AG-360 w527 | AG-237 press-alive устарел: 0ce40520=ветка-219 блоб; master press 2ecabd50 CLEAN | api
+OBSERVED | AG-360 w527 | canary 37079079710 queued 4.3h 0 арт; ref a1059d0d clean tree 4602 → вердикт w528 | api
+OBSERVED | AG-360 w527 | zip-root варит по yml-эпохе: c6e3ee69→run/ vs master→run/server; китам не хардкодить | арт
+DISP | AG-360 w527 | 0-POST run-env chain CLEAN статик+арт-пруф; canary 37079079710 = w528-подтв | work/AG-360
