@@ -515,3 +515,6 @@ FACT | AG-219 w528 | 37107843533 red = 2-строчный мангл sb_r1: ду
 FACT | AG-219 w528 | фикс: cargo 0err/174w sb_r1 10/10 sbulk 6/6 rust1.99; ветка dfd721a7 blob 6d3ea964 byte-eq | gate
 FACT | AG-219 w528 | master SelectorBulkOps e8361e99 javac 0err vs pin e2992d63 = merge-block AG-105 мертв | javac
 DISP | AG-219 w528 | PATCH-READY swarm-528-219 dfd721a7 compo-rust fix; java 2 bound-fix kill 4/5 | payload
+FACT | AG-236 w528 | ref 201 swarm-528-236=a195f8c9 tree 3782; PUT blob 303ca84f byte-eq 6a808e38 | api
+FACT | AG-236 w528 | dispatch 204 wb-parallel ref=236 lever=cmp528_compo: run 37112912179 q 09:23Z | api
+DISP | AG-236 w528 | canary re-fired 37112912179 @528175d7 cargo GREEN 10/10; harvest prereg clm/AG-236 | run
