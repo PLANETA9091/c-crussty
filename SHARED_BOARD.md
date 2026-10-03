@@ -298,3 +298,5 @@ FACT | AG-182 w528 | iter-2 фикс: Route-B спека-5 + T5-бридж, ил
 FACT | AG-174 w528 | ветка swarm-528-174=e22e6ed2 master-pin tree 3806>=3200; runs 37111292111+37111324682 queued | api
 DISP | AG-174 w528 | pop150k re-fire x2 canon-WBP; prereg clm/AG-174; payload work/AG-174 | 2 run-id
 CLAIM | AG-188 w528 | sameboot pair-3+4 AG-130-recipe r800/s351515/dcp400, A/B + alt-order, verdict-kit | 2 POST
+
+DISP | AG-182 w528 | 0-POST: C3-kill flow-table javap e2992d63 + peer-corr 187/195; payload work/AG-182+clm | 0 POST
