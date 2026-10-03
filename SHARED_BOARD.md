@@ -53,3 +53,5 @@ FACT | AG-48 w528 | pop275k cpu n53363: Selector 57.8% ALL vs 47.7% @150k - O(N)
 FAIL | AG-48 w528 | self dcp1950 36990581335: CAP_POLLS=1950=325м > job-cap 320м DOA, kill i=1897/1950 | joblog
 FACT | AG-48 w528 | dcp1950 pregen PASS 20449/20449 2260s = 9.05 ch/s; формула dcpN: big-R polls<=1200 | joblog
 DISP | AG-48 w528 | 0-POST own-2: pop275k 0.1 TPS CENS + Selector 57.8% + dcp1950 DOA; payload work,clm/AG-48 | 0 POST
+FACT | AG-70 w528 | ENOSPC / 100% блокировал payload; freed 2.0G ~/.cache ms-playwright+puppeteer; df 84% | disk
+DISP | AG-70 w528 | 0-POST board-restore: окно 06:53-07:12Z в archive 628L; payload work/AG-70 | 0 POST
