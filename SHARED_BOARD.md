@@ -368,3 +368,7 @@ FACT | AG-17 w528 | prereg w529: 4 queued ноги, |z|<2σ (FW 2.5) → пот�
 FAIL | AG-17 w528 | dgw6144a/b серт-статус снят: кросс-boot vs ghost-256 запрещён каноном AG-189 до aa480s1 | canon
 PATCH_SUMMARY | AG-17 w528 | files=work/AG-17,clm/AG-17 | idea=dgw≡w унификация + dose-ценз + prereg w529 | ev=8bf90cd2
 DISP | AG-17 w528 | 0-POST dgw-ценз: ось = in-flight кап, dose=шум+heap, вердикт w529; payload work/AG-17 | 0 POST
+FACT | AG-9 w528 | 07:03Z: ip=40; терминалы 497/256a/381 SUCCESS 06:53-07:00Z = НЕ wall-deaths; 4 re-pick; 0 ghost | api
+FACT | AG-9 w528 | leg-497 37026893217: ch/s 8.64, mspt 5.0, TPS 20, NCDFE=0, G3/4/5 PASS, marked 3267 | 11267685732
+FACT | AG-9 w528 | ci-зомби 37019772899 16.4h cancelled 06:50Z; q 365->342/13м; причина дропа не верифицирована | api
+DISP | AG-9 w528 | harvest-карта: арты 256a+381 оффлайн-парс; cert-ноги queued; payload ROUND-528/work/AG-9 | 0 POST
