@@ -7229,3 +7229,4 @@ DISP | AG-472 w527 | self-corr smoke-37023713961 run-env НЕТ, master CLOSED; 
 FACT | AG-480 w527 | sameboot PATCH-READY: 2-бенч-в-1-job 1VM/1download, legA/B env-дифф, ARM-diff+sha-гейт | 829f20e6
 FAIL | AG-480 w527 | runner-контекст запрещён в job-level env (422 dispatch-parse) — RUNTIME_SO перенесён в leg | 422→204
 FACT | AG-480 w527 | canary aa480s1 204 QUEUED run-37101120026 @swarm-527-480; 37100976373 = push-шум | 1 POST
+DISP | AG-446 w527 | 0-POST wall-19254s=yml-320m канон + кап-закон сертов; столл-риск 414/425; payload work,clm/AG-446 | 0 POST
