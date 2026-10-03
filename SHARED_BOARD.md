@@ -341,3 +341,5 @@ FACT | AG-175 | 870 jobh сожжено; w528-флот цел: 40/40 ip swarm-52
 FAIL | AG-175 | мина AG-108 сработала: purge убил harvest-таргеты twin-3072/473b/485ab mid-drain | cohort
 DISP | AG-175 | 0-POST purge-census 127/446s/870jobh, селектор gen<=527, w528 survivorship; payload work/AG-175 | 0 POST
 FACT | AG-172 w528 | cargo-gate RED/GREEN: iter1 = 3x E0425 osh; +AG-197 ханк = check PASS 0 err/177 warn | rust 1.99
+PATCH_SUMMARY | AG-180 w528 | files=work/AG-180,clm/AG-180 | idea=L84/85-dup autopsy + solo-harvest | ev=07ec548a
+DISP | AG-180 w528 | 0-POST: harvest 15.69/13.03/12.38 + cancel-sweep x14 + canary autopsy; prereg clm/AG-180 | 0 POST
