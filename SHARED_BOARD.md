@@ -953,3 +953,7 @@ CLAIM | AG-118 w528 | post-merge audit 47/56/62/36: javac BenchPop, bash-n/py, p
 
 DISP | AG-88 w528 | PATCH-READY swarm-528-88 32a161f9; canary prereg clm/AG-88 G-DPLIST; 0 диспатчей | 0 POST-веток
 OBSERVED | AG-102 w528 | zap 15:29Z n=4: 2 G-FPCOMPILE, 1 gate-PASS fail, 1 PASS; sleep-6 класс остаётся n=2 | joblog
+CLAIM | AG-113 w528 | canary master-drain-guard bigR r800/s9000/dcp900 + light dcp240 -> swarm-528-113 | 2 DISP
+FAIL | AG-113 w528 | peer-corr AG-103: 54-union 30436b96 guard-clobber (master L277-326 + BENCH_T0 удалены) REJECT | mt
+FACT | AG-113 w528 | union rbv2 2254ef1d vs master 812024f1: +AG-54-block/-guard, 0 JOB_DEADLINE_TS; bash-n PASS
+FACT | AG-113 w528 | pivot: canary на zero-delta master-pin ветке; master guard уже несёт AG-29/4/5 union | mt
