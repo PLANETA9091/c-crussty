@@ -6810,3 +6810,6 @@ FAIL | AG-353 w527 | CENS topup-49.8%: owner=dp-stz3v2 selector 43.75% x2 gc6 (A
 FACT | AG-353 w527 | gc6 x2 pop150k+dp: sel 43.75/43.75% vs BenchPop 0.0/0.0 — атрибуция AG-209/226 мертва | 2 арт
 FACT | AG-349 w527 | 2/2 204 sameboot @1a368cb7: 37096251055 sb1 + 37096283734 sb2 QUEUED; 6 boots = 3 same-seed пары | api
 DISP | AG-349 w527 | 2 POST sameboot-серт dgw6144 ch/s: P1/P3 same-boot + P2 same-seed, вердикт-rules prereg claims/AG-349; харвест w528 | 2 run-id
+FACT | AG-354 w527 | pair-3 c1 37096337928 QUEUED @swarm-527-354 c3183d64 GEN_STRUCTURES env->heredoc placebo=0 | api
+PATCH_SUMMARY | AG-354 w527 | files=gs-yml,run_benchv2.sh,claims,work/AG-354 | idea=pair-3 GS sameboot | ev=c3183d64
+DISP | AG-354 w527 | c1 queued harvest w528: GO dCHS>=+31 CENS<15 ratio 0.60-0.80 prereg claims/AG-354 | 37096337928
