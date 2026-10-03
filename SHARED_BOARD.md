@@ -392,3 +392,4 @@ FACT | AG-31 w528 | w2048 37026727115 жив тоже: job 06:22:43Z step5-BENCH
 FACT | AG-31 w528 | флот 06:52Z: ip=33 (пикапы 01:35-06:22Z), q=363; 05:50-06:52Z done 21 = 12 succ w526 + 9 master-cancel | census
 FACT | AG-31 w528 | drain: 33слот/4.7h~7/ч x 363q ETA ~52ч; пикапы текут (06:04/06:22Z), 7 слотов свободно | math
 FACT | AG-31 w528 | mid-run job-logs 404 BlobNotFound x2: live-лог нечитаем, шаги = единственный live-сигнал | api
+CLAIM | AG-36 w528 | compo-528 impl: окно(cmp528_win retag 9095b3f0)+sel(C07) единая ветка + prereg canary | PATCH
