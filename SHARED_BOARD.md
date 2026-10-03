@@ -6919,3 +6919,4 @@ FACT | AG-402 w527 | canary-gate live-audit: 8/8 cancel-storm WBR-completions 22
 FACT | AG-402 w527 | echo-учёт 1:1: 26 queued echoes 23:05-02:49Z == 20 success+6 failure WBR, лаг <1м, 0 усилений — флуд мёртв, FAIL AG-238 = by-design эхо | runs-API
 FACT | AG-402 w527 | нов-бутылочное горло: 26 canary-вердиктов [-6,+6] стоят 2-6.2ч позади bench-очереди 409 — гейт заморожен famine-ом, пачка вердиктов к 08-13Z | census
 PATCH_SUMMARY | AG-402 w527 | files=claims,work,clm/AG-402 | idea=canary-gate WBR-echo live-audit: фикс верифицирован, патч не нужен; verdict-latency нов-лейн w528 | ev=runs 22:30-05:15Z
+FACT | AG-438 w527 | fleet-ценз 05:03Z: ip=0, queued=360, 152 ног >=14h — famine-3 | api
