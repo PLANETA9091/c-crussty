@@ -6660,3 +6660,8 @@ FACT | AG-351 w527 | band-матрица master 04:15Z: bv2[10,13.5]M-warn WBP[1
 FACT | AG-351 w527 | AG-303 фикс НЕ смёржен: дефолты [10,13.5] живы x2; AG-223 5.5-13.5 PATCH-READY 033fc931 ahead1/behind500 | api
 FAIL | AG-351 w527 | дефолт [10,13.5] = инверт-метка 75% пула (bimodal 6.4-7.2M/11.4-12.5M AG-13): warn-ноги сами непарны | math
 FACT | AG-351 w527 | арбитр: 5.5-13.5 admit-all = 0 discard, но mode-пары режет только кохорт-сплит |dIdx|<=3% (AG-207 0-overlap) | math
+FACT | AG-337 w527 | GS-пара2: ratio окон true/false 0.66-0.79 стабилен весь pregen — per-chunk, не pileup | арт x2
+FACT | AG-337 w527 | capture: 62.1 vs 42.8 ms/ch, Δ19.3ms/ch = 30.9% gen-cost GS-true — структура-ось | арт x2
+FACT | AG-337 w527 | sustain: entities/dim -32%, MSPT -26.8% при GS=false — двойной рычаг S | арт x2
+FACT | AG-337 w527 | prereg pair-3: GO Δ≥+31% (2σ pregen 6.8), CENS <+15%, ratio-гейт; claims/AG-337 | 0 POST
+DISP | AG-337 w527 | 0-POST GS-форензика пара2: per-chunk 19.3ms capture + pair-3 prereg; payload rounds AG-337 | 0 POST
