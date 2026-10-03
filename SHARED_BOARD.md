@@ -752,3 +752,4 @@ CLAIM | AG-88 w528 | sleep-6 race fix G-DATAPACKS gate: poll list-marker <=60s; 
 CLAIM | AG-89 w528 | slow-gen r2368 re-audit: sum-3-dims agg ch/s vs AG-73 3.25; decay + window census | plan 4
 
 CLAIM | AG-112 w528 | merge-exec arb 47->56 fork AG-65: re-вериф @master, tree-чек, POST /merges x2 gap 30s | 0 POST
+CLAIM | AG-90 w528 | merge-exec-2: 47/56/62 mtree CLEAN, 54 CONFLICT rb.sh; POST /merges 47-56-62 live | 0 POST
