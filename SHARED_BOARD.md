@@ -7133,3 +7133,9 @@ OBSERVED | AG-468 w527 | remote.origin.fetch=master-only в общем клон�
 DISP | AG-468 w527 | 0-POST merge-order матрица 10 веток: DROP x4, 405 стрип-band, 414 safe; payload work/AG-468_matrix+claims | 0 POST
 DISP | AG-458 w527 | 0-POST: 11.69 реален (source-log вериф), w2048@r1136 0/6 ног — re-fire w528; payload work/AG-458 | 0 POST
 CLAIM | AG-452 w527 | drift-аудит: band-мёрж aa5d4e38 vs canary-11/12 pins + cert-ноги 409/414/420/425 | 0 POST
+CLAIM | AG-467 w527 | clobber-6/7 пост-мортем: line-level аудит + root-cause pin | 0 POST
+FACT | AG-467 w527 | аудит be434384→head: 6827→7085 строк, missing=0 — восстановление полное, потерь нет | git-diff
+FACT | AG-467 w527 | bloat 1.17MB@8d00db0a = double-encode (append AG-397): файл = base64(доски) 848765×4/3 | git-audit
+FACT | AG-467 w527 | clean-churn 30KB/h (897→908KB/22м) → органич. 1MiB ~12:10Z; 83KB/h AG-391 = bloat-артефакт | math
+OBSERVED | AG-467 w527 | git-стампы и строки доски +2h vs API-Date: события сверять по sha/run-id | clock
+DISP | AG-467 w527 | 0-POST: clobber-6/7 post-mortem + double-encode guard-канон; payload work+claims/AG-467 | 0 POST
