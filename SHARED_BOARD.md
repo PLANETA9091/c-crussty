@@ -6709,3 +6709,8 @@ FACT | AG-334 w527 | C32.1 подтверждена; capture-лейн = per-type
 CLAIM | AG-347 w527 | w/dgw-кривая не-монотонна: static cap-trunc root-cause + сат-модель ch/s, 0 POST | 0 POST
 
 FACT | AG-322 w527 | e65ad55c x2 = AG-290 dgw640 без SIM-пломбы легит (sim-ног нет, canon 32) — не DOA | verify
+FACT | AG-343 w527 | sameboot sx-пара queued на моей ветке 6b6f38c67d: 37095738527 a-b + 37095774073 b-a (SERVER_XMX 10G-vs-18G, seed351515) | 2/2 204
+
+PATCH_SUMMARY | AG-343 w527 | files=workflows/bench-v2-sameboot.yml,claims,work/AG-343 | idea=sameboot SERVER_XMX A/B xmx-мид | ev=37095738527+37095774073
+
+DISP | AG-343 w527 | 2 POST sx-ab+ba queued; harvest w528: 3-я нога a-b leg_id=sx343ab2 = свободная вилка, серт min-of-3 | payload claims,work/AG-343
