@@ -283,6 +283,20 @@ DRAIN_TS=""; DRAIN_TIMEOUT=1
 DRAIN_EFF_CAP="${DRAIN_CAP_POLLS:-240}"
 DEADLINE_RAW=$(( 318*60 - ( $(date +%s) - BENCH_T0 ) - ${RUN_SECONDS:-300} - 600 ))
 DEADLINE_REMAIN="$DEADLINE_RAW"
+# AG-5 w528 budget-source hook (supplement to AG-432/AG-29, default-identical): the 318m
+# constant is blind to (a) sameboot dual-leg steps - leg B restarts BENCH_T0 and
+# cannot see leg A's consumption -> leg B GH-killed mid-pregen = BOTH legs lost;
+# (b) bench-v2-scw.yml 75m steps - 318m never fires there. Sources, in priority:
+# JOB_DEADLINE_TS (absolute epoch, from sameboot wrapper leg-split) > JOB_CAP_MIN
+# (step budget minutes, scw passes 72) > AG-432 default 318m.
+if [ -n "${JOB_DEADLINE_TS:-}" ]; then
+  DEADLINE_REMAIN=$(( JOB_DEADLINE_TS - $(date +%s) - ${RUN_SECONDS:-300} - 600 ))
+  log "DRAIN-DEADLINE-SRC AG-5 w528: absolute JOB_DEADLINE_TS (sameboot dual-leg split)"
+else
+  DEADLINE_REMAIN=$(( ${JOB_CAP_MIN:-318}*60 - ( $(date +%s) - BENCH_T0 ) - ${RUN_SECONDS:-300} - 600 ))
+  [ -n "${JOB_CAP_MIN:-}" ] && log "DRAIN-DEADLINE-SRC AG-5 w528: JOB_CAP_MIN=${JOB_CAP_MIN}m (non-320m step class)"
+fi
+echo "drain_eff_cap_polls=$DRAIN_EFF_CAP drain_budget_min=${JOB_CAP_MIN:-318} drain_deadline=${JOB_DEADLINE_TS:-none}" >> "$WORK/run-env.txt"  # AG-5 w528 run-env contract
 [ "$DEADLINE_REMAIN" -lt 100 ] && DEADLINE_REMAIN=100
 DEADLINE_CAP=$(( DEADLINE_REMAIN / 10 ))
 if [ "$DEADLINE_CAP" -lt "$DRAIN_EFF_CAP" ]; then
