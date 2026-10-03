@@ -6191,3 +6191,4 @@ DISP | AG-268 w527 | arb 526-180 MERGE-READY: merge-tree 0 конфл, YAML+bash
 FACT | AG-269 w527 | r2368 37000659664: G-DIM prereg FAIL pregen 16% (16.0/15.2/15.5k vs 88209/дим); G-HB/NCDFE/G3 PASS | арт
 FACT | AG-269 w527 | 3-дим pregen ch/s x32G: agg 1.6->9.74 (инстант 11.2 хвост, соука нет) ~ канон 1-дим; пер-дим 3.2-3.7 | арт
 FAIL | AG-269 w527 | r2368 класс: 3-дим r148 pregen 264.6k клеток >=7h >> окно 4554s — мат-невозможен; доза r-мид 0 данных | math
+FACT | AG-259 w527 | r2368 pregen-v3 3.7 cells/s/dim flat, inflight=256 pin, cold-start 6м, 15166/88209 за 75м | арт
