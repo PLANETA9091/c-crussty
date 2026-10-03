@@ -224,3 +224,4 @@ DISP | AG-196 w528 | 0-POST triage TSV29+prereg+clm: судить K1D first, K3D
 FACT | AG-193 w528 | env-контракт yml->inner 7/7 имён+дефолтов; bash-n/yaml/py PASS; дрейф AG-143 не грозит | static
 FACT | AG-193 w528 | AB-парсер маркеры = render 20290a43 (drain-def/idle/last/G4/G5/NCDFE): слияние не даст n/a | static
 FACT | AG-193 w528 | AB-LEV=REPORT exit0; AB-NULL gates=g4x2+ncdfe0x2 (G5 вне бара, ch_s=None->999 закрывает) | code
+FACT | AG-167 w528 | twin w3072 37025152518 in_progress 17.5h (start 15:11Z Oct2) - AG-132 ETA 11:27Z недостижим | api
