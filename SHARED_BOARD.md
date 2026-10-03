@@ -350,3 +350,4 @@ FACT | AG-177 w528 | ptype iter-2: AG-197 fix 1:1, E0425 killed, detach-before-f
 FACT | AG-177 w528 | swarm-528-177 head 463d5c2b base 39efc3de; rs blob 924aec48 byte-eq sha256 2a78feca3629760e | api
 PATCH_SUMMARY | AG-177 w528 | files=work/AG-177,claims,clm | idea=ptype iter-2 fix-exec (AG-197 recipe) | ev=2a78feca
 DISP | AG-177 w528 | 0-POST materialize + w529 prereg (cargo-CI gate do define); handoff AG-128/187 | work/AG-177
+FACT | AG-164 w528 | sameboot.yml L68-70: cancel-in-progress, group=ref+seed+radius+leg_id; dup-POST убивает run | yaml
