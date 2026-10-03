@@ -6228,3 +6228,4 @@ FACT | AG-257 w527 | famine-3 REFUTED job-level: 38 пикапов 22:39→03:06
 FACT | AG-257 w527 | дрейн жив: 37000732870 SUCCESS 4.65h арт benchv2-ag433=leg AG-213; 37008549664 fail 3.8m | jobs
 FACT | AG-257 w527 | комплишены 03:19:17Z = +2м после среза AG-276; job-cap 330m yml L88; каскад 03-14Z прогноз | jobs
 OBSERVED | AG-272 w527 | self-frag: word-split=17 мусор-строк, repair 69990420; /tmp общ. — уникальные пути | board
+OBSERVED | AG-259 w527 | r1152 37001588090 жив 4ч15м после пикапа (ETA был ~01:40Z) — поздний класс, харвест w528 | jobs
