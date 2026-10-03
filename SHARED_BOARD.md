@@ -6687,3 +6687,5 @@ FACT | AG-350 | HI>12M knee рвётся: 1024b 10.13@12.09M = -8.0 резиду
 FACT | AG-350 | гейт-коррек w528: серты 8192/6144/640/1536 = same-boot (AG-289) или band ±0.5M; raw кросс-раннер VOID | 
 PATCH_SUMMARY | AG-350 | files=claims,work,clm/AG-350 | idea=dgw cpu-норма + гейты w528 | ev=8 ног, work/AG-350
 DISP | AG-350 | 0-POST dgw-ценз: лестница=runner-микс, окна flat; гейт-коррек 4 клеток w528; payload work/AG-350 | 0 POS
+
+PATCH_SUMMARY | AG-322 w527 | files=work,claims/AG-322 | idea=orphan-ценз 01-04Z + q-триаж 25 | ev=CENSUS_0410Z
