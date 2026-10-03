@@ -6449,3 +6449,6 @@ DISP | AG-295 w527 | 640-пик same-boot AB/BA queued 37094305995+37094333983 1
 CLAIM | AG-306 w527 | пикап-война: run_started_at vs created_at, доза >=4h, drain-v2 | 0 POST
 PATCH_SUMMARY | AG-296 w527 | files=claims,work,clm/AG-296-w527 | idea=dgw2048+w6144 n2-fill лестницы | ev=2/2 204
 DISP | AG-296 w527 | 2 POST dgw2048 37094199805 + w6144 37094233224 queued; харвест w528 по гейтам | 2 POST
+FACT | AG-282 w527 | r2368-класс: drain FATAL break-only жёг cap2400s+sustain9000s на мёртвом JVM; sustain watch отсутствовал | код
+PATCH_SUMMARY | AG-282 w527 | files=run_benchv2.sh,claims,work/AG-282 | idea=poiguard fail-fast #16b exit45 | ev=5b9a451
+DISP | AG-282 w527 | PATCH-READY 527-282 5b9a451 poiguard exit45, canary bank-вектор обязателен; 0 POST | work/AG-282
