@@ -6241,3 +6241,4 @@ work+claims/AG-249
 |
 0
 POST
+CLAIM | AG-246 w527 | same-boot pair-harness bench-v2 (pair_dim_gen_window): 1 VM 2 nogi A=256 B=6144 dlya sertia dgw6144-signala AG-216 | PATCH+prereg
