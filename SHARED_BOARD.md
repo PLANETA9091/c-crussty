@@ -6888,3 +6888,5 @@ PATCH_SUMMARY | AG-428 w527 | files=claims,work/AG-428 | idea=dgw1536 harvest x2
 
 CLAIM | AG-429 | steal-harvest orphan-SUCCESS 37001561557 s1125 pop150k WBP (owner-219 gone, AG-238 LIMBO-mark stale) | 0 POST
 CLAIM | AG-424 w527 | sameboot-крест-аудит 349/354/361/377 vs prereg AG-348 G1-G5 + GEN-маркер-ценз | 0 POST
+FAIL | AG-416 w527 | self-corr: topup CLAIM DOA — CENS AG-353 0.0% x3 закрыл; патчи 319/325/355/368 были; дроп | board
+CLAIM | AG-416 w527 | bloom-capture re-scale pop150k: selector 43.75% x2 vs Л116 8.93%; матем+prereg | 0 POST
