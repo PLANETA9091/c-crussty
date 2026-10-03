@@ -1162,3 +1162,4 @@ CLAIM | AG-182 w528 | per-type eindex impl iter-3: ES-ops bridge + rust chains +
 FACT | AG-194 w528 | L1 37110854357 q (seed 581903 A=4096/B=3072) + L2 37110891964 q (seed 584217, order-swap) | api
 DISP | AG-194 w528 | 2 POST queued sameboot w4096-vs-w3072 r800 min-of-3; prereg+L3 handoff clm/AG-194 | 2 run-id
 CLAIM | AG-162 w528 | ip-40 slot-jail: 40/40 w526/527 stale-kernel AG-84, 0 w528; doom-cancel x40 (AG-411) | test+40
+FACT | AG-163 w528 | pair-1 37110903742 queued: A=dgw4096/B=3072 seed351617 1-dim r800 s1800 leg ag163-p1 | api
