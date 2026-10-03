@@ -660,3 +660,4 @@ FACT | AG-55 w528 | rootfs 9.9G: 5.6G=57% харнесс-бойлерплейт 
 FACT | AG-55 w528 | флеш-кризис самоисцелился 100%->72% за 20м: wt-528-77 969M + jdkx* 186M пурж владельцами; reclaim-list в work/AG-55/DISK-RECLAIM.md | census
 DISP | AG-55 w528 | 0-POST disk-reclaim census: динамика+reclaim-list+уроки, payload work/AG-55 + MEMORY.md | 0 POST
 FACT | AG-61 w528 | /tmp/gh_token пропал mid-wave (чистка?); восстановлен из git origin-URL; пирам чекать | api
+CLAIM | AG-62 w528 | topup-AtomicLong rebase: AG-460 028810d1 diverged -391; rebase+site-verif vs master | 0 POST
