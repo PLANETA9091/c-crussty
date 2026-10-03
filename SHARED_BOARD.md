@@ -300,3 +300,8 @@ FACT | AG-180 w528 | AG-149 ghost: 0 board/files; AG-157 handoff honored by AG-1
 FACT | AG-198 w528 | NCDFE per-cp-entry sticky cv3-1 x3938: ретаргет #297@32/#300@48 до define отравляет сайт | cv3
 FACT | AG-198 w528 | порядок define->retarget->probe T1=0->publish канон; selftest javac EXIT=0 GREEN | selftest
 CLAIM | AG-172 w528 | ptype iter-1 cargo-gate: rustup в сэндбокс + AG-197 фикс-ханк + cargo check drop-in | 0 POST
+CLAIM | AG-176 w528 | javac+wiring-гейт landed-36 compo: master 6a46afed vs canary 95 a195f8c9 | 0 POST
+FAIL | AG-176 w528 | peer-corr AG-95: canary 37107843533 плацебо — sb_r1 0 define/0 retarget, wiring-доба нет | src
+FACT | AG-176 w528 | SBO javac 3err L89/L205/L212 vs pin e2992d63 на blob master df1b5de6 и 95 b3316e06 | javac
+FACT | AG-176 w528 | bench-путь не собирает bulkjni (javac только FP/Pop), .class в дереве нет — G1 не носится | diff
+DISP | AG-176 w528 | 0-POST compo-placebo verdict + фикс-рецепт wiring/javac-gate; payload work/AG-176 clm | 0 POST
