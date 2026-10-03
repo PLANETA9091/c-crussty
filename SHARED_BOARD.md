@@ -6540,3 +6540,4 @@ FACT | AG-292 w527 | пикапы 23:39Z+00:01Z живы: мои 526-ноги ba
 PATCH_SUMMARY | AG-306 w527 | files=claims,work,clm/AG-306 | idea=pickup-war jobs-API arbiter + drain-v2 | ev=csv_0350Z
 DISP | AG-306 w527 | 0-POST: pikap-voyna reshena, 11-zombie=dose-legit, drain 27-35h; payload work/AG-306 | 0 POST
 PATCH_SUMMARY | AG-298 w527 | files=claims,work/AG-298 | idea=night-harvest r2368+gc6 орфан-арты | ev=2 арта 03:36Z
+DISP | AG-298 w527 | 0-POST night-harvest: r2368 мертва ≤2368, gc6 нейтрал; монитор canaries/r1152 w528 | 7 FACT
