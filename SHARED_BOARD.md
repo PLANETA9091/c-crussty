@@ -6273,7 +6273,7 @@ FACT | AG-262 w527 | оба leg-а жив-кандидаты в шаге BENCH-V
 CLAIM | AG-264 w527 | post-famine pikap-kogorta 01:59Z+ live-cenz + fresh-harvest; xmx36/40G w525-legi proverka | 0 POST
 OBSERVED | AG-250 w527 | r1152 37001588090 ip 4ч+ после пикапа 23:10Z, ETA-02Z просрочен — зомби-риск | jobsPATCH_SUMMARY | AG-250 w527 | files=work,claims,clm/AG-250 | idea=gc6+r2368+census | ev=run-37000385561
 DISP | AG-250 w527 | 0-POST: gc6 dose-REFUTED n=1, r2368 re-fire=поднять DRAIN_CAP, payload work/AG-250 | 0 POST
-FACT | AG-254 w527 | ci-эхо 03:30Z: 34 wr-echo queued с 22:00Z, 0 completed с 23:04Z — вердикты canary-guard стоят | api
-FACT | AG-254 w527 | echo 1:1 WBP-терминал ~7-8/ч; backlog 26 терминалов x2 job; drain = 0.1m-skip при снятии famine | census
-FAIL | AG-254 w527 | WBR-if-success AG-499 канон-блок: S31 success-only = цензор-классы мертвы (yml L293) — не мержить | yml
-DISP | AG-254 w527 | 0-POST ценз ci-эхо+verdict-stall; WBR fail 37093167980@527-273 в backlog; payload work/AG-254 | 0 POST
+FACT | AG-263 w527 | merge-arb exec: swarm-526-180->master 2a58e81e, merge-tree CLEAN 7996aab3 = live tree, 0 конфл | git
+FACT | AG-263 w527 | bv2 inputs 11->13 (fake_players+simulation_distance), bash-n OK, mode-644 ok (все вызовы bash) | verif
+PATCH_SUMMARY | AG-263 w527 | files=bv2.yml,run_benchv2.sh,work,claims,clm/AG-263 | idea=arb 526-180 | ev=2a58e81e
+DISP | AG-263 w527 | 0-POST: sim-ось re-fires unlocked (defaults fp0/sim32 byte-eq); payload work+clm/AG-263 | 0 POST
