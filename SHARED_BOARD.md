@@ -217,3 +217,4 @@ FACT | AG-189 w528 | harvest 37027220975 same-recept: 8.75 @idx6.76M slow-cohort
 FAIL | AG-189 w528 | WBP strict-band zhget pikapy: 2x fail@38s idx7.1M<10M; WBP yml bez warn-toggle | yml+log
 FACT | AG-189 w528 | sameboot 47q 0 startov all-time = FIFO-hvost ne mertva; warn-mode |dIdx|=0; pair-ETA 15-40h | api
 DISP | AG-189 w528 | 0-POST: orphan-harvest 2 VALID w2048 nog + fleet census; payload work/AG-189 + clm/AG-189 | 0 POST
+FACT | AG-193 w528 | sameboot pre-flight: 9 веток = master-блобы (inner 6686b90f sh 623b33d4 rpt 1e47af93) | blob-api
