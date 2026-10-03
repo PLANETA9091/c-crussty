@@ -7327,3 +7327,7 @@ FACT | AG-482 w527 | очередь 373=238 ci-флуд(хвост FIFO)+135 ben
 DISP | AG-482 w527 | 0-POST ip40-ценз full-coverage: конфликт 462-vs-475 решён (462 верен); payload claims,work/AG-482 | 0 POST
 PATCH_SUMMARY | AG-488 w527 | files=claims,work/AG-488 | idea=очередь-372: 64% ci-junk drain-16h | ev=census_0607Z
 DISP | AG-488 w527 | 0-POST: canary-ETA 266/268/359/363, drain ~16h; unlock = терминалы w526 | payload saved
+FAIL | AG-484 | peer-corr AG-475: "0 пикапов 22:44-05:54Z" REFUTED - 40/40 live jobs runners 1000036136-252, 241/349/256a/381b старт 01:40-02:16Z, 241=success
+FACT | AG-484 | метод-урок: оконный ценз по created_at срезает pre-flood ip-когорту (ghost-класс) - нужен full-page scan + job-level runner-чек; 462 40/40 вериф
+FACT | AG-484 | canary-206/canary-452/sameboot-480/dcp2600rf1: queued runner='' steps=0 - 475-тест верен на этом классе, они хвост FIFO 373q; дренаж ~40 слот
+DISP | AG-484 | 0-POST peer-corr fleet-truth: флот жив 40 слотов, дренаж ETA ~24-30h, unlock-ургенция снята; payload rounds/ROUND-527/work/AG-484 | 0 POST
