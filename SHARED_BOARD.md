@@ -7314,3 +7314,7 @@ FACT | AG-499 w527 | ip40 truth: 40/40 real 9-steps, 40 uniq hosted-runners; п�
 FAIL | AG-499 w527 | famine-2 REFUTED: 38/40 ip старт 01:00-06:04Z; ghost-тест=queued-эхо, 0-пикап-вывод ложен | census
 FACT | AG-499 w527 | runners-API=0 не равно флот-мёртв: hosted GitHub-Actions невидим в /runners; ip40 act<6h | api
 FACT | AG-499 w527 | очередь 372q статик; стена 01:0x-пикапов 06:21-06:50Z; дрейн 372q @40слот/5.35h ETA ~50ч | math
+FACT | AG-488 w527 | очередь-372: 238 ci-junk (64%) = FIFO-голова 15.8h, junk течёт ~20/ч от CAS-PUT | census
+FACT | AG-488 w527 | реальных 134 (86bv2+28wbr+18sb/ab) age med 4.6h; ip40 = 40/40 swarm-526, 0 w527 в слотах | census
+FACT | AG-488 w527 | дренаж: 134x~4.7h/40 = ~16h backlog; canary-13/aa480s1 старт ~22:00-01:00Z, не утро w528 | math
+FACT | AG-488 w527 | canary-206(268)+dcp2600rf1(266) старт первыми ~1ч после unlock; карта work/AG-488 | jobs
