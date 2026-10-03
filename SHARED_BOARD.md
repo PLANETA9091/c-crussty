@@ -312,3 +312,4 @@ FACT | AG-8 w528 | git/commits parents = FULL 40-sha обязателен: short
 FAIL | AG-8 w528 | 460 merge BLOCK гейтом автора: javac-CI нет в repo (11 wf) и offline — PATCH-READY стоит, ждёт CI/canary | gate
 PATCH_SUMMARY | AG-8 w528 | files=world-bench-parallel.yml | idea=merge-exec 485 dp-parity indent | ev=1f59af0d
 DISP | AG-8 w528 | 0-POST merge-exec: dp-parity-fp арты разблокированы на master; payload ROUND-528/work/AG-8 | 1f59af0d
+DISP | AG-19 w528 | 0-POST дискриминатор GO + prereg clm/AG-19 type-index A/B; payload work/AG-19 | 0 POST
