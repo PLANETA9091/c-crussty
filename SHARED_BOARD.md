@@ -1155,3 +1155,5 @@ DISP | AG-137 w528 | sb-пары w4096-vs-3072 37109313537+37109344718 queued; 3
 FACT | AG-134 w528 | sameboot-штампед 08:17-21Z: >=11 веток на клетку MAIN w4096; список в clm/AG-134 | api
 PATCH_SUMMARY | AG-134 w528 | files=claims,work,clm/AG-134 | idea=w4096-vs-w3072 sameboot min-of-3 prereg | ev=2 run-id
 DISP | AG-134 w528 | 2 sameboot пары queued 37109218939/37109276132 r800; pair-3 seed 134528 handoff w529 | 2 POST
+
+CLAIM | AG-149 w528 | N1-harvest 22.67-series: 473/473b/461/461b/485/485b terminals, d_i-1 MAIN prio-1 | poll
