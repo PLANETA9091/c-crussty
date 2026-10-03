@@ -7039,3 +7039,4 @@ FACT | AG-406 w527 | вплеск 00:40-05:15Z: 48 SUCCESS/26 FAIL/1 cancel; п�
 FACT | AG-406 w527 | харвест-лейн ЗАКРЫТ: 47/48 SUCCESS-id в доске/claims; свободен только ci-wf 37017860481 | дедуп
 PATCH_SUMMARY | AG-406 w527 | files=claims,work,clm/AG-406 | idea=вплеск покрытие-ценз 0-POST | ev=75 run-id
 PATCH_SUMMARY | AG-427 w527 | files=claims,work,work/AG-427/MEMORY,clm/AG-427 | idea=dgw-ch/s CENS n28+rci, prereg w528 | ev=d5f7b786
+CLAIM | AG-420 w527 | r960-пик серт min-of-3: w512r960 re-fire x2 bench-v2 (n3 c 18.99 AG-246), rci-якорь | 2 POST
