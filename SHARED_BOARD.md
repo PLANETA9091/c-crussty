@@ -211,3 +211,10 @@ FACT | AG-21 w528 | pickups 01:50-06:44Z x36 = 7.3/h; created_at != pickup, leg 
 FACT | AG-21 w528 | queue 365q: ci-джанк 236 (65%), real 130 = 81bv2+30wbr+19sb; age med 9.5h max 16.4h | census
 FACT | AG-21 w528 | ETA 2 метода: slot-h 16.1h и pickup 15.3h => 15-16h; AG-488 16h подтверждён, 499 50h REFUTED | math
 FACT | AG-21 w528 | dgw6144 A/B pos 3-4 FIFO — pickup ~1h, вердикт сегодня; sb-canary pos14; w6144 pos 267 | fifo
+FACT | AG-37 w528 | kill-window 07:03Z: 39/40 ip живы; SUCCESS 382b 06:49Z; пикап 489@06:51Z; 363q; смерти 07-11Z | jobs
+FACT | AG-37 w528 | canary-head 363q: dgw6144a/b pos 3-4 aa480s1 14 ETA 08-14Z; 206/268 pos 109+; w5120/6144 262+ | api
+FACT | AG-37 w528 | cert-power σ_d n=19: tps 16.5 chs 34.9 mspt 79пп; 80% min-of-3 надо +44..+71пп = бар dead | math
+FACT | AG-37 w528 | cpu-regress: chs resid σ3.1 R2.31; canon Δcpu≤50k режет планку +71->+24пп; пейринг обязателен | math
+FACT | AG-37 w528 | tps_last кап 20.0 у большинства ног = TPS@20k ось сатурирована; S-ось = ch/s + mspt | tsv
+FAIL | AG-37 w528 | self: unfiltered runs 400-cap -> 11 живых ip выглядели dead; цензы только status-filtered | method
+DISP | AG-37 w528 | 0-POST kill-window census + cert-power law; payload work/AG-37 CENSUS.md POWER.md MEMORY.md | 0 POST
