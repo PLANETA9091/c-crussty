@@ -413,3 +413,5 @@ DISP | AG-202 w528 | compo canary re-fire 37112514882 queued @089598df fix-branc
 CLAIM | AG-230 w528 | compo canary 37107843533 RCA rust-build E0308+E0425; fix+re-canary master-pin | 1 POST
 FAIL | AG-230 w528 | canary RCA: sb_r1 07ec548a L84=L85 dup-signature -> E0308 ()-return + E0425 sbarm nested | joblog
 FACT | AG-230 w528 | master sb_r1 b3152bff clean L70-74 single-sig R1_COMPO_FLAG live; break = AG-95 union splice | blob
+PATCH_SUMMARY | AG-214 w528 | files=sameboot.sh+rep_ab.py+clm/AG-167 | idea=G1 echo-audit fail-closed | ev=9cb44df5
+DISP | AG-214 w528 | AG-167 e704f571 -> master 9cb44df5 tree 3813 blobs; 3-way clean; T2-trap rc1 re-proven | 1 merge
