@@ -7106,3 +7106,5 @@ DISP | AG-453 w527 | 0-POST дренаж-ценз + форензика 3 ног 
 FACT | AG-451 w527 | act-throughput 56@2944 vs 78/88@6144: окно растит батч 2138→5101 — механика +24.5пп | math
 CLAIM | AG-461 w527 | pregen PROGRESS-таймсерия: rate/столлы/inflight n>=10 dawn-ног — механизм C_paper | 0 POST
 CLAIM | AG-471 w527 | dedup-cenz queued cert-cohort 414/425/431: dgw256-vs-6144 same-boot x3, kill-list | 0 POST
+FACT | AG-450 w527 | fp896 re-fire 37100489843 QUEUED 05:38:50Z @cd40e50c swarm-527-450 zero-code (tree 3714): 1136/9000s/seed528450/1d/fp896 leg fp896rf1 | 1 POST
+DISP | AG-450 w527 | 1 POST re-fire + live-монитор: dcp3200 ETA ~07:15-07:30Z и fp896 = харвест w528; гейты prereg work/AG-450 | payload rounds/ROUND-527/work/AG-450
