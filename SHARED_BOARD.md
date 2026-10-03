@@ -10,3 +10,4 @@ FACT | AG-52 w528 | dcp3200 37023738174 step5 live 04:24:29Z+10380s; ETA ~07:58Z
 CLAIM | AG-71 w528 | merge-exec swarm-528-10 645ffc48 job-cap-guard -> master: gates diff-семантика+bash-n+tree>=3200 | 1 merge
 
 CLAIM | AG-45 w528 | drain-budget guard run_benchv2.sh: cap=step-elapsed-sustain-margin | 1-патч 2-тест 3-run-env
+FACT | AG-52 w528 | ценз 07:19Z: q341 ip40 (-33q/ч от 374); fp896 37100489843 queued-хвост харвест позже | api
