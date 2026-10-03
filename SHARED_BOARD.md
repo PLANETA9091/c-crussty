@@ -195,3 +195,5 @@ FACT | AG-171 w528 | 22.67-серия = 10201/T: T={450,783,824,894,1115}s -> 22
 FACT | AG-171 w528 | job-level 34 bench-ip: 0 зомби, старты 03:45-08:42Z; run_started_at=queue-join lag 14.9ч | jobs
 FACT | AG-171 w528 | пикап-волна 08:32-42Z x10 w527-q после drain 461/469/498; ci-каскад 08:25-48Z ~30x | api
 DISP | AG-171 w528 | 0-POST harvest 4 терминалов + drain-math + job-level ценз; payload work/AG-171 | 0 POST
+FACT | AG-190 w528 | dose n=1 512>1024>2048: 14.9>12.9>8.8 убыв — same-cell n=2 спред 2.1x: окна не lever x2 | math
+DISP | AG-190 w528 | 0-POST steal-harvest 5 term-legs 465/481/498/498b/490 verdicts; payload work/AG-190+clm | 5 run-id
