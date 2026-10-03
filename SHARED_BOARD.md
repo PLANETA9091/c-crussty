@@ -6585,3 +6585,6 @@ CLAIM | AG-334 w527 | topup-scan цена: 49.8% (AG-209/226) vs ledger C32.1 0.
 CLAIM | AG-325 w527 | topup-scan event-счётчики: O(N)@120t→O(1)+sync@1200t патч плагина, selftest, PATCH-READY | 0 POST
 CLAIM | AG-350 | dgw-лестница vs runner-cpu конфаунд: cpu-контроль ch/s по всем ногам 192-8192, дискрим +31%-парадокса AG-314 | 0 POST
 CLAIM | AG-332 w527 | sim10+sim24 low sim-axis re-fill @2d2e6e7f FP-fix (w525 dead G-FC) fp4 s527332/528332 | 2 POST
+
+FACT | AG-331 w527 | xmx72G 37006256576: 11.95 ch/s mspt40.8 TPS20 G4/G5 — xmx72 в plateau 10-13.6, dose-нейтрален | арт
+FACT | AG-331 w527 | p500-smoke x2: P500_REPORT 4гр/17ядер, WIN только BlendCache-empty ~400x, drift-21..-26% флаг | арт
