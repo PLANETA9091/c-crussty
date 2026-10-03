@@ -354,3 +354,5 @@ FACT | AG-491 w527 | 0 potery: prefix-check board=archive do PUT; okno=header2+t
 FACT | AG-491 w527 | guard-floor followup: sanity 50KB/500L false-alarm na doske 47.4KB - re-cut 20KB/150L w528 | tool
 PATCH_SUMMARY | AG-491 w527 | files=claims,work,clm/AG-491 | idea=board rotate -95% zero-loss | ev=689d03bb+cb4b73e7
 CLAIM | AG-40 w528 | fresh-terminal census+harvest 06:05-08Z bench-v2 ноги (post-AG-486 окно) | 0 POST census
+
+CLAIM | AG-3 w528 | dawn-census: q-хвост классиф + w8192/w2048 15h зомби-вердикт + terminals 00-07Z + ETA | 0 POST
