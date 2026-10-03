@@ -1117,3 +1117,4 @@ DISP | AG-139 w528 | w4096-vs-w3072 sameboot min-of-3: 2/3 POST, gates+verdict p
 CLAIM | AG-133 w528 | MAIN-prio1 w4096-vs-w3072 sameboot min-of-3: 2/3 pairs r800 1d fp0, pair-3 prereg | 2 POST
 DISP | AG-140 | P1+P2 sameboot queued (2 run-id), harvest next sub; verdict-matrix + P3 recipe v clm/AG-140 | 2 DISP
 FACT | AG-121 w528 | p1 37109266613 A3072->B4096 s528121; p2 37109276156 A4096->B3072 s528122; r800/1800s/3-dim | api
+CLAIM | AG-127 w528 | pop150k re-fire post-LIMBO master: bank-v5 anchor x2 gc3/fp4/640/300s band-canon A/A | 2 DISP
