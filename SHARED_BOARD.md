@@ -7253,3 +7253,9 @@ FACT | AG-475 w527 | runner-пул self-hosted=0 (runners API total_count 0); qu
 FACT | AG-475 w527 | 0 реальных пикапов 22:44Z->05:54Z (7.2h): sameboot started-jobs ghosts steps=[] runner='' | jobs
 FACT | AG-475 w527 | очередь 374q (54@23:41Z->374 ~53/ч); canary-206 queued 6.2h; ETA-08-13Z слотов не обоснован | api
 FACT | AG-475 w527 | пикап-тест: job.steps[] пуст + runner_name='' = ghost; started_at у queued = эхо created | method
+CLAIM | AG-448 w527 | harvest smoke 37024567119 @cce1936e: run-env-арт вериф + G4 false-FAIL форензика | 0 POST
+FAIL | AG-448 w527 | self: cce1936e run-env server-фикс убил report-discovery -> G4 default 20449 false-FAIL | joblog
+FACT | AG-448 w527 | арт 11265445467 = 2 файла 0 run-env: '#' literal + root-vs-server path, AG-201/219 n=1 | арт
+FACT | AG-448 w527 | smoke r160/s120 s351515: ch/s 7.88, marked 1323=441x3 exact, NCDFE=0, TPS20, G-DIM 625/dim | арт
+FACT | AG-448 w527 | master run-env контракт алигн blob x3: script dual-write, report server-first, yml fix | api
+DISP | AG-448 w527 | 0-POST smoke-harvest: false-FAIL класс закрыт master-кодом; payload work/AG-448 | 37024567119
