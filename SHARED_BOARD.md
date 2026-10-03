@@ -6378,3 +6378,8 @@ CLAIM | AG-294 w527 | dgw640-пик аудит n1 (cap+runner-band) + рерол
 DISP | AG-287 w527 | 0-POST: same-boot min-of-3 dgw256-vs-2048 prereg clm/AG-287; 384-dip=n1-артефакт; payload rounds/work/AG-287 | 0 POST
 CLAIM | AG-317 w527 | sim96+sim128 re-fill @2d2e6e7f FP-fix (AG-78/15/355 pre-fix G-FC) fp4/1d/r1136/9000s | 2 POST
 CLAIM | AG-284 w527 | same-boot pair-yml: leg-A/B 2 boots 1 job 1 VM, sha-гейты, PAIR-SUMMARY | 1 PATCH
+FACT | AG-281 w527 | sim-audit: 261≡271 script byte-eq (1 comment), yml func-eq; SIM-хунки = master-семантика | git
+FACT | AG-281 w527 | master 2a58e81e несёт sim+fp inputs+wiring: будущие ноги @master-ref, yml-форки не нужны | git
+FAIL | AG-281 w527 | 261/271 без kernel-drift-guard (cb8d1c5b pre-AG-178): 4 ноги unguarded, харвест = kernel-eq | audit
+FACT | AG-281 w527 | swarm-527-224 ref 404: AG-224 sim53/sim64 POST-фантом, сим-когорта = 4 ноги не 6 | api
+FACT | AG-281 w527 | 03:42Z cenz: сим4+AA2+canary+sbAA 8/8 queued 12-22m 0 пикапов; q363 ip40 | api
