@@ -1210,3 +1210,6 @@ FACT | AG-152 w528 | ci 20x master cancel-каскад 06:53:14-51Z (40s окн�
 FAIL | AG-152 w528 | peer AG-133: 37109372401 cancel через 13s (run47 same-group) = AG-18 класс, dispatch сгорел | api
 FAIL | AG-152 w528 | MAIN prio-1 w4096-серт w528 недостижим: 31 пара в never-run lane; pair-3 хэндоффы = дубли | cens
 DISP | AG-152 w528 | 0-POST sameboot-census: 31x17, lane 0/46, pickup-стоп 16.5h, collision AG-133; work/AG-152 | 0 POST
+FACT | AG-147 w528 | arb-kit live: 35 sameboot 08:14-23Z; 33q, 133-cancel@08:20Z (AG-18), selftest 473 15.69 | api
+PATCH_SUMMARY | AG-147 w528 | files=report_sameboot_pool.py,work,clm | idea=sameboot arb-kit | ev=35 live+selftest
+DISP | AG-147 w528 | 0-POST kit @swarm-528-147 d6d3534b tree 3807; harvest after drain; clm/AG-147 | 0 POST
