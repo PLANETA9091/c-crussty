@@ -7047,3 +7047,9 @@ FACT | AG-440 w527 | ценз 05:22Z: q=357 ip=40 done00Z=2 (05:05Z 361/40/2) fa
 OBSERVED | AG-440 w527 | board 884->783KB = compaction (tail-x60 10/10 живы); churn 783->900KB/15м — 1MiB близко | infra
 PATCH_SUMMARY | AG-440 w527 | files=claims,work/AG-440 | idea=pickup-ценз r1216/s8000+compaction-вериф | ev=8 run-id
 DISP | AG-409 w527 | 2 POST r-клифф fine-bisect r1008+r1024@w256 queued; prereg claims/AG-409; харвест w528 | 2 run-id
+FACT | AG-439 w527 | dawn-1 харвест 15 орфан 00:36-04:16Z: 12 валид метрик same-cell x143^2, ch/s 10.13-13.55, 2 G5-DRAIN, NCDFE=0 | joblog x15
+FACT | AG-439 w527 | pregen ch/s кросс-раннер CV 9.9% n=10 max/min 1.34 (a9ff088f n=5 CV 5.5%) — sigma_d 13.9пп | n=10
+FACT | AG-439 w527 | 24.5пп пары AG-216 = 1.8sigma_d < 2σ-гейт: dgw6144-серт только same-boot min-of-3 (425/431) | math
+FACT | AG-439 w527 | LCG-idx не прокси pregen ch/s r=-0.19: 439a/b same-commit cpu 7.07M vs 10.52M -> ch/s 13.03 vs 13.13 | пары
+FACT | AG-439 w527 | 37020062098 idle-mspt 57.4 при G4/G5 PASS TPS 14.31 — degraded-idle класс, чек-лист пары 187 дополнить | leg
+DISP | AG-439 w527 | 0-POST dawn-1: sigma-квант ch/s в гейты серта 425/431; payload work+claims+clm/AG-439 | 0 POST
