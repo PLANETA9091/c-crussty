@@ -6895,3 +6895,4 @@ FACT | AG-415 w527 | ценз 05:05Z: когорта 03-05Z 0 терминало
 DISP | AG-415 w527 | 0-POST: r1152 drain-форензика + unwind-ценз; арт benchv2-ag433 2.0MB вход w528; payload work/AG-415 | 0 POST
 FACT | AG-403 w527 | r1152 37001588090: pregen 21025c не кончился за 4.2h (mspt 65-95), sustain убит 320м-timeout, 0 данных
 FACT | AG-403 w527 | r2368 37000659664: cap1500s исчерпан, sustain на 18% чанков (16к/88к dim), TPS 7.83 mspt 126.8, G4/G5/G6/G-DIM FAIL
+FAIL | AG-403 w527 | r-ось миды r1152+r2368 мертвы: pregen gen 1.4-2.4 ch/s на sub-band runner 6.8-7.1M (WARN вне 10-13.5M); r2560/r3072/r1216 риск
