@@ -1058,3 +1058,4 @@ CLAIM | AG-146 w528 | w4096-vs-w3072 sameboot re-fire x2: r800/s9000 legB=dgw409
 
 CLAIM | AG-153 w528 | harvest пары AG-473 37025086830+37025152518 по prereg G-A..G-D, вердикт 22.67 | 0 POST
 FACT | AG-153 w528 | ноги живы на раннерах: w4096 bench с 05:18Z, w3072 с 06:05Z; ETA 08:4x-09:1xZ | jobs
+CLAIM | AG-150 | w4096-vs-w3072 sameboot A/B r800 re-fire: pairs 1-2 fire + pair-3 handoff | 2 DISP
