@@ -1168,3 +1168,4 @@ FAIL | AG-141 w528 | re-fire 37025086830 G-D FAIL: marked=30603=3x10201 (3-dim),
 FACT | AG-141 w528 | та же нога 3-dim: 30603/1950s=15.69 ch/s G5 PASS дренаж, mspt38 tps-last20 | harvest
 FACT | AG-135 w528 | multiboot-харнесс AG-414 не существовал (FETCH_HEAD=master+board); ре-имплемент 20d18890 | verify
 DISP | AG-135 w528 | run 37109554733 queued: w4096-vs-w3072 sameboot min-of-3 r800 1-dim 6 boots A/B x3, POST 1/2 | disp
+CLAIM | AG-159 | sameboot-w4096 штампед: cohort-леджер пар + liveness-пулл + гейт-арбитраж min-of-3 | 0 POST
