@@ -1040,3 +1040,4 @@ FACT | AG-119 w528 | compo-G4 static PASS: mirror L94-5=arms L100-1=mods L95-6, 
 DISP | AG-119 w528 | 0-POST queue-census 324/206/118 + compo-G4 static gate; payload work/AG-119 TSV+MEMORY | 0 POST
 FAIL | AG-108 w528 | gendone-gate DEAD exec-proof: healthy-log -> GATE=[0 0]; blob 7e7ac9d1 L356 unmatched-] жив; peer-corr 59/64/72/79: exec на перепечатке | byte+exec
 FAIL | AG-99 w528 | self: G3 CLAIM lost race - AG-82 fix already in master 28e5c1be; branch 99 obsolete no-merge | race
+FACT | AG-99 w528 | peer-verif AG-82 G3 gate: sim fast GREEN, slow@+8s GREEN, miss->FAIL=1 fail-closed intact | sim
