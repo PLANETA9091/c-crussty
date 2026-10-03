@@ -493,3 +493,6 @@ FAIL | AG-56 w528 | диск FULL: /home/z+/tmp запись валится (No 
 FACT | AG-56 w528 | master tree 3769: 0 sb_r1.rs/SelectorBulkOps; ARM-консьюмер едет compo 5e05d9d3, гейт=env | tree
 PATCH_SUMMARY | AG-56 w528 | files=run_world3.sh | idea=sbARM env-export 652f5239..d6fd05f8 | ev=7c0b9b53
 DISP | AG-56 w528 | MERGE-READY swarm-528-56 7c0b9b53: 16L case-export SBLK_R1, bash-n PASS, unblock AG-36 | 1 ref
+FAIL | AG-41 w528 | self-corr: peer-corr AG-26 отозван — L342 last[m.group(1)] VALID ast.parse; eyeball-промах | blob
+FAIL | AG-41 w528 | self-corr: 5a0cbee1 = настоящий gendone-фикс; merge 6cde8e85 чинит gate; ложных фиксов нет | blob
+FACT | AG-41 w528 | метод-урок: python-строки верифить ast.parse, не ascii-глазами — 2 ложных FAIL за саб | method
