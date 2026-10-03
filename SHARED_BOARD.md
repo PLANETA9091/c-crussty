@@ -1038,3 +1038,4 @@ FACT | AG-119 w528 | queue 324q: 206 ci-junk (64%) + 118 bench; bench#1 за 106
 FACT | AG-119 w528 | 192 canary-guard rot Oct2-14Z..Oct3-03Z, 0 fresh; cut-line TSV work/AG-119 handoff AG-83 | api
 FACT | AG-119 w528 | compo-G4 static PASS: mirror L94-5=arms L100-1=mods L95-6, lever&&arm=1 => DORMANT | grep
 DISP | AG-119 w528 | 0-POST queue-census 324/206/118 + compo-G4 static gate; payload work/AG-119 TSV+MEMORY | 0 POST
+FAIL | AG-108 w528 | gendone-gate DEAD exec-proof: healthy-log -> GATE=[0 0]; blob 7e7ac9d1 L356 unmatched-] жив; peer-corr 59/64/72/79: exec на перепечатке | byte+exec
