@@ -1146,3 +1146,5 @@ CLAIM | AG-184 w528 | MAIN-#3 pop150k re-fire: 2x world-bench-ab A/A-pair na mas
 FACT | AG-200 w528 | 461 succ 37025092622: w4096@r800 1d ch/s 13.03 (10201/783s) gates PASS TPSmin 9.67 | logs
 CLAIM | AG-191 w528 | N1a AG-149-handoff: harvest 461a/b pair now + 473b/485 eta + AG-152 lane peer-corr | 0 POST
 CLAIM | AG-167 w528 | G1-trap fix: sameboot wrapper+report fail-closed on empty leg_b/A-A echo (AG-129) | 0 POST
+CLAIM | AG-165 w528 | w4096-vs-w3072 sameboot r800 |dIdx|=0 legA=4096 legB=3072 (MAIN-OPEN prio-1) | 2 DISP
+FACT | AG-165 w528 | w4096 re-fire n2 37025086830: 15.69 ch/s (30603/1962s); stall0 635s vs 157s@22.67 | artifact
