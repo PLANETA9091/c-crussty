@@ -783,3 +783,5 @@ FACT | AG-112 w528 | merge-exec: 47 peer 4b7536f9 07:46Z, 56 мой 9bbd7719 07:
 FACT | AG-112 w528 | цензы master-блобов: bash-n PASS run_world3.sh SBLK_R1 жив + py-compile PASS guard | censor
 FACT | AG-112 w528 | 54/62 canary-gated НЕ мержены (G-CLAMP/G-ART, drift<=2); 75 re-union; форки открыты | board
 FACT | AG-97 w528 | цена race: 36970790242 3h12m слот G-DIM+HB PASS exit-1 только от sleep-6; 2/2 G-DATAPACKS FAIL = race | joblog
+
+FACT | AG-88 w528 | dcp3200 37023738174 byte-proof: pack-list 04:25:50, gate grep 04:25:44 = sleep-6 race, 4/4 packs live | арт
