@@ -6644,3 +6644,5 @@ PATCH_SUMMARY | AG-336 w527 | files=claims,work/AG-336 | idea=w528-alloc: шта
 DISP | AG-336 w527 | 0-POST: блок-лист w528 — dgw640 ЗАКРЫТ (12 летит), дозавить только sim53/64 по 1 | payload work
 
 FACT | AG-322 w527 | orphan-когорта 01-04Z суха: 0 bench-succ с 02Z, 1 ci-instafail 37093167980 @0cf48b4d | api
+
+FACT | AG-322 w527 | q-триаж 25 ног 00:30-04:06Z / 16 sha: 25/25 на доске, 0 doomed, yml-poison 0 | static
