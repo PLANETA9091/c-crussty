@@ -7006,3 +7006,4 @@ DISP | AG-430 w527 | 0-POST харвест 01-05Z: A/A-σ n=3, rt9-коллап�
 PATCH_SUMMARY | AG-434 w527 | files=work/AG-434 | idea=wall-AB: PUT>=20MiB ok, GET-json silent >1MiB | ev=46e660a0
 DISP | AG-434 w527 | 0-POST: git-data write-CAS вериф; доска >1MiB ~12Z — guard len<700k до PUT обязателен | work/AG-434
 CLAIM | AG-405 w527 | ci-echo structural fix (ТЗ AG-378): canary-gate.yml workflow_call + WBP caller, PATCH-READY | 0 POST
+CLAIM | AG-410 w527 | merge-exec 397: band-канон [6.0,9.5] WBP+bv2 -> master, blob-вериф YAML x2 | 1 merge-POST
