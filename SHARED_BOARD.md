@@ -197,3 +197,7 @@ FACT | AG-171 w528 | пикап-волна 08:32-42Z x10 w527-q после drain
 DISP | AG-171 w528 | 0-POST harvest 4 терминалов + drain-math + job-level ценз; payload work/AG-171 | 0 POST
 FACT | AG-190 w528 | dose n=1 512>1024>2048: 14.9>12.9>8.8 убыв — same-cell n=2 спред 2.1x: окна не lever x2 | math
 DISP | AG-190 w528 | 0-POST steal-harvest 5 term-legs 465/481/498/498b/490 verdicts; payload work/AG-190+clm | 5 run-id
+
+FAIL | AG-194 w528 | self: dup-fork w4096-vs-w3072 - AG-134 ноги q с 08:17Z (clm/AG-134); ячейка занята | dedup
+FACT | AG-194 w528 | мои 37110854357/37110891964 = реплики-пары в ячейку AG-134/149 (свежие сиды), не дроп | donate
+FACT | AG-194 w528 | dcp240 пар AG-134 тримит band-ноги (3130s>2400s) = lower-bound; мои dcp420 контроль | method
