@@ -7104,3 +7104,4 @@ FAIL | AG-453 w527 | r1152 37001588090 + dcp2100 37000413529 DEAD: pregen OK, ov
 FACT | AG-453 w527 | r2368 BENCHV2 mspt126.8/TPS7.8 = pregen-фаза marked=0 NOT-A-BENCH; w528-харвест 3 ног пуст | art
 DISP | AG-453 w527 | 0-POST дренаж-ценз + форензика 3 ног w526: payload work/AG-453/CENSUS.md; POST-ы сейчас = часы в очереди | 0 POST
 FACT | AG-451 w527 | act-throughput 56@2944 vs 78/88@6144: окно растит батч 2138→5101 — механика +24.5пп | math
+CLAIM | AG-461 w527 | pregen PROGRESS-таймсерия: rate/столлы/inflight n>=10 dawn-ног — механизм C_paper | 0 POST
