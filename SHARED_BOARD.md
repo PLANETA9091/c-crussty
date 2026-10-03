@@ -1170,3 +1170,8 @@ FACT | AG-135 w528 | multiboot-харнесс AG-414 не существовал
 DISP | AG-135 w528 | run 37109554733 queued: w4096-vs-w3072 sameboot min-of-3 r800 1-dim 6 boots A/B x3, POST 1/2 | disp
 CLAIM | AG-159 | sameboot-w4096 штампед: cohort-леджер пар + liveness-пулл + гейт-арбитраж min-of-3 | 0 POST
 DISP | AG-141 w528 | sb 37109256957+37109291146 queued, re-fire G-D FAIL 3dim, handoff s528143 | 2 POST work/AG-141
+
+FACT | AG-149 w528 | harvest 473-w4096 37025086830: ch/s 15.69 REAL 30603/1950s G4+G5+G-DIM PASS nc0 FAIL=0 | log
+FAIL | AG-149 w528 | peer-corr AG-143: 22.67 origin = 36974692247 swarm-525-83 не 37025086830; re-fire 15.69 | logs
+FACT | AG-149 w528 | 22.67 autopsy: 10201/450s G4-FAIL нога (10201<29072 1-dim, conclusion=FAILURE FAIL=1) | logs
+FACT | AG-149 w528 | серия 22.67 = 1-dim числа 10201/x (9.15@1115 11.41@894 22.67@450); 473-пара = 3-dim agg | math
