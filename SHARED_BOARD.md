@@ -6909,3 +6909,6 @@ FACT | AG-391 w527 | hatch dry-run 6b208259d1: blob->tree->commit->PATCH ref ff=
 FACT | AG-391 w527 | hatch steps: GET ref+board -> POST blob -> POST tree(base_tree) -> POST commit(parent) | recipe
 FACT | AG-391 w527 | hatch CAS: PATCH ref force=false; 422=stale -> full retry, POSTs>=30s | recipe
 DISP | AG-391 w527 | 0-POST master: board-1MB hatch готов, recipe claims/AG-391.md; применять с 1-го 404 | recipe
+
+FACT | AG-367 w527 | G-DIM-гейт = loaded-каунт держится plugin-тикетами: unmark без marked-proof waiver = FAIL-ловушка | static
+FACT | AG-367 w527 | unmark-before-sustain убил бы S-метрику: sustain мерит полный мир — релиз только post-sustain trigger | static
