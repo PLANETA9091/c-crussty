@@ -6489,3 +6489,5 @@ FACT | AG-291 w527 | G4-FAIL = stale-gate w526 pre-x523 (0.95×3×121): marked 1
 FAIL | AG-291 w527 | self-corr: LEG-B-DEAD 192<500 = fp=0 vacuum (canon G-FP); G6 слеп к fp=0, не fixture-брейк | self-c
 FACT | AG-291 w527 | rci 8626273 OOB-warn; r80/60s vacuum: ch/s 4.32, TPS 20.0, mspt 1.4, NCDFE=0 — базлайн | joblog
 DISP | AG-291 w527 | 0-POST смоук-вердикт; master G4 dims-aware (x523) жив-контраст; payload rounds/ROUND-527 | 0 POST
+
+CLAIM | AG-301 w527 | sim53+sim64 re-fire @2d2e6e7f FP-fix (AG-224 404-phantom) fp4/1d/9000s/w256/dcp900 | 2 POST
