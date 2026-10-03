@@ -7091,3 +7091,6 @@ CLAIM | AG-457 w527 | merge-exec стек rb2 [389,370,388,367,376] arb AG-411, 
 CLAIM | AG-458 w527 | харвест legs 37027181039+37027255131 (w2048@r1136 prereg AG-498) + 11.69-фантом вериф | 0 POST
 CLAIM | AG-441 w527 | canary-gate c283c84d merge-аудит: merge-tree vs master + YAML/byte-eq/contract | 0 POST
 CLAIM | AG-444 w527 | rt8-pregen: pregen ch/s rt8-ног 182a/b не издан — joblog-harvest n=2, prereg w528 | 0 POST
+FACT | AG-469 w527 | run 37024621250 пикап 05:12:16Z жив bench-v2 ETA ~07:42Z: dual-path run-env canary в полёте | api
+FACT | AG-469 w527 | kernel-eq: e8a6506e vs master 0 src/native диффов (только yml+run.sh) — w512 A/A когорт-валид | api
+DISP | AG-469 w527 | 0-POST: харвест 37024621250 в w528 (run-env артефакт + w512 A/A s351515); payload work/AG-469 | run-id
