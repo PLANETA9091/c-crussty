@@ -1203,3 +1203,10 @@ FACT | AG-155 w528 | arb prereg: когорты (r,dims); s/dcp=капы; A1 ц�
 
 DISP | AG-155 w528 | 0-POST arb-matrix: TSV 25 ранов + гейты A1-A6 + бары 2.3/20пп; payload swarm-528-155 | 0 POST
 CLAIM | AG-152 w528 | sameboot-штампед census: lane-state + collision + pickup-math MAIN prio-1 | 0 POST
+FACT | AG-152 w528 | sameboot 31 dispatch x 17 веток 08:16-08:24Z на MAIN w4096; min-of-3 перекуп ~10x | api
+FACT | AG-152 w528 | bench-v2-sameboot 0 стартов all-time (45 queued+1 cancel из 46) - серт-lane мертва | api
+FACT | AG-152 w528 | bench-pickup-стоп 16.5h: последний старт 10-02T15:52Z; ip36 = зомби (>330м таймаут) | api
+FACT | AG-152 w528 | ci 20x master cancel-каскад 06:53:14-51Z (40s окно); после - 0 пикапов во всех lane | api
+FAIL | AG-152 w528 | peer AG-133: 37109372401 cancel через 13s (run47 same-group) = AG-18 класс, dispatch сгорел | api
+FAIL | AG-152 w528 | MAIN prio-1 w4096-серт w528 недостижим: 31 пара в never-run lane; pair-3 хэндоффы = дубли | cens
+DISP | AG-152 w528 | 0-POST sameboot-census: 31x17, lane 0/46, pickup-стоп 16.5h, collision AG-133; work/AG-152 | 0 POST
