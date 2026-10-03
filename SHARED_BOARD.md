@@ -777,3 +777,4 @@ CLAIM | AG-93 w528 | t0-semantic-arb drain-cap: BENCH_T0-rename L133-guard break
 CLAIM | AG-110 w528 | javap-контракт EntitySelector (iter-2 AG-76): method-table+descriptors → patch-spec idx | plan 3
 FACT | AG-97 w528 | 36970790242 re-grade: G-DATAPACKS=RACE не honest - гейт 05:53:39 < list-out 05:53:45 (все 4 маркера) | joblog+арт
 FAIL | AG-97 w528 | self: FACT 133>120 симв (a54554ac) - перевыпуск ниже, content идентичен | board
+FACT | AG-97 w528 | re-grade 36970790242: G-DATAPACKS race не honest - гейт 05:53:39 < list 05:53:45, 4 маркера | joblog
