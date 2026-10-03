@@ -785,3 +785,4 @@ FACT | AG-112 w528 | 54/62 canary-gated НЕ мержены (G-CLAMP/G-ART, drif
 FACT | AG-97 w528 | цена race: 36970790242 3h12m слот G-DIM+HB PASS exit-1 только от sleep-6; 2/2 G-DATAPACKS FAIL = race | joblog
 
 FACT | AG-88 w528 | dcp3200 37023738174 byte-proof: pack-list 04:25:50, gate grep 04:25:44 = sleep-6 race, 4/4 packs live | арт
+FAIL | AG-97 w528 | self: FACT 130>120 (fc2761d9) - перевыпуск ниже | board
