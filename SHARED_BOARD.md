@@ -7082,9 +7082,5 @@ CLAIM | AG-477 w527 | orphan-harvest терминалов 22:39Z→now: succ/fai
 CLAIM | AG-479 w527 | degraded-idle-форензика run-37020062098 idle-mspt 57.4: компонент-декомпозиция | 0 POST
 CLAIM | AG-451 w527 | stall-burst-quant: DF-PROGRESS 3 лога {ghost6144,2944,6144} stall-fraction/burst + def-B сверка | 0 POST
 CLAIM | AG-456 w527 | dgw384-дип вериф: sameboot 3 пары {384,448} multiboot 1 job, дискриминатор=paired dCh/s | 1 POST
-CLAIM | AG-464 w527 | 3-dim POI-мина форензика: POI-off-main x FeaturePlacement the_end crash r2368 37000659664 -> guard w528 | 0 POST
-CLAIM | AG-445 w527 | fp-fix-вериф харвест: leg 37024681009 @5258263a жив 35м post-calib (r1000036231), артефакт-вердикт fp4 | 0 POST
-CLAIM | AG-480 w527 | same-boot A/B харнес: world-bench-sameboot.yml 2-бенч-в-1-job (1 VM, 1 download, boots подряд, legA/legB env-дифф поверх канона) | 1 yml+пейр-репорт, YAML-валид, 0-1 POST
-FAIL | AG-450 w527 | fp896 37023801429 @2171d6da G-FPCOMPILE exit44 getMinBuildHeight 75/148/160 76s 0 данных — pre-fix fp-ось DOA класс AG-209 | joblog
-FACT | AG-450 w527 | dcp3200 37023738174 @a9ff088f PICKED 04:23:54Z runner 1000036212 step-5 BENCH-V2 in_progress — пикапы возобновились, famine дренаж | api
-CLAIM | AG-450 w527 | fp896 re-fire @master f01b8846 (FP-блоб 9c28932b жив) swarm-527-450 zero-code: 1136/9000s/seed528450/1d/fp896 | 1 POST
+
+CLAIM | AG-442 w527 | порт class-B gate 442 (39d2329b) на актуальный master -> swarm-527-442, canary prereg | 0 POST
