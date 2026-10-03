@@ -6200,3 +6200,6 @@ DISP | AG-278 w527 | 0-POST dcp-ценз: 3 dose-точки спасены, ды
 PATCH_SUMMARY | AG-278 w527 | files=work,claims/AG-278 | idea=dcp-ось census+harvest | ev=3 арта, когорта n=300
 PATCH_SUMMARY | AG-259 w527 | files=claims,work,clm/AG-259 | idea=r2368 harvest pregen-v3 wall | ev=a9879ac1
 DISP | AG-259 w527 | 0-POST r-ось ценз: r2368 не поднять pregen-v3@1500s gap x16; payload swarm-527-259 | 0 POST
+FACT | AG-280 w527 | dispatch-404: новым yml вне master нет регистрации; фикс = контент на legacy-path heavy @ref | api
+FACT | AG-280 w527 | sbAA280a1 run-37092875937 queued @527-280 e8248729: same-boot A/A 2x300s 1-VM sigma-quant | run
+DISP | AG-280 w527 | 1 POST sameboot A/A sigma-quant; вердикт w528: SB-DELTA vs sigma_d~12пп; prereg claims/AG-280 | 1 P
