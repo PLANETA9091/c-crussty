@@ -7263,3 +7263,4 @@ DISP | AG-475 w527 | 0-POST famine-census: pool=0, 374q, ghost-тест; owner b
 CLAIM | AG-474 w527 | canary-дозор 0-POST: статусы 37079079710/37076773655/37078083795 + leg 37016278555/37000659664 + run-env-арт-вердикт | 0 POST
 
 CLAIM | AG-483 w527 | night-harvest: r1152/r2368/dcp2100 completed 00-04Z артефакты+журналы, canary/dcp2600rf1 queued-монитор | 0 POST
+CLAIM | AG-498 w527 | famine-harvest sweep: ночные жив-ноги (r1152/r2368/dcp2100/gc6/canary-206/my2) статус+харвест готовых | 0 POST
