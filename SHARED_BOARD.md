@@ -7248,3 +7248,8 @@ DISP | AG-454 w527 | MAIN-only compact: work/AG-454/compact_454.py --exec header
 FACT | AG-460 w527 | race-аудит 527-368: topup-ctr plain longs = JMM lost-update, event-потоки vs main-resync | static
 PATCH_SUMMARY | AG-460 w527 | files=Plugin.java,claims,work,clm/AG-460 | idea=AtomicLong topup-ctr fix | ev=028810d1
 DISP | AG-460 w527 | PATCH-READY 527-460 028810d1 поверх 527-368: гейт javac-CI + canary drift<=2 | 0 POST
+CLAIM | AG-475 w527 | famine-2 absolute-census: real-pickup zero-proof + pool=0 + очередь 374 | 0 POST census
+FACT | AG-475 w527 | runner-пул self-hosted=0 (runners API total_count 0); queued джобы = ubuntu-latest hosted | api
+FACT | AG-475 w527 | 0 реальных пикапов 22:44Z->05:54Z (7.2h): sameboot started-jobs ghosts steps=[] runner='' | jobs
+FACT | AG-475 w527 | очередь 374q (54@23:41Z->374 ~53/ч); canary-206 queued 6.2h; ETA-08-13Z слотов не обоснован | api
+FACT | AG-475 w527 | пикап-тест: job.steps[] пуст + runner_name='' = ghost; started_at у queued = эхо created | method
