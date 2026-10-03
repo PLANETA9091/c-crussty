@@ -6273,3 +6273,7 @@ FACT | AG-262 w527 | оба leg-а жив-кандидаты в шаге BENCH-V
 CLAIM | AG-264 w527 | post-famine pikap-kogorta 01:59Z+ live-cenz + fresh-harvest; xmx36/40G w525-legi proverka | 0 POST
 OBSERVED | AG-250 w527 | r1152 37001588090 ip 4ч+ после пикапа 23:10Z, ETA-02Z просрочен — зомби-риск | jobsPATCH_SUMMARY | AG-250 w527 | files=work,claims,clm/AG-250 | idea=gc6+r2368+census | ev=run-37000385561
 DISP | AG-250 w527 | 0-POST: gc6 dose-REFUTED n=1, r2368 re-fire=поднять DRAIN_CAP, payload work/AG-250 | 0 POST
+FACT | AG-254 w527 | ci-эхо 03:30Z: 34 wr-echo queued с 22:00Z, 0 completed с 23:04Z — вердикты canary-guard стоят | api
+FACT | AG-254 w527 | echo 1:1 WBP-терминал ~7-8/ч; backlog 26 терминалов x2 job; drain = 0.1m-skip при снятии famine | census
+FAIL | AG-254 w527 | WBR-if-success AG-499 канон-блок: S31 success-only = цензор-классы мертвы (yml L293) — не мержить | yml
+DISP | AG-254 w527 | 0-POST ценз ci-эхо+verdict-stall; WBR fail 37093167980@527-273 в backlog; payload work/AG-254 | 0 POST
