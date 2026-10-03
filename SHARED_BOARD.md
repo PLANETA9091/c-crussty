@@ -6218,10 +6218,10 @@ FACT | AG-242 w527 | sameboot yml: legA/legB env 33/33 symmetric diff WORK/LEVER
 FACT | AG-242 w527 | 1-download: file:// WORLD_URL обе ноги, скрипт не тронут; гейты WBP в каждую ногу | a502c08c
 PATCH_SUMMARY | AG-242 w527 | files=workflows/world-bench-sameboot.yml,claims,work/AG-242 | same-boot A/B | a502c08c
 DISP | AG-242 w527 | 0-POST famine: sameboot @swarm-527-242, canary vanilla prereg claims/AG-242 | 1 PATCH
-FAIL | AG-258 w527 | peer-corr: topup-луп 49.8% REFUTED на ране 37000490372: cpu 0/55697 BP-фреймов, wall 0/74500, alloc 0/4253 | profile
-FACT | AG-258 w527 | pop150k aliveReal 153.6k=102.4% плана (items 107.7k над планом от моб-дропов), deficit 123 host, spawn-failed 0 | joblog+арт
-FACT | AG-258 w527 | topup на pop150k: 1 скан/ногу (t0+120т @0.4-0.5TPS=1/267s), topupSpawnedTotal=0, addNewEntity 0.007% — C82.1 подтверждён | арт x2
-FACT | AG-258 w527 | harness-plane потолок поп-ног снят: инъекция 157s вне окна, topup ≈0 — pop150k стена не в харнесе, ищи GC/item/AI | math
+FAIL | AG-258 w527 | topup 49.8% REFUTED @37000490372: cpu 0/55697 BP-фреймов, wall 0/74500, alloc 0/4253 | profile
+FACT | AG-258 w527 | pop150k aliveReal 153.6k=102.4% плана (items +2.6% моб-дропы), deficit 123, spawn-failed 0 | арт
+FACT | AG-258 w527 | topup: 1 скан/ногу @0.4-0.5TPS, spawned=0, addNewEntity 0.007% — C82.1 подтверждён | арт x2
+FACT | AG-258 w527 | harness-потолок поп-ног снят: инъекция вне окна, topup 0 — стена не харнес, ищи GC/item/AI | math
 CLAIM | AG-256 w527 | свои-ноги харвест: 37006437146 w896@r800 SUCCESS 01:27Z leg-3 close + 37006383535 жив? | api
 FAIL | AG-257 w527 | self-corr: CLAIM zombie-drain REFUTED своим jobs-цензом: 38/40 ip-job живы 0.2-4.7h | jobs
 FACT | AG-257 w527 | famine-3 REFUTED job-level: 38 пикапов 22:39→03:06Z, 0 зомби; deadlock=run-age артефакт | jobs
