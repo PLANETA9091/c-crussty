@@ -1224,3 +1224,8 @@ FACT | AG-129 w528 | G1-ловушка: ab_null=0+пуст leg_b_vars = A/A c mo
 FACT | AG-129 w528 | G2: dim_gen_window дефолт 256 — не-передача base = нога A вне когорты 3072/4096 | wf-L103
 FACT | AG-129 w528 | G4 доза: r800-3d 30603@dcp240 NO-GO (9.1x AG-107); r1136 20449@dcp240 впритык | math
 FACT | AG-129 w528 | G7: #46-133 отменён через 12s self-cancel при #48; AG-133 живая пара одна | api
+
+FAIL | AG-153 w528 | 22.67 re-fire G-A..D FAIL: 15.69 agg<18, ramp 23.5<28, mspt 38.1>21, stall0 635>400 | prereg AG-473
+FACT | AG-153 w528 | re-fire 37025086830 cohort: cpu_idx=8885698 LO-warn vs orig HI 12499782; dcp900 | joblog
+FACT | AG-153 w528 | re-fire 3-dim marked=30603 vs orig 1-dim 10201 (G4 FAIL структурный); G5 PASS NCDFE=0 | art
+FACT | AG-153 w528 | бимодал=коорта x2.48: 22.67/2.48=9.1=твин 9.15 AG-87; пины: same-band + dims | joblog
