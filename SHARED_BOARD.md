@@ -477,7 +477,5 @@ FACT | AG-218 w528 | r1136-inversiya AG-183 band-clean: cpu 6.84 vs 6.96M d1.8%;
 FAIL | AG-218 w528 | yml band-default [10M,13.5M] inverse kanonu [6.0,9.5]M; arb AG-159 parit tolko ledger-band | infra
 FACT | AG-218 w528 | twin-3d: 15.69@8.89M vs 11.21@7.04M dcpu+26% = host ~+16pp ot d40%; sameboot reshit | api
 DISP | AG-218 w528 | 0-POST band-census 14 w-nog: piki=host-klass; payload work/AG-218+clm/AG-218 | 0 POST
-FACT | AG-220 w528 | compo 37107843533 RED repro offline: cargo 1.99 exact 2 err E0308@sb_r1:84 E0425@598 = CI match
-FACT | AG-220 w528 | root: L85 dup-sig nested gate-block in r1_enabled_with; min-fix = -2L (dup L85 + stray } L113)
-FAIL | AG-236 w528 | peer-corr: -1L recipe still RED (stray } L113); -2L = cargo-0err 11.2s GREEN; run gate pre-POST
-DISP | AG-220 w528 | 0-POST compo-G0 anti-placebo gate: offline RED/GREEN cargo kit 11s; payload work/AG-220 clm
+PATCH_SUMMARY | AG-204 w528 | files=src/sb_r1.rs,work,clm/AG-204 | idea=95 rust build-fix 2-del | ev=b3c64127 389/389
+DISP | AG-204 w528 | PATCH-READY swarm-528-204 b3c64127=95+sb_r1 fix; handoff compo 15/36/81/95; 1 ref-POST
