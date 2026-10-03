@@ -15,6 +15,26 @@
 //! The kernel hot-path wirings (area_map update batching etc.) are separate
 //! byte hooks on top of this surface — see the project docs.
 
+/// default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve).
+/// TASK-148 precedent (src/perlin_noise.rs: measured win promoted to product
+/// default with an explicit env opt-out) applied to the lever flag: when
+/// CRUSSTY_LEVER_FLAG is UNSET or EMPTY, the composite cmp466_c98ai
+/// (composite #19, min-of-5 +22.75, LAB_LEDGER L-482-C51.2) counts as
+/// ARMED - every gate whose STRICT-OR carrier list already contains
+/// "cmp466_c98ai" consults this helper first. Any EXPLICIT non-empty value
+/// keeps the old STRICT-eq/STRICT-OR semantics byte-for-byte; the explicit
+/// opt-out values (TASK-148 canon: off/false/no/0, case-insensitive) force
+/// every lever OFF.
+pub fn c98ai_default_on() -> bool {
+    match std::env::var("CRUSSTY_LEVER_FLAG") {
+        Err(_) => true,
+        Ok(v) => {
+            let v = v.trim().to_ascii_lowercase();
+            v.is_empty() || !(v == "off" || v == "0" || v == "false" || v == "no")
+        }
+    }
+}
+
 mod alloc_diet;
 mod area_map;
 mod emap;

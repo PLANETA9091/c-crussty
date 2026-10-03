@@ -81,6 +81,12 @@ const LANE_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapOps$Lane.class");
 
 fn enabled() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     // ID-P32 rides STRICT eq on its OWN lever id; TASK-460-01 climb-compo
     // `cmp456_chunkmono_p31snap` accepted on the chunkmono carrier; legacy env
     // accepted for A/B replays (канон inside_bitmask::enabled).

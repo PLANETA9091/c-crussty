@@ -163,6 +163,12 @@ const TARGETS: [Target; 3] = [
 /// the wave/mega/round ids — a STRICT union, no broadening (empty lever
 /// flag + unset env = vanilla noise, dormant-invisible).
 fn enabled() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     let env_gate = std::env::var("CRUSSTY_NATIVE_NOISE_FILL")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();

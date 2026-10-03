@@ -168,7 +168,10 @@ fn target() -> &'static Target {
 /// stays byte-indistinguishable from vanilla for this vector.
 pub fn register() {
     let f = lever_flag();
-    if !java_gate_matches(&f) {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if !(crate::c98ai_default_on() || java_gate_matches(&f)) {
         eprintln!(
             "[crussty-plugin] mobs_soa: dormant (set CRUSSTY_LEVER_FLAG={GATE_LEVER} or {GATE_LEVER_COMP} to enable)"
         );
@@ -207,7 +210,10 @@ pub fn register() {
 /// single-site retarget from the pristine bytes, flip READY, retransform.
 pub fn activate() {
     let f = lever_flag();
-    if !java_gate_matches(&f) {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if !(crate::c98ai_default_on() || java_gate_matches(&f)) {
         return;
     }
     std::thread::spawn(move || {

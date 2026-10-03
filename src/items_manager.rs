@@ -58,6 +58,12 @@ fn lever_flag() -> String {
 }
 
 fn lever_flag_matches() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     // TASK-399-B: arm the J-subsystem for the legacy flag AND the round-399
     // cmp399_* lever family (cmp399_shard selects the sharded grid arm).
     // TASK-399-F композиция: суб-вектор despawnv2 дополнительно гейтится

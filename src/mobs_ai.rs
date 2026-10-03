@@ -79,6 +79,12 @@ const QRETRY: u32 = 128;
 /// STRICT-eq gate (round-400 lever protocol; полу-armed мост = невалидная
 /// нога, TASK-402-F). Пустой/чужой флаг = ваниль бит-в-байт.
 fn enabled() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp406_aibatch") | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp414_cvs")

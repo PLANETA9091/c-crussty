@@ -65,6 +65,12 @@ static READY: AtomicBool = AtomicBool::new(false);
 /// round-417-C cmp417_bq = cvs-носитель (meganav⊕eqsnap-v3⊕race-fix⊕blob-sync)
 /// ⊕ queryplane AWAKE (find_class fix — см. activate()).
 fn lever_flag_matches() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             v.trim() == "cmp412_b2p1"

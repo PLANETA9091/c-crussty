@@ -119,6 +119,12 @@ const H2: i32 = 0x85EB_CA77u32 as i32;
 /// одним bulk-drain (O(dirty)) и только потом строит цепи (cl1 35691270899:
 /// per-entity WLOCK-мутации = 24.9% CPU → 0.5 TPS; eq chain build = 0.025%).
 fn enabled() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     flag_enabled(std::env::var("CRUSSTY_LEVER_FLAG").as_deref().ok().as_deref())
 }
 
@@ -206,6 +212,12 @@ fn enabled_flag_is_eqsnapv3() -> bool {
 /// EPOCH_LOCK-окне; snapshotQuery-джава читает слайсы арены вместо цепей.
 /// TASK-422-B (iter-2): STRICT-OR — вектор-флаг несёт тот же sense-срез.
 fn enabled_flag_is_sense() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp421_brain") | Ok("cmp422_brain2")

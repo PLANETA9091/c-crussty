@@ -58,6 +58,12 @@ const CANUSE_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/ai/goal/WrappedGo
 /// env gate per the round-400 lever protocol (STRICT eq — never starts_with /
 /// contains: полу-вооружённый мост AIOOBE lesson TASK-400-D).
 fn enabled() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp401_stagger") | Ok("cmp402_stagcomp") | Ok("cmp403_tickplane")

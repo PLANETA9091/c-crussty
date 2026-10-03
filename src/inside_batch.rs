@@ -57,6 +57,12 @@ pub const DEFLATE_EPS: f64 = 9.999999747378752E-6;
 /// как inside_cache::enabled). TASK-460-01: `cmp456_chunkmono_p31snap` —
 /// STRICT eq (климб-компо P31+P32/P36 sidecar на носителе cmp456_chunkmono).
 pub fn enabled() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     if std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| v.trim() == "cmp456_chunkmono_p31snap" || v.trim() == "cmp466_c98ai")
         .unwrap_or(false)

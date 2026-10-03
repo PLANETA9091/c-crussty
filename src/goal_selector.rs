@@ -76,6 +76,12 @@ static SERVED: AtomicBool = AtomicBool::new(false);
 /// нога, TASK-402-F). Пустой/чужой флаг = ваниль бит-в-байт. Носитель-флаг
 /// cmp421_brain (мега-ноги тика-421/422) ∨ вектор-флаг cmp422_brain2.
 fn enabled() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     match std::env::var("CRUSSTY_LEVER_FLAG") {
         Ok(v) => {
             let v = v.trim();

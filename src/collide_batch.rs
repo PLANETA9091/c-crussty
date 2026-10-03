@@ -69,6 +69,12 @@ fn stash_orig(bytes: &[u8]) {
 }
 
 fn lever_flag_matches() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     // TASK-403-C: tickplane включает collide-сегмент плейна (STRICT eq).
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {

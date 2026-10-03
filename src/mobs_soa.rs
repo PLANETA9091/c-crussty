@@ -298,6 +298,12 @@ pub(crate) fn sscan_snapshot() -> Option<(&'static [f64], &'static [f64], &'stat
 /// TASK-412-C (eqsnap-v3): меганав-композит cmp412_eqsnapv3 несёт
 /// eqsnap-плоскость (STRICT OR: плоскости cmp412_meganav || eqsnap).
 fn eqsnap_mode() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     static FLAG: OnceLock<String> = OnceLock::new();
     let f = FLAG
         .get_or_init(|| {
@@ -321,6 +327,12 @@ fn eqsnap_mode() -> bool {
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
 /// empty/foreign flag = the tables are never touched).
 fn lever_mode() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     static FLAG: OnceLock<String> = OnceLock::new();
     let f = FLAG
         .get_or_init(|| {

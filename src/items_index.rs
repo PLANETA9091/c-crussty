@@ -284,6 +284,12 @@ static WLOCK: Mutex<()> = Mutex::new(());
 fn shard_mode() -> bool {
     static M: OnceLock<bool> = OnceLock::new();
     *M.get_or_init(|| {
+        // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+        // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+        // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+        if crate::c98ai_default_on() {
+            return true;
+        }
         std::env::var("CRUSSTY_LEVER_FLAG")
             .map(|v| {
                 let v = v.trim();

@@ -113,6 +113,12 @@ pub fn wait_bridge_ready(timeout_ms: u64) -> bool {
 }
 
 fn lever_flag_matches() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     // TASK-432-B STRICT-OR: глубокая внутри-плоскость round-432 (cmp432_inside2)
     // ИЛИ несущий round-430 (cmp430_inside, A/B ре-плей); пустой/чужой = ваниль
     // бит-в-байт. TASK-436-B: serve-plane closure round (cmp436_ins4) rides
@@ -131,6 +137,12 @@ fn lever_flag_matches() -> bool {
 /// arrays + untracked-miss closure + cached minSecY + lane hint). The V2
 /// serve() stays byte-for-byte as the control path (V4=false default).
 fn v4_requested() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();

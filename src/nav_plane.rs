@@ -45,6 +45,12 @@ pub const ERR_RANGE: i32 = -2;
 
 /// STRICT eq lever gate (пустой флаг / любой другой флаг = false).
 pub fn armed() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             v.trim() == "cmp405_navplane" || v.trim() == "cmp412_meganav" || v.trim() == "cmp414_cvs"

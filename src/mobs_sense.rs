@@ -72,6 +72,12 @@ const QRETRY: u32 = 128;
 /// ЗЕРКАЛО sense/net/minecraft/world/entity/SenseOps.java leverEnabled —
 /// расхождение = дормант-мисс ARM). Пустой/чужой флаг = ваниль бит-в-байт.
 fn enabled() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     if let Ok(h) = std::env::var("CRUSSTY_SENSE") {
         let h = h.trim().to_ascii_lowercase();
         if h == "1" || h == "true" || h == "on" || h == "yes" {

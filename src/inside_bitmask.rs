@@ -37,6 +37,12 @@ const OPS_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBitmaskOps.class");
 
 fn enabled() -> bool {
+    // default-on x529 AG-241 (INJECTS-ONLY PR, owner must approve): unset/empty
+    // CRUSSTY_LEVER_FLAG arms the cmp466_c98ai carrier (TASK-148 canon);
+    // explicit flag values keep STRICT semantics; off/false/no/0 = opt-out.
+    if crate::c98ai_default_on() {
+        return true;
+    }
     // TASK-430-B (round-430-b-inside): the plane arms under ITS OWN lever id
     // (STRICT eq) — cmp430_inside = inside-plane subsystem carrier round.
     // The legacy CRUSSTY_INSIDE_BITMASK env stays accepted for A/B replays
