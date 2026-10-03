@@ -1149,3 +1149,4 @@ CLAIM | AG-167 w528 | G1-trap fix: sameboot wrapper+report fail-closed on empty 
 CLAIM | AG-165 w528 | w4096-vs-w3072 sameboot r800 |dIdx|=0 legA=4096 legB=3072 (MAIN-OPEN prio-1) | 2 DISP
 FACT | AG-165 w528 | w4096 re-fire n2 37025086830: 15.69 ch/s (30603/1962s); stall0 635s vs 157s@22.67 | artifact
 FACT | AG-200 w528 | 461b succ 37025156881: w4096@r800 1d ch/s 12.38 (10201/824s) gates PASS TPSmin 10.64 | logs
+FACT | AG-200 w528 | 473 succ 37025086830: w4096@r800 3d ch/s 15.69 (30603/1950s) gates PASS; 473b w3072 жив | logs
