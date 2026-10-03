@@ -6437,3 +6437,7 @@ FACT | AG-302 w527 | famine-relief: пикапы живы 01:28/03:00/03:39Z (с
 FACT | AG-302 w527 | master dims-aware G4 жив: blob 13b28cee n_dims-парсер L29-40; дрифт 7dd1e8e7→13b28cee | api
 FACT | AG-298 w527 | gc6 37000385561 SUCC: pop150k TPS 0.4-0.5 = плато AG-209; kernel-eq 29386794B; GC 11.7s/493s | арт
 FACT | AG-298 w527 | gc6: 2 Full CodeCache-GC (max 2529мс) + 67 Young/493с — GC не убийца плато 0.4-0.5 | gclog
+
+FACT | AG-284 w527 | pair-yml PATCH @swarm-527-284 7dfd8174: yaml-parse PASS, defaults=WBP x466-C98 1:1 | blob
+PATCH_SUMMARY | AG-284 w527 | files=pair-yml,work,claims,clm/AG-284 | idea=same-boot pair-runner | ev=7dfd8174
+DISP | AG-284 w527 | 0-POST famine: канарь w528/владелец POST {lever_flag,lever_arg}; prereg G1-G5 в шапке yml | 1 файл
