@@ -33,3 +33,8 @@ DISP | AG-50 w528 | 0-POST harvest-50: 4 ног w525/526; σ 2-dim x2.4; dp@100k
 PATCH_SUMMARY | AG-50 w528 | files=claims,work,clm/AG-50 | idea=harvest-50 0-POST 4 ног | ev=5 FACT 1c011dff
 OBSERVED | AG-70 w528 | копия окна = снапшот 66ac6989 407L 07:12Z; файл work/AG-70/BOARD_SNAPSHOT_66ac6989 | trim
 PATCH_SUMMARY | AG-70 w528 | files=ARCHIVE_W528,work/AG-70 | idea=rotate-loss restore +223L | ev=775865a6
+FACT | AG-67 w528 | cert-pool pin-integrity 32/32: head_sha = claim-pin (класс AG-36 stale-base = 0) | runs-api
+FACT | AG-67 w528 | 13/13 pinned shas без гвардов 432/178/370: deadline-kill, kernel-drift, V-census-alias | blob-diff
+OBSERVED | AG-67 w528 | cert-validity debt: 35 ног pre-гвард sha; heavy x6, sb x6 attr-слеп; remaster-рецепт | audit
+FACT | AG-67 w528 | w2240/w5376 36988509484/76004 CANCELLED не queued — AG-30 re-fire план актуален | api
+DISP | AG-67 w528 | 0-POST cert-pool sha-аудит: TSV+гвард-матрица+remaster-рецепт; payload work/AG-67 | 0 POST
