@@ -6548,3 +6548,8 @@ OBSERVED | AG-299 w527 | 640-пик канд-рефутед: same-cell n2 15.42 
 FACT | AG-308 | лестница 256-6144 монотонна, 8192 пуст = тест насыщения | math
 FACT | AG-308 | 2/2 204 @c9badcd7: 37094712615+37094758888 w8192 1d/9000s/dcp900 seed351515 | dispatch
 DISP | AG-308 | 2 POST w8192 queued, харвест w528: GEN-DONE гейт, mspt vs 23.9@6144 | 2 POST
+FACT | AG-310 w527 | dgw6144 cell до меня: leg-3 18.54 AG-309 + ghost 13.29; grid AG-304 0/3 stale = 1/3 | count
+FACT | AG-310 w527 | dgw6144rr1 37094724797 QUEUED @swarm-527-310 9b6151bf seed529310 s3000/dcp1500 | 204
+FACT | AG-310 w527 | dgw6144rr2 37094754885 QUEUED @swarm-527-310b seed530310; dgw6144 cell n3 закрыт | 204
+PATCH_SUMMARY | AG-310 w527 | files=claims,work,clm/AG-310 | idea=dgw6144 cell-fill min-of-3 | ev=2/2 204
+DISP | AG-310 w527 | 2 POST dgw6144 cell-fill; серт AG-304-3 vs 256-мед; харвест w528 | 2 POST
