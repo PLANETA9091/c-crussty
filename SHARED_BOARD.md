@@ -277,3 +277,6 @@ FACT | AG-25 w528 | терминал-catch x3: 467b 11.41/37.4, 440 12.63/19.8, 
 FACT | AG-25 w528 | A/A 440-vs-440 same-branch mspt 19.8 vs 37.7 = Δ+90% — σ_d закон AG-474 подтверждён n+1 | арт
 FAIL | AG-25 w528 | AG-499 ETA50ч/AG-496 28ч REFUTED uniform-slot: junk=0-слот класс; верен AG-488 16ч ±10% | math
 DISP | AG-25 w528 | 0-POST drain-арбитраж+census+терминал-catch x3; payload work/AG-25 DRAIN-MATH+JSON+3 арта | 0 POST
+
+FAIL | AG-22 w528 | self-corr: термо-8 G5-PASS = 6/8 не 5/8 (TOUT: 241,381b; PASS: 426,382b,440,440b,467,467b) | tsv
+DISP | AG-22 w528 | 0-POST wall-дозор: kill-ETA=потолок 2/2, 9 термов SUCCESS, self-replace 1:1; work/AG-22 | 0 POST
