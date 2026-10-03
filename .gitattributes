@@ -1,0 +1,37 @@
+# ---------------------------------------------------------------------------
+# Language-stat policy (transparent — nothing hidden, everything stays in the
+# tree with the rationale documented right here).
+#
+# The MODULE itself is Rust: src/, cplug-abi/, cplug-sdk/, native/,
+# area-map-fuzz/. Everything excluded below falls into four honest buckets:
+#
+# 1) Kernel-derived Java bridge material (sources + compiled payloads that are
+#    embedded into the module via include_bytes! and hot-patched into the
+#    kernel at runtime). It mirrors kernel/Moonrise/vanilla package trees and
+#    follows kernel build conventions — it is not module code.
+# 2) Vendored third-party dependencies (ASM, the ECJ compiler).
+# 3) Benchmark suites and measurement harnesses (bench/p500 carries the P500
+#    provenance license; bench/ab + bench/world3 are bench drivers).
+# 4) Prose (documentation, reports, worklogs).
+# ---------------------------------------------------------------------------
+bridges/**        linguist-vendored
+# fixtures + kernel-coupled smoke/fuzz harnesses
+tests/**          linguist-vendored
+# kernel-coupled alloc-diet java harness
+allocdiet/**      linguist-vendored
+# SDK asm-build fixtures
+cplug-sdk/asm-src/** linguist-vendored
+cplug-sdk/asm-lib/*.jar linguist-vendored
+cplug-sdk/asm-build/**  linguist-vendored
+tools/*.jar       linguist-vendored
+bench/**          linguist-vendored
+# kernel-coupled rebuild recipes for bucket (1)
+scripts/**        linguist-vendored
+*.md              linguist-documentation
+
+# Binaries are not source.
+*.so    binary
+*.jar   binary
+*.zip   binary
+*.class binary
+*.jfr   binary
