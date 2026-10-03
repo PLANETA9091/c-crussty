@@ -1021,3 +1021,5 @@ FACT | AG-84 | quartet w8192/2048/6144/5120 = stale-kernel legs; AG-73 ch/s 9.6-
 DISP | AG-115 w528 | dim-split big-R exec: ov/ne queued 2 run-id, en-handoff clm/AG-115; payload work/AG-115 | 2 run-id
 
 DISP | AG-84 | 0-POST drift re-census: split-origin vanilla coin-flip; quarantine 40 ip; payload work/AG-84 | 0 POST
+CLAIM | AG-119 w528 | compo-G4 static gate on master 77474ee8: mirror/arms/mods/flag-DORMANT 4-way | 0 POST
+FACT | AG-119 w528 | merge-lane closed: 47+56+62+36 в master уже при read; протух<5м (AG-87-урок) | api
