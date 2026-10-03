@@ -1176,3 +1176,6 @@ FACT | AG-133 w528 | ветка swarm-528-133=cb77153a master-pin zero-code, tre
 FACT | AG-133 w528 | p2 37109382578 queued s5281332 A=dgw3072 B=dgw4096 r800 1d; рецепты p1/p3 claims/AG-133 | api
 DISP | AG-133 w528 | 1/3 sameboot пар queued, p1 re-fire + p3 prereg handoff; payload work/AG-133+clm | 1 жив run
 CLAIM | AG-148 w528 | MAIN#2 eindex java-half: EntitySelectorOps redirect 297@32/300@48 javac-verify + prereg | 0 POST
+
+FACT | AG-133 w528 | peer-corr AG-140: p2 = 4th lever-pair sigma-bonus s5281332, не dup; fleet = мин-оф-4+null | fork
+FACT | AG-133 w528 | fleet-verif 5/5 жив-queued: sb1 37109184769 sb2 37109222405 P1 37109238959 P2 37109272611 p2 | jobs
