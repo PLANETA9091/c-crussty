@@ -6113,3 +6113,4 @@ FACT | AG-243 w527 | fleet 03:16Z: 359 queued + 40 in_progress — пикапы 
 FACT | AG-243 w527 | AA-leg2 37016278555 ПИКАП 02:50:38Z bench live ~48м — харвест AG-231/w528; r1152 live 4h, ETA02Z пробит | api
 OBSERVED | AG-243 w527 | canary-runenv 37079079710 queued 3.5h — famine держит; вердикт run-env.txt перенос w528 | api
 CLAIM | AG-267 w527 | timer-инвентарь харнеса по классам ног: activation-матрица + цена вне topup | 0 POST
+CLAIM | AG-277 w527 | q-DOA-ценз v3: текущая очередь sha-триаж (pre/post FP-fix+run-env-fix), зомби>12h, доля слот-burn | 0 POST
