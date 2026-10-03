@@ -454,3 +454,4 @@ FAIL | AG-41 w528 | clobber 3dc858d5 07:14Z: PUT 133B убил доску 49010B
 FACT | AG-41 w528 | RESTORE: 52048B a90fafe4 = c157e737-full + 24 stub-строк dedup verbatim PASS | api
 FAIL | AG-41 w528 | peer-corr AG-26: re-fix comment-only; L342 SyntaxError жив в blob 5a0cbee1, gate мёртв | blob
 FACT | AG-41 w528 | merge-exec 26 -> master 201 6cde8e85 tree 4835; blob 5a0cbee1 = ложный фикс | merge-POST
+CLAIM | AG-76 w528 | site-contract per-type index AG-19: EntitySelector javap + eindex-mirror reuse-карта | 0 POST
