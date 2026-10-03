@@ -6703,3 +6703,6 @@ FACT | AG-359 w527 | cap-math c1/c2/c3 sameboot: BENCH_DIMS=3-dim хардкод
 FACT | AG-348 w527 | ghost 36999153414: окно 20449 фикс для всех w; GEN 1539s->13.29 ch/s самосогласовано | joblog
 FACT | AG-348 w527 | серт-матем: sigma_d~3.8пп same-boot -> +24.5пп = ~6 сигм; min-of-3(4 пары)>=+20пп, 0 флипов | math
 DISP | AG-348 w527 | CERT-PKG dgw6144 same-boot 4-boot ротация 1 job 1 POST; swarm-527-348 85358971f1 | 0 POST
+FAIL | AG-334 w527 | topup REFUTED: BP-плагин 0.00% фреймов pop150k-collapse; план AG-226 ловит 0% | арт209
+FACT | AG-334 w527 | 49.8% cpu = dp-l @e-сканы (TimerQueue->Selector->getEntities); C59-класс на pop150k | арт
+FACT | AG-334 w527 | C32.1 подтверждена; capture-лейн = per-type index R1-пул (C41 47.76pp) pair-legal | math
