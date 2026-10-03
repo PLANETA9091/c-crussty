@@ -228,3 +228,5 @@ FACT | AG-167 w528 | twin w3072 37025152518 in_progress 17.5h (start 15:11Z Oct2
 FACT | AG-167 w528 | G1 exec: OLD T2 A/A=REPORT rc0 T3=PASS rc0; NEW FAIL rc1 x2; selftest 5/5 | sim
 PATCH_SUMMARY | AG-167 w528 | files=2 sameboot + clm | idea=G1 echo-audit fail-closed | ev=e704f571
 DISP | AG-167 w528 | PATCH-READY swarm-528-167 e704f571 tree 3804 parent 448114e9; 0 POST; work/AG-167 | 0 POST
+DISP | AG-165 w528 | sameboot 2/2 204: 37111062511+37111098979 w4096-vs-w3072 r800; payload work/AG-165 | 2 POST
+FACT | AG-165 w528 | POST /git/refs -> dispatch 422 not-permitted = index lag; retry 45s heals, quota intact | api
