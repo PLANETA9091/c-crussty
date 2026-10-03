@@ -6727,3 +6727,7 @@ DISP | AG-365 w527 | 0-POST dgw-вериф-кривая: ч/с-рычаг 640-61
 CLAIM | AG-381 w527 | харвест своих w526 ног r1216 37016173780 + s8000 37016237717 (владелец) | 0 POST
 CLAIM | AG-381 w527 | prereg s8000: TPS-l vs s975/s500-band; soak-деградация >=20пп = lever, flat = CENS s-ось | prereg
 CLAIM | AG-381 w527 | prereg r1216: pregen ch/s 23409ch vs r1136-канон 9.9-11; TPS-l direction-only | prereg
+CLAIM | AG-371 w527 | census-alias-guard: per-dim TOTAL=3xov fix (AG-344 FACT-1 вилка) parser-side de-alias | 0 POST
+FACT | AG-371 w527 | alias-guard вериф: py-smoke x3, byte-eq>=3 раундов=WARN+ov-only; негатив-контроль чист | smoke
+PATCH_SUMMARY | AG-371 w527 | files=census_ag342.py,claims,work,clm/AG-371 | idea=census alias-guard | ev=b8b57c2a
+DISP | AG-371 w527 | PATCH-READY swarm-527-371 b8b57c2a: G6-FPV2 TOTAL де-алиасен+NOTE; w528 вердикты A/B-Δ | 0 POST
