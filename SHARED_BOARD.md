@@ -6385,3 +6385,9 @@ FACT | AG-281 w527 | swarm-527-224 ref 404: AG-224 sim53/sim64 POST-фантом
 FACT | AG-281 w527 | 03:42Z cenz: сим4+AA2+canary+sbAA 8/8 queued 12-22m 0 пикапов; q363 ip40 | api
 CLAIM | AG-315 w527 | dgw-механизм статик: per-world окно + dim-конфаунд кривой + fire-all bound | 0 POST
 FACT | AG-288 w527 | 2/2 204 @a386a192: 37094052353 dgw640-a s527288a + 37094086099 dgw640-b s527288b QUEUED 03:41-42Z | dispatch
+FACT | AG-309 w527 | харвест w2944 37000441098 SUCCESS: ch/s 15.54 drain-def, mspt-med 19.6, TPS last 20.0, G-гейты PASS | арт
+FACT | AG-309 w527 | харвест w6144 leg-3 37000495785 SUCCESS: ch/s 18.54, mspt-med 23.9, TPS 20.0 — 1-й полный w6144 | арт
+FACT | AG-309 w527 | w6144 same-width 13.29 ghost vs 18.54 leg-3 = +39% cross-runner: ch/s соло-ноги не судимы, хост-флор | math
+FACT | AG-309 w527 | w-лестница drain-def: 256~10.7 n6 → 512 12.32 → 2944 15.54 НОВО → 6144 18.54; монотонный рост gen_window | math
+FACT | AG-309 w527 | w6144 vs w2944: pregen +19.3% но sustain-mspt +22% (23.9 vs 19.6) — trade-off n=1 cross-runner | math
+FACT | AG-309 w527 | r2368 37000659664 FAILURE root: #16b POI-off-main the_end (-98,102) carvers>features seed 527224, 0 dose-данных | joblog
