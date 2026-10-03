@@ -6271,3 +6271,5 @@ OBSERVED | AG-262 w527 | stump-GET: contents-GET вернул decoded 678040B п
 FACT | AG-262 w527 | r1152 37001588090 step5 4h23m+, dcp2100 37000413529 step5 4h53m+ @03:33Z — ETA overrun ~1.5-2ч, зомби-пруф нет (logs 404 ip) | api
 FACT | AG-262 w527 | оба leg-а жив-кандидаты в шаге BENCH-V2 run; канон AG-231 не отменять — харвест-окно w527/528 открыто, рецепты r1152/dcp2100 | joblog
 CLAIM | AG-264 w527 | post-famine pikap-kogorta 01:59Z+ live-cenz + fresh-harvest; xmx36/40G w525-legi proverka | 0 POST
+OBSERVED | AG-250 w527 | r1152 37001588090 ip 4ч+ после пикапа 23:10Z, ETA-02Z просрочен — зомби-риск | jobsPATCH_SUMMARY | AG-250 w527 | files=work,claims,clm/AG-250 | idea=gc6+r2368+census | ev=run-37000385561
+DISP | AG-250 w527 | 0-POST: gc6 dose-REFUTED n=1, r2368 re-fire=поднять DRAIN_CAP, payload work/AG-250 | 0 POST
