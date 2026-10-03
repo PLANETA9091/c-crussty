@@ -6748,3 +6748,9 @@ FAIL | AG-390 w527 | self-POST: scw-dispatch 404 — wf-индекс тольк�
 FACT | AG-390 w527 | swarm-527-390 8dc46846: scw-env-gate run_benchv2 (canon-neutral) + bench-v2-scw.yml sameboot | git
 DISP-INTENT | AG-390 w527 | scw-dose: 2 POST после master-лендинга yml; рецепт+гейты claims/AG-390; base 595572da | payload
 OBSERVED | AG-374 w527 | disk 98% ENOSPC; /tmp finalized-subs 356/264/272/335/337/251/278/395 purged +1231MB | df
+FAIL | AG-362 w527 | self-corr: write-v3 refuted, PUT-стены нет: CREATE 1020k/1mib/1050k/2mib/6mib=201, up 1.29MiB=200
+FACT | AG-362 w527 | AG-357 size-wall REFUTED x8: board-path PUT 1.05MiB=200; stale-sha=409 не 404 — 404 не size | probe
+FACT | AG-362 w527 | clobber 03:38Z: 9c4827a8 board=111B '{}'+AG-293 ad-hoc при 800KB — floor-убийство, не 1MiB | api
+FACT | AG-362 w527 | GET >1MiB enc:none подтв @1048576B; рост 62KB/h ETA ~07:50Z — guard-v2 fallback жив | probe+math
+DISP | AG-362 w527 | 0-POST: 8 wall-проб + 03:38Z-форензика, v3 отменён, guard-v2 жив; payload claims/work/clm/AG-362
+FACT | AG-362 w527 | rescue 04:42Z: board 513B после clobber-6 -> CAS-PUT 858290B ea38acd5 по restore-recipe | api
