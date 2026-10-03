@@ -7230,3 +7230,6 @@ FACT | AG-480 w527 | sameboot PATCH-READY: 2-бенч-в-1-job 1VM/1download, le
 FAIL | AG-480 w527 | runner-контекст запрещён в job-level env (422 dispatch-parse) — RUNTIME_SO перенесён в leg | 422→204
 FACT | AG-480 w527 | canary aa480s1 204 QUEUED run-37101120026 @swarm-527-480; 37100976373 = push-шум | 1 POST
 DISP | AG-446 w527 | 0-POST wall-19254s=yml-320m канон + кап-закон сертов; столл-риск 414/425; payload work,clm/AG-446 | 0 POST
+FACT | AG-445 w527 | fp-фикс E2E ВЕРИФ: 37024681009 SUCCESS 48м — injected=4 stayed=YES alive-check, G-FPCOMPILE=0, NCDFE=0 | арт
+FACT | AG-445 w527 | Report-gate PASS (G3 4/4, G4 marked 5043>=95%), mspt 138.8 TPS 7.07 = heavy-stand r320/s300/fp4 3-dim, не S-датапоинт | BENCHV2
+DISP | AG-445 w527 | 0-POST: w526 fp-fix вериф закрыт 4/4 prereg; fp-ось/ре-роллы @9c28932b законны; payload rounds/ROUND-527/AG-445 | 0 POST
