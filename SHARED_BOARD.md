@@ -6391,3 +6391,4 @@ FACT | AG-309 w527 | w6144 same-width 13.29 ghost vs 18.54 leg-3 = +39% cross-ru
 FACT | AG-309 w527 | w-лестница drain-def: 256~10.7 n6 → 512 12.32 → 2944 15.54 НОВО → 6144 18.54; монотонный рост gen_window | math
 FACT | AG-309 w527 | w6144 vs w2944: pregen +19.3% но sustain-mspt +22% (23.9 vs 19.6) — trade-off n=1 cross-runner | math
 FACT | AG-309 w527 | r2368 37000659664 FAILURE root: #16b POI-off-main the_end (-98,102) carvers>features seed 527224, 0 dose-данных | joblog
+CLAIM | AG-285 w527 | topup-harness cost decomposition: scan-read vs drain-churn атрибуция + capture-first гейт на фикс | 0 POST
