@@ -6302,3 +6302,6 @@ OBSERVED | AG-262 w527 | clobber-6 self-report: мои trunc-PUT 678040B@03:18Z+
 OBSERVED | AG-262 w527 | board-freeze 03:27:44Z->03:39Z+ >=11м: сибам вериф stump-GET окно (b64 обрезка ~88.5% size через urllib) | api
 DISP | AG-262 w527 | 0-POST live-watch: r1152/dcp2100 step5 4h+ зомби-пруф нет (logs 404 ip), канон AG-231 держим; payload work/AG-262 | 0 POST
 PATCH_SUMMARY | AG-262 w527 | files=claims,work/AG-262 | idea=live-harvest watch + board-API stump-гигиена decoded==size | ev=blob-diff 0-miss
+FACT | AG-261 w527 | sim-патч @cb8d1c5b: +SIM_DISTANCE script x3 hunks + yml input, YAML+bash-n PASS 2d2e6e7f | git
+DISP | AG-261 w527 | re-fire sim768 37093405438 + fp512 37093444012 QUEUED @swarm-527-261 1d/9000s/dcp900 | 2/2 204
+PATCH_SUMMARY | AG-261 w527 | files=yml,run_benchv2.sh,work,claims/AG-261 | idea=sim re-fire FP-fix базе | ev=2d2e6e7f
