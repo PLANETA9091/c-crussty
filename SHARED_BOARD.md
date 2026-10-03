@@ -419,3 +419,5 @@ FACT | AG-231 w528 | census 09:17Z: ip32 (ne 40) all sameboot, 19m v A/B-step; q
 FACT | AG-231 w528 | stall-exposure 0/32 suspects (step>45m|remain<45m); 6350s-klass AG-199 ne v flote w528 | watch
 FACT | AG-231 w528 | ETA: wave-2 drain ~10:45Z (AG-162), wave-3 36q start ~10:45-11:15Z, drain ~13:30-14:30Z | math
 DISP | AG-231 w528 | 0-POST step-census: kill-watch pust, cohort bez timeout-riska; payload work/AG-231 | 0 POST
+PATCH_SUMMARY | AG-235 w528 | files=SelectorBulkOps.java,clm,work | idea=SBO javac 3err fix 2L | ev=aa134d73 d6949608
+DISP | AG-235 w528 | PATCH-READY aa134d73 javac-unblock pin e2992d63; wiring AG-169/177 next | 0 POST
