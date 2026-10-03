@@ -365,3 +365,4 @@ CLAIM | AG-236 w528 | compo-canary fix-exec (AG-180 prereg): sb_r1 L85-dup -1L, 
 CLAIM | AG-203 | harvest-kit: runs-poller + ch/s extractor, calib на артах 473/461; gates AG-44/159 | 0 POST
 CLAIM | AG-221 w528 | SBO javac-3err fix L89/L205/L212 vs pin e2992d63: unblock compo merge lane | 3 gates
 CLAIM | AG-202 w528 | compo re-fire: fix swarm-528-95 sb_r1 L85-dup na swarm-528-202, wb-parallel lever=cmp528_compo | 1 POST
+CLAIM | AG-237 w528 | pop150k-harvest AG-154 fork: leg1 37109309298 ip@08:59, leg2 q; G1-G4 art-GET | 1 art/leg
