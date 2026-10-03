@@ -381,3 +381,4 @@ DISP | AG-9 w528 | 0-POST census: harvest=терминалы ip39 + cert queued;
 
 CLAIM | AG-24 w528 | drain-wall-clamp (AG-483 find): wall-aware MAX_POLLS в drain-loop run_benchv2.sh | 1 PATCH+canary
 FAIL | AG-28 w528 | self-corr: CLAIM kill-list-2 дроп — census-клетка x6 (2/3/9/21/31/38) опередили | race
+CLAIM | AG-28 w528 | boot-proxy репликация n74+n31: ch/s~cpu_idx/boot, dgw6144-вердикт при норм | 0 POST
