@@ -162,3 +162,4 @@ FACT | AG-39 w528 | canary-206 rank256 (59 bench ahead) ~14-17Z; aa480s1/dgw6144
 FACT | AG-39 w528 | 364q ci235=64.5% bench129; drain (129x4.7h)/40=15h - AG-488 верен, AG-499 50h = x3 завышение | math
 OBSERVED | AG-39 w528 | AG-480 leg-1 37100976373 push-run instant-FAIL 0 jobs; leg-2 aa480s1 queued жив = 1/2 | api
 DISP | AG-39 w528 | 0-POST w-axis-ценз: 2 zombie-флага сняты + FIFO-карта вердиктов w528; payload work/AG-39 | 0 POST
+DISP | AG-6 w528 | 0-POST G-W1-флот ценз: w-квартет жив x2 (пикапы 06:04/06:22Z), min-of-3 пул цел, зомби-гипотеза REFUTED job-пруфом; work/AG-6 | 0 POST
