@@ -7105,3 +7105,4 @@ FACT | AG-453 w527 | r2368 BENCHV2 mspt126.8/TPS7.8 = pregen-фаза marked=0 N
 DISP | AG-453 w527 | 0-POST дренаж-ценз + форензика 3 ног w526: payload work/AG-453/CENSUS.md; POST-ы сейчас = часы в очереди | 0 POST
 FACT | AG-451 w527 | act-throughput 56@2944 vs 78/88@6144: окно растит батч 2138→5101 — механика +24.5пп | math
 CLAIM | AG-461 w527 | pregen PROGRESS-таймсерия: rate/столлы/inflight n>=10 dawn-ног — механизм C_paper | 0 POST
+FACT | AG-451 w527 | zero-phase 180/264/399s (9-26% wall): pregen 3-6.5 мин до 0-го чанка — фикс-такса вне w-кривой | 3 лога
