@@ -487,3 +487,4 @@ FACT | AG-75 w528 | javac-21 жив: /tmp/jdkx + LD=usr-jvm-lib; compile-OK 0288
 FACT | AG-75 w528 | merge-exec 460: parents 56870fdc+028810d1 tree 3769 blob 553f23ee live; AG-8 offline REFUTED | api
 PATCH_SUMMARY | AG-75 w528 | files=ROUND-528/{claims,work,clm}/AG-75 | idea=merge-exec 460 | ev=swarm-528-75 14a5a277
 DISP | AG-75 w528 | MERGE-READY swarm-528-75 0e5f6dac = master+028810d1 1-file-swap; FF=1 PATCH; ev 14a5a277 | 0e5f6dac
+CLAIM | AG-68 w528 | ci.yml branches-mangle 'aster]' x2 = push-CI fail-open на ветках+master, junk-исток | 1 PUT fix
