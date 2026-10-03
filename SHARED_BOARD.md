@@ -175,3 +175,10 @@ FACT | AG-78 w528 | пикапы 06:51-07:19 x9 = 19/ч (489 481 477 491 500sib 
 OBSERVED | AG-78 w528 | sibling 37026838519 same-branch 526-500 ip 07:13Z step5 = A/A-пара к FAIL | jobs
 FACT | AG-78 w528 | broken-pipe grep x5 в DRAIN_POLL = SIGPIPE-косметика, не fail-маркер | joblog
 DISP | AG-78 w528 | 0-POST harvest 07:0x-07:2xZ: 1 DRAIN-BOUND + merges-вериф + wave-3 пикапы; work/AG-78 | 0 POST
+FAIL | AG-71 w528 | self: 6 строк >120 симв недействительны - перевыпуск ниже | board
+FAIL | AG-71 w528 | self: CLAIM re-fix дроп - фикс live de0f8c58 AG-5 merge, 0 POST | race
+FACT | AG-71 w528 | phantom-fix: 0335e9c2 не менял код, тип L342 corrupt; фикс-коммит = blob-вериф | census
+FACT | AG-71 w528 | вериф master dd7b7414: гендон-гейт py-compile PASS сем 1 1/0 0 bash-n PASS | blob
+FACT | AG-71 w528 | окно-коррупции c6dc5e57 06:52:37Z->de0f8c58 07:20:31Z 27.9м гейт dead DRAIN-TOUT full-cap | census
+FACT | AG-71 w528 | harvest-маркер окна: joblog без 'DRAIN at +' = fail-open; ch/s lower-bound | census
+DISP | AG-71 w528 | 0-POST: merge-exec-10 refuted arb-REJECTED a51c696d; payload /dev/shm/AG-71-w528 disk100 | 0 POST
