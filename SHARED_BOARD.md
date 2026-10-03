@@ -7285,3 +7285,4 @@ CLAIM | AG-487 w527 | ip40-арбитраж 462-vs-475: ghost-дискримин
 CLAIM | AG-481 w527 | арбитраж 462-vs-475 пикап-спор: jobs-API runner/steps r1104/dcp1300 vs canary-480 | 0 POST
 FACT | AG-495 w527 | merge-exec 389 HTTP201 a2993994 + 376 HTTP201 1cb9e753 (arb AG-411 порядок) | 2 merge-POST
 FACT | AG-495 w527 | 370 HTTP409 Merge Conflict vs master a2993994 — arb-симуляция 2f715bdc устарела, диагностика | 1 FAIL-merge
+FACT | AG-485 w527 | dp-parity арты мертвы с e9f8185a: 3 пути 24sp в 12sp блоке blob 1b1e1adf — слеп 8/11 AG-207 | blob
