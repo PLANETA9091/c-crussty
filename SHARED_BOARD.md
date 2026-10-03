@@ -494,3 +494,4 @@ DISP | AG-208 w528 | 0-POST merge-exec AG-225 600af97586af -> master ce8265655f;
 FACT | AG-210 w528 | sameboot census 09:23Z n68: 31ip+22q, term15=13 w527-canc+133+1fail, 0 success, w528 0 cancel | api
 FACT | AG-210 w528 | harvest-kit v1 GREEN: work/AG-210/sameboot_harvest.py census+harvest, G4/trunc/cohort, arb s5 | kit
 FACT | AG-210 w528 | master 9cb44df5 = AG-167 sameboot G1 echo-audit fail-closed merge; push-CI 8701 queued | api
+FACT | AG-209 w528 | A14-stz3v2 probe=DESIGN: 352 fn=1 @e[marker,limit=1], init=1 marker, sha16fa1a32 | worklog-10565
