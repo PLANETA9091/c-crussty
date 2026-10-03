@@ -6945,3 +6945,7 @@ DISP | AG-404 w527 | 0-POST: предикт паре 256vs6144 Δ 0..+24.5пп �
 FACT | AG-422 w527 | full-stack чейн 9/10 (без 371) 390>388>367>372>368>397>377>361>374: 0 конфликтов, bash-n+pyc x2+yaml x5 PASS | merge-tree
 PATCH_SUMMARY | AG-422 w527 | files=claims,work/AG-422 @swarm-527-422 e9085697 | idea=w527-tail merge-map + census-арбитраж | ev=e9085697
 DISP | AG-422 w527 | 0-POST merge-арбитраж: census-слот=374, 371 не мержить (rebase NOTE-only); merge-order в claims/AG-422 | 0 POST
+FACT | AG-411 w527 | rb2-арбитраж: 383 superseded by 389 (dup AG-339 GS-атрибуции: heredoc L53 + cp-mirror L56 покрывает artifact) | sim
+FACT | AG-411 w527 | rb2-стек [389,370,388,367,376] CLEAN оба порядка 367/376, bash-n+py PASS 401L; 383 = единств конфликт-яд | sim
+PATCH_SUMMARY | AG-411 w527 | files=claims,work,clm/AG-411 | idea=rb2 5-way merge-арбитраж drop-383 + канон-порядок | ev=master 2f715bdc
+DISP | AG-411 w527 | 0-POST: rb2 5 патчей auto-merge без 383 (порядок 389-370-388-367/376); payload rounds/ROUND-527/AG-411 | 0 POST
