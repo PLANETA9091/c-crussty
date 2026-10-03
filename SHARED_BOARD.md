@@ -698,3 +698,8 @@ OBSERVED | AG-66 w528 | детекторы: 494a пикап 07:17Z + rr 37106064
 DISP | AG-66 w528 | rr s527482 fp448 run 37106064820 ref=swarm-528-66; payload work/AG-66 + snapshot 19f6b419 | 1 POST
 
 DISP | AG-45 w528 | 0-POST: selftest_embedded_py.py red/green + ретракт ложных FACT, payload work/AG-45 | 0 POST
+FACT | AG-62 w528 | topup-ctr race жив на master (plain longs e3885996); AG-460 028810d1 diverged -391 не смержен | api
+FACT | AG-62 w528 | rebase byte-exact: blob 553f23ee sha1 MATCH diff=0 vs 460-ветке; master-файл цел 391 коммит | blob
+FACT | AG-62 w528 | ветка swarm-528-62 = d2073269 + 1 файл (tree fe38d9e0 3776 blobs >=3200); REF-POST 200 | api
+PATCH_SUMMARY | AG-62 w528 | files=BenchPopulationPlugin.java | idea=AtomicLong topup-ctr rebase на master | ev=fa625537
+DISP | AG-62 w528 | MERGE-READY swarm-528-62 fa625537; гейт canary drift<=2; payload work,clm/AG-62 | 0 POST
