@@ -1,0 +1,326 @@
+Starting org.bukkit.craftbukkit.Main
+[18:41:39 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.12.1+1-1-deb13u1-Debian; Debian null) on Linux 5.10.134-013.15.kangaroo.al8.x86_64 (amd64)
+[18:41:39 INFO]: [bootstrap] Loading Purpur 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) for Minecraft 1.21.10
+[18:41:40 INFO]: [PluginInitializerManager] Initializing plugins...
+[18:41:40 INFO]: [PluginInitializerManager] Initialized 2 plugins
+[18:41:40 INFO]: [PluginInitializerManager] Bukkit plugins (2):
+ - Chunky (1.4.40), squaremap (1.3.9)
+[18:41:46 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[18:41:49 INFO]: Loaded 1461 recipes
+[18:41:49 INFO]: Loaded 1574 advancements
+[18:41:49 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[18:41:50 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 458.1ms
+[18:41:50 INFO]: Starting minecraft server version 1.21.10
+[18:41:50 INFO]: Loading properties
+[18:41:50 INFO]: This server is running Purpur version 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) (Implementing API version 1.21.10-R0.1-SNAPSHOT)
+[18:41:50 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[18:41:50 INFO]: Server Ping Player Sample Count: 12
+[18:41:50 INFO]: Using 4 threads for Netty based IO
+[18:41:52 INFO]: [MoonriseCommon] Paper is using 1 worker threads, 1 I/O threads
+> > > > > > >   [18:41:53 INFO]: Default game type: SURVIVAL
+>   [18:41:53 INFO]: Generating keypair
+> > > > >   [18:41:53 INFO]: Starting Minecraft server on *:25565
+>   [18:41:53 INFO]: Using epoll channel type
+> >   [18:41:53 INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+>   [18:41:53 INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+> > > > >   [18:41:53 INFO]: [squaremap] Loading server plugin squaremap v1.3.9
+>   [18:41:53 INFO]: [Chunky] Loading server plugin Chunky v1.4.40
+>   [18:41:53 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>   [18:41:53 INFO]: [squaremap] Enabling squaremap v1.3.9
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:41:55 INFO]: [io.undertow] starting server: Undertow - 2.3.19.Final
+> > >   [18:41:55 INFO]: [org.xnio] XNIO version 3.8.16.Final
+> > > >   [18:41:55 INFO]: [org.xnio.nio] XNIO NIO Implementation Version 3.8.16.Final
+> > > > > > >   [18:41:55 INFO]: [org.jboss.threads] JBoss Threads version 3.7.0.Final
+> > >   [18:41:55 INFO]: [squaremap] Internal webserver running on 0.0.0.0:8080
+> > >   [33;1m[18:41:56 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[m>   [33;1m[18:41:56 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[m>   [33;1m[18:41:56 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[m>   [33;1m[18:41:56 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[m>   [18:41:56 INFO]: Preparing level "world"
+> > > > > > > > > > > > >   [18:41:57 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+>   [18:41:57 INFO]: Preparing spawn area: 100%
+>   [18:41:57 INFO]: Prepared spawn area in 7 ms
+> > > >   [18:41:57 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+>   [18:41:57 INFO]: Preparing spawn area: 100%
+>   [18:41:57 INFO]: Prepared spawn area in 4 ms
+>   [18:41:57 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+>   [18:41:57 INFO]: Prepared spawn area in 1 ms
+> >   [18:41:57 INFO]: Done preparing level "world" (1.179s)
+>   [18:41:57 INFO]: [Chunky] Enabling Chunky v1.4.40
+> > > >   [18:41:57 INFO]: [spark] Starting background profiler...
+> > > > >   [18:41:57 INFO]: Starting remote control listener
+>   [18:41:57 INFO]: Thread RCON Listener started
+>   [18:41:57 INFO]: RCON running on 0.0.0.0:25575
+>   [18:41:57 INFO]: Running delayed init tasks
+> >   [18:41:57 INFO]: Done (18.958s)! For help, type "help"
+>   [18:41:57 INFO]: [squaremap] Fetching version information...
+> > > > >   [33;1m[18:41:58 WARN]: [squaremap] Failed to list releases, cannot check for updates.
+java.io.IOException: Server returned HTTP response code: 403 for URL: https://api.github.com/repos/jpenilla/squaremap/releases
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:2034) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1632) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:223) ~[?:?]
+	at java.base/java.net.URL.openStream(URL.java:1325) ~[?:?]
+	at squaremap-paper-mc1.21.10-1.3.9.jar/xyz.jpenilla.squaremap.common.util.UpdateChecker.fetchReleases(UpdateChecker.java:92) ~[squaremap-paper-mc1.21.10-1.3.9.jar:?]
+	at squaremap-paper-mc1.21.10-1.3.9.jar/xyz.jpenilla.squaremap.common.util.UpdateChecker.checkRelease(UpdateChecker.java:71) ~[squaremap-paper-mc1.21.10-1.3.9.jar:?]
+	at squaremap-paper-mc1.21.10-1.3.9.jar/xyz.jpenilla.squaremap.common.util.UpdateChecker.checkVersion(UpdateChecker.java:43) ~[squaremap-paper-mc1.21.10-1.3.9.jar:?]
+	at squaremap-paper-mc1.21.10-1.3.9.jar/xyz.jpenilla.squaremap.common.SquaremapCommon.lambda$updateCheck$0(SquaremapCommon.java:118) ~[squaremap-paper-mc1.21.10-1.3.9.jar:?]
+	at java.base/java.util.concurrent.ForkJoinTask$RunnableExecuteAction.exec(ForkJoinTask.java:1423) ~[?:?]
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387) ~[?:?]
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312) ~[?:?]
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843) ~[?:?]
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808) ~[?:?]
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188) ~[?:?]
+[m> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:07 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:07 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:42:07 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:07 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > >   [18:42:08 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:08 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:42:08 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:08 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:14 INFO]: [Chunky] Task running for world. Processed: 2 chunks (0.05%), ETA: 4:03:56, Rate: 0.3 cps, Current: 0, 0
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:18 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:18 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:42:18 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:18 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > >   [18:42:19 INFO]: [Chunky] Task running for world. Processed: 38 chunks (0.90%), ETA: 0:22:32, Rate: 3.1 cps, Current: 3, -2
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:26 INFO]: [Chunky] Task running for world. Processed: 89 chunks (2.11%), ETA: 0:14:17, Rate: 4.8 cps, Current: 5, -3
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:28 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:28 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:42:28 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:28 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:31 INFO]: [Chunky] Task running for world. Processed: 140 chunks (3.31%), ETA: 0:11:30, Rate: 5.9 cps, Current: -1, -6
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:36 INFO]: [Chunky] Task running for world. Processed: 231 chunks (5.47%), ETA: 0:08:18, Rate: 8.0 cps, Current: 8, 2
+> > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:38 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [18:42:38 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:42:38 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:38 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:41 INFO]: [Chunky] Task running for world. Processed: 282 chunks (6.67%), ETA: 0:06:21, Rate: 10.3 cps, Current: 1, 8
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:48 INFO]: [Chunky] Task running for world. Processed: 381 chunks (9.02%), ETA: 0:05:30, Rate: 11.6 cps, Current: 10, -10
+> > > > > > > > > > > > > > > > > > > > >   [18:42:48 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:48 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:42:49 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:49 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:53 INFO]: [Chunky] Task running for world. Processed: 419 chunks (9.92%), ETA: 0:05:13, Rate: 12.1 cps, Current: -2, 10
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:58 INFO]: [Chunky] Task running for world. Processed: 458 chunks (10.84%), ETA: 0:05:22, Rate: 11.7 cps, Current: 11, -6
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:42:59 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:42:59 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:43:00 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:43:00 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:03 INFO]: [Chunky] Task running for world. Processed: 507 chunks (12.00%), ETA: 0:05:49, Rate: 10.7 cps, Current: 0, 11
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:08 INFO]: [Chunky] Task running for world. Processed: 565 chunks (13.37%), ETA: 0:05:29, Rate: 11.1 cps, Current: 0, -12
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:11 INFO]: Thread RCON Client /127.0.0.1 started
+> > > > > > > > > > > > > > > >   [18:43:11 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:43:11 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:43:11 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:13 INFO]: [Chunky] Task running for world. Processed: 606 chunks (14.34%), ETA: 0:06:32, Rate: 9.2 cps, Current: -7, 12
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:19 INFO]: [Chunky] Task running for world. Processed: 657 chunks (15.55%), ETA: 0:06:38, Rate: 9.0 cps, Current: 7, -13
+> > > > > > > > > > > > > > > > > > > > > >   [18:43:19 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:43:20 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:43:20 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:43:20 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:24 INFO]: [Chunky] Task running for world. Processed: 718 chunks (16.99%), ETA: 0:05:53, Rate: 9.9 cps, Current: 2, 13
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:29 INFO]: [Chunky] Task running for world. Processed: 769 chunks (18.20%), ETA: 0:05:47, Rate: 10.0 cps, Current: 2, -14
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:30 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:43:30 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:43:30 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [18:43:30 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:34 INFO]: [Chunky] Task running for world. Processed: 824 chunks (19.50%), ETA: 0:05:27, Rate: 10.4 cps, Current: -3, 14
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:39 INFO]: [Chunky] Task running for world. Processed: 880 chunks (20.83%), ETA: 0:05:25, Rate: 10.3 cps, Current: 6, -15
+> > > > >   [18:43:40 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [18:43:40 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:43:40 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:43:40 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:44 INFO]: [Chunky] Task running for world. Processed: 930 chunks (22.01%), ETA: 0:05:16, Rate: 10.4 cps, Current: -15, 14
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:49 INFO]: [Chunky] Task running for world. Processed: 990 chunks (23.43%), ETA: 0:04:58, Rate: 10.8 cps, Current: 16, -13
+> > > > > > > > > > > > > > > > > > >   [18:43:51 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:43:51 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:43:51 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:43:51 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:43:55 INFO]: [Chunky] Task running for world. Processed: 1041 chunks (24.64%), ETA: 0:05:07, Rate: 10.4 cps, Current: -16, 0
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:00 INFO]: [Chunky] Task running for world. Processed: 1096 chunks (25.94%), ETA: 0:04:52, Rate: 10.7 cps, Current: 17, 10
+> > > > > > >   [18:44:00 INFO]: Thread RCON Client /127.0.0.1 started
+> > >   [18:44:00 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > >   [18:44:00 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:44:00 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:05 INFO]: [Chunky] Task running for world. Processed: 1152 chunks (27.27%), ETA: 0:04:49, Rate: 10.6 cps, Current: -12, -17
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:10 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:44:10 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:44:10 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:44:10 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:44:10 INFO]: [Chunky] Task running for world. Processed: 1209 chunks (28.62%), ETA: 0:04:38, Rate: 10.8 cps, Current: 1, 17
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:15 INFO]: [Chunky] Task running for world. Processed: 1263 chunks (29.89%), ETA: 0:04:32, Rate: 10.9 cps, Current: 16, -18
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:20 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [18:44:20 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:44:20 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:44:20 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > >   [18:44:20 INFO]: [Chunky] Task running for world. Processed: 1317 chunks (31.17%), ETA: 0:04:30, Rate: 10.8 cps, Current: -18, 2
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:25 INFO]: [Chunky] Task running for world. Processed: 1382 chunks (32.71%), ETA: 0:04:19, Rate: 11.0 cps, Current: 19, 6
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:30 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [18:44:30 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:44:30 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:44:30 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > >   [18:44:30 INFO]: [Chunky] Task running for world. Processed: 1429 chunks (33.82%), ETA: 0:04:13, Rate: 11.0 cps, Current: -3, -19
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:36 INFO]: [Chunky] Task running for world. Processed: 1497 chunks (35.43%), ETA: 0:04:03, Rate: 11.2 cps, Current: -5, 19
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:40 INFO]: Thread RCON Client /127.0.0.1 started
+> > > >   [18:44:41 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:44:41 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:44:41 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > >   [18:44:41 INFO]: [Chunky] Task running for world. Processed: 1545 chunks (36.57%), ETA: 0:04:09, Rate: 10.7 cps, Current: 20, -4
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:46 INFO]: [Chunky] Task running for world. Processed: 1606 chunks (38.01%), ETA: 0:03:52, Rate: 11.3 cps, Current: -20, -15
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:50 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:44:50 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:44:50 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:44:50 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:51 INFO]: [Chunky] Task running for world. Processed: 1664 chunks (39.38%), ETA: 0:03:54, Rate: 10.9 cps, Current: 3, 20
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:56 INFO]: [Chunky] Task running for world. Processed: 1731 chunks (40.97%), ETA: 0:03:37, Rate: 11.4 cps, Current: 13, -21
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:44:59 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:44:59 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:44:59 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:44:59 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:01 INFO]: [Chunky] Task running for world. Processed: 1776 chunks (42.04%), ETA: 0:03:39, Rate: 11.2 cps, Current: -21, -10
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:06 INFO]: [Chunky] Task running for world. Processed: 1833 chunks (43.38%), ETA: 0:03:37, Rate: 11.0 cps, Current: 5, 21
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:10 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:45:10 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:45:10 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:45:10 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > >   [18:45:11 INFO]: [Chunky] Task running for world. Processed: 1895 chunks (44.85%), ETA: 0:03:23, Rate: 11.5 cps, Current: 20, -22
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:17 INFO]: [Chunky] Task running for world. Processed: 1941 chunks (45.94%), ETA: 0:03:26, Rate: 11.1 cps, Current: -22, -18
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:20 INFO]: Thread RCON Client /127.0.0.1 started
+> > > >   [18:45:21 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:45:21 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:45:21 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:22 INFO]: [Chunky] Task running for world. Processed: 2000 chunks (47.34%), ETA: 0:03:19, Rate: 11.1 cps, Current: -3, 22
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:27 INFO]: [Chunky] Task running for world. Processed: 2060 chunks (48.76%), ETA: 0:03:16, Rate: 11.0 cps, Current: 23, -12
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:30 INFO]: Thread RCON Client /127.0.0.1 started
+> > > > >   [18:45:30 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:45:31 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:45:31 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:32 INFO]: [Chunky] Task running for world. Processed: 2105 chunks (49.82%), ETA: 0:03:17, Rate: 10.7 cps, Current: -11, -23
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:38 INFO]: [Chunky] Task running for world. Processed: 2175 chunks (51.48%), ETA: 0:03:12, Rate: 10.6 cps, Current: -11, 23
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:40 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [18:45:40 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:45:40 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:45:40 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:44 INFO]: [Chunky] Task running for world. Processed: 2233 chunks (52.85%), ETA: 0:03:03, Rate: 10.9 cps, Current: 24, 0
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:49 INFO]: [Chunky] Task running for world. Processed: 2283 chunks (54.04%), ETA: 0:03:05, Rate: 10.5 cps, Current: -2, -24
+> > > > > > > >   [18:45:49 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:45:50 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:45:50 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [18:45:50 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:54 INFO]: [Chunky] Task running for world. Processed: 2340 chunks (55.38%), ETA: 0:03:00, Rate: 10.5 cps, Current: -24, 11
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:45:59 INFO]: [Chunky] Task running for world. Processed: 2407 chunks (56.97%), ETA: 0:02:48, Rate: 10.8 cps, Current: 25, 19
+> > > > > > > > > > > > > >   [18:46:00 INFO]: Thread RCON Client /127.0.0.1 started
+> > > > > > > > > > >   [18:46:00 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:46:00 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:46:00 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:04 INFO]: [Chunky] Task running for world. Processed: 2454 chunks (58.08%), ETA: 0:02:44, Rate: 10.8 cps, Current: 22, -25
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:09 INFO]: [Chunky] Task running for world. Processed: 2513 chunks (59.48%), ETA: 0:02:38, Rate: 10.8 cps, Current: -25, -13
+> > >   [18:46:10 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:46:10 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:46:10 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:46:10 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:15 INFO]: [Chunky] Task running for world. Processed: 2573 chunks (60.90%), ETA: 0:02:27, Rate: 11.2 cps, Current: -3, 25
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:20 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:46:20 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:46:20 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:46:20 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:46:20 INFO]: [Chunky] Task running for world. Processed: 2634 chunks (62.34%), ETA: 0:02:17, Rate: 11.6 cps, Current: 26, -7
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:25 INFO]: [Chunky] Task running for world. Processed: 2696 chunks (63.81%), ETA: 0:02:12, Rate: 11.5 cps, Current: -17, -26
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:30 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:46:30 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:46:30 INFO]: [Chunky] Task running for world. Processed: 2756 chunks (65.23%), ETA: 0:02:08, Rate: 11.4 cps, Current: -26, 25
+> >   [18:46:30 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:46:30 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:35 INFO]: [Chunky] Task running for world. Processed: 2823 chunks (66.82%), ETA: 0:01:54, Rate: 12.2 cps, Current: 27, 13
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:40 INFO]: [Chunky] Task running for world. Processed: 2882 chunks (68.21%), ETA: 0:01:51, Rate: 12.0 cps, Current: 8, -27
+>   [18:46:40 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:46:40 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:46:40 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:46:40 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:46 INFO]: [Chunky] Task running for world. Processed: 2936 chunks (69.49%), ETA: 0:01:47, Rate: 12.0 cps, Current: -27, -8
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:51 INFO]: [Chunky] Task running for world. Processed: 3002 chunks (71.05%), ETA: 0:01:42, Rate: 11.9 cps, Current: 4, 27
+> > > > > > > > > >   [18:46:51 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:46:51 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:46:51 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [18:46:51 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:46:56 INFO]: [Chunky] Task running for world. Processed: 3060 chunks (72.43%), ETA: 0:01:41, Rate: 11.5 cps, Current: 28, -7
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:00 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:00 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:47:01 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:01 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > >   [18:47:01 INFO]: [Chunky] Task running for world. Processed: 3114 chunks (73.70%), ETA: 0:01:36, Rate: 11.6 cps, Current: -5, -28
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:06 INFO]: [Chunky] Task running for world. Processed: 3176 chunks (75.17%), ETA: 0:01:32, Rate: 11.3 cps, Current: -28, 11
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:11 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:11 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > >   [18:47:11 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:11 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > >   [18:47:11 INFO]: [Chunky] Task running for world. Processed: 3238 chunks (76.64%), ETA: 0:01:25, Rate: 11.6 cps, Current: 17, 28
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:16 INFO]: [Chunky] Task running for world. Processed: 3286 chunks (77.78%), ETA: 0:01:21, Rate: 11.5 cps, Current: 29, -8
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:21 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:21 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:47:21 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:21 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > >   [18:47:22 INFO]: [Chunky] Task running for world. Processed: 3343 chunks (79.12%), ETA: 0:01:19, Rate: 11.0 cps, Current: -7, -29
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:27 INFO]: [Chunky] Task running for world. Processed: 3410 chunks (80.71%), ETA: 0:01:12, Rate: 11.2 cps, Current: -29, 16
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:31 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:31 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:47:31 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:31 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > >   [18:47:33 INFO]: [Chunky] Task running for world. Processed: 3457 chunks (81.82%), ETA: 0:01:08, Rate: 11.2 cps, Current: 5, 29
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:38 INFO]: [Chunky] Task running for world. Processed: 3529 chunks (83.53%), ETA: 0:01:01, Rate: 11.3 cps, Current: 30, -18
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:42 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [18:47:42 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:47:42 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:42 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > >   [18:47:43 INFO]: [Chunky] Task running for world. Processed: 3586 chunks (84.88%), ETA: 0:00:59, Rate: 10.8 cps, Current: -15, -30
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:49 INFO]: [Chunky] Task running for world. Processed: 3646 chunks (86.30%), ETA: 0:00:51, Rate: 11.2 cps, Current: -30, 15
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:51 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:51 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [18:47:51 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:51 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:52 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:53 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > >   [18:47:53 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [18:47:53 INFO]: [3m[37m[Rcon: Unmarked all force loaded chunks in minecraft:overworld][0m
+>   [18:47:53 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [18:47:53 INFO]: Thread RCON Client /127.0.0.1 started
+>   [18:47:53 INFO]: [3m[37m[Rcon: Stopping the server][0m
+>   [18:47:53 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [18:47:53 INFO]: Stopping server
+>   [18:47:53 INFO]: [Chunky] Disabling Chunky v1.4.40
+>   [18:47:53 INFO]: [Chunky] Task stopped for world.
+>   [18:47:53 INFO]: [squaremap] Disabling squaremap v1.3.9
+>   [18:47:53 INFO]: [io.undertow] stopping server: Undertow - 2.3.19.Final
+>   [18:47:53 INFO]: [squaremap] Internal webserver stopped
+> [18:47:53 INFO]: Saving players
+[18:47:53 INFO]: Saving worlds
+[18:47:53 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[18:47:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[18:47:53 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[18:47:53 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world'
+[18:47:53 INFO]: [ChunkHolderManager] Saved 975 block chunks, 11 entity chunks, 0 poi chunks in world 'world' in 0.45s
+[18:47:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world'
+[18:47:53 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world'
+[18:47:53 INFO]: Saving chunks for level 'ServerLevel[world_nether]'/minecraft:the_nether
+[18:47:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[18:47:53 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[18:47:53 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_nether'
+[18:47:53 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world_nether' in 0.00s
+[18:47:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_nether'
+[18:47:53 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_nether'
+[18:47:53 INFO]: Saving chunks for level 'ServerLevel[world_the_end]'/minecraft:the_end
+[18:47:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[18:47:53 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[18:47:53 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_the_end'
+[18:47:53 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world_the_end' in 0.00s
+[18:47:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_the_end'
+[18:47:53 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_the_end'
+[18:47:53 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[18:47:53 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[18:47:53 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[18:47:53 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[18:47:53 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[18:47:53 INFO]: All RegionFile I/O tasks to complete
+[18:47:53 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[18:47:53 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
