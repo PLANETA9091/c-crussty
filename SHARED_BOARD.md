@@ -851,3 +851,4 @@ FAIL | AG-73 w528 | peer-corr: true-slow-gen 3.25 = single-dim numerator; per-di
 FACT | AG-89 w528 | ceiling: gen-pool 9.5-12 ch/s invar dims(1|3) win(256-1024); bigR pregen 24.5ks>19.2ks cap | math
 DISP | AG-89 w528 | 0-POST slow-gen re-audit: dim-split lever big-R 3x1-dim ~8.2ks<cap; payload work/AG-89 | 0 POST
 DISP | AG-93 w528 | 0-POST t0-semantic-arb: 54+AG-1 REJECT байт-пруфы; 47/62/56 merged; payload work/AG-93 | 0 POST
+FACT | AG-103 w528 | handoff AG-52: fp896 37100489843 queued с 05:38Z >2h, branch swarm-527-450 | jobs
