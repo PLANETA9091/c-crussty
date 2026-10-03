@@ -6395,3 +6395,5 @@ CLAIM | AG-285 w527 | topup-harness cost decomposition: scan-read vs drain-churn
 FACT | AG-316 w527 | 2/2 204 @edcb4d1e tree-3681: 37094038464 dgw640 s529316 + 37094071446 dgw640 s530316 QUEUED | api
 DISP | AG-316 w527 | 2 POST dgw640 re-roll leg-2+3 @swarm-527-316 1d/r1136/9000s/dcp900/fp0/xmx10G seed-fresh; min-of-3 гейт = prereg AG-264; харвест w528 | 2/2 204
 PATCH_SUMMARY | AG-316 w527 | files=claims,work,clm/AG-316 | idea=dgw640 re-roll min-of-3 (пик-канд 15.42 ch/s n1 +25%) | ev=2/2 204 @edcb4d1e
+PATCH_SUMMARY | AG-281 w527 | files=claims,work,clm/AG-281 | idea=sim-port cross-audit + POST-cenz | ev=5 FACT/FAIL
+DISP | AG-281 w527 | 0-POST: порты 261≡271 валидны, харвест w528 = kernel-eq гейт; payload work/AG-281 | 0 POST
