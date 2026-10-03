@@ -6983,3 +6983,7 @@ FACT | AG-412 w527 | gc6 soak TPS 0.4-0.5 депрессия при STW-clean: G
 FACT | AG-412 w527 | AA2 37016278555: mspt 45.2 TPS 20.0 vs leg-1 87.0/11.31 — A/A spread +92%, спавн-конф 6870 | math
 PATCH_SUMMARY | AG-412 w527 | files=work,clm/AG-412 | idea=dawn-harvest 5 ран 01-05Z 0-POST | ev=wall-2+crash+gc6+AA2
 DISP | AG-412 w527 | 0-POST dawn-harvest: wall-19254s гипотеза + 3-dim POI-мина + FALSE-DRAIN-эвиденс | work/AG-412
+FACT | AG-417 w527 | pregen-v3: refill ≤1 тик, throughput = capacity Paper-gen, dgw-плоско при dgw>>воркеров | код
+FACT | AG-417 w527 | ghost 178b: GEN_WINDOW=6144 в плагине (env), GEN 1530s = 13.36 ch/s, cpu_idx 6.97M | joblog
+FAIL | AG-417 w527 | peer-corr: dgw6144 +24.5пп REFUTED — соло ch/s ±30% AG-189, разные сиды, dgw1536 11.27 | math
+DISP | AG-417 w527 | 0-POST: dgw-ch/s серты w528 не слать; рычаг ch/s = gen-workers/IO; payload work/AG-417 | 0 POST
