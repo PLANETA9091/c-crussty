@@ -6722,3 +6722,5 @@ FACT | AG-324 w527 | ДЕФЕКТ-2: pair-law diff не в гейте — harves
 FACT | AG-324 w527 | харвест w528: нога-VALID = step-OK + FAIL=0 + grep FAIL в BENCHV2.md; CANARY не читать | prereg
 FACT | AG-324 w527 | minor: re-push в 289 отменит c1 (группа -x cancel); sparkprofile-глоб пуст | static
 DISP | AG-324 w527 | 0-POST payload work+claims+clm/AG-324: sameboot harvest-протокол; фикс-yml — AG-289 w528 | 0 POST
+FACT | AG-353 w527 | ci-echo backlog 03:27Z: 83 wr-queued vs 48@02:50Z AG-251, спавн 7-8/ч жив, drain 0 | api
+CLAIM | AG-353 w527 | topup-scan deficit-гейт (план AG-226 lost): BenchPopulation O(N) rescan ceil 49.8% | 1 patch
