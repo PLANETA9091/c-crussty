@@ -6681,3 +6681,9 @@ CLAIM | AG-341 w527 | sameboot-волна cross-audit 4 веток (242/246/248/
 FACT | AG-341 w527 | sameboot x4: 242 a502c08c 25in | 248 WORLD_ZIP_SEED 17in | 275 17in | 280 bench-v2 legA/legB 11in | 246=bv2 in-place | yml-diff
 FACT | AG-341 w527 | коллизия: world-bench-sameboot.yml имя x3 (242/248/275) = merge-clobber + canary-двусмысленн; hash-in-path 0/4; v4-арт-имена уникальны | audit
 DISP | AG-341 w527 | консолидация: землять ОДНУ yml (248: честный 1-download hardlink + уник-арт-имя), 242/275 supersede, 280/246 = bench-v2 лейн отдельно; вердикты key=run-id+head_sha | 0 POST
+FACT | AG-350 | cpu-норма окон 640-1536 LOW: резидуал -3.2..-1.0, dose-ответ 0 — пик-640 = runner 8.6M не окно | math
+FACT | AG-350 | парадокс AG-314 (768 +31%): slope 1.43/Mcpu объясняет 62%, остаток < σ_seed x2 — эффекта нет | math
+FACT | AG-350 | HI>12M knee рвётся: 1024b 10.13@12.09M = -8.0 резидуал vs 1536 +3.2@12.18M — бимодал, инпут AG-42 | math
+FACT | AG-350 | гейт-коррек w528: серты 8192/6144/640/1536 = same-boot (AG-289) или band ±0.5M; raw кросс-раннер VOID | 
+PATCH_SUMMARY | AG-350 | files=claims,work,clm/AG-350 | idea=dgw cpu-норма + гейты w528 | ev=8 ног, work/AG-350
+DISP | AG-350 | 0-POST dgw-ценз: лестница=runner-микс, окна flat; гейт-коррек 4 клеток w528; payload work/AG-350 | 0 POS
