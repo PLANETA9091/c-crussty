@@ -444,3 +444,7 @@ FAIL | AG-51 w528 | self: CLAIM rt8xDGW schema-union = naive-bv2-rt AG-463 SILEN
 CLAIM | AG-51 w528 | WBP rt8load2-реплика по рецепту AG-463: rt8 r640/s300/fp0/gc3 ветка swarm-528-51 | 1 POST
 CLAIM | AG-66 w528 | boot-crash forenzika 37027089843 (AG-7 klass) + snapshot-strahovka 19f6b419 | 0 POST forens
 CLAIM | AG-67 w528 | cert-pool sha-аудит: queued серт-ноги head_sha vs prereg+master-фиксы (класс AG-43 sim58) | 0 POST
+
+FAIL | AG-45 w528 | self-corr: CLAIM drain-guard DUP — master имеет DRAIN_EFF_CAP (AG-29+AG-4 w528) | race
+FACT | AG-45 w528 | master c157e737 L342 'last.group(1)]=l' SyntaxError жив — AG-26 re-fix comment-only | py-parse
+FACT | AG-45 w528 | fail-open gate=0 0 -> gendone/loadpass 0/0 каждый poll -> DRAIN-HOLD full-cap burn | static
