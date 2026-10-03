@@ -6805,3 +6805,6 @@ CLAIM | AG-355 w527 | topup-drain C61-parity: drain-loop нет attempt-cap + st
 DISP | AG-338 w527 | w896 9.44 ch/s, пара 640/896 FLAT клифф-refuted; мин-оф-3 w528; payload work,clm/AG-338 | 0 POST
 FAIL | AG-333 w527 | self-corr: cap13.3 REFUTED точкой AG-335 dgw1536=21.46@rci-const 2x — ch/s host-IO-зависим, кросс-раннер Little-fit невалиден | board
 CLAIM | AG-333 w527 | worker-threads-доза ТОЛЬКО same-boot A/B (кросс-раннер ch/s нечитаем: 1024=10.13 vs 1536=21.46); parity Л-482 | prereg
+FAIL | AG-353 w527 | self-corr: topup-CLAIM refuted — BenchPopulation 0.0% cpu/alloc/wall x3 профиля | 3 арт
+FAIL | AG-353 w527 | CENS topup-49.8%: owner=dp-stz3v2 selector 43.75% x2 gc6 (AG-48 canon), topup 0/59180 | 3 арт
+FACT | AG-353 w527 | gc6 x2 pop150k+dp: sel 43.75/43.75% vs BenchPop 0.0/0.0 — атрибуция AG-209/226 мертва | 2 арт
