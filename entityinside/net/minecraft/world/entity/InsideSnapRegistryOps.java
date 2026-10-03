@@ -57,6 +57,14 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
  * methods in v1 (pure java sidecar — snapCollect/snapProbe belong to the
  * CHM plane and are NOT duplicated; ERR_STRUCT disarm not applicable).
  *
+ * ITER-3 (site 1, AG-248 w530 — RESEARCH-459-P36 §2): arm() additionally
+ * flips the P36 pre-gate switch (InsideSnapOps.PREGATE) — the fail-closed
+ * fast-gate at the snapGet HEAD (per-thread warm slot, ONE long-cmp; ANY
+ * doubt => the exact serve/serve4 => vanilla continuation). The flip rides
+ * the existing rust probe chain (selfTest -> v1 -> arm), so lever off =
+ * this class never defines = InsideSnapOps stays byte-for-byte. rust-side
+ * decision core: src/inside_snap_registry.rs serve_gate (iter-2).
+ *
  * NCDFE CANON (round-3 run 35902792520, canon ×93-indy): NO indy in
  * <clinit>, NO method refs resolving nested types during class init; the
  * Snap-typed REG array (newarray resolves InsideSnapOps$Snap at first init)
@@ -90,7 +98,16 @@ public final class InsideSnapRegistryOps {
 
     public static void arm() {
         ARMED = true;
-        LOG.info("inside_snapreg: ARMED (flat registry sidecar live; serve = REG[idx] + epoch int-cmp; miss = fail-closed CHM fallback via InsideSnapOps; NO new retarget sites in scaffold v1)");
+        // iter-3 (site 1, RESEARCH-459-P36 §2): the P36 pre-gate in
+        // InsideSnapOps.snapGet goes live HERE — after the define-order chain
+        // and selfTest (rust probe-then-patch: selfTest true -> v1() -> arm()).
+        // Lever off => this class never defines => the flag stays false =>
+        // InsideSnapOps is byte-for-byte. The flag is read jointly with
+        // InsideSnapOps.ARMED, so a CHM-plane ERR_STRUCT disarm kills the
+        // pre-gate too (fail-dominant). Same-package write (safe direction:
+        // InsideSnapOps holds NO reference back to this class).
+        InsideSnapOps.PREGATE = true;
+        LOG.info("inside_snapreg: ARMED (flat registry sidecar live; serve = REG[idx] + epoch int-cmp; miss = fail-closed CHM fallback via InsideSnapOps; P36 pre-gate live in InsideSnapOps.snapGet HEAD — slot-serve fail-closed, miss => serve/serve4 => vanilla)");
     }
 
     public static boolean armed() {

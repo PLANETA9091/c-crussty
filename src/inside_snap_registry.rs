@@ -868,6 +868,50 @@ mod tests {
         assert_eq!(clamp_assign(0), 0);
     }
 
+    /// SITE-1 MIRROR (iter-3 java pre-gate in InsideSnapOps.snapGet): the
+    /// per-thread warm slot IS the EPOCHS[slot] carrier — stamp = the attach/
+    /// publish restamp point, pre-gate hit == the flat-serve verdict of the
+    /// wired decision core, slot-stale (bump without restamp) == epoch_fresh
+    /// false => full serve path. Pins the java pregEpoch long-cmp semantics
+    /// (64-bit mirror + long builtAtGen==gen anchor) against serve_gate:
+    /// miss/stale direction is fail-closed ONLY (never a wrong serve).
+    #[test]
+    fn pregate_site1_slot_epoch_mirror() {
+        let mut st = RegistryState::new();
+        let sec = 0xB1D5u64;
+        let s = st.chm_materialize(sec);
+        let idx = st.sec_register(sec);
+        assert!(idx >= 0);
+        st.attach(idx, &s); // slot stamp analog: publish ref, then epoch mirrors
+        st.publish_rebuild(sec, SnapContent::Full);
+        let gen = st.chm[&sec].gen.load(Ordering::Acquire);
+        // warm slot: pregEpoch == gen => the ONE long-cmp passes == epoch_fresh
+        assert!(st.epoch_fresh(idx, gen));
+        for packed in [0u32, 1, 4095] {
+            let (gate, flat) = st.serve_gate(idx, sec, packed);
+            assert!(flat, "warm slot must flat-serve on every packed cell");
+            assert_eq!(
+                gate,
+                st.serve_chm(sec, packed),
+                "slot-serve must be the SAME BlockState object the CHM plane serves"
+            );
+        }
+        // slot stale: secWrite bump without restamp => pre-gate misses =>
+        // full serve path (java: pregate() => null => serve/serve4 body).
+        st.sec_write_bump(sec);
+        assert!(!st.epoch_fresh(idx, st.chm[&sec].gen.load(Ordering::Acquire)));
+        for packed in [0u32, 1, 4095] {
+            let (gate, flat) = st.serve_gate(idx, sec, packed);
+            assert!(!flat, "stale slot must fall back to the full serve path");
+            assert_eq!(gate, st.serve_chm(sec, packed));
+        }
+        // re-warm (full-path fresh serve restamps the slot): flat again
+        st.publish_rebuild(sec, SnapContent::Full);
+        let (gate, flat) = st.serve_gate(idx, sec, 3);
+        assert!(flat);
+        assert_eq!(gate, st.serve_chm(sec, 3));
+    }
+
     /// EPOCH-WRAP ГВАРД (контракт P36): gen форсится к u64::MAX-2, +5
     /// бампов ПЕРЕСЕКАЮТ wrap (MAX-1, MAX, 0, 1, 2) — fresh-выводы
     /// корректны после каждого restamp; между restamp'ами gate fail-closed;
