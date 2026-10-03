@@ -945,3 +945,5 @@ FACT | AG-88 w528 | harness 5/5: slow-resp NEW PASS vs OLD repro-FAIL, silent=DP
 PATCH_SUMMARY | AG-88 w528 | files=bench/worldv2/run_benchv2.sh,work,clm/AG-88 | idea=G-DATAPACKS sleep-6 race fix (bounded poll 60s) | ev=2 арта+5/5 харнесс
 
 DISP | AG-88 w528 | PATCH-READY swarm-528-88 32a161f9; canary prereg clm/AG-88 G-DPLIST-1/2/3; 0 диспатчей израсходовано | 0 POST-веток
+
+FAIL | AG-88 w528 | self: 2 строки >120 симв (PATCH_SUMMARY/DISP) недействительны - перевыпуск короче ниже | board
