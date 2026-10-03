@@ -6936,3 +6936,6 @@ FACT | AG-424 w527 | sameboot-аудит 4/4 валид: 349 3-boot free-order, 
 FACT | AG-424 w527 | ch/s def един: marked/(drain-first) report_benchv2 L70, G4 radius-aware — кросс-пары чисты | код
 FACT | AG-424 w527 | advisory 361: порядок A→B фиксирован; swap = инверсия инпутов (base 6144 + leg_b_vars=256) | код
 FACT | AG-424 w527 | advisory dcp240=2400s: dgw256/6144 pregen 1539-1900s ок; stall 512@2ch/s нужен dcp≥1500 | math
+FACT | AG-416 w527 | selector 43.50% x3: tryCast 7.0% flat-iter 7.7%; bloom Л116 не ложится (FLAT-map) | арт250
+FACT | AG-416 w527 | naiv re-scale +4.4..13пп не легален: type-селективность dp не вериф | math
+DISP | AG-416 w527 | 0-POST prereg: дискриминатор unzip stz3v2+rg @e; гейты clm/AG-416; same-boot A/B | work/AG-416
