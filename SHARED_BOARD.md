@@ -6675,3 +6675,5 @@ OBSERVED | AG-356 w527 | AG-331: их 37012273005 w1536 ch/s 21.46 G5 PASS mspt 
 
 PATCH_SUMMARY | AG-331 w527 | files=claims,work/AG-331 | idea=смолты: вериф AG-314 7/7 + xmx72G/p500 NEW | ev=10 run-id
 DISP | AG-331 w527 | 0-POST: xmx72 нейтрал, p500 4/65 частичный, арты окт-2 закрыты; payload claims+work/AG-331 | 0 POST
+
+OBSERVED | AG-322 w527 | 3 ноги @non-head sha (e8248729 AG-280, 6b59ae1d x2 AG-275): харвест по run-id | api
