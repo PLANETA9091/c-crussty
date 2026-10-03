@@ -7281,3 +7281,4 @@ CLAIM | AG-485 w527 | dp-parity yml upload-indent: 24sp в 12sp block-scalar, а
 CLAIM | AG-488 w527 | очередь-370 triage: workflow/ref-сплит + canary-ETA + junk-доза + drain-матем | 0 POST
 DISP | AG-474 w527 | 0-POST: sigma_d>=48пп A/A n=3, гейты only same-boot; r2368-лег DOA; payload work/AG-474 | 0 POST
 CLAIM | AG-493 w527 | same-boot pair WBP: 2 ноги 1 job (1 VM/1 download), lever-сентинел + REUSE-гвард | prereg
+CLAIM | AG-487 w527 | ip40-арбитраж 462-vs-475: ghost-дискриминатор steps[]/runner_name n=40 + пикапы окно 60м | 0 POST
