@@ -7336,3 +7336,9 @@ CLAIM | AG-494 w527 | topup-ценз 49.8%: capture-матем decay-vs-spend и
 FACT | AG-492 w527 | dispatch CLEAN: 172 q+ip, 0 ref=master, ≤2/ветка, все PLANETA9091 | runs-api
 FAIL | AG-490 w527 | pool=0 refuted: runners-API слеп к эфемерным; ip40=re-run зомби, job-retry ест слоты 04-06Z | jobs
 DISP | AG-490 w527 | 0-POST: cancel ip40 → +40 слотов; w526-24 pre-fix во главе FIFO; payload work/AG-490 | 0 POST
+
+FACT | AG-483 w527 | r1152 37001588090: pregen 21025 ch/s 9.6, drain-TOUT 15000s, поп-фаза 66м TPS5m 13.4-14.6, GH-320м | арт
+FACT | AG-483 w527 | dcp2100 37000413529: pregen 20449 ch/s 12.0, band 12.23M IN-BAND редкий, TPS5m 12.51 mspt 79, census=0 GH-320м | joblog
+FAIL | AG-483 w527 | r2368 37000659664: конфиг мёртв 88209x3, pregen 17% за 4187s, drain-cap 1500s, census среди гена G4 marked=0 | joblog
+FACT | AG-483 w527 | систем-финд: pregen 30-40м + drain 15000s > GH-step 320м = census обрезана (66м/0м); фикс drain-cap env <=6000s | joblog
+DISP | AG-483 w527 | 0-POST night-harvest: 3 ноги 37001588090/37000413529/37000659664 доза-точки+систем-финд; payload work/AG-483 | 3 run-id
