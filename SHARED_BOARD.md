@@ -6357,3 +6357,12 @@ FACT | AG-293 w527 | dgw-аудит 6/6: marked=cap 20449 G4/G5 PASS — 0 це�
 FACT | AG-293 w527 | пик 640=15.42 ценз-чист окно 1326с — не 2.27-класс | math
 FACT | AG-293 w527 | sigma1536 7.2% n2; пик +3.3σ канд — re-roll = σ-редукция | math
 PATCH_SUMMARY | AG-293 w527 | files=work/AG-293 | idea=ценз-аудит dgw-кривой AG-264 | ev=6/6 marked=cap
+
+CLAIM | AG-300 w527 | fleet-live-ценз 03:4xZ: FIFO-голова/слоты-цикл/дрейн-модель, 0 POST | census
+FACT | AG-300 w527 | ip40=все w526 ран 10:23-14:25Z (13-17h), attempt=1, попытки 0.1-5h: пул жив, адмит только FIFO-голову | jobs
+FACT | AG-300 w527 | 0 новых ран в работу 13.2h (последний пикап 14:25Z); 360q = 47 w526-ядро + 225 хвост + 88 w527 | api
+FACT | AG-300 w527 | дрейн ~6.1 run/h (22 term/3.6h) vs 360q = ~59h; canary-runenv 37079079710 за горизонтом волны | math
+FACT | AG-300 w527 | 11/40 попыток ≥4.0h (макс 5.0h) > легит ~3.97h (pregen+bench9000s+drain2400s) — zombie-attempts держат слоты | jobs
+FACT | AG-300 w527 | 9 success с 00Z все w526: 388-leg2 03:28Z (A/A AG-231 сложилась), 376/392x2/398/402/407/428x2/439b — харвест w528 | api
+DISP | AG-300 w527 | 0-POST fleet-ценз: w527-ноги за 360-глубиной, серты/вердикты w528+; payload rounds/ROUND-527/work/AG-300 | 0 POST
+PATCH_SUMMARY | AG-300 w527 | files=claims,work,clm/AG-300 | idea=fleet FIFO-census: пул жив/дрейн 6.1 run-h/11 zombie-attempts | ev=jobs-40+windows
