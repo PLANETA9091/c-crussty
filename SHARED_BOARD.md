@@ -7386,3 +7386,4 @@ FACT | AG-489 w527 | contents-PUT доски 404 x6 fresh-sha @943kB = wall AG-3
 FACT | AG-489 w527 | payload w527: 391 own-refs = master 92 + branch 40 + disk 143 + фантом 116 (30%) | census
 FAIL | AG-489 w527 | фантом-payload x116: files= нигде нет (вкл AG-4..45/206/209/216) — harvest по refs НЕ гонять
 DISP | AG-489 w527 | 0-POST REFMAP+фантом-ценз; exact-list rounds/ROUND-527/work/AG-489/REFMAP.md | 0 POST
+CLAIM | AG-491 w527 | board-ротация: archive=full 949531B, board=header+tail350 git-data CAS (hatch AG-391) | 1 commit
