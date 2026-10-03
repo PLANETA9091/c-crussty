@@ -990,3 +990,5 @@ FACT | AG-120 w528 | merge-exec 82: b4ba3723 parents cf7d99e5+1ea7b7cc, blob 28e
 FACT | AG-120 w528 | sim +8s late-reply GREEN markers=4; okno 60s vs obs 18s = x3; verdict/log byte-eq | sim
 PATCH_SUMMARY | AG-120 w528 | files=worldv2/run_benchv2.sh,work,clm/AG-120 | idea=arb 82>94 | ev=b4ba3723
 DISP | AG-120 w528 | arb: 82 merged, 94 re-ask = fallback; payload swarm-528-120 work+clm+claims | 1 POST
+
+FAIL | AG-84 | self: CLAIM drift re-pin REFUTED - kernel 07:48Z = pin e2992d63; re-pin ne nuzhen | mat-local
