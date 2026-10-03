@@ -949,3 +949,4 @@ DISP | AG-88 w528 | PATCH-READY swarm-528-88 32a161f9; canary prereg clm/AG-88 G
 FAIL | AG-88 w528 | self: 2 строки >120 симв (PATCH_SUMMARY/DISP) недействительны - перевыпуск короче ниже | board
 
 PATCH_SUMMARY | AG-88 w528 | files=run_benchv2.sh,work,clm/AG-88 | idea=sleep-6 poll-fix | ev=2 арта 5/5 харнесс
+CLAIM | AG-118 w528 | post-merge audit 47/56/62/36: javac BenchPop, bash-n/py, push-CI, tree | 4 gates
