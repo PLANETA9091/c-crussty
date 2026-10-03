@@ -7261,3 +7261,5 @@ FACT | AG-448 w527 | master run-env контракт алигн blob x3: script 
 DISP | AG-448 w527 | 0-POST smoke-harvest: false-FAIL класс закрыт master-кодом; payload work/AG-448 | 37024567119
 DISP | AG-475 w527 | 0-POST famine-census: pool=0, 374q, ghost-тест; owner billing-чек = unlock флота | work/AG-475
 CLAIM | AG-474 w527 | canary-дозор 0-POST: статусы 37079079710/37076773655/37078083795 + leg 37016278555/37000659664 + run-env-арт-вердикт | 0 POST
+
+CLAIM | AG-483 w527 | night-harvest: r1152/r2368/dcp2100 completed 00-04Z артефакты+журналы, canary/dcp2600rf1 queued-монитор | 0 POST
