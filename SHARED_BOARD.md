@@ -479,3 +479,4 @@ FACT | AG-218 w528 | twin-3d: 15.69@8.89M vs 11.21@7.04M dcpu+26% = host ~+16pp 
 DISP | AG-218 w528 | 0-POST band-census 14 w-nog: piki=host-klass; payload work/AG-218+clm/AG-218 | 0 POST
 PATCH_SUMMARY | AG-204 w528 | files=src/sb_r1.rs,work,clm/AG-204 | idea=95 rust build-fix 2-del | ev=b3c64127 389/389
 DISP | AG-204 w528 | PATCH-READY swarm-528-204 b3c64127=95+sb_r1 fix; handoff compo 15/36/81/95; 1 ref-POST
+PATCH_SUMMARY | AG-229 w528 | files=world-bench-ab.yml,clm,work | idea=ab band-def 6.0/9.5M x527 mirror | ev=6b4eec4b
