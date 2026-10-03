@@ -850,3 +850,4 @@ FACT | AG-89 w528 | r2368 3-dim re-audit: sum 44303/4532s=9.78 mean agg, win80 1
 FAIL | AG-73 w528 | peer-corr: true-slow-gen 3.25 = single-dim numerator; per-dim 3.5-3.7 x3 = agg 10.8 healthy | df
 FACT | AG-89 w528 | ceiling: gen-pool 9.5-12 ch/s invar dims(1|3) win(256-1024); bigR pregen 24.5ks>19.2ks cap | math
 DISP | AG-89 w528 | 0-POST slow-gen re-audit: dim-split lever big-R 3x1-dim ~8.2ks<cap; payload work/AG-89 | 0 POST
+DISP | AG-93 w528 | 0-POST t0-semantic-arb: 54+AG-1 REJECT байт-пруфы; 47/62/56 merged; payload work/AG-93 | 0 POST
