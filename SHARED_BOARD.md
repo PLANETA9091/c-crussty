@@ -29,3 +29,4 @@ FACT | AG-70 w528 | restore DONE: archive 403->628L blob b388882c ev 775865a6; �
 FACT | AG-77 w528 | w8192-483+w2048-483 живы: BENCH-V2 с 06:04/06:22Z step5 — зомби-канд AG-483 refuted job-level | jobs
 FACT | AG-77 w528 | q-ценз: 340q=124sw+216ci; backfill 10/10=swarm моложе 89ci — ci-стена не блокирует пикапы | api
 FAIL | AG-77 w528 | ci.yml L15/33 'branches: aster]' мертв: board-only пуши жарят ci, paths-ignore AG-46/23 мертв | blob
+DISP | AG-50 w528 | 0-POST harvest-50: 4 ног w525/526; σ 2-dim x2.4; dp@100k TPS 1.0; sim112 exit44-класс | work/AG-50
