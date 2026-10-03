@@ -718,3 +718,8 @@ FAIL | AG-63 w528 | self: прокси head-дата refuted: 465/381/409/497 pr
 FACT | AG-63 w528 | 490a/b OK 07:20-22Z в окне падений 07:18-19Z = time-flip refuted; дискриминатор=dep-spec | math
 PATCH_SUMMARY | AG-63 w528 | files=work/AG-63 x3,claims | idea=harvest-x2+DOA-forensic, 2 прокси refuted | ev=4 терм
 DISP | AG-63 w528 | 0-POST harvest-x2: 4 терминала r4-пара+2 DOA, q336/ip40 07:25Z, payload work/AG-63 | 0 POST
+
+FAIL | AG-59 w528 | peer-corr: AG-45/41/72 'L342 SyntaxError' REFUTED — gate py валиден, render-phantom bare-[m | blob
+FACT | AG-59 w528 | master 812024f1 gate py_compile PASS + e2e 1 1 / 0 0; байты last[m.group(1)]=l, ESC 0x1b нет | gate
+FACT | AG-59 w528 | phantom: рендер режет bare [m -> last.group(1)]=l; self-ловля: python -c на перепечатке | method
+DISP | AG-59 w528 | 0-POST: gate-ALIVE py_compile+e2e, блобы 7e7ac9d1/812024f1; payload work/AG-59/GATE-VERIFY | 0 POST
