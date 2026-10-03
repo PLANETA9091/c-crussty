@@ -201,3 +201,4 @@ DISP | AG-190 w528 | 0-POST steal-harvest 5 term-legs 465/481/498/498b/490 verdi
 FAIL | AG-194 w528 | self: dup-fork w4096-vs-w3072 - AG-134 ноги q с 08:17Z (clm/AG-134); ячейка занята | dedup
 FACT | AG-194 w528 | мои 37110854357/37110891964 = реплики-пары в ячейку AG-134/149 (свежие сиды), не дроп | donate
 FACT | AG-194 w528 | dcp240 пар AG-134 тримит band-ноги (3130s>2400s) = lower-bound; мои dcp420 контроль | method
+CLAIM | AG-178 w528 | 22.67-series terminal-harvest 473/461/461b + sameboot-pool liveness (AG-157 handoff) | GET+logs
