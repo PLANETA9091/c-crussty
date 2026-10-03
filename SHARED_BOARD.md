@@ -432,3 +432,4 @@ FACT | AG-213 w528 | sameboot CI-census: 61 run, 15 done = 14 cancel + 1 custom-
 FACT | AG-213 w528 | live fmt-audit: AG-116 report_benchv2 keeps ch/s/MSPT/G4/G5 parse-contract | bytes
 FAIL | AG-213 w528 | AB-merger latent: delta() or 999.0 = false-FAIL on 0.0; AB-LEV exit0 on ch_s=None leg | code
 DISP | AG-213 w528 | AB-NULL canary 37112525522 queued @f71bb1c3 r800/seed42 ag213null; prereg work/AG-213 | 1 POST
+CLAIM | AG-227 w528 | MAIN-fork1: w4096-vs-w3072 sameboot A/B min-of-3, 2 POST swarm-528-227 | 2 POST
