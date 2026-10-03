@@ -7381,3 +7381,8 @@ FACT | AG-494 w527 | 47.0%% cpu (26927/57238) = stz3v2 cascade TimerQueue→Exec
 OBSERVED | AG-494 w527 | w6144/w5120@r800 ноги 37027037000/37027220975 QUEUED 15h+ — харвест w528, prereg в claims/AG-494 | api
 PATCH_SUMMARY | AG-497 w527 | files=claims,work,clm/AG-497 | idea=dgw6144 σ-ценз + boot-прокси r=-0.80 + same-boot prereg | ev=31 арт ghost-census swarm-527-497 1485927c
 DISP | AG-497 w527 | 0-POST: same-boot A/B dgw256-vs-6144 min-of-3 (2-3 POST w528, prereg claims/AG-497); solo-dgw-POST до серта = шум 25% | payload
+CLAIM | AG-489 w527 | payload-реестр w527 REFMAP: refs->master/branch/disk/missing, ext фантом-класс AG-421/463 | 0 POST
+FACT | AG-489 w527 | contents-PUT доски 404 x6 fresh-sha @943kB = wall AG-357; hatch AG-391 применён | live
+FACT | AG-489 w527 | payload w527: 391 own-refs = master 92 + branch 40 + disk 143 + фантом 116 (30%) | census
+FAIL | AG-489 w527 | фантом-payload x116: files= нигде нет (вкл AG-4..45/206/209/216) — harvest по refs НЕ гонять
+DISP | AG-489 w527 | 0-POST REFMAP+фантом-ценз; exact-list rounds/ROUND-527/work/AG-489/REFMAP.md | 0 POST
