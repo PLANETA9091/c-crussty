@@ -1,0 +1,145 @@
+# BENCH-V2-SAMEBOOT — same-boot A/B dual-bench harness (AG-361, wave-527).
+#
+# Cert-path enabler (AG-210/212/227 w527 sigma census): cross-runner A/A
+# sigma_d~12пп >> 2.3пп gate; 94/94 WBP-succ Oct2 = 94 unique runner-ids,
+# 0 reuse => n=1 cross-runner pairs UNJUDGEABLE. This stand runs TWO full
+# bench-v2 cycles SEQUENTIALLY in ONE job (1 VM, 1 runner_cpu_index, |dIdx|=0):
+# leg A = control, leg B = env-delta lever (or byte-identical A/A null canary).
+# Kernel byte-identity across legs enforced in-script by G-PURPUR pins +
+# G-KERNEL-DRIFT fail-closed guard (AG-178 w527 canon).
+# Dispatch ONLY with ref=this branch (ref=master forbidden by wave law).
+# 0-POST famine canon w527: canary first (AB_NULL=1), lever legs after drain.
+name: bench-v2-sameboot
+
+on:
+  workflow_dispatch:
+    inputs:
+      radius_blocks:
+        description: 'Forceload radius in blocks per dim (1136 = 143x143 = 20449 chunks)'
+        required: false
+        default: '1136'
+      run_seconds:
+        description: 'Sustain window seconds PER LEG (2 legs per job; 1800 default keeps 2-leg job well under the 330min cap)'
+        required: false
+        default: '1800'
+      seed:
+        description: 'Fixed world seed (identical for both legs — same-world property)'
+        required: false
+        default: '351515'
+      server_xmx:
+        description: 'Server JVM max heap'
+        required: false
+        default: '10G'
+      bench_dims:
+        description: 'Comma-separated dims to forceload (canon = all three)'
+        required: false
+        default: 'minecraft:overworld,minecraft:the_nether,minecraft:the_end'
+      cpu_band_min:
+        description: 'Min runner_cpu_index (record-only here: same-boot pairs pair with |dIdx|=0, band is cohort metadata)'
+        required: false
+        default: '10000000'
+      cpu_band_max:
+        description: 'Max runner_cpu_index (warn-mode metadata, same-boot pairing needs no band)'
+        required: false
+        default: '13500000'
+      dim_gen_window:
+        description: 'DIM_GEN_WINDOW base (leg A value; AB-LEV delta overrides in leg B via leg_b_vars)'
+        required: false
+        default: '256'
+      drain_cap_polls:
+        description: 'Drain poll cap x10s (240 = 2400s covers canon pregen)'
+        required: false
+        default: '240'
+      ab_null:
+        description: '1 = A/A null canary: leg B byte-identical leg A (harness sanity, prereg PASS<=10% WARN<=25%); 0 = lever delta'
+        required: false
+        default: '1'
+      leg_b_vars:
+        description: 'Leg-B env delta, space-separated K=V (e.g. DIM_GEN_WINDOW=6144); ignored when ab_null=1'
+        required: false
+        default: ''
+      leg_id:
+        description: 'Per-leg discriminator for the concurrency group (unique per dispatch)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bench-v2-sameboot-${{ github.ref }}-${{ inputs.seed || format('anon-{0}', github.run_id) }}-${{ inputs.radius_blocks || format('anonx-{0}', github.run_id) }}-${{ inputs.leg_id || 'x' }}
+  cancel-in-progress: true
+
+jobs:
+  sameboot:
+    runs-on: ubuntu-latest
+    # 2 legs x (boot ~2min + pregen ~28min + run_seconds + report) + setup.
+    # 330min cap fits run_seconds<=5400 (90min) per leg worst-case pregen.
+    timeout-minutes: 330
+    steps:
+      - name: Checkout (this branch)
+        uses: actions/checkout@v4
+
+      - name: Runner calibration band gate (record-only metadata, S7-96d)
+        if: inputs.cpu_band_min != '' && inputs.cpu_band_max != ''
+        run: |
+          set -euo pipefail
+          IDX=$(python3 -c '
+          import time
+          t=time.time(); x=1
+          for _ in range(6000000):
+              x=(x*1103515245+12345)&0x7fffffff
+          print(f"{6000000/(time.time()-t):.0f}")')
+          echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}] action=warn (same-boot: |dIdx|=0 by design)"
+          echo "runner_cpu_index=$IDX" >> "$GITHUB_STEP_SUMMARY"
+          echo "RUNNER_CPU_INDEX=$IDX" >> "$GITHUB_ENV"
+
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: SAME-BOOT A/B run (leg A control + leg B lever/null)
+        timeout-minutes: 320
+        env:
+          RADIUS_BLOCKS: ${{ inputs.radius_blocks || '1136' }}
+          RUN_SECONDS: ${{ inputs.run_seconds || '1800' }}
+          BENCH_SEED: ${{ inputs.seed || '351515' }}
+          SERVER_XMX: ${{ inputs.server_xmx || '10G' }}
+          BENCH_DIMS: ${{ inputs.bench_dims || 'minecraft:overworld,minecraft:the_nether,minecraft:the_end' }}
+          DIM_GEN_WINDOW: ${{ inputs.dim_gen_window || '256' }}
+          DRAIN_CAP_POLLS: ${{ inputs.drain_cap_polls || '240' }}
+          AB_NULL: ${{ inputs.ab_null || '1' }}
+          AB_LEG_B_VARS: ${{ inputs.leg_b_vars || '' }}
+        run: |
+          set -euo pipefail
+          bash bench/worldv2/run_benchv2_sameboot.sh
+
+      - name: Report gate (BENCHV2_AB.md must exist; FAIL verdict must never be green)
+        run: |
+          set -euo pipefail
+          test -s BENCHV2_AB.md || { echo "::error::BENCHV2_AB.md missing"; exit 1; }
+          test -s BENCHV2_LEG_A.md || { echo "::error::BENCHV2_LEG_A.md missing"; exit 1; }
+          test -s BENCHV2_LEG_B.md || { echo "::error::BENCHV2_LEG_B.md missing"; exit 1; }
+          if grep -q "VERDICT: FAIL" BENCHV2_AB.md; then echo "::error::SAME-BOOT AB-NULL FAIL verdict (within-VM drift swamps cert bar)"; exit 1; fi
+          cat BENCHV2_AB.md
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: ignore
+          name: benchv2-sameboot-ag361
+          path: |
+            BENCHV2_AB.md
+            BENCHV2_LEG_A.md
+            BENCHV2_LEG_B.md
+            runA/server/BENCHV2.md
+            runA/server/server-stdout.log
+            runA/server/run-env.txt
+            runA/server/*.sparkprofile
+            runB/server/BENCHV2.md
+            runB/server/server-stdout.log
+            runB/server/run-env.txt
+            runB/server/*.sparkprofile
