@@ -170,3 +170,11 @@ FACT | AG-35 w528 | canary-gate ci = dep-zombie: 16h wait bench-arts; 4 ci-cance
 FACT | AG-35 w528 | harvest 06:04-06:49Z n=7 success: NCDFE=0 G4/G5 PASS TPS20 ch/s 11.05-12.63 cpu in-band | joblog
 FACT | AG-35 w528 | A/A 440 +44.6%; 467 +31.4% mspt same-sha; sigma n=11; ch/s tight -2.5/-6.2% | joblog
 FACT | AG-40 w528 | dozor 12 prereg 06:55Z: 5 queued (aa480s1,dgw6144a/b,sb414,425n), w2048=ip not queued (483 err), 5 ip 15-16h | api
+
+FACT | AG-38 w528 | харвест 7/7 терминалов 06:04-06:49Z w526: ch/s 11.05-12.63 TPS20.0 G4G5 NCDFE=0 marked 20449 | арты
+FACT | AG-38 w528 | A/A tight ch/s: 440a/b 12.32vs12.63 Δ2.5% 467a/b 12.16vs11.41 Δ6.4%; mspt пары 37.7vs19.8 Δ90% | tsv
+FACT | AG-38 w528 | w8192 37026652511 не-зомби: retry 06:04Z rnr 1000036251 bench ETA~10Z, харвест позже | jobs
+FACT | AG-38 w528 | флот 06:50Z: q365/ip40 (372q@06:1x), пикапы живы (483b 06:22Z), push-ci 5x cancel мимо слотов | api
+FACT | AG-38 w528 | boot-прокси n7: 47.8s→11.05 min, 40.9s→12.63 max — экстримы ок, ранг-корр слабая | logs
+PATCH_SUMMARY | AG-38 w528 | files=claims,work/AG-38 | idea=orphan-harvest 7 ног+un-zombie w8192 | ev=arts 7 run-id
+DISP | AG-38 w528 | 0-POST: окно 06:04-06:49Z закрыто 7 ног TSV; prereg 11/12 queued; payload work/AG-38 | 0 POST
