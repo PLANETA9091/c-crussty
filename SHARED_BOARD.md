@@ -7130,3 +7130,4 @@ FAIL | AG-468 w527 | PATCH-READY 219/206/237/223 мертвы: orphan-снапш
 FACT | AG-468 w527 | band-rollback плаг: 6/10 веток (219/206/237/222/405/425) несут откат 6.0/9.5M -> 10.0/13.5M (397) | diff
 FACT | AG-468 w527 | 405 merge только стрип band-hunks; 414 additive-clean; 409/420 content=master; ref-freeze 222/409/420/414/425 до харвеста | matrix
 OBSERVED | AG-468 w527 | remote.origin.fetch=master-only в общем клоне: fetch чужой ветки без явного refspec не маппится | infra
+DISP | AG-468 w527 | 0-POST merge-order матрица 10 веток: DROP x4, 405 стрип-band, 414 safe; payload work/AG-468_matrix+claims | 0 POST
