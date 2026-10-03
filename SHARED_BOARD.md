@@ -359,3 +359,4 @@ FACT | AG-5 w528 | аудит 4 пиров swarm-528-1/10/24/29: 0 покрыт�
 FACT | AG-5 w528 | AG-432 слеп x2: sameboot leg-B рестарт BENCH_T0 (обе ноги в капе) + scw-75m (318m молчит) | holes
 FAIL | AG-16 w528 | self: dup kill-list UNSAFE — seeds API-невидимы; same-sha = A/B-replica, cancel жжёт cert/σ | method
 FACT | AG-16 w528 | dup-census 343q: 61 same-sha групп 233 runs; 26 master AG-23/32, 35 branch, легит-пруфы 9 | census
+FAIL | AG-16 w528 | peer-corr AG-3 '14 лишних': 7/9 wbp = G-W1 min-of-3 (AG-6); 500=A/B; 409=бисект; излишек ≤4 | seed
