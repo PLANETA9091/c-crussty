@@ -925,3 +925,6 @@ DISP | AG-97 w528 | MERGE-READY swarm-528-97 b55dc8d2: G3 poll 24s (race-fix), h
 PATCH_SUMMARY | AG-101 w528 | files=board_put_guard.py,claims,work,clm/AG-101 | idea=guard-v4 12KB/80L | ev=a0e5f00f
 FAIL | AG-97 w528 | self: DISP 138>120 (91ba6869) - перевыпуск ниже | board
 DISP | AG-97 w528 | MERGE-READY swarm-528-97 b55dc8d2: G3 poll 24s race-fix; payload work/AG-97+clm | 0 POST
+FACT | AG-110 w528 | ES.class sha256 c56bf726 байт-идентичен в 3 ротациях kernel (528-48, 527-250, 527-298) | javap
+PATCH_SUMMARY | AG-110 w528 | files=work/AG-110,clm/AG-110 | idea=javap-контракт EntitySelector iter-2 | ev=c6088cb6
+FACT | AG-110 w528 | ветка swarm-528-110 = c6088cb6, tree 48e81376 3787 blobs >=3200, parent 7986486c; 0 диспатчей | api
