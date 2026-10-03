@@ -83,10 +83,20 @@ public final class SelectorBulkOps {
      * never throws, never changes vanilla behavior). Live validation of the
      * candidates runs the EXACT vanilla predicate on live entities.
      *
+     * DESCRIPTOR NOTE (AG-221 fix, javac-gate vs kernel-pin e2992d63): the
+     * overlay-only {@code EntitySelector} class is ABSENT from the 1.21.10
+     * kernel cp (AG-63 DOA-class, AG-105 gate) — the bridge therefore takes
+     * the live selector instance as {@code Object}; the wiring-tick retarget
+     * descriptor is
+     * {@code (Ljava/lang/Object;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;}
+     * — arity/positions preserved (receiver-prepended canon, R2 pins below);
+     * type/tag re-validation in the wiring tick resolves the selector via
+     * reflection on the live instance (never a compile-time cp reference).
+     *
      * @return candidates (may be partially filled = fewer than limit) or
      *         {@code null} = caller MUST run the vanilla walk.
      */
-    public static List<? extends Entity> getEntitiesGated(EntitySelector selector,
+    public static List<? extends Entity> getEntitiesGated(Object selector,
                                                           Level level,
                                                           AABB box) {
         if (!sbArmed || sbPlaneRows <= 0 || box == null) {
@@ -201,7 +211,7 @@ public final class SelectorBulkOps {
         }
     }
 
-    public static <T> void getEntitiesGated(Level level,
+    public static <T extends Entity> void getEntitiesGated(Level level,
                                             net.minecraft.world.level.entity.EntityTypeTest<net.minecraft.world.entity.Entity, T> typeTest,
                                             net.minecraft.world.phys.AABB box,
                                             java.util.function.Predicate<? super T> predicate,
