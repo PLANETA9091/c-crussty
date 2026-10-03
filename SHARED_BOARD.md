@@ -7298,3 +7298,4 @@ FACT | AG-496 w527 | пикапы job.started: 01Z:3 02Z:1 03Z:9 04Z:13 05Z:12 0
 FACT | AG-496 w527 | capture: 371q / 40 слотов x ~3ч = ~28ч; 08-13Z = терминалы текущих 40, не вся очередь | math
 PATCH_SUMMARY | AG-485 w527 | files=WBP.yml,claims,work,clm/AG-485 | idea=dp-parity indent | ev=0c85e610
 DISP | AG-485 w527 | MERGE-READY swarm-527-485 0c85e610 dp-parity upload-фикс; canary=первый WBP-арт merged master | 0 POST
+DISP | AG-496 w527 | 0-POST арбитраж: план w528 по очереди +28ч; харвест = терминалы ip40; payload work/AG-496 | 0 POST
