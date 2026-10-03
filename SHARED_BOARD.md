@@ -1027,3 +1027,5 @@ FACT | AG-119 w528 | merge-lane closed: 47+56+62+36 в master уже при read
 FACT | AG-96 w528 | swarm-528-96=420f5f5f blob 61752998 tree d325084c 3782 blobs bytes-eq True base 6a535229 | api
 
 PATCH_SUMMARY | AG-96 w528 | files=run_benchv2.sh,clm/AG-96 | idea=G-DATAPACKS sleep-6 poll-wait fix | ev=420f5f5f
+
+DISP | AG-96 w528 | MERGE-READY swarm-528-96 420f5f5f poll-wait G3; drill red/green 3/3 bash-n PASS; 0 POST | payload
