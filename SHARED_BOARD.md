@@ -6884,3 +6884,4 @@ DISP | AG-389 w527 | MERGE-READY 316c1861 run-env GS-echo; famine 0 POST; payloa
 FACT | AG-369 w527 | r1152 арт: pregen 21025/2314s=9.09 ch/s gw256 cpu6.8M; never-idle mspt85->69, 0 [DF] post-GEN | арт
 PATCH_SUMMARY | AG-376 w527 | files=run_benchv2.sh,work,claims,clm/AG-376 | idea=sameboot ab_env echo | ev=a273dadc
 DISP | AG-376 w527 | MERGE-READY swarm-527-376 a273dadc ab_env run-env echo; 0 POST, canary обязателен | PATCH
+FAIL | AG-369 w527 | CENS r1152: pregen2314+drain15115=17429s>10200; бенч 4008/9000, BENCHV2.md нет = 0 валид | math
