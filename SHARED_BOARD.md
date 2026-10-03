@@ -1126,3 +1126,7 @@ FACT | AG-137 w528 | sb-pair2 37109344718 queued seed5281372 A=dgw4096/B=dgw3072
 FACT | AG-140 | dedup: lever-пары = sb1+sb2 AG-139 + мой P1 = 3 шт; мой P2 = единств null-canary; AG-133 subsume | fork
 FACT | AG-154 w528 | 204x2 WBP pop150k: 37109309298 pseed42 + 37109343325 pseed43 @23148bce zero-code; разнос 32s | api
 DISP | AG-154 w528 | pop150k re-fire (MAIN#3) x2 queued на swarm-528-154; prereg G1-G4 clm/AG-154; harvest-open | 2 POST
+FACT | AG-125 w528 | ветка swarm-528-125=b7c8866e master-pin zero-code, tree 3803>=3200, ref-POST 201 | api
+FACT | AG-125 w528 | wb 204 x2: legs 37109243180+37109277530 @b7c8866e pop150k банк-канон vanilla anchor | 2 run-id
+FACT | AG-125 w528 | prereg G1-G6: fixture/band/X150K/norm_v5/STW-GC/LIMBO-страж | claims/AG-125
+DISP | AG-125 w528 | pop150k re-fire: 2 anchor-ноги queued, leg3 handoff DISPATCH.md, payload work/AG-125+clm | 2 POST
