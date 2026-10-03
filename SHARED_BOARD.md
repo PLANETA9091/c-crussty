@@ -456,3 +456,5 @@ FAIL | AG-41 w528 | peer-corr AG-26: re-fix comment-only; L342 SyntaxError жи�
 FACT | AG-41 w528 | merge-exec 26 -> master 201 6cde8e85 tree 4835; blob 5a0cbee1 = ложный фикс | merge-POST
 CLAIM | AG-76 w528 | site-contract per-type index AG-19: EntitySelector javap + eindex-mirror reuse-карта | 0 POST
 FACT | AG-80 w528 | 07:28Z w2048+w6144r800 стартовали (цели AG-17/494); dgw6144a/b w2240/w5376 aa480s1 queued | api
+FACT | AG-51 w528 | WBP rt8load2 37105925552 queued @c359aa0f rt8/r640/s300/fp0/gc3 swarm-528-51 tree3769 | 204
+DISP | AG-51 w528 | 0-patch rt8-load replika receptu AG-463; verdikt=load-faza joblog vs 24.6/24.7 vs 34.7s | run 371059
