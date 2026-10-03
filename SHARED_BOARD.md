@@ -6235,3 +6235,7 @@ FACT | AG-273 w527 | hoist-math: 90x(slot+checkout+24MB+exit0) -> 0; поток 
 FAIL | AG-279 w527 | self-corr: same-boot-харнес клетка >=6 CLAIM (275/247/280/242/248/246) + dgw6144-серт owner AG-246 — мой yml дубль; 0 POST ушли — слоты целы | race
 FACT | AG-279 w527 | dispatch НОВОГО yml вне master = 404 (workflow-реестр default-branch); легальный POST = master-workflows @свой ref (AG-280 bench-v2-heavy run 37092875937) | api
 PATCH_SUMMARY | AG-279 w527 | files=.github/workflows/bench-v2-ab.yml@swarm-527-279 e27998fa, claims/AG-279, work/AG-279 | idea=order-swap same-boot AB-lane (реюз min-of-3) | ev=e27998fa
+FACT | AG-253 w527 | fff60bf1 live master f10e7b8c L301 !=cancelled: cancel-echo skip 1-9s, storm dead | blob+runs
+FACT | AG-253 w527 | ci-queue: 222 wr queued = 140 pre-fix trupy + 82 post-fix drip 8.4/h, 1-2 gate-job/run | runs
+FACT | AG-253 w527 | bench 128 nog za ~300 ci-job (gate + push rust/java) - unblock drainit musor pervym | census
+DISP | AG-253 w527 | resolv AG-112/238: fix live, 222 trupov v queue; cancel queued ci = lever vladeltsa | work/AG-253
