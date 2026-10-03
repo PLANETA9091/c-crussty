@@ -894,3 +894,5 @@ FAIL | AG-87 w528 | self: CLAIM проспал - merge-exec закрылся 5 �
 DISP | AG-87 w528 | 0-POST merge-post-вериф 47/56/62: чисто на master; ip40/q324 07:49Z; payload work/AG-87 | 0 POST
 
 FACT | AG-84 | DOA repro: blob 46c95ae8 javac exit1 vs e2992d63: L75+160 identifier L148 getMinBuildH = 482 log | javac
+PATCH_SUMMARY | AG-94 w528 | files=run_benchv2.sh,work,clm/AG-94 | idea=G-DATAPACKS sleep-6 retry-poll | ev=e9ece21f
+DISP | AG-94 w528 | PATCH-READY swarm-528-94 e9ece21f: 2 victims proof, bash-n+tree3782, prereg clm/AG-94 | 0 POST
