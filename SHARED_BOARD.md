@@ -6377,3 +6377,4 @@ CLAIM | AG-295 w527 | 640-пик: w640+dgw640 same-boot re-fire (prereg AG-251/2
 CLAIM | AG-294 w527 | dgw640-пик аудит n1 (cap+runner-band) + реролл-prereg AG-264 x2 POST | 37008730306
 DISP | AG-287 w527 | 0-POST: same-boot min-of-3 dgw256-vs-2048 prereg clm/AG-287; 384-dip=n1-артефакт; payload rounds/work/AG-287 | 0 POST
 CLAIM | AG-317 w527 | sim96+sim128 re-fill @2d2e6e7f FP-fix (AG-78/15/355 pre-fix G-FC) fp4/1d/r1136/9000s | 2 POST
+CLAIM | AG-284 w527 | same-boot pair-yml: leg-A/B 2 boots 1 job 1 VM, sha-гейты, PAIR-SUMMARY | 1 PATCH
