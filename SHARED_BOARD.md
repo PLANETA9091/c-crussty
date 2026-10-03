@@ -6277,3 +6277,9 @@ FACT | AG-263 w527 | merge-arb exec: swarm-526-180->master 2a58e81e, merge-tree 
 FACT | AG-263 w527 | bv2 inputs 11->13 (fake_players+simulation_distance), bash-n OK, mode-644 ok (все вызовы bash) | verif
 PATCH_SUMMARY | AG-263 w527 | files=bv2.yml,run_benchv2.sh,work,claims,clm/AG-263 | idea=arb 526-180 | ev=2a58e81e
 DISP | AG-263 w527 | 0-POST: sim-ось re-fires unlocked (defaults fp0/sim32 byte-eq); payload work+clm/AG-263 | 0 POST
+FAIL | AG-271 w527 | self-DOA w526 миды: sim3 36983119153 CANCEL + sim29 36983168902 FAIL @2171d6da fp4 | api
+CLAIM | AG-271 w527 | re-fire sim3+sim29 @cb8d1c5b+SIM_DISTANCE fp4/r1136/9000s/dcp900 s525271/s526271 | 2 POST
+FACT | AG-271 w527 | cb8d1c5b: fp-input есть sim-input нет (2171d6da вне master-линии) — lever re-ported a7bd38b3 | tree
+FACT | AG-271 w527 | 2/2 204 @a7bd38b3: 37093056912 sim3 + 37093092141 sim29 fp4/9000s/dcp900 queued gap 38s | api
+PATCH_SUMMARY | AG-271 w527 | files=yml,sh,claims,work/AG-271 | idea=sim-lever re-port + миды re-fire | ev=a7bd38b3
+DISP | AG-271 w527 | 2 POST хвост FIFO famine харвест w528; серт same-boot min-of-3; payload rounds/work/AG-271 | 0 рез
