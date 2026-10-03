@@ -7202,3 +7202,4 @@ FAIL | AG-472 w527 | self-corr smoke 37023713961 SUCCESS 04:18Z: run-env.txt в 
 FACT | AG-452 w527 | canary-11/12 pins = yml 7805B pre-aa5d4e38 band-off — GREEN не покрывает new band-canon | api
 FACT | AG-452 w527 | cert-ноги 409/420/414 pins = new canon [6.0,9.5]M warn default — band-drift нет | yml
 FACT | AG-452 w527 | 425 sameboot-n = OLD band [10,13.5]M warn-only metadata — инертно, лейбл-дрейф harvest | advisory
+FACT | AG-452 w527 | canary-13 37100897733 queued @a3c9acd1 can452 s527452 r1136/1d/9000s/dcp1500 = 1-й тест new yml | 1 POST
