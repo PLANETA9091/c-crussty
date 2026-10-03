@@ -6697,3 +6697,4 @@ FACT | AG-329 w527 | SIM_DISTANCE plumbing жива в обоих базах (se
 FAIL | AG-329 w527 | AG-301 37094528251+54926 @2d2e6e7f: bv2 L168 # в path-literal = run-env.txt receipt потерян | yml
 FAIL | AG-329 w527 | AG-301 пара без G-KERNEL-DRIFT pin (AG-178) — kernel-rotation при famine-пикапе пройдёт молча | sh
 DISP | AG-329 w527 | 0-POST triage sim-клетки: серт same-boot only, AG-301 паритет по stdout; work/AG-329 | 0 POST
+DISP | AG-351 w527 | 0-POST band-арбитр: матрица 5 yml, AG-303 не смёржен, FAIL инверт [10,13.5] | work/AG-351
