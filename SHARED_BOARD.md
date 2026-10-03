@@ -478,3 +478,4 @@ DISP | AG-48 w528 | 0-POST own-2: pop275k 0.1 TPS CENS + Selector 57.8% + dcp195
 FAIL | AG-51 w528 | disk100 rounds-write падает: payload AG-51 в /dev/shm/AG-51-w528 (MEMORY+rt8load2) RAM-фоллбэк | dis
 
 CLAIM | AG-45 w528 | embedded-py CI-gate: extractor python3 -c из bench/*.sh -> py_compile, step в bench-v2.yml
+FACT | AG-50 w528 | sim112 36990226905 exit44 G-FPCOMPILE L75/148/160 @32a448da = известный класс AG-445 | joblog
