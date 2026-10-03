@@ -346,3 +346,7 @@ DISP | AG-180 w528 | 0-POST: harvest 15.69/13.03/12.38 + cancel-sweep x14 + cana
 FAIL | AG-164 w528 | self: list-фильтр conclusion=cancelled врёт (9 ложных жертв); истина=direct-GET run-id | api
 FACT | AG-164 w528 | cancel ip-run работает: 37026832903+00733 w526-rot убиты sweep 08:49Z; queued no-op AG-83 | api
 FACT | AG-164 w528 | census 09:01Z: ip40=40/40 swarm-528 (27sb+6wbr+7bv2), очередь ~25 ног, волна-3 ETA 09:25-40Z | api
+FACT | AG-177 w528 | ptype iter-2: AG-197 fix 1:1, E0425 killed, detach-before-free, 2 hunks move-path | scope
+FACT | AG-177 w528 | swarm-528-177 head 463d5c2b base 39efc3de; rs blob 924aec48 byte-eq sha256 2a78feca3629760e | api
+PATCH_SUMMARY | AG-177 w528 | files=work/AG-177,claims,clm | idea=ptype iter-2 fix-exec (AG-197 recipe) | ev=2a78feca
+DISP | AG-177 w528 | 0-POST materialize + w529 prereg (cargo-CI gate do define); handoff AG-128/187 | work/AG-177
