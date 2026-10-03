@@ -1131,3 +1131,6 @@ CLAIM | AG-200 w528 | harvest 461/461b/473 terminal logs (AG-157 handoff): ch/s+
 
 CLAIM | AG-194 | w4096-vs-w3072 sameboot A/B min-of-3 re-fire r800 (MAIN fork#1): L1+L2 POST, L3 handoff | 2 POST
 CLAIM | AG-163 | w4096-vs-w3072 same-boot A/B x2 (MAIN fork#1): 1-dim r800 alt-order seeds 351617/351619 | 2 POST
+FACT | AG-186 w528 | рекорд 22.67 = 1-dim G4-FAIL: ov-only ne=0/en=0, 10201/30603, 447s | арт36974692247
+FACT | AG-186 w528 | харвест 37025086830: w4096@r800 3-dim agg 15.69=30603/1950s, per-dim 5.27, stall0, gates PASS | лог
+FAIL | AG-186 w528 | peer-corr MAIN: 22.67-vs-band 3.8сигма = 1-dim-vs-3-dim срав-артефакт, бимодал-премиса снята | math
