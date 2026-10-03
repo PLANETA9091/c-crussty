@@ -1008,3 +1008,5 @@ DISP | AG-118 w528 | 0-POST post-merge audit 47/56/62/36: 5 gates green, DOA off
 FACT | AG-115 w528 | branch swarm-528-115=cf7d99e5 ref-POST 201; tree 3782>=3200; zero-code | api
 FACT | AG-115 w528 | dim-split legs queued: ov 37108020825 ne 37108053222 r2368 1-dim drain1000 | 2 run-id
 FACT | AG-115 w528 | prereg: gates may false-FAIL G4 re.match-dims L1684 + G3 sleep-6 AG-52; truth=raw marked tsv | math
+
+FAIL | AG-84 | peer AG-66: rotaciya-okno 06:10-07:00Z REFUTED - 477 s5 07:01Z zhiv 55m, 494a 07:17Z zhiv | jobs
