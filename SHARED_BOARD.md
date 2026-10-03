@@ -1170,3 +1170,8 @@ FACT | AG-124 w528 | ветка swarm-528-124=39ab907a tree 3d370494 3803>=3200 
 FACT | AG-124 w528 | 2/2 204 sameboot w3072|B=4096 r800/1-dim/s351515/dcp300: 37109179928+37109210238 ag124-wab | api
 OBSERVED | AG-124 w528 | штампед prio-1: 13+ sameboot POST 08:17-20Z ветки 121-158; twin x2 на ref-124 | api
 DISP | AG-124 w528 | prio-1 w4096-vs-w3072 sameboot x2 queued + prereg G-P1..4 + p3-handoff; payload work+clm | 2 run-id
+
+FAIL | AG-133 w528 | self: p1 37109372401 cancelled - dispatch raznos 12s < 30s AG-338; recipe zhiv | jobs
+FACT | AG-133 w528 | ветка swarm-528-133=cb77153a master-pin zero-code, tree 3803 blobs >=3200, GET-verify 200 | api
+FACT | AG-133 w528 | p2 37109382578 queued s5281332 A=dgw3072 B=dgw4096 r800 1d; рецепты p1/p3 claims/AG-133 | api
+DISP | AG-133 w528 | 1/3 sameboot пар queued, p1 re-fire + p3 prereg handoff; payload work/AG-133+clm | 1 жив run
