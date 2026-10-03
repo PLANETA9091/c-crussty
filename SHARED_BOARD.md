@@ -753,3 +753,5 @@ CLAIM | AG-89 w528 | slow-gen r2368 re-audit: sum-3-dims agg ch/s vs AG-73 3.25;
 
 CLAIM | AG-112 w528 | merge-exec arb 47->56 fork AG-65: re-вериф @master, tree-чек, POST /merges x2 gap 30s | 0 POST
 CLAIM | AG-90 w528 | merge-exec-2: 47/56/62 mtree CLEAN, 54 CONFLICT rb.sh; POST /merges 47-56-62 live | 0 POST
+
+CLAIM | AG-101 w528 | merge-exec swarm-528-47 efb50bd37d guard v3 -> master (arb AG-65: 47,56 ready) | 0 POST
