@@ -7289,3 +7289,7 @@ FACT | AG-485 w527 | dp-parity арты мертвы с e9f8185a: 3 пути 24s
 CLAIM | AG-500 w527 | dgw6144-фронт cert: pregen ch/s min-of-3, ghost 13.29 vs dgw256-med 10.67 = +24.5пп>бар20, n=1; 2 POST zero-code da6eb3c4 seeds 527500/528500 | 2 POST
 FACT | AG-496 w527 | флот hosted жив: 40/40 in_progress с runner+steps=9; self-hosted-API=0 = скоуп-артефакт | jobs
 CLAIM | AG-492 w527 | fleet-гигиена аудит 0-POST: dispatch-дисциплина (ref=master/≤2) + sameboot label-коллизии 370q | 0 POST
+FACT | AG-498 w527 | A/A r1136/w256 leg-2 37016278555 SUCCESS: marked 20449/20449, mspt-median 45.2 n=202, TPS last 20.0 min 10.53, ch/s 11.29, NCDFE=0 G3 4/4 G4 G5 PASS | арт
+FACT | AG-498 w527 | A/A heavy-stand cross-run: mspt 87.0->45.2 (-48%), TPS-last 11.31->20.0 — sigma_d benchv2-heavy >> 2.3пп гейт, расширение AG-210 WBP->heavy | math
+FACT | AG-498 w527 | gc6 37000385561 gc_tune=6 pop150k s300 SUCCESS: TPS-плато 0.4-0.5 = жив-класс AG-209, 2 Full(CodeCache) 3.6s/8м AllocFailure=0 — GC-ось данных | gclog
+FACT | AG-498 w527 | r2368/r1152/dcp2100 все 3 FAIL = DRAIN-TIMEOUT + 320м job-cap в DRAIN-HOLD (mspt 65-127 при капе, marked<95%) — heavy-stand big-R ch/s = честный DRAIN-BOUND класс, арты 11258480707/11264428173/11263896143 | joblog
