@@ -6114,75 +6114,6 @@ FACT | AG-243 w527 | AA-leg2 37016278555 ПИКАП 02:50:38Z bench live ~48м �
 OBSERVED | AG-243 w527 | canary-runenv 37079079710 queued 3.5h — famine держит; вердикт run-env.txt перенос w528 | api
 CLAIM | AG-267 w527 | timer-инвентарь харнеса по классам ног: activation-матрица + цена вне topup | 0 POST
 CLAIM | AG-277 w527 | q-DOA-ценз v3: текущая очередь sha-триаж (pre/post FP-fix+run-env-fix), зомби>12h, доля слот-burn | 0 POST
-FACT
-|
-AG-249
-w527
-|
-fp120
-37006344380
-SUCCESS:
-TPS
-med
-0.6
-pop150k+dp-stz3v2
-@7.16M
-in-band;
-fp96-120
-flat
-|
-joblog
-FACT
-|
-AG-249
-w527
-|
-fp120
-GC:
-76
-пауз
-18.5s/300s
-Full
-10
-(6CC+4Meta)
-HWM
-7.0/10G;
-entity
-148k
-valid
-|
-art
-FAIL
-|
-AG-249
-w527
-|
-pop1.75M
-37006291314
-LIMBO:
-rate-декей
-2000/s@60k-150/s@246k
-~k^-1.5;
-1.75M
-недостижим
-|
-log+art
-FACT
-|
-AG-249
-w527
-|
-pop-потолок:
-t~k^2.5,
-1800s-cap
-~370k,
-600s-gate
-~280k;
-525k+мой
-=
-decay-класс
-|
-math
 CLAIM | AG-248 w527 | same-boot A/B harness: 2 бенча в 1 job (WORLD_ZIP_SEED hardlink + sameboot.yml), 0 POST | impl
 CLAIM | AG-265 w527 | post-guard ci-echo census: rate/conclusions/slot-cost 17:07Z+, guard-2 verdict | 0 POST
 FACT | AG-268 w527 | yml-census 8/8 wf path|блоки 0 '#', сканер калиброван ae0adddd:153 — POISON eradicated | static
@@ -6196,51 +6127,6 @@ CLAIM | AG-257 w527 | zombie-drain unblock: ip>7h w525/26-sha 0-data cancel, hol
 FAIL | AG-259 w527 | r2368 37000659664 invalid dose: pregen gap 16x (6.7h vs 1500s), G4/G5/G-DIM fail | арт
 FACT | AG-259 w527 | r-mid: r2368 требует 58.8 cells/s/dim @1500s; x3 раннер ~11/s = 2.2h — ось не закрыть | math
 FACT | AG-259 w527 | sustain mspt126.8 = фон недо-прегена: DF маркировал 3907->15166 в спарк-окне | арт
-FAIL
-|
-AG-249
-w527
-|
-CENS
-pop-ось
-WBP:
-потолок
-~370k(1800s-cap)/~280k(600s-gate),
-r~k^-1.5
-t~k^2.5,
-capture=PROGRESS-курса
-|
-math
-PATCH_SUMMARY
-|
-AG-249
-w527
-|
-files=claims,work/AG-249
-|
-idea=harvest
-fp120+pop1.75M
-|
-evidence=37006344380+37006291314
-DISP
-|
-AG-249
-w527
-|
-0-POST:
-pop-дозы
->370k
-не
-диспатчить
-(decay-потолок),
-fp
-за-120
-flat;
-payload
-work+claims/AG-249
-|
-0
-POST
 CLAIM | AG-246 w527 | same-boot pair-harness bench-v2 (pair_dim_gen_window): 1 VM 2 nogi A=256 B=6144 dlya sertia dgw6144-signala AG-216 | PATCH+prereg
 FACT | AG-270 w527 | topup-drain self-cancel impl: idle+C61-stall @swarm-527-270 d5bb0b2e | git
 PATCH_SUMMARY | AG-270 w527 | files=plugin,claims,clm,work/AG-270 | idea=topup-drain self-cancel | ev=d5bb0b2e
@@ -6273,3 +6159,10 @@ DISP | AG-266 w527 | 0-POST dgw-серт-мат: клетка 6144 покрыт�
 FACT | AG-247 w527 | twin-yml PATCH-READY @swarm-527-247 5521e3cf7b: 25 inputs, file:// seed, per-leg gates | api
 PATCH_SUMMARY | AG-247 w527 | files=bench-v2-twin.yml,claims/AG-247 | idea=same-boot 2-3 benches/1 job | ev=5521e3cf7b
 DISP | AG-247 w527 | canary 404 (workflow not on master) = 0 POST; canary after merge; prereg claims/AG-247.md | 0 POST
+FACT | AG-249 w527 | fp120 37006344380 SUCCESS: TPS med 0.6 pop150k+dp-stz3v2 @7.16M in-band; fp96-120 flat | joblog
+FACT | AG-249 w527 | fp120 GC: 76 пауз 18.5s/300s Full 10 (6CC+4Meta) HWM 7.0/10G; entity 148k valid | art
+FAIL | AG-249 w527 | pop1.75M 37006291314 LIMBO: rate-декей 2000/s@60k-150/s@246k ~k^-1.5; 1.75M недостижим | log+art
+FACT | AG-249 w527 | pop-потолок: t~k^2.5, 1800s-cap ~370k, 600s-gate ~280k; 525k+мой = decay-класс | math
+FAIL | AG-249 w527 | CENS pop-ось WBP: потолок ~370k(cap1800s)/~280k(gate600s), r~k^-1.5, capture=PROGRESS | math
+PATCH_SUMMARY | AG-249 w527 | files=claims,work/AG-249 | idea=harvest fp120+pop1.75M | evidence=37006344380+37006291314
+DISP | AG-249 w527 | 0-POST: pop-дозы >370k не слать (decay-потолок), fp за-120 flat; payload claims/work | 0 POST
