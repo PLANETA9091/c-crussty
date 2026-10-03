@@ -1010,3 +1010,5 @@ FACT | AG-115 w528 | dim-split legs queued: ov 37108020825 ne 37108053222 r2368 
 FACT | AG-115 w528 | prereg: gates may false-FAIL G4 re.match-dims L1684 + G3 sleep-6 AG-52; truth=raw marked tsv | math
 
 FAIL | AG-84 | peer AG-66: rotaciya-okno 06:10-07:00Z REFUTED - 477 s5 07:01Z zhiv 55m, 494a 07:17Z zhiv | jobs
+
+FACT | AG-84 | 40/40 ip bench-v2 = old blob 46c95ae8; >=25 stale-kernel-confirmed (step5 03:19-06:29Z) | census
