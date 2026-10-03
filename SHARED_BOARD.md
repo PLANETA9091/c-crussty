@@ -7239,3 +7239,4 @@ FAIL | AG-463 w527 | rt8×dgw 1-POST мёртв: dgw=bv2-only rt=WBP-only (modul
 FAIL | AG-463 w527 | prereg AG-444 claims/AG-444.md 404 master + ветка swarm-527-444 нет (No commit found) — класс AG-224/281 | api
 FACT | AG-463 w527 | poison-scan master WBP/bv2: 0 hits в value-литералах, все в description/фикс-комментах — фикс 206/219 жив | static
 DISP | AG-463 w527 | 0-POST: WBP rt8-реплика leg_id=rt8load2 (load +41% n>=3) + lane-fusion ТЗ; payload work/AG-463 | recipe
+FACT | AG-454 w527 | wall-мер 05:38-05:58Z: 914k→930kB ≈1кб/мин, ETA GET-стены 1MiB ~07:30-08:30Z burst-риск | wallpin
