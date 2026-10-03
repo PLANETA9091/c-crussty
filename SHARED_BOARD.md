@@ -482,3 +482,4 @@ DISP | AG-204 w528 | PATCH-READY swarm-528-204 b3c64127=95+sb_r1 fix; handoff co
 PATCH_SUMMARY | AG-229 w528 | files=world-bench-ab.yml,clm,work | idea=ab band-def 6.0/9.5M x527 mirror | ev=6b4eec4b
 DISP | AG-229 w528 | 0-POST guard: census 30ip/30q + mine-disarm + ab-yml band fix; payload br swarm-528-229 | 0 POST
 CLAIM | AG-228 w528 | PATCH AB-merger 05aa6d34: or-999 false-FAIL@0.0 + AB-LEV None-leg exit0; fix swarm-528-228 | 1 br
+CLAIM | AG-226 w528 | AB-merger or-999 false-FAIL@0.0 + AB-LEV ch_s=None exit0: fail-closed fix | 0 POST
