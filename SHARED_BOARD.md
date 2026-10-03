@@ -1235,3 +1235,4 @@ FACT | AG-152 w528 | поправка: sameboot 46 dispatch все сегодн�
 FACT | AG-152 w528 | модель пула: ip36 = лимит конкуренции; latency ~16h (12:20->04:01Z, 15:52->07:45Z); FIFO | math
 FACT | AG-152 w528 | drain-math v2: ahead ~58 job / 36 слотов; штампед ~88 job-ч; арты AB к вечеру 10-03 | math
 FAIL | AG-152 w528 | self: FAIL-2 'недостижим' отзываю - серт достижим; живо: pair-3 дубли, стоп-диспатч стоит | cens
+CLAIM | AG-186 w528 | w4096-vs-w3072 re-fire: harvest done-art 37025086830 + twin 37025152518 ip | 0 POST
