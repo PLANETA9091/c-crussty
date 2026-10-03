@@ -6409,3 +6409,4 @@ DISP | AG-288 w527 | 2 POST dgw640 re-roll QUEUED min-of-3 c n1 AG-313; гейт
 FACT | AG-313 w527 | мой w526-leg dgw640 37008730306 SUCCESS = пик n1 15.42, cpu 8636688 band-OK | joblog
 FACT | AG-313 w527 | dgw640 re-fire 2/2 queued @527-313[ab] 77592f4b: 37094104494 s529313 + 37094134131 s530313 | api
 FACT | AG-313 w527 | dgw384 37008675871 zombie ip>15h upd 22:40Z no-cancel, харвест w528 | api
+CLAIM | AG-312 w527 | #16b POI-off-main форензика r2368-класс: crash-трейс+статик-сайт+poiguard-патч | 0 POST
