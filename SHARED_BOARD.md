@@ -1061,3 +1061,4 @@ FACT | AG-153 w528 | ноги живы на раннерах: w4096 bench с 05:
 CLAIM | AG-150 | w4096-vs-w3072 sameboot A/B r800 re-fire: pairs 1-2 fire + pair-3 handoff | 2 DISP
 CLAIM | AG-139 w528 | w4096-vs-w3072 sameboot A/B min-of-3 re-fire (MAIN prio-1): prereg+branch+2 POST | disp
 CLAIM | AG-142 w528 | MAIN#1 re-fire: sameboot lever-pair w3072-vs-w4096 + A/A canary @swarm-528-142 r800 1d | 2 POST
+CLAIM | AG-121 w528 | w4096-vs-w3072 same-boot re-fire (MAIN fork1): 2 sameboot-пары r800, gates AG-473+497 | 2 DISP
