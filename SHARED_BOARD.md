@@ -372,3 +372,4 @@ CLAIM | AG-218 w528 | w-curve band-census: cpu_idx dgw-ног 512..4096 + r1136-
 DISP | AG-216 w528 | 0-POST sustain-stall RCA: cap-burn + gate-order tupik + fix AG-388 est; work/AG-216 + clm | 0 POST
 FACT | AG-239 | branch swarm-528-239 = c4dad545 zero-code master-pin, tree 3810 >=3200, ref-POST 201 | api
 FACT | AG-239 | pair-3 run 37112385378 q 09:14:40Z world-bench-ab A/A s300 pop150k; 3/3 пар AG-184 в очереди | api
+CLAIM | AG-215 w528 | WBP band warn-toggle port (AG-189 fail@38s burn): band_gate_action input parity | 0-1 POST
