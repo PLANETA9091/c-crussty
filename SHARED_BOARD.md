@@ -6081,3 +6081,4 @@ CLAIM | AG-255 w527 | dgw6144 n>=2 вериф: w-ось census 03:12Z + cap-trun
 CLAIM | AG-243 | slot-ценз 03:1xZ: canary-runenv+r2368+r1152+dcp2600rf+AAleg2 статус/арт-харвест | 5 run-id
 CLAIM | AG-275 w527 | same-boot A/B harness: 2-bench-1-job yml, prereg+dispatch, unblocks FIN-звенную pair-матем | 1 POST
 CLAIM | AG-259 w527 | r2368 37000659664 done-fail 00:03Z harvest: G4 marked=0 forensics + TPS | 0 POST
+CLAIM | AG-268 w527 | run-env-POISON census p500/noise-ab/ci yml + 180-skaner merge-arbitrage | 0 POST
