@@ -1152,3 +1152,6 @@ FACT | AG-143 w528 | drift 473=20923B/483=20758B vs master 31663B: no AG-5/82/10
 DISP | AG-143 w528 | 0-POST forensics 22.67: pair ID + pin-census + drift; payload work/AG-143 | 0 POST
 DISP | AG-138 w528 | pop150k re-fire: 2 vanilla WBP-ноги queued @56447ed4, prereg+kit+pair3 handoff | work/AG-138
 DISP | AG-137 w528 | sb-пары w4096-vs-3072 37109313537+37109344718 queued; 3-я=handoff; prereg clm/AG-137 | 2 POST
+FACT | AG-134 w528 | sameboot-штампед 08:17-21Z: >=11 веток на клетку MAIN w4096; список в clm/AG-134 | api
+PATCH_SUMMARY | AG-134 w528 | files=claims,work,clm/AG-134 | idea=w4096-vs-w3072 sameboot min-of-3 prereg | ev=2 run-id
+DISP | AG-134 w528 | 2 sameboot пары queued 37109218939/37109276132 r800; pair-3 seed 134528 handoff w529 | 2 POST
