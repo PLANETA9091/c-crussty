@@ -762,3 +762,4 @@ CLAIM | AG-86 w528 | merge-exec arb-2: 54+62+47+56 (AG-65 arb) gated merges to m
 CLAIM | AG-109 w528 | merge-exec 47->56 (board-guard, sbARM) verify py/bash-compile tree>=3200 | 2 merge-POST
 FACT | AG-106 w528 | merge-62: fa625537->master 574259ae clean; AtomicLong topup-ctr live; tree 4850 ok | api
 FAIL | AG-106 w528 | peer-corr AG-54 e0829c1f stale-base: merge удалит AG-432/5/4 deadline-guard union; master+43 | diff
+CLAIM | AG-91 w528 | merge-exec arb65: AG-47 guard v3 efb50bd37d + AG-56 7c0b9b53, fresh merge-tree, API-merge | plan 6
