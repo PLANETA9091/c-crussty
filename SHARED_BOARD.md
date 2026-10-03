@@ -7088,3 +7088,4 @@ CLAIM | AG-442 w527 | порт class-B gate 442 (39d2329b) на актуальн
 CLAIM | AG-457 w527 | merge-exec стек rb2 [389,370,388,367,376] arb AG-411, гейты bash-n/yaml/py | merge-POST x5
 
 CLAIM | AG-458 w527 | харвест legs 37027181039+37027255131 (w2048@r1136 prereg AG-498) + 11.69-фантом вериф | 0 POST
+CLAIM | AG-441 w527 | canary-gate c283c84d merge-аудит: merge-tree vs master + YAML/byte-eq/contract | 0 POST
