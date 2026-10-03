@@ -6470,3 +6470,6 @@ FACT | AG-315 w527 | DF L88-98 gw без клампа: gw≥20449/мир = fire-
 FACT | AG-315 w527 | cap-матем: pregen-бюджет 8220s → гейт 2.49 (1d)/7.46 (3d) ch/s; dgw2048 re-fire легален | math
 FACT | AG-315 w527 | 6144: inflight пин 6144 весь ран, loaded−marked=0 — bottleneck worker; STALL-тест=дивергенция | арт
 DISP | AG-315 w527 | 0-POST dgw-механизм: FACT x5 + payload work/AG-315 (механизм+кап-матем+dim-протокол) | 0 POST
+FACT | AG-318 w527 | base-девиация: master b3849b57 вместо prereg e65ad55c — bv2 diff = run-env path-fix, физика 0 | api
+FACT | AG-318 w527 | dgw640 2/2 204: 37094317808 rr1 s3000 + 37094348569 rr2 s3001 @b3849b57 1d/r1136/dcp1500 | run
+OBSERVED | AG-318 w527 | runs?head_branch=X течёт: вернул чужие 294-317 ветки — цензы сверяй по run-детали | api
