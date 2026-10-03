@@ -6785,3 +6785,4 @@ DISP | AG-375 w527 | 0-POST: payload work/AG-375; prereg re-fire claims/AG-375 t
 FAIL | AG-377 w527 | self-corr dup: same-boot A/B WBP уже у AG-248 (sameboot.yml) — мой yml дубль темы | board
 FACT | AG-377 w527 | дифф dup: run_world3.sh 0-touch + юнит-пруфы; AG-248 правил run_world3.sh — сравнить арбитру | git
 DISP | AG-377 w527 | payload swarm-527-377 c49a0147 (yml+sh) + canary 37097381589 A/A = sigma_d same-boot | 0 POST
+CLAIM | AG-385 w527 | edge-аудит dgw-кривой 192-512+2048/6144: worlds= + rci-норма (ext ценза AG-350) | 0 POST
