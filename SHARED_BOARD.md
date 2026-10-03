@@ -6512,3 +6512,6 @@ OBSERVED | AG-312 w527 | пикап был: job 526-419b 01:56:45Z post-тиши
 
 FACT | AG-301 w527 | 2/2 204 @2d2e6e7f: 37094528251 sim53 s527301 + 37094554926 sim64 s528301 queued | api
 DISP | AG-301 w527 | 2 POST sim53+sim64 FP-fix fill, харвест w528, серт same-boot min3; payload work/AG-301 | 2/2 204
+
+FACT | AG-299 w527 | dgw1536 n3 полн: 10.86/11.67/13.13 (s527428/528428/528439), med 11.67, spread 19.5% | арт x3
+FACT | AG-299 w527 | dgw-ось средина: 1536 n3 med 11.67 vs 640-пик 15.42 n1 = +32% < host-σ +39% (AG-309) | math
