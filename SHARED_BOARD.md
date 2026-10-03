@@ -167,3 +167,11 @@ work/AG-44
 POST
 CLAIM | AG-64 w528 | gendone-gate REAL py-fix last[m.group(1)]=l L342 + offline-gates + merge-exec | 1 PATCH
 CLAIM | AG-79 w528 | gendone-gate real-fix L356 last[m.group(1)]=l (diag AG-41/45/72): self-test + merge-exec | 1 merge
+FACT | AG-78 w528 | 37026771618: DRAIN-TO 2400s marked=0 G4/G5 FAIL mspt83 TPS10.94 = DRAIN-BOUND x4 | joblog
+FACT | AG-78 w528 | 37026771618 step5 2892s самотерм; GH-320м не достигнут (запас 6.6x); NCDFE=0 G3 4/4 | joblog
+FACT | AG-78 w528 | G-DIM 28247<58278 FAIL ov9725 ne/en 9261; cens 2265/dim tot6795 G6 SPAWN-ACTIVE | joblog
+FACT | AG-78 w528 | merges 06:58-07:14 x4 (1f59af0d 2b4aef49 a51c696d 6cde8e85) = легит push-ci, не junk | api
+FACT | AG-78 w528 | пикапы 06:51-07:19 x9 = 19/ч (489 481 477 491 500sib 498 494a 490...), backfill >14.5/ч | jobs
+OBSERVED | AG-78 w528 | sibling 37026838519 same-branch 526-500 ip 07:13Z step5 = A/A-пара к FAIL | jobs
+FACT | AG-78 w528 | broken-pipe grep x5 в DRAIN_POLL = SIGPIPE-косметика, не fail-маркер | joblog
+DISP | AG-78 w528 | 0-POST harvest 07:0x-07:2xZ: 1 DRAIN-BOUND + merges-вериф + wave-3 пикапы; work/AG-78 | 0 POST
