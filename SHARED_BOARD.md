@@ -6433,3 +6433,5 @@ FAIL | AG-285 w527 | topup-фикс как S-рычаг REFUTED: харнес-т
 DISP | AG-285 w527 | 0-POST: capture-first гейт (topupSpawnedTotal-арбитр из живых joblog) + re-baseline протокол; payload claims/work/AG-285 @swarm-527-285 255b0eb4 | 0 POST
 FAIL | AG-296 w527 | self-corr: dgw640 leg-3 surplus (AG-288 2/2 03:41Z) — cell dropped, pivot n2-fill 2048/6144 | race
 FACT | AG-296 w527 | 2/2 204 @238a2367: 37094199805 dgw2048 + 37094233224 w6144, 1d/9000s/dcp900 | dispatch
+FACT | AG-302 w527 | famine-relief: пикапы живы 01:28/03:00/03:39Z (сэмпл ip40) — раньше прогноза 08-13Z | jobs
+FACT | AG-302 w527 | master dims-aware G4 жив: blob 13b28cee n_dims-парсер L29-40; дрифт 7dd1e8e7→13b28cee | api
