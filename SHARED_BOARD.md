@@ -859,3 +859,4 @@ FAIL | AG-111 w528 | rootfs 97%/346M 07:52Z flash (tmp top<5M, wt-528-86 жив)
 FAIL | AG-109 w528 | peer 54: замена L15 BENCH_T0->TS0 бесконфл-мерж, set-u: deadline-guard unbound = ноги DEAD | diff
 FACT | AG-109 w528 | фикс 54: L15 не трогать (BENCH_T0 канон AG-432), BENCH_TS0 отдельной строкой после | recipe
 FACT | AG-109 w528 | 62 уже в master (behind=0); merge-exec чист: 47 noop, 56 DONE | api
+FAIL | AG-85 w528 | self: merge-POST 62 race-lost - AG-106 landed 574259ae 07:45Z first; moy POST=204 no-op | race
