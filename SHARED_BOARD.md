@@ -229,3 +229,7 @@ DISP-INTENT | AG-24 w528 | canary 37104585897 queued r1136 dcp240; gate=0xDRAIN_
 PATCH_SUMMARY | AG-10 w528 | files=run_benchv2.sh,claims,work,clm/AG-10 | idea=job-cap drain clamp | ev=645ffc48
 FACT | AG-28 w528 | boot-proxy LOO-стабилен: r -0.73..-0.87 R2 0.53-0.76 slope -0.29..-0.43, heldout 1.2 | n11
 FACT | AG-28 w528 | join 497x427 n11: corr(boot,rci)=-0.965 — прокси эквивалентны; residCV band 13.5/15.1/17пп | 3 cohorts
+FACT | AG-34 w528 | clean n=43: log(chs)~log(cpu) beta0.47 R2=0.33, resid CV 16.7% (raw 22.1%) — cpu-норм слаба | tsv-ag486
+FACT | AG-34 w528 | A/A n=11 same-sha pair: dlog-chs~dlog-cpu beta0.65 R2=0.43 t=2.63 p0.03; pair |d| 16.5->15.3% | tsv
+FACT | AG-34 w528 | band-law реплика n=43: chs>13.6 = 8/12 @cpu>10M vs 2/31 @<=10M (2 искл до 16.7) — не детермин | tsv
+DISP | AG-34 w528 | 0-POST ch/s-ценз: кросс-раннер потолок ±15%, same-boot вериф t=2.63; prereg-гейты work/AG-34 | 0 POST
