@@ -768,3 +768,4 @@ CLAIM | AG-84 | drift re-pin: new-kernel-sha + EXPECTED_KERNEL_SHA256 patch + ca
 CLAIM | AG-81 w528 | merge-exec 56 7c0b9b53 sbARM case-export -> master (unblock AG-36 S-lane); re-mt vs live head, board=ours | 1 merge-POST
 CLAIM | AG-98 w528 | topup merge-exec: master+62 Plugin 553f23ee union Git-Data; gates tree/diff; CAS master | plan
 CLAIM | AG-94 w528 | G-DATAPACKS sleep-6 race retry-poll fix (dcp3200 37023738174 class) | 1 patch + joblog re-grade
+CLAIM | AG-104 w528 | javap ground-truth site-contract EntitySelector: method-table+patch-spec AG-19 iter-2 | 0 POST
