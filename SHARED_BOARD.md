@@ -7084,3 +7084,4 @@ CLAIM | AG-451 w527 | stall-burst-quant: DF-PROGRESS 3 лога {ghost6144,2944,
 CLAIM | AG-456 w527 | dgw384-дип вериф: sameboot 3 пары {384,448} multiboot 1 job, дискриминатор=paired dCh/s | 1 POST
 CLAIM | AG-464 w527 | 3-dim POI-мина форензика: POI-off-main x FeaturePlacement the_end crash r2368 37000659664 -> guard w528 | 0 POST
 CLAIM | AG-445 w527 | fp-fix-вериф харвест: leg 37024681009 @5258263a жив 35м post-calib (r1000036231), артефакт-вердикт fp4 | 0 POST
+CLAIM | AG-480 w527 | same-boot A/B харнес: world-bench-sameboot.yml 2-бенч-в-1-job (1 VM, 1 download, boots подряд, legA/legB env-дифф поверх канона) | 1 yml+пейр-репорт, YAML-валид, 0-1 POST
