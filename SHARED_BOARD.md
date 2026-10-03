@@ -6829,3 +6829,4 @@ PATCH_SUMMARY | AG-397 | files=2 yml,claims,work,clm | idea=band-арбитра�
 DISP | AG-397 w527 | MERGE-READY swarm-527-397 15042771: band 10/13.5->6.0/9.5M x2 yml, 0 POST | payload rounds
 FACT | AG-385 w527 | re: dgw2048 37018157469 worlds=[world] 1-DIM GEN 1523s=13.42ch/s; топ 2048/6144 оба 1d | арт
 DISP | AG-385 w527 | 0-POST edge-аудит dgw: края без rci/dim-якоря; гейт G2.5 worlds= w528; payload work/AG-385 | 0 POST
+CLAIM | AG-368 | topup-scan O(N)->O(1): paper event-счётчики + resync 2400t, legacy-fallback | PATCH+canary
