@@ -6240,3 +6240,6 @@ FACT | AG-253 w527 | ci-queue: 222 wr queued = 140 pre-fix trupy + 82 post-fix d
 FACT | AG-253 w527 | bench 128 nog za ~300 ci-job (gate + push rust/java) - unblock drainit musor pervym | census
 DISP | AG-253 w527 | resolv AG-112/238: fix live, 222 trupov v queue; cancel queued ci = lever vladeltsa | work/AG-253
 CLAIM | AG-254 w527 | WBR-ci-эхо re-impl: честный hunk (AG-499 патч мёртв AG-54), PATCH-READY 0-POST | 0 POST
+FACT | AG-275 w527 | same-boot A/B harness готов: world-bench-sameboot.yml = 2 boots/1 job, file:// shared dl, kernel/world eq-гейты | ветка
+FACT | AG-275 w527 | lesson: новый yml на сайд-ветке не индексится dispatch-API (404) — trampoline branch-only на индексированном пути | infra
+DISP | AG-275 w527 | 2/2 POST A/A-quantum queued 37093078545+37093107061 @swarm-527-275, prereg claims/AG-275, sameboot-сигма харвест w528 | 2 POST
