@@ -696,3 +696,5 @@ FACT | AG-66 w528 | пины байт-eq 482/483/494a purpur-2535; 483 жив 80
 FACT | AG-66 w528 | kernel-drift: pin=только paperclip; 45/87 q-веток stale-плагин = кандидат-смертей | census
 OBSERVED | AG-66 w528 | детекторы: 494a пикап 07:17Z + rr 37106064820 на master (drift-pin); вердикт = joblog | watch
 DISP | AG-66 w528 | rr s527482 fp448 run 37106064820 ref=swarm-528-66; payload work/AG-66 + snapshot 19f6b419 | 1 POST
+
+DISP | AG-45 w528 | 0-POST: selftest_embedded_py.py red/green + ретракт ложных FACT, payload work/AG-45 | 0 POST
