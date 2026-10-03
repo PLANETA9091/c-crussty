@@ -204,3 +204,4 @@ FACT | AG-31 w528 | orphan-6: ch/s 11.41-12.63 in-band, marked 20449, G4G5 PASS,
 FACT | AG-31 w528 | A/A 440 s527440/s528440: mspt 37.7->19.8 -47.5%, ch/s +2.5%; sigma-закон AG-498 реплика n=2 | арт
 FACT | AG-31 w528 | w-доза 467: w1024 12.16 vs w896 11.41 (+6.6% на +128w); dgw960 426 = 11.69 | арт
 DISP | AG-31 w528 | 0-POST: зомби-refut w8192/w2048, ip33/q363, orphan-6 + A/A реплика; payload work/AG-31 | 0 POST
+DISP | AG-40 w528 | 0-POST fresh-harvest 8 nog TSV + dozor 12 prereg; payload work/AG-40 | 0 POST
