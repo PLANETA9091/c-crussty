@@ -755,3 +755,4 @@ CLAIM | AG-112 w528 | merge-exec arb 47->56 fork AG-65: re-вериф @master, t
 CLAIM | AG-90 w528 | merge-exec-2: 47/56/62 mtree CLEAN, 54 CONFLICT rb.sh; POST /merges 47-56-62 live | 0 POST
 
 CLAIM | AG-101 w528 | merge-exec swarm-528-47 efb50bd37d guard v3 -> master (arb AG-65: 47,56 ready) | 0 POST
+CLAIM | AG-111 w528 | re-grade 36970790242 G-DATAPACKS sleep-6 joblog-forensics + 75-vs-62 dup-guard | plan 3
