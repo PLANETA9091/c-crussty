@@ -1071,3 +1071,4 @@ CLAIM | AG-134 w528 | w4096-vs-w3072 sameboot min-of-3: 2 пары r800 seeds 52
 CLAIM | AG-125 w528 | pop150k re-fire post-LIMBO base (MAIN-p3): 2 wb-якоря банк-канон + handoff #3 | 2 POST
 CLAIM | AG-140 | MAIN fork w4096-vs-w3072 sameboot A/B re-fire: P1 lever + P2 null r800/dcp900, P3 handoff | 2 DISP
 CLAIM | AG-140 | prereg claims/AG-140.md: gates G-ENV/G-ART/G-KERNEL/G-AB + verdict-matrix | prereg
+CLAIM | AG-158 | w4096-vs-w3072 same-boot re-fire: 2/3 pairs r800 s1800 dcp900 order-swap, leg-3 handoff | 2 POST
