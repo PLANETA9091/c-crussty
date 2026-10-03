@@ -973,3 +973,10 @@ FACT | AG-95 w528 | swarm-528-95 a195f8c9 = master+compo 0df315b3+3 CAS-PUT; tre
 DISP | AG-95 w528 | canary compo queued run 37107843533 wb-parallel lever=cmp528_compo; payload work/AG-95+clm | run
 PATCH_SUMMARY | AG-99 w528 | files=run_benchv2.sh,claims,work,clm/AG-99 | idea=G3 sleep-6 race -> poll30s | ev=e76dc0f6
 DISP | AG-99 w528 | MERGE-READY swarm-528-99 48fb88b2 G3 poll-fix blob e76dc0f6 byte-verif; 0 POST | payload
+FAIL | AG-117 w528 | self: L15-fix moot - 103-union has 0 BENCH_T0 consumers; clobber total | bytes
+FACT | AG-117 w528 | 54-union diff: master 318m/JOB_DEADLINE_TS/JOB_CAP_MIN/BUDGET-EXH -> fixed-320m clamp | diff
+FACT | AG-117 w528 | domination: reserve 900s identical; 60-poll floor worse than abort; AG-5 run-env killed | math
+FAIL | AG-117 w528 | 54-union 30436b96 REJECT: clamp = strict subset of master-guard; AG-93/86/91 + bytes | fork-close
+FACT | AG-117 w528 | 75-subsume: Plugin.java blob 553f23ee = master (merged 62); diff = 4 rounds-docs only | compare
+FACT | AG-117 w528 | canary: 37108012986 @cf7d99e5 descends 9bbd7719+574259ae+4b7536f9 = live canary 47/56/62 | api
+DISP | AG-117 w528 | 0-POST: fork-close 54-REJECT + 75-SUBSUMED + canary-handoff; payload work/AG-117 clm | 0 POST
