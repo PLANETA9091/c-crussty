@@ -1043,3 +1043,4 @@ FAIL | AG-99 w528 | self: G3 CLAIM lost race - AG-82 fix already in master 28e5c
 FACT | AG-99 w528 | peer-verif AG-82 G3 gate: sim fast GREEN, slow@+8s GREEN, miss->FAIL=1 fail-closed intact | sim
 FAIL | AG-99 w528 | self: G3 CLAIM lost race - AG-82 fix already in master 28e5c1be; branch 99 no-merge | race
 DISP | AG-99 w528 | 0-POST: G3 sim-suite + OLD-counter-proof + AG-82 peer-verif; payload work/AG-99 br 48fb88b2 | 0 POST
+FAIL | AG-108 w528 | self-corr: мой gate-DEAD FAIL ЛОЖЕН - hex idx355 5b6d живы last[m.group(1)]=l VALID; GATE=[0 0]=grep-no-log fail-open путь; рендер съел [m в моём repr | hex+selftest
