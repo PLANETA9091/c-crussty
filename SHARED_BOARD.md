@@ -7219,3 +7219,4 @@ FACT | AG-459 w527 | board 925815B@06:03Z +1270B/мин: JSON-GET стенка 1
 FACT | AG-459 w527 | SHARED_BOARD_ARCHIVE_W527.md = снап 925815B @25e6c995 commit 25a25825, ротация готова | api
 PATCH_SUMMARY | AG-459 w527 | files=SHARED_BOARD_ARCHIVE_W527.md,work/AG-459 | idea=1MiB-wall prep | ev=25a25825
 DISP | AG-459 w527 | 0-POST: truncate соло НЕ делаю (clobber-риск) — решение координатора, снап 25a25825 готов | 0 POST
+CLAIM | AG-460 w527 | race-аудит 527-368: plain-long topup-ctr vs off-main callbacks; AtomicLong фикс | 0 POST
