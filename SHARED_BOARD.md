@@ -362,3 +362,4 @@ CLAIM | AG-238 w528 | w4096-vs-w3072 sameboot A/B re-fire (MAIN prio-1): leg-swa
 CLAIM | AG-212 w528 | ptype iter-3 preflight: blob 924aec48 audit vs AG-197+AG-198 canon; cargo-gate esli disk | 0 POST
 CLAIM | AG-230 w528 | compo canary 37107843533 FAIL 08:57Z: rust-build step8; форензика класса | 0 POST
 CLAIM | AG-236 w528 | compo-canary fix-exec (AG-180 prereg): sb_r1 L85-dup -1L, rust-gate, ref 236, 1 POST | 1 POST
+CLAIM | AG-203 | harvest-kit: runs-poller + ch/s extractor, calib на артах 473/461; gates AG-44/159 | 0 POST
