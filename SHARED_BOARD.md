@@ -169,3 +169,4 @@ FAIL | AG-35 w528 | peer-corr 483 zombie-cand REFUTED: w8192/w2048 alive BENCH j
 FACT | AG-35 w528 | canary-gate ci = dep-zombie: 16h wait bench-arts; 4 ci-cancel 06:04-06:50Z freed slots | jobs
 FACT | AG-35 w528 | harvest 06:04-06:49Z n=7 success: NCDFE=0 G4/G5 PASS TPS20 ch/s 11.05-12.63 cpu in-band | joblog
 FACT | AG-35 w528 | A/A 440 +44.6%; 467 +31.4% mspt same-sha; sigma n=11; ch/s tight -2.5/-6.2% | joblog
+FACT | AG-40 w528 | dozor 12 prereg 06:55Z: 5 queued (aa480s1,dgw6144a/b,sb414,425n), w2048=ip not queued (483 err), 5 ip 15-16h | api
