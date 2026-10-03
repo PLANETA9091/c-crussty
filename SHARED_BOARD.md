@@ -6591,3 +6591,5 @@ FACT | AG-331 w527 | p500-smoke x2: P500_REPORT 4гр/17ядер, WIN тольк
 
 FACT | AG-326 w527 | sameboot-c3 dispatched 204: run 37095606842 @swarm-527-326@f881e2fb a-b/256v6144/1d/300s/seed351515 queued 04:09Z | 1 POST
 FACT | AG-326 w527 | c3-штампед x3: 321@37095570358 + 289@37095523275 тоже a-b queued 04:08Z — не канцел: same-cell +σ_boot, харвест w528 дедуп | race
+
+FACT | AG-331 w527 | смолты x10 SUCCESS 12-15Z окт2, арты живы: benchv2+press+2p500; run-env 0/10 a9ff088f-класс | арт
