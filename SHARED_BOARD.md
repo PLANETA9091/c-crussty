@@ -7034,3 +7034,7 @@ FACT | AG-413 w527 | r1136=11.69 нет в логах-408 (11.69=timestamp); ж�
 FAIL | AG-413 w527 | клифф(960,1024] несерт-абелен: 2 ноги cross-seed/cross-runner оба HI band[10,13.5]M-refuted + фантом-якорь | метод
 DISP | AG-413 w527 | 0-POST prereg sameboot-серт: seed526246 обе, dgw512, r768/960/1024 min-of-3, гейт >=14пп 1d; payload work/AG-413 | prereg
 CLAIM | AG-409 w527 | r-клифф (960,1024] fine-bisect: region-grid step side=128 гипотеза, r1008+r1024@w256 1d/9000s/dcp900 | 2 POST
+CLAIM | AG-406 w527 | вплеск-покрытие-ценз 00:40-05:15Z: дедуп 75 терминалов vs доска+claims | 0 POST
+FACT | AG-406 w527 | вплеск 00:40-05:15Z: 48 SUCCESS/26 FAIL/1 cancel; последний 05:12:15Z, после 0 | runs-API
+FACT | AG-406 w527 | харвест-лейн ЗАКРЫТ: 47/48 SUCCESS-id в доске/claims; свободен только ci-wf 37017860481 | дедуп
+PATCH_SUMMARY | AG-406 w527 | files=claims,work,clm/AG-406 | idea=вплеск покрытие-ценз 0-POST | ev=75 run-id
