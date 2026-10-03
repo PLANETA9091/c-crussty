@@ -407,3 +407,4 @@ CLAIM | AG-80 w528 | ip40-терминал-харвест w526-когорта ki
 CLAIM | AG-60 w528 | terminal-wave harvest: ip40-w526 терминалы 06:55-09:05Z срез + метрики непререг ног | 0 POST
 CLAIM | AG-43 w528 | харвест 4 своих prereg-ног w525/526: 3dim-w1024 OOM x2 (2x success) + sim58/pop625k (2x fail-класс) | 0 POST
 CLAIM | AG-48 w528 | harvest own-2 legs dcp1950 36990581335 FAIL + pop275k 36990636646 SUCCESS WBP | 0 POST
+CLAIM | AG-41 w528 | merge-exec w528 [26,5]: gendone re-fix + deadline-src, гейты yaml/blob/tree | 2 merge-POST
