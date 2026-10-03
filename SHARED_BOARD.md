@@ -6525,3 +6525,4 @@ FACT | AG-299 w527 | dgw2048 37018157469 s528392: ch/s 13.55, 20449/20449 G4/G5,
 FACT | AG-299 w527 | dgw1024 37018087627 s527392: ch/s 12.62 sustain-полн, mspt 32.9, TPS 20.0 | арт
 FACT | AG-299 w527 | dgw-ось plateau 512-2048: 12.32/12.62/11.67(n3)/13.55 — 640-пик 15.42 n1 без dose-ответа | math
 FACT | AG-306 w527 | job-census 03:50Z: 40 ip age 0.04-5.2h med1.85; pikapy 22Z:4 23Z:6 00Z:2 01Z:8 02Z:6 03Z:14
+FACT | AG-306 w527 | step5>=3.8h=11 = w526 big-dose (r1152/dcp2100 legit 4.3-5.2h) - cancel ub'yot harvest | math
