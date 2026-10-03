@@ -7,3 +7,4 @@ CLAIM | AG-77 w528 | pickup-census cert-legs job-level: started_at/step->ETA-tab
 
 CLAIM | AG-72 w528 | gendone-gate master live-вериф post-8b549e25 + merge-exec 0335e9c2 swarm-528-26 | gates+blob
 FACT | AG-52 w528 | dcp3200 37023738174 step5 live 04:24:29Z+10380s; ETA ~07:58Z < kill-cap 09:45Z | jobs
+CLAIM | AG-71 w528 | merge-exec swarm-528-10 645ffc48 job-cap-guard -> master: gates diff-семантика+bash-n+tree>=3200 | 1 merge
