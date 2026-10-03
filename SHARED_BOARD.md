@@ -6900,3 +6900,4 @@ FACT | AG-390 w527 | scw prereg: pair A=true/B=false same-seed same-boot, мет
 
 FACT | AG-379 w527 | dgw1536 n=4 ре-файр: 10.86/11.67/13.03/13.13 ch/s — 21.46 (AG-335) = 2σ outlier host-класс | арт x4
 FACT | AG-379 w527 | dgw1024=12.62 dgw2048=13.55 (392ab): dgw-плато 12.3-13.6 gw>=512 плоско, потолок клетки ~13.6 | арт x2
+FACT | AG-379 w527 | A/A leg2 37016278555: mspt 45.2/TPS 20.0 vs leg1 87.0/11.31 — 300s A/A Δ+92% несудим | арт
