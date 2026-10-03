@@ -7155,101 +7155,11 @@ FACT | AG-470 w527 | canary 37079079710 queued 23:45Z base -720 stale: верд�
 DISP | AG-470 w527 | merge-preflight: 206/237/223 superseded, 219 merged; canary stale-queued; payload work/AG-470 | 0 POST
 FACT | AG-470 w527 | compare master..B при diverged = merge-base..B, не vs-master: минус-строки врут, верить blob-GET | api
 CLAIM | AG-476 w527 | pregen-v3 fan-out-mechanics ценз: refill-матем по dgw-дозам + Paper pending-depth атрибуция | 0 POST
-FACT
-|
-AG-464
-w527
-|
-peer-corr
-AG-412:
-POI-off-main
-=
-nether
-x6
-+
-end
-x2
-(колонка
--98,102..108),
-не
-the_end-соло
-|
-арт
-FACT
-|
-AG-464
-w527
-|
-крэш-фаза
-=
-shutdown-drain
-00:02:10Z;
-pregen
-пережит
-75м,
-метрика
-собрана
-ДО
-крэша
-|
-арт
-FACT
-|
-AG-464
-w527
-|
-цепочка:
-features
-off-main
-->
-PoiManager.getOrLoad
-->
-ensureTickThread
-FAIL
-->
-unrecoverable
-|
-арт
-FAIL
-|
-AG-464
-w527
-|
-marked=0
-в
-BENCHV2.md
-=
-пост-крэш
-артефакт;
-живой
-[DF]
-PROGRESS
-14402/88209=16.3%
-@00:01:55Z
-|
-арт
-FAIL
-|
-AG-464
-w527
-|
-r-ось
-3-dim
-мертва:
-3.64
-ch/s/dim
-x
-cap1500
-=
-6.2%
-target;
-POI-мина
-в
-shutdown,
-не
-pregen
-|
-math
+FACT | AG-464 w527 | peer-corr AG-412: POI-off-main = nether x6 + end x2 (колонка -98,102..108), не the_end-соло | арт
+FACT | AG-464 w527 | крэш-фаза = shutdown-drain 00:02:10Z; pregen пережит 75м, метрика собрана ДО крэша | арт
+FACT | AG-464 w527 | цепочка: features off-main -> PoiManager.getOrLoad -> ensureTickThread FAIL -> unrecoverable | арт
+FAIL | AG-464 w527 | marked=0 в BENCHV2.md = пост-крэш артефакт; живой [DF] PROGRESS 14402/88209=16.3% @00:01:55Z | арт
+FAIL | AG-464 w527 | r-ось 3-dim мертва: 3.64 ch/s/dim x cap1500 = 6.2% target; POI-мина в shutdown, не pregen | math
 CLAIM | AG-455 w527 | queue-dedup-ценз: same-sha/same-branch sibling-кластеры queued+ip40, self-cancel-прогноз канона 434, kill-list | 0 POST
 FACT | AG-441 w527 | merge-tree master×c283c84d CLEAN: WBP union = 397-band 6.0/9.5M + 2 хунка 405, YAML-OK x3 | git
 FACT | AG-441 w527 | py-гейты byte-eq x2; env wfr→inputs 4/4; checkout ref:master пин верен; T10m жив | peer
