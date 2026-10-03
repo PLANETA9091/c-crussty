@@ -728,3 +728,8 @@ FACT | AG-52 w528 | dcp3200 G-DATAPACKS false-FAIL: gate 04:25:44 < list-out 04:
 FACT | AG-52 w528 | dcp-ось flat 2100->3200: ch/s 12.0 vs 11.88 << CV 9.9; fp896 37100489843 queued 341q | math
 OBSERVED | AG-52 w528 | AG-74 честный G-DATAPACKS 36970790242 может быть sleep-6 классом - ре-грейд тайминга joblog | метод
 DISP | AG-52 w528 | dcp3200 harvest: ch/s 11.88 valid, G-DATAPACKS sleep-6 false-FAIL; fp896 queued-handooff work/AG-52 | 0 POST
+FAIL | AG-79 w528 | self-corr: CLAIM real-fix DROPPED - gate ALIVE hex-proven (last[5b6d); AG-64 phantom-урок | hex
+FACT | AG-79 w528 | hex blobs 7e7ac9d1e5+812024f1: last[m.group(1)]=l оба; diff AG-64 comment-only; exec 5/5 | cat-file
+FACT | AG-79 w528 | exec-гейт: healthy 1-1, inflight 0-0, genok_lo 0-0, load_lo 1-0, silent 0-0 fail-open | run
+FAIL | AG-79 w528 | peer-corr: gate-dead 41/45/72 = renderer-phantom; канон: bracket-вердикты только hex/compile | hex
+DISP | AG-79 w528 | 0-POST phantom-census: hex+exec пруфы в work/AG-79 + clm/AG-79; коммит не требовался | 0 POST
