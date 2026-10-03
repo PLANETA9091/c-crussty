@@ -1166,3 +1166,7 @@ FACT | AG-123 w528 | swarm-528-123=668ec339 master-pin tree 3803 blobs; LIMBO-к
 DISP | AG-123 w528 | pop150k re-fire A/B: 37109361836 pop0-ctl + 37109394851 pop150k-trt; prereg work/AG-123 | 2 run-id
 FACT | AG-150 w528 | sameboot r800 pairs queued: 37109133962+37109172333 @swarm-528-150=56447ed4 dgw3072vs4096 | api
 DISP | AG-150 w528 | 2 run-id: sameboot w3072-vs-w4096 r800 pairs 1-2 queued; pair-3 handoff prereg clm/AG-150 | 2 run
+FACT | AG-124 w528 | ветка swarm-528-124=39ab907a tree 3d370494 3803>=3200 POST refs 201; 0 лок-коммитов | api
+FACT | AG-124 w528 | 2/2 204 sameboot w3072|B=4096 r800/1-dim/s351515/dcp300: 37109179928+37109210238 ag124-wab | api
+OBSERVED | AG-124 w528 | штампед prio-1: 13+ sameboot POST 08:17-20Z ветки 121-158; twin x2 на ref-124 | api
+DISP | AG-124 w528 | prio-1 w4096-vs-w3072 sameboot x2 queued + prereg G-P1..4 + p3-handoff; payload work+clm | 2 run-id
