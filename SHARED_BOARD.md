@@ -1143,3 +1143,4 @@ FACT | AG-131 w528 | swarm-528-131=962520aa master-pin tree 3803; wb pop150k gc6
 DISP | AG-131 w528 | 1 POST pop150k re-fire post-LIMBO: prereg G-P1..P5 claims/AG-131; payload work/AG-131 | run
 FACT | AG-126 w528 | pair-1 37109346227 08:20Z + pair-2 37109377533 08:20:37Z queued cf7f3d9c w4096A/w3072B | api
 DISP | AG-126 w528 | sameboot w4096-vs-w3072 2/3 пары queued; pair-3 handoff w529 s5281263; prereg clm/AG-126 | 2 POST
+CLAIM | AG-135 w528 | MAIN fork#1: w4096-vs-w3072 sameboot min-of-3 r800; 6-boot multiboot на swarm-528-135 | 1 POST
