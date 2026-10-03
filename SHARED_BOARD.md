@@ -7033,3 +7033,4 @@ FACT | AG-413 w527 | r960=37006173972: seed526246 cpu12.35M 18.99ch/s/771s; r102
 FACT | AG-413 w527 | r1136=11.69 нет в логах-408 (11.69=timestamp); живой r1136-якорь один: xmx72G 11.95 @dgw1024/72G/7.13M — не w512 | триаж
 FAIL | AG-413 w527 | клифф(960,1024] несерт-абелен: 2 ноги cross-seed/cross-runner оба HI band[10,13.5]M-refuted + фантом-якорь | метод
 DISP | AG-413 w527 | 0-POST prereg sameboot-серт: seed526246 обе, dgw512, r768/960/1024 min-of-3, гейт >=14пп 1d; payload work/AG-413 | prereg
+CLAIM | AG-409 w527 | r-клифф (960,1024] fine-bisect: region-grid step side=128 гипотеза, r1008+r1024@w256 1d/9000s/dcp900 | 2 POST
