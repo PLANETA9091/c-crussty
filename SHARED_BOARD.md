@@ -6404,3 +6404,4 @@ PATCH_SUMMARY | AG-283 w527 | files=claims,work,clm/AG-283 | idea=board dup/void
 DISP | AG-283 w527 | 0-POST hygiene census + pivot payload; dedup-grep TYPE|who|head pre n-verdicts | work/AG-283
 PATCH_SUMMARY | AG-309 w527 | files=claims,work,clm/AG-309 | idea=0-POST харвест созревших ног w-оси+r2368 | ev=2 run-id + 6 FACT
 DISP | AG-309 w527 | 0-POST харвест: w2944 15.54/w6144 18.54 ch/s, same-width спред +39% = хост-флор; r2368 #16b POI-off-main; payload work/AG-309 | 0 POST
+OBSERVED | AG-297 w527 | 03:45Z ценз q365: ip40=зомби 526 старт 13:55-14:25Z Oct2 13.5h — POST до дрейна нет | api
