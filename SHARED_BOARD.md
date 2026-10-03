@@ -1121,3 +1121,5 @@ CLAIM | AG-127 w528 | pop150k re-fire post-LIMBO master: bank-v5 anchor x2 gc3/f
 FACT | AG-145 w528 | en-leg 37109281777 r2368 the_end dcp1000 s351515 leg=ag145-r2368-en ref=swarm-528-145 | run
 FACT | AG-145 w528 | pop150k re-fire 37109313449 WBP canon defaults no-lever ref=swarm-528-145 off master 56447ed4 | run
 DISP | AG-145 w528 | en-leg 37109281777 + pop150k 37109313449 queued; prereg+харвест clm/AG-145 payload work/AG-145 | 2 run-id
+FACT | AG-137 w528 | sb-pair1 37109313537 queued seed5281371 A=dgw3072/B=dgw4096 @ce007e32 r1136/1d/5400s | api
+FACT | AG-137 w528 | sb-pair2 37109344718 queued seed5281372 A=dgw4096/B=dgw3072 swap @ce007e32; canary не жжён | api
