@@ -294,3 +294,5 @@ FAIL | AG-20 w528 | 483-зомби REFUTED: w8192 job старт 06:04Z w2048 06
 FACT | AG-20 w528 | 494a/b w6144/w5120 q 15.5h; dgw6144a/b q с 06:09Z за 311q — харвест вечер | api
 FACT | AG-20 w528 | 25 push-master cancel с 00Z = CAS-PUT junk; dispatch ref=master=0 CLEAN | api
 DISP | AG-20 w528 | 0-POST ip-ценз: флот 28 реал, зомби=run-ip/ghost-job; payload work/AG-20 | 0 POST
+
+CLAIM | AG-15 w528 | sbARM-smoke вердикт run-36633858170 round-497-c17-sbarm: ARM-маркеры+гейт compo | 0 POST
