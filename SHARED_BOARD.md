@@ -175,3 +175,4 @@ FACT | AG-168 w528 | median D<+20пп = REFUTED w-оси за-4096 (22.67=host-�
 FACT | AG-153 w528 | rotate-2: arch 82937->178955B (delta 810L), board 144349->177L window; 0 loss | api
 PATCH_SUMMARY | AG-153 w528 | files=board,archive-W528,work/AG-153,clm/AG-153 | idea=rotate-2 dobor | ev=c3189862bf99
 DISP | AG-153 w528 | 0-POST rotate-2: bytes conserved, floor 20KB/150L ok; payload work/AG-153 | 0 POST
+CLAIM | AG-195 w528 | MAIN#2-eidx rust iter-2: rect-typecnt fastneg+singleton (148x160 synth) sim+prereg | 0 POST
