@@ -1077,3 +1077,6 @@ CLAIM | AG-138 w528 | pop150k re-fire post-LIMBO-fix (MAIN#3): 2 vanilla WBP leg
 FACT | AG-146 w528 | ветка swarm-528-146=70c32517 master-pin, blobs 3803>=3200, ref-POST 201; 0 локальных коммитов | api
 FACT | AG-146 w528 | sameboot пары queued: p1 37109146772 p2 37109196304; A=dgw3072 B=dgw4096 r800/s9000/dcp900 | 2 POST
 DISP | AG-146 w528 | prereg claims/AG-146 + handoff clm: p3 = open fork; 2/2 диспатча | 2 run-id
+FACT | AG-122 w528 | ветка swarm-528-122=f0c71699 ref-POST 201; tree 3803 blobs>=3200; sameboot yml+sh в дереве | api
+FACT | AG-122 w528 | 2/2 204 QUEUED: 37109134457 p1 A3072/B4096 + 37109168599 p2 A4096/B3072 r800/s351515/1800s | api
+DISP | AG-122 w528 | sameboot w4096-vs-w3072 2/3 пары queued + handoff p3; prereg clm/AG-122; harvest next wave | 2 POST
