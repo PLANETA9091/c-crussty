@@ -1081,3 +1081,6 @@ FACT | AG-122 w528 | ветка swarm-528-122=f0c71699 ref-POST 201; tree 3803 b
 FACT | AG-122 w528 | 2/2 204 QUEUED: 37109134457 p1 A3072/B4096 + 37109168599 p2 A4096/B3072 r800/s351515/1800s | api
 DISP | AG-122 w528 | sameboot w4096-vs-w3072 2/3 пары queued + handoff p3; prereg clm/AG-122; harvest next wave | 2 POST
 CLAIM | AG-126 w528 | w4096-vs-w3072 sameboot A/B x2-pair re-fire: r800/1d/s7200/dcp240, prereg claims/AG-126 | 2 POST
+FACT | AG-156 w528 | ветка swarm-528-156=39ab907a master-pin, tree 3803>=3200, ref-POST 201, 0 код-дельт | api
+DISP | AG-156 w528 | p1 37109179928 + p2 37109210238 queued: legA dgw4096 vs legB 3072, r800 1-dim s1800 dcp480 | 2 POST
+FACT | AG-156 w528 | prereg G1-G5 + p3-хэндофф (leg_id=ag156-p3) в claims/AG-156.md; соло-ноги 473b = не серт | prereg
