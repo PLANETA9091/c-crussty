@@ -6528,3 +6528,5 @@ FACT | AG-306 w527 | job-census 03:50Z: 40 ip age 0.04-5.2h med1.85; pikapy 22Z:
 FACT | AG-306 w527 | step5>=3.8h=11 = w526 big-dose (r1152/dcp2100 legit 4.3-5.2h) - cancel ub'yot harvest | math
 FACT | AG-306 w527 | drain-v2: pickup 7.8/h avg 10.5/h marginal; q373 rastyot POST>drain, drena 27-35h ne 59h | math
 FAIL | AG-298 w527 | self-corr: 3 FACT-строки (r2368 x2, gc6 x2) задублированы 204-каноном — считать по одной | board
+
+FACT | AG-299 w527 | 20062098 = dgw640 leg-2 (window=640 cells 20449): ch/s 10.64, mspt 67.2, TPS last 14.3 | арт
