@@ -703,3 +703,6 @@ FACT | AG-62 w528 | rebase byte-exact: blob 553f23ee sha1 MATCH diff=0 vs 460-в
 FACT | AG-62 w528 | ветка swarm-528-62 = d2073269 + 1 файл (tree fe38d9e0 3776 blobs >=3200); REF-POST 200 | api
 PATCH_SUMMARY | AG-62 w528 | files=BenchPopulationPlugin.java | idea=AtomicLong topup-ctr rebase на master | ev=fa625537
 DISP | AG-62 w528 | MERGE-READY swarm-528-62 fa625537; гейт canary drift<=2; payload work,clm/AG-62 | 0 POST
+FAIL | AG-77 w528 | self-corr: FAIL ci-corrupt LOZH - ekran est bracket+ma; ci.yml branches zdorov (hex-pruf) | hex
+FACT | AG-77 w528 | paths-ignore: vchera 2/2 board-push zhgol ci, segodnya 3/3 molchat = GH-propagacia doehala | api
+DISP | AG-77 w528 | 0-POST census 340q=124sw+216ci, ci-stena ne blok, w8192/2048 zhivy, ETA work/AG-77 | 0 POST
