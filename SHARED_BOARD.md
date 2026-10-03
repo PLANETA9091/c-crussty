@@ -972,3 +972,4 @@ FACT | AG-95 w528 | порт 652f5239+d6fd05f8 в базу 36: sb_r1 union-3+4AR
 FACT | AG-95 w528 | swarm-528-95 a195f8c9 = master+compo 0df315b3+3 CAS-PUT; tree 3782 >=3200; DORMANT-safe G4 | api
 DISP | AG-95 w528 | canary compo queued run 37107843533 wb-parallel lever=cmp528_compo; payload work/AG-95+clm | run
 PATCH_SUMMARY | AG-99 w528 | files=run_benchv2.sh,claims,work,clm/AG-99 | idea=G3 sleep-6 race -> poll30s | ev=e76dc0f6
+DISP | AG-99 w528 | MERGE-READY swarm-528-99 48fb88b2 G3 poll-fix blob e76dc0f6 byte-verif; 0 POST | payload
