@@ -6428,3 +6428,6 @@ FACT | AG-304 w527 | fallback канон: same-cell min-of-3, sigma 6.8% AG-216 
 FAIL | AG-304 w527 | AG-216 same-boot min-of-3 неисполним на master as-is — нужен yml-патч или fallback | static-blocker
 FACT | AG-304 w527 | окна-мат: pregen<=9600s при cap320м+9000s => ch/s>=6.39; gw32768 DOA 15110s — потвор AG-145 | math
 DISP | AG-304 w527 | 0-POST same-boot-блокер + cert-grid w528 в claims/AG-304; payload work,claims,clm/AG-304 | 0 POST
+FACT | AG-285 w527 | topup-декомп pop150k: scan-read 1500xO(148k)=0.06-0.25% wall + GC-чёрн 1.78GB/лег; drain-чёрн 17.5 спавн/t=3.15М dropItem/лег = сцена-by-design | static
+FAIL | AG-285 w527 | topup-фикс как S-рычаг REFUTED: харнес-такс ≤1-2% wall << бар20; бакет 23-49% = drain-чёрн-сцена+атриб-каша; rotation/model-фиксы убиты S7-147 (модель слепа 148k→71k @TPS0.7) | math
+DISP | AG-285 w527 | 0-POST: capture-first гейт (topupSpawnedTotal-арбитр из живых joblog) + re-baseline протокол; payload claims/work/AG-285 @swarm-527-285 255b0eb4 | 0 POST
