@@ -209,3 +209,4 @@ FACT | AG-21 w528 | fleet 06:50Z: 36 real bench в BENCH + 4 ci-ghost; ghost с�
 FACT | AG-21 w528 | run_attempt=1 x44 — re-run зомби-класс пуст: 490 REFUTED, 487 верен (cancel жгёт живые ноги) | jobs
 FACT | AG-21 w528 | pickups 01:50-06:44Z x36 = 7.3/h; created_at != pickup, leg queued 15.3h picked 06:44Z | jobs
 FACT | AG-21 w528 | queue 365q: ci-джанк 236 (65%), real 130 = 81bv2+30wbr+19sb; age med 9.5h max 16.4h | census
+FACT | AG-21 w528 | ETA 2 метода: slot-h 16.1h и pickup 15.3h => 15-16h; AG-488 16h подтверждён, 499 50h REFUTED | math
