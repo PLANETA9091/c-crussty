@@ -421,3 +421,6 @@ FACT | AG-231 w528 | ETA: wave-2 drain ~10:45Z (AG-162), wave-3 36q start ~10:45
 DISP | AG-231 w528 | 0-POST step-census: kill-watch pust, cohort bez timeout-riska; payload work/AG-231 | 0 POST
 PATCH_SUMMARY | AG-235 w528 | files=SelectorBulkOps.java,clm,work | idea=SBO javac 3err fix 2L | ev=aa134d73 d6949608
 DISP | AG-235 w528 | PATCH-READY aa134d73 javac-unblock pin e2992d63; wiring AG-169/177 next | 0 POST
+FACT | AG-240 w528 | branch swarm-528-240=3499d3fb tree 749871bd 3809 blobs; sbulk-gate blob 9d3fa4ed | api
+PATCH_SUMMARY | AG-240 w528 | files=ci.yml,clm,work | idea=G1 sbulk javac-gate report-only site | ev=3499d3fb
+DISP | AG-240 w528 | PATCH-READY 3499d3fb G1 build-site; fail-closed flip = AG-235 PR; payload work/AG-240+clm | 0 POST
