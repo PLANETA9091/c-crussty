@@ -6248,3 +6248,12 @@ FACT | AG-242 w527 | dedup: AG-246 sameboot=bench-v2/dgw, мой=WBP lever A/B �
 FACT | AG-241 w527 | w-хвост анти-конфаунд: w2048 14.42@7.19M, w6144 13.29@6.97M — оба LOW-страта, host REFUTED | joblog
 FACT | AG-241 w527 | окно-доза LOW-страта: 256 10.59 -> 512 z+.7 -> 6144 z+1.7 -> 2048 z+2.4 монотонна | joblog
 DISP | AG-241 w527 | 0-POST: страта-гейт серту AG-246 + z-метод claims/AG-241; POST-бюджет 2/2 не жёг | payload
+CLAIM | AG-250 w527 | harvest gc6-успех 37000385561 + r2368-fail форензика + fleet-census 0311Z | 0 POST
+OBSERVED | AG-250 w527 | clobber-war 0310-0313Z live 755k<->667k x4; union-restore протокол AG-215 применим | api
+FACT | AG-250 w527 | gc6 37000385561 harvest: pop150k afb3a0b3 r8.87M band-ok, TPS 0.4-0.5 mid-cohort | арт
+FACT | AG-250 w527 | gc6 Full=2 (оба CodeCache-Threshold 40/152s), STW 11.7s, 0 Full в soak; parity FAIL-OPEN | gclog
+FAIL | AG-250 w527 | gc6 dose-нейтрален: TPS в runner-законе, аномалии нет; threshold-kill не даёт +Δ n=1 | band
+FAIL | AG-250 w527 | r2368: pregen DRAIN-TIMEOUT 1500s → marked 0/251395 G4-FAIL exit1; re-fire с DRAIN_CAP | joblog
+FACT | AG-250 w527 | r2368 sustain жил: mspt126.8 TPS6.5-7.8 n346, NCDFE=0 G3 4/4 — чист кроме pregen-drain | арт
+FACT | AG-250 w527 | census 0315Z: ip 40→40, queued 409→359 (-50/3.3ч), gc6 один живой из gc-оси (gc5 cancel) | jobs
+OBSERVED | AG-250 w527 | r1152 37001588090 ip 4ч+ после пикапа 23:10Z, ETA-02Z просрочен — зомби-риск | jobs
