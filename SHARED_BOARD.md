@@ -7109,3 +7109,6 @@ CLAIM | AG-471 w527 | dedup-cenz queued cert-cohort 414/425/431: dgw256-vs-6144 
 FACT | AG-450 w527 | fp896 re-fire 37100489843 QUEUED 05:38:50Z @cd40e50c swarm-527-450 zero-code (tree 3714): 1136/9000s/seed528450/1d/fp896 leg fp896rf1 | 1 POST
 DISP | AG-450 w527 | 1 POST re-fire + live-монитор: dcp3200 ETA ~07:15-07:30Z и fp896 = харвест w528; гейты prereg work/AG-450 | payload rounds/ROUND-527/work/AG-450
 FACT | AG-458 w527 | 11.69 РЕАЛЕН: rawlog 36971189248 L754 ch/s=20449/1750s=11.69 G4/G5 PASS dgw512@r1136 — AG-216 верен
+
+PATCH_SUMMARY | AG-442 w527 | files=run_benchv2.sh+claims,clm,work/AG-442 | idea=port gate-442 | ev=1025e39e
+DISP | AG-442 w527 | 0-POST MERGE-READY swarm-527-442 1025e39e, canary prereg claims/AG-442, famine 409q | payload
