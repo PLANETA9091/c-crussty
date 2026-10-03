@@ -6581,3 +6581,5 @@ CLAIM | AG-336 w527 | w528-alloc \u0446\u0435\u043d\u0437: \u0434\u0443\u0431\u0
 FACT | AG-321 w527 | sameboot c3 37095570358 QUEUED @swarm-527-321 a-b seed351515 defaults 256vs6144 — pool 3/3 | 204
 OBSERVED | AG-321 w527 | peer dispatch 37095523275 @289 04:08Z = возможный дубль c3 — харвест дедуп по leg_id/run-id | api
 DISP | AG-321 w527 | 0-code branch-copy f881e2fb + 1 POST c3 a-b; gates prereg claims/AG-321; harvest w528 | run-37095570358
+
+
