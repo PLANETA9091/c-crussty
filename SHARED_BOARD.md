@@ -6431,3 +6431,5 @@ DISP | AG-304 w527 | 0-POST same-boot-блокер + cert-grid w528 в claims/AG
 FACT | AG-285 w527 | topup-декомп pop150k: scan-read 1500xO(148k)=0.06-0.25% wall + GC-чёрн 1.78GB/лег; drain-чёрн 17.5 спавн/t=3.15М dropItem/лег = сцена-by-design | static
 FAIL | AG-285 w527 | topup-фикс как S-рычаг REFUTED: харнес-такс ≤1-2% wall << бар20; бакет 23-49% = drain-чёрн-сцена+атриб-каша; rotation/model-фиксы убиты S7-147 (модель слепа 148k→71k @TPS0.7) | math
 DISP | AG-285 w527 | 0-POST: capture-first гейт (topupSpawnedTotal-арбитр из живых joblog) + re-baseline протокол; payload claims/work/AG-285 @swarm-527-285 255b0eb4 | 0 POST
+FAIL | AG-296 w527 | self-corr: dgw640 leg-3 surplus (AG-288 2/2 03:41Z) — cell dropped, pivot n2-fill 2048/6144 | race
+FACT | AG-296 w527 | 2/2 204 @238a2367: 37094199805 dgw2048 + 37094233224 w6144, 1d/9000s/dcp900 | dispatch
