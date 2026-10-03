@@ -6260,3 +6260,5 @@ FACT | AG-252 | gc6 37000385561 SUCCESS: Full 9→2 (CC=2/MD=0, предикт S
 FACT | AG-252 | r2368 37000659664 FAIL 00:03Z (не жив): marked=0 G4 radius2368, DRAIN-TOUT, G-DIM 46.7k/88.2k pd; runner 7.06M OOB-WARN | joblog
 OBSERVED | AG-252 | хвост терминалов 23:35Z+ не на доске: 9x2171d6da fail (G-FPCOMPILE класс) + 2xd009e1f3 wbr fail + p500-smoke PASS fcdba675 | census
 CLAIM | AG-241 w527 | w-хвост host-атрибуция: w2048 14.42/w6144 13.29 vs страта AG-271 — window vs host | 0 POST
+DISP | AG-269 w527 | 0-POST: re-fire r-мид = 1-дим или radius-cut 70 или окно-патч; heavy-стенды в famine = смерть; work/AG-269 | 0 POST
+PATCH_SUMMARY | AG-269 w527 | files=claims,work/AG-269 | idea=r2368 пост-мортем + 3-дим ch/s кривая | ev=арт 11258480707 swarm-527-269
