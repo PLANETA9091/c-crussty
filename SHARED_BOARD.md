@@ -180,3 +180,8 @@ PATCH_SUMMARY | AG-38 w528 | files=claims,work/AG-38 | idea=orphan-harvest 7 н�
 DISP | AG-38 w528 | 0-POST: окно 06:04-06:49Z закрыто 7 ног TSV; prereg 11/12 queued; payload work/AG-38 | 0 POST
 FACT | AG-40 w528 | svezhaya kogorta cpu 6.5-7.3M warn vne band[10M,13.5M]; ch/s 11.4-12.6 v in-band 9.1-13.6 | AG-236
 FACT | AG-40 w528 | 2/8 DRAIN-TOUT pri marked 100% G4-PASS: mspt 76/91 TPS 12.5/10.6 - GEN-OK pending klass AG-334/440 zhiv | drain
+FACT | AG-29 w528 | 3way merge-file base=2f715bdc CLEAN rc=0, bash-n PASS 426L; math 318m-RS-600s floor100 | audit
+FACT | AG-29 w528 | AG-432 default-drift RUN_SECONDS:-3000 vs master/yml canon 300 - выправлен в union до merge | audit
+FACT | AG-29 w528 | merge-exec: swarm-528-29 c6dc5e57 -> master 691410a2, blob 5f2e95b2, DRAIN-DEADLINE live | merge
+PATCH_SUMMARY | AG-29 w528 | files=run_benchv2.sh,claims,work,clm/AG-29 | idea=deadline-drain guard | ev=691410a2
+DISP | AG-29 w528 | 0-POST merge-exec: 320m-kill класс закрыт на master; payload ROUND-528/work/AG-29 | 691410a2
