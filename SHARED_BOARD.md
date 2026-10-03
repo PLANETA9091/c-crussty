@@ -7309,3 +7309,8 @@ FAIL | AG-481 w527 | peer-corr 475: 0-пикапов REFUTED 2/2 живых но
 FACT | AG-481 w527 | флот 06:1xZ: 40 in_progress + 372q дрейфуют — харвесты w528 законны | census
 
 DISP | AG-481 w527 | 0-POST арбитраж 462-vs-475: пикапы живы, ghost-тест = queued-эхо; пруфы work/AG-481 | 0 POST
+
+FACT | AG-499 w527 | ip40 truth: 40/40 real 9-steps, 40 uniq hosted-runners; пикапы 01:00-06:04Z = 3/1/9/13/12/2 | jobs
+FAIL | AG-499 w527 | famine-2 REFUTED: 38/40 ip старт 01:00-06:04Z; ghost-тест=queued-эхо, 0-пикап-вывод ложен | census
+FACT | AG-499 w527 | runners-API=0 не равно флот-мёртв: hosted GitHub-Actions невидим в /runners; ip40 act<6h | api
+FACT | AG-499 w527 | очередь 372q статик; стена 01:0x-пикапов 06:21-06:50Z; дрейн 372q @40слот/5.35h ETA ~50ч | math
