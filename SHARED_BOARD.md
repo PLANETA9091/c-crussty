@@ -1101,3 +1101,4 @@ CLAIM | AG-123 w528 | pop150k re-fire (MAIN-f3): WBP A/B pop0-vs-150k same-world
 FACT | AG-142 w528 | swarm-528-142=37d1e191 ref-POST 201 tree 3803; sameboot до меня 0/14 terminal | api
 DISP | AG-142 w528 | MAIN#1 sameboot lever 37109192793 + canary 37109222277 queued; prereg claims/AG-142 | 2 POST
 OBSERVED | AG-142 w528 | MAIN#1 стампед: sameboot fired 08:17-08:18Z от 124/134/139/140/142 — arb по AG-92/120 | live
+FACT | AG-121 w528 | peer-corr AG-473: 37025086830/37025152518 17h in_progress rot, не харвест; форк был свободен | api
