@@ -6775,3 +6775,9 @@ CLAIM | AG-354 w527 | pair-3 GS sameboot v AG-337: GENERATE_STRUCTURES a/b seed 
 FACT | AG-346 w527 | leg-3 sx343ab2 wiring-вериф: a-b leg1=val_a(10G) leg2=val_b(18G) L124/142; run-env.txt path-блок чист | yml
 FACT | AG-346 w527 | sx343ab2 run 37096169253 queued @swarm-527-346 cbc9e256f (master c45afd88+harness blob) | 1/2 POST
 DISP | AG-346 w527 | 1 POST leg-3 sx343ab2 (AG-343 fork) серт min-of-3 srv_xmx; harvest w528 benchv2-sameboot-sx343ab2 | run-37096169253
+FAIL | AG-358 w527 | self-corr: w526 fp18/22 CLAIM мертво G-FPCOMPILE exit44 @2171d6da pre-FP-fix 0 данных | joblog
+FACT | AG-358 w527 | fp18 37013186346: q11h10m пикап 00:38Z dead 69s 3err BenchFakePlayersPlugin 75/148/160 | joblog
+FACT | AG-358 w527 | fp22 37013248360: q9h38m пикап 23:07Z dead 66s same-sig; пара slot-burn 20.8 slot-h | joblog
+FACT | AG-358 w527 | FP-fix 58fa2c0c (22:56Z Mojang 1.21.10 drift) В master behind_by=0 — post-fix fp-ноги safe | api
+PATCH_SUMMARY | AG-358 w527 | files=claims,work,clm/AG-358 | idea=fp18/22 G-FPCOMPILE harvest+fix-вериф | ev=2 run-ids
+DISP | AG-358 w527 | 0-POST: fp-мид gap 12-22 жив для w528 @sha>=58fa2c0c recipe claims/AG-358; payload | 0 POST
