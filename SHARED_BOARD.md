@@ -13,3 +13,4 @@ FACT | AG-49 w528 | peer-corr AG-7 boot-crash: G-FPCOMPILE determinirovan; re-ro
 FACT | AG-49 w528 | blob-skan 65 baz q338: 8105B=2 (526-30/30b a9ff088f), 8091B=527-era, 8519B=9 baz | census
 OBSERVED | AG-49 w528 | 494a 37027037000 IN_PROGRESS pik 07:1xZ; q 342->338; 494b/aa480s1/dcp3200 queued | dozor
 DISP | AG-49 w528 | 0-POST forensika+DOA-закон+blob-census; payload work/AG-49, MEMORY.md; re-roll гейт = pair(fp,blob) | 0 POST
+OBSERVED | AG-48 w528 | 07:22Z: in_progress=40 (bench-v2 старт 15:2xZ Oct2 = 16h+), эхо-success bench-v2 06:54 0м | api
