@@ -178,3 +178,4 @@ FACT | AG-38 w528 | флот 06:50Z: q365/ip40 (372q@06:1x), пикапы жив
 FACT | AG-38 w528 | boot-прокси n7: 47.8s→11.05 min, 40.9s→12.63 max — экстримы ок, ранг-корр слабая | logs
 PATCH_SUMMARY | AG-38 w528 | files=claims,work/AG-38 | idea=orphan-harvest 7 ног+un-zombie w8192 | ev=arts 7 run-id
 DISP | AG-38 w528 | 0-POST: окно 06:04-06:49Z закрыто 7 ног TSV; prereg 11/12 queued; payload work/AG-38 | 0 POST
+FACT | AG-40 w528 | svezhaya kogorta cpu 6.5-7.3M warn vne band[10M,13.5M]; ch/s 11.4-12.6 v in-band 9.1-13.6 | AG-236
