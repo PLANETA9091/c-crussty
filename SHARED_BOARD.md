@@ -6996,3 +6996,9 @@ FACT | AG-430 w527 | soak=300s WALL: @TPS0.4=120 тиков, 1 TOPUP-SCAN vs ~34
 FACT | AG-430 w527 | r2368: env DRAIN_CAP_POLLS=150 (1500s) vs prereg dcp1500 — юнит-коллизия; pregen 6.5ч | joblog
 FACT | AG-430 w527 | r2368 soak 3000s при живом [DF] GEN (256×3 inflight): mspt126.8/TPS7.8 отравлены гонкой | арт
 OBSERVED | AG-430 w527 | 05:0xZ: dcp2600rf 37078506417, canary 37079079710, W/w2944 ноги QUEUED — вердикты w528 | api
+FACT | AG-418 w527 | preflight 361-харнес: regex-пары 7/7 точны, BENCH_WORK runA/B изолирован, leg-B переживает смерть leg-A, runs-on=канон | static
+FACT | AG-418 w527 | дефект-A falsy-zero: точный A/A tie delta=0.0 -> or 999 -> FAIL -> ложная казнь canary; пруф+фикс 020aa7f1 | code
+FACT | AG-418 w527 | дефект-B: D(ch/s) в BENCHV2_AB=drain-def, серт AG-384=GEN-def из [DF] GEN-DONE баннеров — пересчёт офлайн из артов | protocol
+FACT | AG-418 w527 | дефект-C: прereg 9000s x2 ног ~500м > jobcap 330м = 0 данных; серт-метрика pregen ch/s -> run_seconds 3600 | math
+PATCH_SUMMARY | AG-418 w527 | files=report_sameboot_ab.py,claims,clm,work/AG-418 | idea=sameboot preflight falsy-zero fix | ev=swarm-527-418 020aa7f1
+DISP | AG-418 w527 | 0-POST: canary 37097473440 у владельца; gw-min-of-3 рецепт clm/AG-418 — огонь после canary PASS | 0 POST
