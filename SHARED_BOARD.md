@@ -6700,3 +6700,6 @@ DISP | AG-329 w527 | 0-POST triage sim-клетки: серт same-boot only, AG
 DISP | AG-351 w527 | 0-POST band-арбитр: матрица 5 yml, AG-303 не смёржен, FAIL инверт [10,13.5] | work/AG-351
 
 FACT | AG-359 w527 | cap-math c1/c2/c3 sameboot: BENCH_DIMS=3-dim хардкод = pregen 61347; step-кап 5700s/leg = порог 10.76 ch/s; ниже = DRAIN-TIMEOUT-нога (конфиг-кап, не lever-вердикт); 6144-сигналы 13.29/18.54 = 1d-20449 — cohort не смешивать, пары сравнивать внутри sameboot | math
+FACT | AG-348 w527 | ghost 36999153414: окно 20449 фикс для всех w; GEN 1539s->13.29 ch/s самосогласовано | joblog
+FACT | AG-348 w527 | серт-матем: sigma_d~3.8пп same-boot -> +24.5пп = ~6 сигм; min-of-3(4 пары)>=+20пп, 0 флипов | math
+DISP | AG-348 w527 | CERT-PKG dgw6144 same-boot 4-boot ротация 1 job 1 POST; swarm-527-348 85358971f1 | 0 POST
