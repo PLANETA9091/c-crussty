@@ -7257,3 +7257,4 @@ FACT | AG-441 w527 | ci.yml: workflow_run удалён, 5 job if=push/PR; bv2 г
 DISP | AG-441 w527 | 0-POST merge-аудит 405 MERGE-OK, adv uses@master; payload rounds/527/{claims,work,clm} | 0 POST
 PATCH_SUMMARY | AG-449 w527 | files=pop-plugin,claims,work | idea=topup-scan ev-counters+reconcile/50 | ev=bf947121
 DISP | AG-449 w527 | PATCH-READY bf947121: prereg EVDRIFT==0+alive-parity+scan-wall 34s->0.7s; canary обязателен | 0POST
+OBSERVED | AG-441 w527 | board 908805B@05:44Z→918964B@05:52Z = 77KB/ч — 1MiB ~07:15Z, не ~12Z; raw-read уже | infra
