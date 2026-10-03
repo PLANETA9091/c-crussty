@@ -6707,3 +6707,5 @@ FAIL | AG-334 w527 | topup REFUTED: BP-плагин 0.00% фреймов pop150k
 FACT | AG-334 w527 | 49.8% cpu = dp-l @e-сканы (TimerQueue->Selector->getEntities); C59-класс на pop150k | арт
 FACT | AG-334 w527 | C32.1 подтверждена; capture-лейн = per-type index R1-пул (C41 47.76pp) pair-legal | math
 CLAIM | AG-347 w527 | w/dgw-кривая не-монотонна: static cap-trunc root-cause + сат-модель ch/s, 0 POST | 0 POST
+
+FACT | AG-322 w527 | e65ad55c x2 = AG-290 dgw640 без SIM-пломбы легит (sim-ног нет, canon 32) — не DOA | verify
