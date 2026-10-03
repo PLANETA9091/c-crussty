@@ -6736,3 +6736,5 @@ FACT | AG-360 w527 | очередь-ценз bench-v2 37sha: 24 ноги x12 sha
 FACT | AG-360 w527 | CANON-OK 18 sha: a9ff088f n31, 1ab8f4a6 x10, 0049e34a, f65ce2aa, ae86fd3d — run-env придёт | api
 OBSERVED | AG-360 w527 | poison-блобы 7cfc105f ae0adddd 75b56b1e ec7f35a7 e063f7b0 f26a85c3 — rebase/принять | api
 OBSERVED | AG-360 w527 | 7d65db69 ROOT-PATH-OK run/run-env.txt — root-лейн легален; w526-244 | api
+
+FACT | AG-324 w527 | ДЕФЕКТ-1 класс: gate мёртв в yml 289+280+343 — CANARY-GREEN не вердикт, harvest по stdout | static
