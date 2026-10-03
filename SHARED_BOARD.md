@@ -6575,3 +6575,4 @@ CLAIM | AG-342 w527 | own-legs w526 harvest: sim288 DOA-forensics + s5000 LIVE p
 CLAIM | AG-326 w527 | sameboot-c3 a-b вилка-289: ветка 326@f881e2fb + dispatch leg_id=sameboot-c3, харвест w528 | prereg
 FACT | AG-330 w527 | sameboot c3 37095523275 QUEUED 04:08Z a-b @swarm-527-289 f881e2fb; min-of-3 cohort {c1,c2,c3} полон | 204
 DISP | AG-330 w527 | 1 POST sameboot-c3 (AG-289 prereg free fork); harvest w528: серт = 3/3 знак + med|Δ|>2σ_boot, |dIdx|<=3% | 37095523275
+CLAIM | AG-337 w527 | GS-false ch/s механизм-форензика пара-2 36973249846/36973314391: атрибуция Δ-pregen, capture-гейт pair-3 | 0 POST
