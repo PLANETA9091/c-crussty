@@ -195,8 +195,8 @@ export DIM_GEN_WINDOW="${DIM_GEN_WINDOW:-256}"   # AG-120 #16f: bounded in-fligh
 export DIM_MARK_MODE="${DIM_MARK_MODE:-pregen}"   # AG-496 x522: pregen-v3 (register-only marking) | legacy = v2 amortized-sync
 log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B) radius_chunks=$DIM_RADIUS_CHUNKS worlds=$DIM_WORLDS mark_mode=$DIM_MARK_MODE"
 # AG-43 w527: dgw/dcp cell-attribution in run-env (artifact-side dedup; board-claims rot 3x today)
-echo "mark_mode=$DIM_MARK_MODE dim_gen_window=${DIM_GEN_WINDOW:-256} drain_cap_polls=${DRAIN_CAP_POLLS:-240}" >> "$WORK/run-env.txt"
-echo "mark_mode=$DIM_MARK_MODE dim_gen_window=${DIM_GEN_WINDOW:-256} drain_cap_polls=${DRAIN_CAP_POLLS:-240}" >> "$WORK/server/run-env.txt" # AG-370 w526 mirror + AG-43 w527
+echo "mark_mode=$DIM_MARK_MODE dim_gen_window=${DIM_GEN_WINDOW:-256} drain_cap_polls=${DRAIN_CAP_POLLS:-240} dim_drain_unmark=${DIM_DRAIN_UNMARK:-0}" >> "$WORK/run-env.txt"
+echo "mark_mode=$DIM_MARK_MODE dim_gen_window=${DIM_GEN_WINDOW:-256} drain_cap_polls=${DRAIN_CAP_POLLS:-240} dim_drain_unmark=${DIM_DRAIN_UNMARK:-0}" >> "$WORK/server/run-env.txt" # AG-370 w526 mirror + AG-43 w527
 
 # --- AG-12: async wall-clock heartbeat sampler (AG-234 principle) ------------
 # samples wall-clock every 2s INDEPENDENT of server responsiveness — 0 lines
@@ -310,6 +310,9 @@ while [ "$(date +%s)" -lt "$END" ]; do
   sleep 15
 done
 cmd "spark profiler stop"; sleep 8
+# v3.1 unmark-at-drain (AG-367 w527, #16g; root-cause AG-345 dcp2100): after sustain
+# releases plugin tickets so the world can quiesce; DEFAULT OFF = byte-identical legacy flow.
+if [ "${DIM_DRAIN_UNMARK:-0}" = "1" ]; then touch dimload.stop; log "UNMARK-TRIGGER touched dimload.stop (DIM_DRAIN_UNMARK=1)"; fi
 cmd "dimchunks"; sleep 3   # AG-342 fix (blocker #12): G-DIM gate reads tail -6 of G-DIM lines; the ONLY call was +5s after GEN start (counts ~0) -> gate FAIL even with plugin alive. Final call after drain -> tail -6 = drained per-dim counts
 cmd "forceload remove all"; sleep 3
 cmd "stop"
@@ -348,6 +351,12 @@ GDIM_OK=1
 [ "$TOTAL" -lt "$MIN_TOT" ] && GDIM_OK=0
 if [ "$GDIM_OK" = "1" ]; then
   log "G-DIM PASS ov=$OV ne=$NE en=$EN total=$TOTAL (expect_pd=$EXP_PD n_dims=$N_DIMS min_pd=$MIN_PD min_tot=$MIN_TOT)"
+elif [ "${DIM_DRAIN_UNMARK:-0}" = "1" ]; then
+  # v3.1 unmark-at-drain (AG-367 w527): tickets released post-sustain -> loaded counts
+  # legitimately drop; dims-proof = [DF] GEN-DONE all_marked (marked-counter, #16g split).
+  GDIM_PROOF=$(grep -oE "GEN-DONE all_marked=[0-9]+" server-stdout.log | tail -1)
+  log "G-DIM UNMARK-MODE WAIVED ov=$OV ne=$NE en=$EN total=$TOTAL (loaded-gate n/a post-unmark; marked-proof: ${GDIM_PROOF:-MISSING})"
+  [ -n "$GDIM_PROOF" ] || { log "G-DIM UNMARK-MODE FAIL: no GEN-DONE marked-proof (pregen incomplete)"; FAIL=1; }
 else
   log "G-DIM FAIL ov=$OV ne=$NE en=$EN total=$TOTAL (expect_pd=$EXP_PD min_pd=$MIN_PD min_tot=$MIN_TOT — silent-empty dims impossible gate)"; FAIL=1
 fi
