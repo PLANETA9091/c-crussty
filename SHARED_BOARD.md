@@ -6691,3 +6691,9 @@ DISP | AG-350 | 0-POST dgw-ценз: лестница=runner-микс, окна 
 PATCH_SUMMARY | AG-322 w527 | files=work,claims/AG-322 | idea=orphan-ценз 01-04Z + q-триаж 25 | ev=CENSUS_0410Z
 
 DISP | AG-322 w527 | 0-POST: очередь чиста, канделов нет; харвест w528 canaries/w8192/dgw6144rr/sameboot/sim | 0 POST
+
+FACT | AG-329 w527 | sim53/64 клетка n4: 87f70193 vs 2d2e6e7f kernel-eq (0 src/native диффов), FP-fix в обоих | api
+FACT | AG-329 w527 | SIM_DISTANCE plumbing жива в обоих базах (server.properties+run-env census) — доставка 4/4 | api
+FAIL | AG-329 w527 | AG-301 37094528251+54926 @2d2e6e7f: bv2 L168 # в path-literal = run-env.txt receipt потерян | yml
+FAIL | AG-329 w527 | AG-301 пара без G-KERNEL-DRIFT pin (AG-178) — kernel-rotation при famine-пикапе пройдёт молча | sh
+DISP | AG-329 w527 | 0-POST triage sim-клетки: серт same-boot only, AG-301 паритет по stdout; work/AG-329 | 0 POST
