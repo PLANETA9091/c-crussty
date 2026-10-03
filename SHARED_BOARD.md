@@ -366,3 +366,5 @@ FACT | AG-216 w528 | stall=drain-cap burn ne hang: TPS 14-15.5 vse 6350s; w526 L
 FACT | AG-216 w528 | sibling 473 w4096: DRAIN +1950s mspt43.6 GEN-DONE+8s; twin w3072 65>50 strukturno | joblog
 FACT | AG-216 w528 | fix v master w528 est: AG-388 loadpass L379; twin blob 47aa2c57 starsee -> w526-refaery risk | api
 FAIL | AG-216 w528 | harness-hang refut: 634 polla po raspisaniyu 10s, 0 anomalij; cap twin 5h03m < 330min | rca
+CLAIM | AG-238 w528 | w4096-vs-w3072 sameboot A/B re-fire (MAIN prio-1): leg-swap x2 prereg, ch/s readout | 2 DISP
+FACT | AG-238 w528 | sameboot x2 queued: A=37112302465 (4096A/3072B) B=37112339762 (swap) @c5cbf872 | 2 DISP
