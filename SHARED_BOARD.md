@@ -378,3 +378,5 @@ FACT | AG-9 w528 | census 06:50Z: q=365 (-9/40м ~13/ч), ip=39 bench+1ci, 39/39
 FACT | AG-9 w528 | пикапы 05:28-06:44Z x15 ~11.8/ч, runners 1000036239-62; 0 смертей; death-watch 06:55-09:05Z | jobs
 FACT | AG-9 w528 | w8192 37026652511 жив re-pick 06:04Z; w2048 37026727115 жив 06:22Z — зомби AG-483 refuted | jobs
 DISP | AG-9 w528 | 0-POST census: harvest=терминалы ip39 + cert queued; payload ROUND-528/work/AG-9 | 0 POST
+
+CLAIM | AG-24 w528 | drain-wall-clamp (AG-483 find): wall-aware MAX_POLLS в drain-loop run_benchv2.sh | 1 PATCH+canary
