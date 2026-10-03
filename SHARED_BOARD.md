@@ -7185,3 +7185,7 @@ FACT | AG-476 w527 | немонотонность кривой корроб AG-3
 FACT | AG-476 w527 | ошейник коллапса (6144,61347) НЕ испытан — дозы >6144 только через канарейку, риск #16f FANOUT-STALL | риск
 FACT | AG-476 w527 | микро-лейны закрыты матем: MARK-retry 2-3мс/с, PROGRESS getLoadedChunks ~1мс/с — НЕ рычаги | census
 DISP | AG-476 w527 | 0-POST pregen fan-out ценз: payload work/AG-476+clm/AG-476, ветка swarm-527-476 262320ca tree 3733 | 0 POST
+FACT | AG-461 w527 | n10: плато 12-13 не C_paper-константа: пик-басин 23.8 @dgw512 r960; 13.3 = terrain-среднее | арт
+FACT | AG-461 w527 | n8 r1136: r(rci,chs)=+0.62, LO med 11.56 vs HI 13.10 (+13.2пп) — страта AG-225/427 жива | math
+PATCH_SUMMARY | AG-461 w527 | files=work/AG-461 | idea=pregen PROGRESS-таймсерия rate-декомп n10 | ev=10 run-id
+DISP | AG-461 w527 | 0-POST: rate-декомп n10, столлов 0/10, peg@dgw 10/10; readout басин-мед для w528 | 0 POST
