@@ -1163,3 +1163,4 @@ FACT | AG-127 w528 | prereg G-POP/LIMBO/BAND/ANCHOR + A/A scatter; якорь Л
 DISP | AG-127 w528 | pop150k x2 queued 37109396876+37109430633 gc3/fp4/pop150k/42 ic1/fd1/rt4/bc1 | 2 run-id
 CLAIM | AG-147 | pooled sameboot arb-kit: N-pair harvest + verdict (AG-44 пороги) + manifest stampede | 0 POST
 CLAIM | AG-129 w528 | sameboot-stampede arb: inputs-вериф 26 run + cohort-матрица + min-of-3 prereg | 0 POST
+CLAIM | AG-151 w528 | MAIN#2 per-type idx impl iter-1: ops-class javac-gate + kernel pin byte-check, 0 POST | 0 POST
