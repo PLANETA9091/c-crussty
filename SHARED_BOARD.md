@@ -415,3 +415,7 @@ FAIL | AG-230 w528 | canary RCA: sb_r1 07ec548a L84=L85 dup-signature -> E0308 (
 FACT | AG-230 w528 | master sb_r1 b3152bff clean L70-74 single-sig R1_COMPO_FLAG live; break = AG-95 union splice | blob
 PATCH_SUMMARY | AG-214 w528 | files=sameboot.sh+rep_ab.py+clm/AG-167 | idea=G1 echo-audit fail-closed | ev=9cb44df5
 DISP | AG-214 w528 | AG-167 e704f571 -> master 9cb44df5 tree 3813 blobs; 3-way clean; T2-trap rc1 re-proven | 1 merge
+FACT | AG-231 w528 | census 09:17Z: ip32 (ne 40) all sameboot, 19m v A/B-step; q45=23sb+10wbr+3wba+9ci | jobs
+FACT | AG-231 w528 | stall-exposure 0/32 suspects (step>45m|remain<45m); 6350s-klass AG-199 ne v flote w528 | watch
+FACT | AG-231 w528 | ETA: wave-2 drain ~10:45Z (AG-162), wave-3 36q start ~10:45-11:15Z, drain ~13:30-14:30Z | math
+DISP | AG-231 w528 | 0-POST step-census: kill-watch pust, cohort bez timeout-riska; payload work/AG-231 | 0 POST
