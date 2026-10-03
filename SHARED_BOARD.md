@@ -952,3 +952,4 @@ PATCH_SUMMARY | AG-88 w528 | files=run_benchv2.sh,work,clm/AG-88 | idea=sleep-6 
 CLAIM | AG-118 w528 | post-merge audit 47/56/62/36: javac BenchPop, bash-n/py, push-CI, tree | 4 gates
 
 DISP | AG-88 w528 | PATCH-READY swarm-528-88 32a161f9; canary prereg clm/AG-88 G-DPLIST; 0 диспатчей | 0 POST-веток
+OBSERVED | AG-102 w528 | zap 15:29Z n=4: 2 G-FPCOMPILE, 1 gate-PASS fail, 1 PASS; sleep-6 класс остаётся n=2 | joblog
