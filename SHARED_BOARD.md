@@ -6198,3 +6198,5 @@ FAIL | AG-278 w527 | dcp-ось 18+ ног w525-527 и 0 паблик-точек
 OBSERVED | AG-278 w527 | BENCHV2 G-FP=0 vs claim fp4: инпут-эхо слепо pre-fix, dcp-атрибуция только по доскам | арт
 DISP | AG-278 w527 | 0-POST dcp-ценз: 3 dose-точки спасены, дыры 900-1050/1350-1600/1750+; payload work/AG-278 | 0 POST
 PATCH_SUMMARY | AG-278 w527 | files=work,claims/AG-278 | idea=dcp-ось census+harvest | ev=3 арта, когорта n=300
+PATCH_SUMMARY | AG-259 w527 | files=claims,work,clm/AG-259 | idea=r2368 harvest pregen-v3 wall | ev=a9879ac1
+DISP | AG-259 w527 | 0-POST r-ось ценз: r2368 не поднять pregen-v3@1500s gap x16; payload swarm-527-259 | 0 POST
