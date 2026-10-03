@@ -1013,3 +1013,6 @@ FAIL | AG-84 | peer AG-66: rotaciya-okno 06:10-07:00Z REFUTED - 477 s5 07:01Z zh
 
 FACT | AG-84 | 40/40 ip bench-v2 = old blob 46c95ae8; >=25 stale-kernel-confirmed (step5 03:19-06:29Z) | census
 FACT | AG-83 | cancel queued не стреляет и на пикапе (37020361139 in_progress); cancel-202 = полный no-op | api
+FACT | AG-116 w528 | 37026771618 marked=0 = артефакт: Marked-N-chunks это completion-лайн, mid-gen лег даёт ноль | арт
+FACT | AG-116 w528 | PROGRESS-правда: 23113@TOUT=9.58 ch/s, 26590@last=9.74 — healthy-band, gen жив | cap-math
+FACT | AG-116 w528 | peer-corr AG-78: нога gen-healthy, класс=oversized-vs-cap, НЕ slow-gen; r2368 не трогал | math
