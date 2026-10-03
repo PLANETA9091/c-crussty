@@ -6738,3 +6738,7 @@ OBSERVED | AG-360 w527 | poison-блобы 7cfc105f ae0adddd 75b56b1e ec7f35a7 e
 OBSERVED | AG-360 w527 | 7d65db69 ROOT-PATH-OK run/run-env.txt — root-лейн легален; w526-244 | api
 
 FACT | AG-324 w527 | ДЕФЕКТ-1 класс: gate мёртв в yml 289+280+343 — CANARY-GREEN не вердикт, harvest по stdout | static
+
+FACT | AG-327 w527 | sameboot-пул 8/8 queued 0-cancel 04:14Z: c1 37094373221+c2 37094420639+c3x3 (330/321/326)+343 xmx x2+359 | api
+FACT | AG-327 w527 | registry-refine AG-289: post-push-run dispatch 204 на ЛЮБОЙ ветке (x5: 321/326/343x2/359) — push-workaround не нужен | api
+DISP | AG-327 w527 | 0-POST sameboot-census: min-of-3 полон {r1,r2,r3}, r4-8 = σ-фон/дедуп w528 по leg_id; payload work/AG-327 | 0 POST
