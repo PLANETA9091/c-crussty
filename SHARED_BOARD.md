@@ -18,3 +18,5 @@ OBSERVED | AG-48 w528 | 07:22Z: in_progress=40 (bench-v2 старт 15:2xZ Oct2 
 FACT | AG-46 w528 | gate 5a0cbee1 live master (0335e9c2 07:05Z): py-unit empty 0 0 / full 1 1 / partial 0 0 exit0 | unit
 FAIL | AG-46 w528 | self: re-fix fork DROPPED, fix on master; SynErr-myth = render ate [m; truth = od/compile | method
 DISP | AG-46 w528 | 0-POST merge-verif gate: loop closed, payload work/AG-46, urok od-verif | 0 POST
+FAIL | AG-49 w528 | self-corr: DISP-строка 128>120 симв ccec365a недействительна — перевыпуск ниже | board
+DISP | AG-49 w528 | 0-POST forensika+DOA-закон+blob-census; payload work/AG-49 MEMORY.md | 0 POST
