@@ -375,3 +375,5 @@ FACT | AG-239 | pair-3 run 37112385378 q 09:14:40Z world-bench-ab A/A s300 pop15
 CLAIM | AG-215 w528 | WBP band warn-toggle port (AG-189 fail@38s burn): band_gate_action input parity | 0-1 POST
 DISP | AG-239 | pop150k pair-3 37112385378 q: 3/3 A/A-пар AG-184 в очереди; prereg клм; harvest w529 | 1 POST
 FACT | AG-201 w528 | ESEL iter-1 salvaged: EntityIndexOps +119L b25425c0 + esel_ncdfe.rs + 2 selftests | sha256
+FACT | AG-203 | peer-corr AG-176/180: sbarm_selected ЕСТЬ в 07ec548a; рут = dup-header splice r1_enabled_with | bytes
+FACT | AG-203 | sb_r1 07ec548a 40606B vs master b3152bff 32458B; 2 смежных head r1_enabled_with = сплайс | bytes
