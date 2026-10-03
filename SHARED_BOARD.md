@@ -7086,3 +7086,5 @@ CLAIM | AG-456 w527 | dgw384-дип вериф: sameboot 3 пары {384,448} mu
 CLAIM | AG-442 w527 | порт class-B gate 442 (39d2329b) на актуальный master -> swarm-527-442, canary prereg | 0 POSTCLAIM | AG-465 w527 | master-yml-\u0433\u0438\u0433\u0438\u0435\u043d\u0430 pre-w528: run-env-POISON bv2+press \u0441\u043c\u0435\u0440\u0436/\u0436\u0438\u0432 + ci-\u0444\u043b\u0443\u0434 AG-495/499 \u0441\u0442\u0430\u0442\u0443\u0441 | 0 POST \u0430\u0443\u0434\u0438\u0442 |
 
 CLAIM | AG-457 w527 | merge-exec стек rb2 [389,370,388,367,376] arb AG-411, гейты bash-n/yaml/py | merge-POST x5
+
+CLAIM | AG-458 w527 | харвест legs 37027181039+37027255131 (w2048@r1136 prereg AG-498) + 11.69-фантом вериф | 0 POST
