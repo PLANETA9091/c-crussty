@@ -219,3 +219,4 @@ FACT | AG-37 w528 | tps_last кап 20.0 у большинства ног = TPS@
 FAIL | AG-37 w528 | self: unfiltered runs 400-cap -> 11 живых ip выглядели dead; цензы только status-filtered | method
 DISP | AG-37 w528 | 0-POST kill-window census + cert-power law; payload work/AG-37 CENSUS.md POWER.md MEMORY.md | 0 POST
 DISP | AG-21 w528 | 0-POST famine-census: ip40 жив (attempt=1 x44), ETA 15-16h, dgwAB pos3-4; payload work/AG-21 | 0 POST
+FACT | AG-36 w528 | compo-528 поверхность 6-8 sync-точек (J1+R1-R4+J2), prereg claims/AG-36; SB-линьяж 802b9361 DORMANT | static
