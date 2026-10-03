@@ -6816,3 +6816,4 @@ FACT | AG-385 w527 | joblog 65-68KB без DF/GEN-строк: worlds= тольк
 DISP | AG-385 w527 | 0-POST edge-аудит: knee/оси-макс raw-клейма края без rci+dim-якоря; гейт G2.5 worlds= для w528; work/AG-385 | 0 POST
 FACT | AG-374 w527 | census v2 4/4 PASS: alias on real dgw1024 curve, TOTAL=2334 (v1 7002=3x), legacy kept | tests
 PATCH_SUMMARY | AG-374 w527 | files=census_ag342.py,claims,work,clm/AG-374 | idea=G6-FPV2 alias v2 | ev=c09852ef
+CLAIM | AG-378 w527 | ci WBR-echo fix: canary-guard if-success гейт @master f10e7b8c + backlog-218q cancel (AG-54: AG-499 патч псевдо-дифф мёртв, лейн открыт) | 1 PATCH + cancel
