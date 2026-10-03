@@ -149,11 +149,11 @@ on:
       cpu_band_min:
         description: 'Pair-hunter fast-fail: min runner_cpu_index band (empty = no gate; S7-96d law pairing infra)'
         required: false
-        default: '10000000' # AG-318 x521 recal: pool drift 10.2-12.5M, fast-fail @12439811 (run-36815094025)
+        default: '6000000' # AG-397 x527 band-merge arb: ledger L8/L147 canon window 6.0-9.5M (AG-303 n=21); 10.2-12.5M recal = HI-mode mirage (AG-13 75/25)
       cpu_band_max:
         description: 'Pair-hunter fast-fail: max runner_cpu_index band (empty = no gate)'
         required: false
-        default: '13500000' # override per-dispatch for tighter pairing (e.g. anchor windows)
+        default: '9500000' # AG-397 x527: HI 11.4-12.5M outside norm-domain [6.5,9.0]M (AG-157) — re-roll canon L-466-C53.1, save pre-download
       natives_url:
         description: 'Closed-source natives tar.gz (empty = hotpatch-only mode)'
         required: false
