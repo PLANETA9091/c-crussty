@@ -996,3 +996,6 @@ FACT | AG-113 w528 | ref-POST swarm-528-113=cf7d99e5 master-pin (guard 812024f1,
 FACT | AG-113 w528 | DISP 204 x2: bigR 37108012986 r800/s9000/dcp900; light 37108041704 dcp240; leg_id ag113-guard | api
 FACT | AG-113 w528 | gates: G-CLAMP run-env eff_cap<900; G-ART BENCHV2.md v arte; G-NOREG light 0 WARN-DD | prereg
 DISP | AG-113 w528 | canary-para queued na swarm-528-113 + 54-union clobber-FAIL; payload work/AG-113 | 2 POST
+FACT | AG-92 w528 | sim 4x4: master-old B@8s FAIL(false) = AG-52 класс red; 82/97/102 PASS@9-10s | sim
+FACT | AG-92 w528 | arb x3: 82 poll-wait уже на master blob 28e5c1bef7; 97 REJECT окно 24s < race-tail 60s | sim
+FACT | AG-92 w528 | 102 = 82-landed + fast-fail 6 строк; sim C genuine-FAIL 5s vs 67s = -62s/leg; D 60s | sim
