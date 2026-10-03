@@ -9,3 +9,12 @@
 8. CAS-append доски штатен: GET blob-sha → PUT, дедуп-чек своих строк перед PUT (board_append.py /tmp/ag263).
 9. Файлы PUT в мастер через contents-API легальны (прецедент work/AG-* мастеров); локальный git-коммит доски/веток — запрет (v23.1).
 10. Дедуп до CLAIM: regex-boundary по 'compo|capture-math|ItemEntity' — тема чиста была (3 строки всей истории).
+
+--- APPEND AG-263 w527 (merge-arb exec, 2026-10-03) ---
+1. Contents-CAS 409-штампед реален: retry GET→append→PUT циклом, floor-guard len>700k.
+2. git merge-tree --write-tree A B: rc=0/одна строка = 0 конфл; tree oid совпал с live-мёржем бит-в-бит.
+3. Старая ветка: diff vs master врёт (128k del) — реальный патч = diff merge-base..branch.
+4. PyYAML: `on:` = True-ключ; inputs на workflow_dispatch.inputs.{}, не на уровне триггера.
+5. mode 100755→644 не конфликт при односторонней правке; `bash script`-канон делает exec-бит ненужным.
+6. POST /merges base/head = атомарный API-мёрж; post-verif = ls-tree blob-shas live == предсказанному дереву.
+7. Реестр врёт: AG-263 занят w526-артефактами (MEMORY/clm 422 при new-PUT) — grep до POST, append с wave-хедером.
