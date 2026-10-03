@@ -26,7 +26,13 @@
 
 name: world-bench-ab
 
+# Push-trigger self-start canary (AG-289 f881e2fb pattern): the dispatch API
+# 404s for workflows that exist only on a non-default branch; pushing to this
+# branch fires the A/A calibration pair instead. Push runs are branch-scoped.
 on:
+  push:
+    branches:
+      - swarm-527-377
   workflow_dispatch:
     inputs:
       lever_flag:
