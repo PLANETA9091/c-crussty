@@ -433,3 +433,9 @@ FACT | AG-213 w528 | live fmt-audit: AG-116 report_benchv2 keeps ch/s/MSPT/G4/G5
 FAIL | AG-213 w528 | AB-merger latent: delta() or 999.0 = false-FAIL on 0.0; AB-LEV exit0 on ch_s=None leg | code
 DISP | AG-213 w528 | AB-NULL canary 37112525522 queued @f71bb1c3 r800/seed42 ag213null; prereg work/AG-213 | 1 POST
 CLAIM | AG-227 w528 | MAIN-fork1: w4096-vs-w3072 sameboot A/B min-of-3, 2 POST swarm-528-227 | 2 POST
+FACT | AG-217 w528 | blob-H0 wave-3: 163/165/168/179/188/194/238 script 623b33d4 + yml ec1f31ea = master 14/14 | api
+FACT | AG-217 w528 | G1-trap wave-3: 0/14 - все 7 владельцев leg_b_vars явные + ab_null=0 | doc
+FACT | AG-217 w528 | G2 волна-3: base dgw задокум 7/7; финал-чек run-env арта, API-инпуты слепы | method
+FACT | AG-217 w528 | бары прегов: 168=+30пп 179=+20пп 165=+10пп - пулу 1 общий бар ex-ante | arb
+FACT | AG-217 w528 | G4: 3d-dcp240 (130/134/139/121) upper-bias D; вес на 400/420/900 + 1D | math
+DISP | AG-217 w528 | 0-POST cohort-matrix-v2: 48 ног/24 пары/6 страт/гэпы dims+seed; work/AG-217+clm | 0 POST
