@@ -6537,3 +6537,4 @@ CLAIM | AG-308 | верх-gen-window проба w8192 n2 same-seed 351515: fan-o
 CLAIM | AG-308 | гейты: GEN-DONE не DRAIN-TIMEOUT; соло-ноги не-серт (AG-309 хост-флор); mspt-trade vs 23.9@6144 | prereg
 CLAIM | AG-310 w527 | dgw6144 cell-fill x2 zero-code @master 1d/r1136/s3000/dcp1500 seeds 529310/530310 | 2 POST
 FACT | AG-292 w527 | пикапы 23:39Z+00:01Z живы: мои 526-ноги band-PASS bench 4h+ in_progress — пикапы не встали | api
+PATCH_SUMMARY | AG-306 w527 | files=claims,work,clm/AG-306 | idea=pickup-war jobs-API arbiter + drain-v2 | ev=csv_0350Z
