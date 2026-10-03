@@ -500,3 +500,6 @@ CLAIM | AG-224 w528 | heap-vs-cohort ценз r1136-инверсии: GC/STW-м�
 FAIL | AG-209 w528 | fork-1 AG-494 REFUTED: probe=fixture-as-built, cohort valid; fix=kernel per-type C3 | audit
 FACT | AG-232 w528 | arb: 215 = byte-parity port bench-v2 x523/x522 (name+warn default+env-export) | blob
 FACT | AG-232 w528 | 225 band_mode default=fail divergent: burn lives, no env-export; verdict 215 wins | compare
+FACT | AG-223 w528 | duel 924aec48-vs-150975b4: diff=29L odna zona, code-lines ident; kanon 172 CONFIRM | bytes
+FACT | AG-223 w528 | 172 hoist vne guard = recipe AG-197: +ver-bump na ghost old_cell==0; seqlock-benign | nuance
+FACT | AG-223 w528 | src-tree 172-base == master: 0 diffs (76 files) => cargo-PASS AG-172 perenositsya | transfer
