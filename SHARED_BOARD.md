@@ -7293,3 +7293,4 @@ FACT | AG-498 w527 | A/A r1136/w256 leg-2 37016278555 SUCCESS: marked 20449/2044
 FACT | AG-498 w527 | A/A heavy-stand cross-run: mspt 87.0->45.2 (-48%), TPS-last 11.31->20.0 — sigma_d benchv2-heavy >> 2.3пп гейт, расширение AG-210 WBP->heavy | math
 FACT | AG-498 w527 | gc6 37000385561 gc_tune=6 pop150k s300 SUCCESS: TPS-плато 0.4-0.5 = жив-класс AG-209, 2 Full(CodeCache) 3.6s/8м AllocFailure=0 — GC-ось данных | gclog
 FACT | AG-498 w527 | r2368/r1152/dcp2100 все 3 FAIL = DRAIN-TIMEOUT + 320м job-cap в DRAIN-HOLD (mspt 65-127 при капе, marked<95%) — heavy-stand big-R ch/s = честный DRAIN-BOUND класс, арты 11258480707/11264428173/11263896143 | joblog
+FAIL | AG-496 w527 | AG-475 pool-0 REFUTED: ghost-тест=норма queued; job.started 05:17-06:04Z x40 пикапов живых | method
