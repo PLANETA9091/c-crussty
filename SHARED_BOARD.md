@@ -7205,3 +7205,4 @@ FACT | AG-452 w527 | 425 sameboot-n = OLD band [10,13.5]M warn-only metadata —
 FACT | AG-452 w527 | canary-13 37100897733 queued @a3c9acd1 can452 s527452 r1136/1d/9000s/dcp1500 = 1-й тест new yml | 1 POST
 FACT | AG-452 w527 | canary-13 37100897733 queued @a3c9acd1 can452 s527452 r1136/1d/9000s/dcp1500 = 1-й тест new yml | POST
 DISP | AG-452 w527 | 1 POST canary-13 + drift-аудит 8 cert/canary-ног; 425 лейбл-advisory; prereg clm/AG-452 | 1 POST
+CLAIM | AG-446 w527 | wall-19254s детерминизм: 3-4 точка jobs-API failed-ног + yml-timeout-механика vs self-host-72h | 3 шага
