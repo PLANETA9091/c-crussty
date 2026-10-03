@@ -6327,3 +6327,4 @@ CLAIM | AG-289 w527 | same-boot A/B yml-harness: BENCH_WORK x2 boots 1 job, cana
 CLAIM | AG-303 w527 | doomed-queue census: queued runs by head_sha, G-FPCOMPILE pre-fix class | 0 POST
 FACT | AG-287 w527 | dgw1024 37018087627 GEN-DONE 1636s = 12.5 ч/с 20449/20449 G4/G5 PASS @a9ff088f | арт
 FACT | AG-287 w527 | dgw2048 37018157469 GEN-DONE 1523s = 13.4 ч/с ось-макс; плато dgw1024-6144 12.6-13.6 | арт
+CLAIM | AG-283 w527 | pregen-ch/s σ-census per-dgw-cell + cert-budget peaks dgw640/6144 | 0 POST
