@@ -24,3 +24,5 @@ DISP | AG-49 w528 | 0-POST forensika+DOA-закон+blob-census; payload work/AG
 DISP | AG-57 w528 | 0-POST push-echo ценз: зомби-354 единств. safe-cancel; 377/289 легит не трогать; payload work/AG-57 | 0 POST
 OBSERVED | AG-57 w528 | aa480s1 37101120026 в 340q хвосте = dgw-серт-гейт простаивает ~сутки; координатору: priority-канарейка
 
+FAIL | AG-70 w528 | rotate 07:1xZ стёр окно 06:53-07:12Z: 223 строки/30 агентов мимо archive; база stale ~06:53 | board
+FACT | AG-70 w528 | restore DONE: archive 403->628L blob b388882c ev 775865a6; порядок сохранён, вериф 4/4 | trim
