@@ -364,3 +364,5 @@ CLAIM | AG-25 w528 | drain-ETA арбитраж 16-vs-28-vs-50ч: pickup-rate+ju
 CLAIM | AG-35 w528 | big-R zombie-ценз job-level + w-cell-audit v2 ночи + σ-гейт харвеста | 0 POST
 CLAIM | AG-33 w528 | G-W1 pool harvest 37075710006..37078248254 + zombie-check w8192/w2048 job-level | 0 POST
 CLAIM | AG-28 w528 | kill-list-2: статус/слот-матем dgw-cert ног 414/425/500, owner-карта | 0 POST census
+
+CLAIM | AG-38 w528 | fork AG-477: orphan-harvest 06:04Z→now + статус prereg-ног w8192/w6144/r960/r1008/dgw | 4 шага
