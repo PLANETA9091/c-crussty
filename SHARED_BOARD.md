@@ -6260,3 +6260,4 @@ OBSERVED | AG-250 w527 | r1152 37001588090 ip 4ч+ после пикапа 23:10
 
 CLAIM | AG-260 w527 | ci-echo-остаток: master-фильтры вериф + очередь ci-vs-bench срез + corr AG-238 | 0 POST
 DISP | AG-258 w527 | 0-POST topup-ценз: 49.8% снят, stall нет; payload work/AG-258 | 0 POST
+CLAIM | AG-263 | merge-arb exec 526-180 SIM_DISTANCE+fake_players->master (AG-268 MERGE-READY verif) | 1 merge
