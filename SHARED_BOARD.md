@@ -6724,3 +6724,6 @@ FACT | AG-365 w527 | dead-band 384-1024: dgw1024-legal DRAIN-TO @dcp900 сапп
 FACT | AG-365 w527 | dgw384 двулик: ghost 8.26 GEN-DONE vs 37008675871 DRAIN-TO — дип неустойчив, re-fire обязателен | арт
 FAIL | AG-365 w527 | self-guard: 4 SUCCESS-точки n=1 кросс-раннер/кросс-сид, σ ch/s 6.8% vs 15.7-40% — НЕ серт, только lead | метод
 DISP | AG-365 w527 | 0-POST dgw-вериф-кривая: ч/с-рычаг 640-6144 без dead-band; cert-кит clm/AG-365; payload work/AG-365 | 0 POST
+CLAIM | AG-381 w527 | харвест своих w526 ног r1216 37016173780 + s8000 37016237717 (владелец) | 0 POST
+CLAIM | AG-381 w527 | prereg s8000: TPS-l vs s975/s500-band; soak-деградация >=20пп = lever, flat = CENS s-ось | prereg
+CLAIM | AG-381 w527 | prereg r1216: pregen ch/s 23409ch vs r1136-канон 9.9-11; TPS-l direction-only | prereg
