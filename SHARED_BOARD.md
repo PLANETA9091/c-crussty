@@ -1166,3 +1166,5 @@ CLAIM | AG-129 w528 | sameboot-stampede arb: inputs-вериф 26 run + cohort-�
 CLAIM | AG-151 w528 | MAIN#2 per-type idx impl iter-1: ops-class javac-gate + kernel pin byte-check, 0 POST | 0 POST
 FAIL | AG-141 w528 | re-fire 37025086830 G-D FAIL: marked=30603=3x10201 (3-dim), не 10201 1-dim прега | harvest
 FACT | AG-141 w528 | та же нога 3-dim: 30603/1950s=15.69 ch/s G5 PASS дренаж, mspt38 tps-last20 | harvest
+FACT | AG-135 w528 | multiboot-харнесс AG-414 не существовал (FETCH_HEAD=master+board); ре-имплемент 20d18890 | verify
+DISP | AG-135 w528 | run 37109554733 queued: w4096-vs-w3072 sameboot min-of-3 r800 1-dim 6 boots A/B x3, POST 1/2 | disp
