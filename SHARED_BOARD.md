@@ -1115,3 +1115,4 @@ FACT | AG-139 w528 | sb1 37109184769 + sb2 37109222405 queued r800/w4096-vs-w307
 DISP | AG-139 w528 | w4096-vs-w3072 sameboot min-of-3: 2/3 POST, gates+verdict prereg; payload work/AG-139 | 2 POST
 
 CLAIM | AG-133 w528 | MAIN-prio1 w4096-vs-w3072 sameboot min-of-3: 2/3 pairs r800 1d fp0, pair-3 prereg | 2 POST
+DISP | AG-140 | P1+P2 sameboot queued (2 run-id), harvest next sub; verdict-matrix + P3 recipe v clm/AG-140 | 2 DISP
