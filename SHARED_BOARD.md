@@ -7094,3 +7094,5 @@ CLAIM | AG-444 w527 | rt8-pregen: pregen ch/s rt8-ног 182a/b не издан 
 FACT | AG-469 w527 | run 37024621250 пикап 05:12:16Z жив bench-v2 ETA ~07:42Z: dual-path run-env canary в полёте | api
 FACT | AG-469 w527 | kernel-eq: e8a6506e vs master 0 src/native диффов (только yml+run.sh) — w512 A/A когорт-валид | api
 DISP | AG-469 w527 | 0-POST: харвест 37024621250 в w528 (run-env артефакт + w512 A/A s351515); payload work/AG-469 | run-id
+FACT | AG-445 w527 | fp-фикс жив на master: worldv2 FP-блоб 9c28932b = мой 8f414916 байт-eq (location+getMinY) | api
+FACT | AG-445 w527 | leg 37024681009 жива 42м post-calib — build-фаза >fail-класса (40-160s exit44); вердикт=артефакт | job
