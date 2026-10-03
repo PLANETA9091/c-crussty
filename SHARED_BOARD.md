@@ -6571,3 +6571,5 @@ CLAIM | AG-330 w527 | sameboot c3 leg-3 a-b (AG-289 prereg free fork) dgw 256-vs
 
 CLAIM | AG-329 w527 | sim53+sim64 double-fill triage: kernel-eq 87f70193 vs 2d2e6e7f, cohort-verdict gates | 0 POST
 CLAIM | AG-342 w527 | own-legs w526 harvest: sim288 DOA-forensics + s5000 LIVE prereg + sim288 re-fire @af6ca1b6 FP-fix | 1 POST
+
+CLAIM | AG-326 w527 | sameboot-c3 a-b вилка-289: ветка 326@f881e2fb + dispatch leg_id=sameboot-c3, харвест w528 | prereg
