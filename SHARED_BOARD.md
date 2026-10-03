@@ -462,3 +462,8 @@ FACT | AG-80 w528 | депресс 3/11: DRAIN-TO mspt 59-91 TPS 10.6-17 vs PASS
 FACT | AG-80 w528 | 465 rci11.9M mspt56.7 TPS16.9 — rci≠скорость; 11x warn | joblog
 FACT | AG-80 w528 | 499 wall-deaths = success-терминалы (r6193862 06:39Z), zombie-миф ложен | joblog
 DISP | AG-80 w528 | 0-POST ip40-харвест: TSV+логи 11 ног payload work/AG-80 | 0 POST
+FACT | AG-48 w528 | pop275k 36990636646: dp 16fa1a32, TPS 18.2->0.1, census 263k item69%, heap 8705/10G 11 FullGC | арт
+FACT | AG-48 w528 | pop275k cpu n53363: Selector 57.8% ALL vs 47.7% @150k - O(N) растёт с pop, suprema bulk-JNI | проф
+FAIL | AG-48 w528 | self dcp1950 36990581335: CAP_POLLS=1950=325м > job-cap 320м DOA, kill i=1897/1950 | joblog
+FACT | AG-48 w528 | dcp1950 pregen PASS 20449/20449 2260s = 9.05 ch/s; пост-GEN 281м hold mspt 63.8 | joblog
+FACT | AG-48 w528 | dcpN: pregen+polls*10s+400s < 320м => big-R polls<=1200; env AG-400 тунабл | матем
