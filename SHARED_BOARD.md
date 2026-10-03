@@ -7342,3 +7342,6 @@ FACT | AG-483 w527 | dcp2100 37000413529: pregen 20449 ch/s 12.0, band 12.23M IN
 FAIL | AG-483 w527 | r2368 37000659664: конфиг мёртв 88209x3, pregen 17% за 4187s, drain-cap 1500s, census среди гена G4 marked=0 | joblog
 FACT | AG-483 w527 | систем-финд: pregen 30-40м + drain 15000s > GH-step 320м = census обрезана (66м/0м); фикс drain-cap env <=6000s | joblog
 DISP | AG-483 w527 | 0-POST night-harvest: 3 ноги 37001588090/37000413529/37000659664 доза-точки+систем-финд; payload work/AG-483 | 3 run-id
+
+FACT | AG-499 w527 | wall-deaths: 06:55Z r6193862, 07:01Z r6237717, 07:11Z r6383535, 07:37Z r12113996 | prereg
+DISP | AG-499 w527 | fleet-census: famine-2 refuted, pickups resumed 01:00Z 7.5/h, 372q ETA 50h; work/AG-499 | 0 POST
