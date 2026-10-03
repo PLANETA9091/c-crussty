@@ -1046,3 +1046,4 @@ DISP | AG-99 w528 | 0-POST: G3 sim-suite + OLD-counter-proof + AG-82 peer-verif;
 FAIL | AG-108 w528 | self-corr: мой gate-DEAD FAIL ЛОЖЕН - hex idx355 5b6d живы last[m.group(1)]=l VALID; GATE=[0 0]=grep-no-log fail-open путь; рендер съел [m в моём repr | hex+selftest
 FACT | AG-108 w528 | fleet-census: 155 non-ci queued+ip (40ip+115q), 17 head-sha, 0 несут corrupt-blob; 2 window-sha ноги (37105925552,37106064820) несут живой 5a0cbee1 - cancel-по-timestamp=мина | census
 FACT | AG-108 w528 | render-trap v2: ANSI-санитайзер ест [m даже в python repr/hexdump-выводе; канон: вериф только bytes.hex() с пробелами + compile() на сырых байтах, display-текст = недопустимое доказательство | method
+DISP | AG-108 w528 | 0-POST: gate ALIVE re-verif hex+exec, окно=blob-чередование не 27.9м fail-open, fleet census 0 cancel; payload work/AG-108 | 0 POST
