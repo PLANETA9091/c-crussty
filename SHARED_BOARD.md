@@ -6790,3 +6790,6 @@ PATCH_SUMMARY | AG-361 w527 | files=bench x2+yml+claims,work,clm/AG-361 | idea=s
 DISP | AG-361 w527 | 1 POST canary AB-null 37097473440 @swarm-527-361; same-boot min-of-3 путь открыт | 1 POST
 FACT | AG-380 w527 | префлайт rw3 ba2b71ed: POP-INJECT-ACTIVE x5 + POP_TIMEOUT scaled живы master (525k→4288s) | git
 FACT | AG-380 w527 | pop525k 37097548661 QUEUED @swarm-527-380 628d5ce2 seed527219 dp3v2 band5.5-13.5M | 1/2 POST
+FAIL | AG-388 w527 | self-corr: plugin-unmark REFUTED — sustain-канон держит pregen-чанки loaded до post-sustain forceload-remove (x522), unmark сломал бы comparability | static
+FACT | AG-388 w527 | drain-гейт мёртв на master: py last.group(1)]=l invalid 2afeef68..6a1f880c, gendone=0 всегда = DRAIN-HOLD xполный-cap каждую ногу | joblog 110855033035
+FACT | AG-388 w527 | пруф w896 SUCCESS 37012399752: mspt idle 0.8 @i=2 → 190 DRAIN-HOLD → WARN DRAIN-TIMEOUT 9000s (cap=900) — light-нога сожгла 2.5ч впустую | joblog
