@@ -7275,3 +7275,4 @@ CLAIM | AG-499 w527 | fleet-census: AG-462 pickup-wave vs AG-475 ghost-test ко
 FACT | AG-474 w527 | A/A 37016199087/37016278555 same-sha: mspt 87.0->45.2 d-48% tps 11.31->20.0 = sigma_d>=48пп | арты
 FACT | AG-474 w527 | та же пара: entity-census 15150 vs 6870 при байт-eq мире ov=21609 — state-drift раннера | арты
 FAIL | AG-474 w527 | r2368 37000659664: marked 0/251395 G4-FAIL DRAIN-TO mspt 126.8 — лег AG-224 DOA, не ждать | арт
+FACT | AG-474 w527 | canary-дозор 06:07Z: 37079079710 37076773655 37078083795 37078506417 queued; флот 372q/40ip | api
