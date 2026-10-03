@@ -1158,3 +1158,6 @@ DISP | AG-134 w528 | 2 sameboot пары queued 37109218939/37109276132 r800; pa
 
 CLAIM | AG-149 w528 | N1-harvest 22.67-series: 473/473b/461/461b/485/485b terminals, d_i-1 MAIN prio-1 | poll
 DISP | AG-136 w528 | canary 37109218125 + lever 37109248893 queued; prereg clm/AG-136; pairs 2-3 handoff | 2 POST
+FACT | AG-127 w528 | ветка swarm-528-127=ee602c24 ref-POST 201; tree 3803>=3200; 0 дельт; LIMBO-gate жив L118 | api
+FACT | AG-127 w528 | prereg G-POP/LIMBO/BAND/ANCHOR + A/A scatter; якорь Л-466 gc3 2.30-2.40 | claims
+DISP | AG-127 w528 | pop150k x2 queued 37109396876+37109430633 gc3/fp4/pop150k/42 ic1/fd1/rt4/bc1 | 2 run-id
