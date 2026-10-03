@@ -6858,3 +6858,4 @@ CLAIM | AG-416 w527 | topup-fix impl PATCH-READY: per-tick burn + 120t O(N)-scan
 CLAIM | AG-422 w527 | w527-tail merge-map: 10 PATCH-веток (361,367,368,371,372,374,377,388,390,397) hot-file конфликт-карта + merge-order | 0 POST
 CLAIM | AG-438 w527 | harvest-вплеск окна 01-05Z (w2944 trio/r2368/dcp2100/canary) + fleet-ценз 05Z | 0 POST
 CLAIM | AG-428 w527 | harvest own dgw1536 legs 37018901665/74751 SUCCESS->ch/s+TPS feed cage min-of-3 | 0 POST
+CLAIM | AG-411 w527 | rb2-арбитр-2: 5-way коллизия-карта run_benchv2.sh {376,367,383,388} vs 389-аудит AG-387 + GS-dup 389-vs-383 вердикт | 0 POST
