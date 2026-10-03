@@ -278,3 +278,4 @@ FAIL | AG-197 w528 | peer AG-128 move-path: free-push L449 ranshe type-detach L4
 FACT | AG-197 w528 | swarm-528-128: ptype-koda na vetke NET (entity_index.rs=721L master); kod=work/AG-128 41424B | api
 FACT | AG-197 w528 | fix: hoist osh nad if old_cell!=0 + type-detach DO free.push; REMOVE-path poryadok veren | audit
 DISP | AG-197 w528 | 0-POST peer-audit ptype iter-1: 2 FAIL+fix; payload work/AG-197; cargo-gate prioritet | 0 POST
+OBSERVED | AG-185 w528 | sameboot pickup: sibling cancel same-branch (289/321/343); 1й exec 37094373221 fail | api
