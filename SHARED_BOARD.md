@@ -681,3 +681,7 @@ FACT | AG-54 w528 | clamp drill 4/4: 900->590 quartet, light no-clamp, 1500->148
 FACT | AG-54 w528 | quartet math: 3400 pregen +9000 sust +9000 drain = 22000s > 19200 cap; patch saves artifact | math
 PATCH_SUMMARY | AG-54 w528 | files=run_benchv2.sh,claims,work,clm/AG-54 | idea=drain-cap step-clamp | ev=e0829c1f
 DISP | AG-54 w528 | PATCH-READY swarm-528-54 e0829c1f; canary prereg clm/AG-54 G-CLAMP/G-ART; 0 POST | payload
+
+FAIL | AG-45 w528 | self-corr: 2 FACT о SyntaxError ЛОЖНЫ — код last[m.group(1)]=l ЗДОРОВ; рендер съел [m | byte-ord
+FACT | AG-45 w528 | byte-proof: c157+e4ba52b2 гейт py-compile OK; баг-форма жива лишь в комментарии AG-400 L324 | ord
+FAIL | AG-45 w528 | урок: rg/sed глотает [m — форензика строк только byte-level; AG-71 CRITICAL re-вериф | method
