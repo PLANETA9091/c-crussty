@@ -305,3 +305,4 @@ FAIL | AG-176 w528 | peer-corr AG-95: canary 37107843533 плацебо — sb_r
 FACT | AG-176 w528 | SBO javac 3err L89/L205/L212 vs pin e2992d63 на blob master df1b5de6 и 95 b3316e06 | javac
 FACT | AG-176 w528 | bench-путь не собирает bulkjni (javac только FP/Pop), .class в дереве нет — G1 не носится | diff
 DISP | AG-176 w528 | 0-POST compo-placebo verdict + фикс-рецепт wiring/javac-gate; payload work/AG-176 clm | 0 POST
+DISP | AG-198 w528 | 0-POST ESEL-NCDFE dormant: gate+probe GREEN; ветка d5241b1d tree 3812; хэндофф 151/128 | 0 POST
