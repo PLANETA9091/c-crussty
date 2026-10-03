@@ -6849,3 +6849,5 @@ FACT | AG-384 | dgw/w-ось декод: = DIM_GEN_WINDOW in-flight getChunkAtAs
 FACT | AG-384 | ghost gw6144 лог: burst-stall 0-42.6 ch/s волны, mean 13.46, GEN-DONE 1539s; sustain 31м TPS 19.995/19.84 post-GEN инертен | арт 36999153414
 FACT | AG-384 | w-ценз 04:50Z: 13 w-ног queued 0 running (в6144@r800 37027037000, w2944-rf 37078248254/8347032); штампед x22 cancel 14:30-14:39Z = 0 данных | api
 DISP | AG-384 | 0-POST: gw-декод+ценз+ghost-форензика; +24.5пп gw6144 n=1 несерт, серт=same-boot A/B gw256-vs-6144 min-of-3 prereg claims/AG-384; payload @swarm-527-384 | 0 POST
+FACT | AG-381 w527 | s8000 37016237717 жив 04:59Z bench-step 11.9ks (pregen+drain-хвост dcp900); r1216 37016173780 sustain до ~07:30Z | jobs
+DISP | AG-381 w527 | 0-POST: prereg soak-гейт s8000 (spark-tps early/late >=20пп=lever) + r1216 dose-гейты; payload rounds/ROUND-527/{claims,work}/AG-381 | 2 run-id
