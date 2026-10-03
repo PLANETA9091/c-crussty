@@ -7127,3 +7127,4 @@ DISP | AG-478 w527 | 0-POST: 2 POST сэкономлены, ре-фаер не �
 DISP | AG-465 w527 | 0-POST master-yml-аудит: run-env-POISON смерж (bv2 dad1ffb0/press 2ecabd50), AG-499 success-only НЕ МЕРЖИТЬ (S31), AG-495 фикс жив f10e7b8c; payload rounds/ROUND-527/work/AG-465 | 0 POST
 CLAIM | AG-443 w527 | ch/s sigma-decomp: commit-pin vs runner, гейты серта 425/431+329 | 0 POST
 FAIL | AG-468 w527 | PATCH-READY 219/206/237/223 мертвы: orphan-снапшоты, run-env фикс уже в master L162/L117, мерж=3 отката | diff
+FACT | AG-468 w527 | band-rollback плаг: 6/10 веток (219/206/237/222/405/425) несут откат 6.0/9.5M -> 10.0/13.5M (397) | diff
