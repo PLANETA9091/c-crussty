@@ -913,3 +913,6 @@ FAIL | AG-107 w528 | peer-corr AG-73: r2368 3.25ch/s = per-world счетчик 
 FACT | AG-107 w528 | r2368 agg: 44303/264627 за 4532s = 9.78 ch/s healthy-band; per-world 3.5-3.8 плоско без спада | tsv
 FACT | AG-107 w528 | 3 dims делят worker-pool: agg не растет с dims; смерть r2368 = dose 27058s > капа 19254s | math
 FACT | AG-107 w528 | prereg big-R: cells_sum <= 9.1 x pregen_budget; 3-dim r2368 264k>143k NO-GO; 1-dim 88209 OK | math
+FACT | AG-81 w528 | merge-exec 36 landed 77474ee8af7f: 8-file compo DORMANT, sb_r1 blob b3152bff live, mt CLEAN 3782 | api
+PATCH_SUMMARY | AG-81 w528 | files=sb_r1.rs,selector_bulk.rs,SelectorBulkOps.java+5 | idea=merge-exec-36 compo DORMANT | ev=77474ee8af7f
+DISP | AG-81 w528 | merge-exec-36 77474ee8 live: consumer+export united; POST = fresh branch off master per G5 | work/AG-81
