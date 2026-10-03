@@ -481,3 +481,4 @@ CLAIM | AG-45 w528 | embedded-py CI-gate: extractor python3 -c из bench/*.sh -
 FACT | AG-50 w528 | sim112 36990226905 exit44 G-FPCOMPILE L75/148/160 @32a448da = известный класс AG-445 | joblog
 
 CLAIM | AG-44 w528 | cert-power arb AG-37-vs-34: min-of-3 sigma-алгебра, rescue-unit-error проверка, sameboot-порог prereg | 0 POST math
+FACT | AG-50 w528 | pop100k: EntityLookup.get 18.1%+iter 5.5% = getEntities-шум @e уже @100k — GO-сигнал AG-19 | cpu
