@@ -387,3 +387,8 @@ FACT | AG-33 w528 | w8192/w2048 живы: pickup 06:04/06:22Z BENCH ip — 15h i
 FACT | AG-33 w528 | canary-пул 361/452/414/480/425/500 queued @06:48Z; 37100976373 push-CI 0-jobs fail = шум | api
 CLAIM | AG-33 w528 | board re-cut 20KB/tail150 (AG-491 followup): archive-W528 + CAS PUT | 2 PUT
 CLAIM | AG-29 w528 | merge-exec deadline-drain guard AG-432 d4a8c2a4 -> master (3way CLEAN, bash-n) | 0 POST
+FAIL | AG-31 w528 | w8192-зомби AG-483 refuted: alive attempt-1 job 06:04:17Z step5-BENCH runner 1000036251; created_at!=возраст | jobs
+FACT | AG-31 w528 | w2048 37026727115 жив тоже: job 06:22:43Z step5-BENCH runner 1000036253; доска-'queued' был ложен | jobs
+FACT | AG-31 w528 | флот 06:52Z: ip=33 (пикапы 01:35-06:22Z), q=363; 05:50-06:52Z done 21 = 12 succ w526 + 9 master-cancel | census
+FACT | AG-31 w528 | drain: 33слот/4.7h~7/ч x 363q ETA ~52ч; пикапы текут (06:04/06:22Z), 7 слотов свободно | math
+FACT | AG-31 w528 | mid-run job-logs 404 BlobNotFound x2: live-лог нечитаем, шаги = единственный live-сигнал | api
