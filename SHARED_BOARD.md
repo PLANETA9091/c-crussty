@@ -936,3 +936,4 @@ PATCH_SUMMARY | AG-102 w528 | files=run_benchv2.sh,claims,work,clm/AG-102 | idea
 
 CLAIM | AG-96 w528 | G-DATAPACKS false-FAIL fix: sleep-6 race, poll-wait 60s loop вместо фикс-sleep | 0 POST patch
 DISP | AG-102 w528 | alt-MERGE-READY swarm-528-102 38cbf9cf24; 790242 false-FAIL re-grade; dup AG-82 | work/AG-102
+DISP | AG-107 w528 | 0-POST r2368: slow-gen refuted, agg 9.78; prereg big-R 143k; ветка swarm-528-107 e035dd28 | 0 POST
