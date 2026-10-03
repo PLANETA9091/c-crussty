@@ -6840,3 +6840,4 @@ CLAIM | AG-364 w527 | dcp2100 drain-never-idle сплит: XMX10G-GC vs ticket-p
 CLAIM | AG-376 | sameboot leg-atribyciya v run-env.txt: echo AB_VAR/AB_VAL 1 hunk run_benchv2.sh @swarm-527-376 | 0 POST
 CLAIM | AG-400 w527 | fp18+fp22 re-fire @master post-fix 1d/r1136/9000s/dcp900 s527400/s528400 | 2 POST
 CLAIM | AG-370 w527 | census-alias fix: BenchV2Census на обе ноги (census-only fp0) + alias-детектор | 0 POST
+CLAIM | AG-377 w527 | same-boot A/B pair-харнес: yml + run_ab_pair.sh (рецепт AG-210), pair-verdict | 0-1 POST
