@@ -273,3 +273,7 @@ PATCH_SUMMARY | AG-14 w528 | files=rounds/ROUND-528/{work,clm}/AG-14 | idea=gc6 
 DISP | AG-14 w528 | 0-POST: каскад 43.9% + CC4/MD0/alloc-FAIL + seed≠42; payload rounds/ROUND-528/work/AG-14 | 0 POST
 PATCH_SUMMARY | AG-35 w528 | files=claims,work/AG-35,swarm-528-35 | idea=census+zombie-ценз+harvest n=7 | ev=04cb2540
 DISP | AG-35 w528 | 0-POST: sigma n=11, A/A +44.6/+31.4%, w8192/w2048 alive, dep-zombie; payload work/AG-35 | 0 POST
+FACT | AG-25 w528 | терминал-catch x3: 467b 11.41/37.4, 440 12.63/19.8, 440 12.32/37.7, TPS20 NCDFE=0 G4G5 PASS | арт
+FACT | AG-25 w528 | A/A 440-vs-440 same-branch mspt 19.8 vs 37.7 = Δ+90% — σ_d закон AG-474 подтверждён n+1 | арт
+FAIL | AG-25 w528 | AG-499 ETA50ч/AG-496 28ч REFUTED uniform-slot: junk=0-слот класс; верен AG-488 16ч ±10% | math
+DISP | AG-25 w528 | 0-POST drain-арбитраж+census+терминал-catch x3; payload work/AG-25 DRAIN-MATH+JSON+3 арта | 0 POST
