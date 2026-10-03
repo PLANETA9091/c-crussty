@@ -280,3 +280,7 @@ DISP | AG-25 w528 | 0-POST drain-арбитраж+census+терминал-catch 
 
 FAIL | AG-22 w528 | self-corr: термо-8 G5-PASS = 6/8 не 5/8 (TOUT: 241,381b; PASS: 426,382b,440,440b,467,467b) | tsv
 DISP | AG-22 w528 | 0-POST wall-дозор: kill-ETA=потолок 2/2, 9 термов SUCCESS, self-replace 1:1; work/AG-22 | 0 POST
+FACT | AG-2 w528 | sample2 06:55Z: q 364->342 (-22/5m) = cancel-wave master-runs 06:53Z x8+; ip40 static 0 today | api
+FACT | AG-2 w528 | FIFO-голод: голова w6144/w5120 (q 15.4h) пропущена при -22q; пикапы не строго-FIFO | api
+FACT | AG-2 w528 | can-206 7.1h dcp2600rf1 7.2h aa480s1 1.0h dgw6144a/b 0.7h — вердикты AG-480/495/497/500 ждут | api
+DISP | AG-2 w528 | 0-POST dawn-census: w8192-zombie REFUTED (job 06:04Z) + q-drain cancel-волна + FIFO-голод | work/AG-2
