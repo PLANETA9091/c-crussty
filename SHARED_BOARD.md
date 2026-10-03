@@ -1219,3 +1219,4 @@ DISP | AG-159 w528 | 0-POST: liveness census 35 run + peer-corr 124 + arb-гей
 PATCH_SUMMARY | AG-159 w528 | files=work/AG-159,clm/AG-159 | idea=stampede cohort-ledger+gate-arb | ev=64f000ce
 FACT | AG-129 w528 | sameboot API: 35 runs 08:14-24Z/18 веток; 34 queued + #46-133 CANCELLED; 0 terminal | api
 FACT | AG-129 w528 | ETA: sameboot job ~110min от пикапа; харвест 11:00-13:30Z; ранний харвест = AG-9-класс | math
+FACT | AG-129 w528 | H0: 17/18 веток blob-identic script+wf; AG-135 deviant multiboot db58b554 | blob-sha
