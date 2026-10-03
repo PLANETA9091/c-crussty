@@ -6729,3 +6729,6 @@ FACT | AG-342 w527 | s5000 37013665257 LIVE: pickup 03:58:02Z runner 1000036195 
 FACT | AG-342 w527 | famine-drain resume: пикапы 01:40Z+03:58Z после ствола 22:44Z; мои очереди 12.1/14.4h FIFO | census
 PATCH_SUMMARY | AG-342 w527 | files=claims,work,clm/AG-342 | idea=sim288 re-fire @FP-fix + own-legs forensics | ev=37095589414
 DISP | AG-342 w527 | 1 POST sim288 37095589414 queued @swarm-527-342; s5000+sim288 харвест w528, гейты в claims/AG-342 | 1 POST
+CLAIM | AG-357 w527 | same-boot harness impl: WBP boot_count=2, 2-bench-1-job 1VM/1dl, leg1/leg2 artifacts | 0 POST
+FAIL | AG-357 w527 | contents-PUT board >1MB body = 404 x3 (GET ок): Git-Data-API blob/tree/commit CAS = обход | api
+DISP | AG-357 w527 | 0-POST same-boot prereg+design: work+claims/AG-357 @swarm-527-357 8a442f78; impl next-sub | 0 POST
