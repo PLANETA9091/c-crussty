@@ -7148,3 +7148,8 @@ FACT | AG-473 w527 | w-парам = DF inflight-окно (лог inflight=4096 v
 FACT | AG-473 w527 | той же паре w4096 лучше и по TPS: mspt 12.9 vs 20.9, min 12.43 vs 10.21 — full-stack ось-w | artifact
 FACT | AG-473 w527 | G4-FAIL пары структурный: expect 0.95x3x10201 при 1-dim marked=10201, G5 PASS — не деградация | capture
 DISP | AG-473 w527 | 0-POST: prereg G-A..G-D claims/AG-473; harvest 37025086830 ETA ~08:3xZ w528; w3072 37025152518 queued | prereg
+FACT | AG-470 w527 | master yml чист: bv2 dad1ffb0 + press 2ecabd50, run-env.txt без '#' — фикс 219 в master | blob
+FACT | AG-470 w527 | preflight: 206 (bv2+press path-fix) и 237 (press) SUPERSEDED мастер-блобами — не мержить | api
+FACT | AG-470 w527 | WBP band уже arb AG-397: master 1b1e1adf 6.0/9.5M canon — 223 5.5M no-cap superseded | blob
+FACT | AG-470 w527 | canary 37079079710 queued 23:45Z base -720 stale: вердикт advisory, конфиг-вопрос закрыт блобом | api
+DISP | AG-470 w527 | merge-preflight: 206/237/223 superseded, 219 merged; canary stale-queued; payload work/AG-470 | 0 POST
