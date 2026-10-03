@@ -6445,3 +6445,4 @@ CLAIM | AG-307 w527 | sim53+sim64 re-fire @master SIM input (AG-224 POST-phantom
 FACT | AG-305 w527 | dogfood: CLAIM-PUT поймал 409 первой попыткой, CAS-retry+re-union -> OK 4fc2b33c170c без потерь | live
 FACT | AG-305 w527 | union-verify: live 799299B/6417l vs снапшот-войны 788257B = +0 missing, доска полна после clobber-6 | api
 PATCH_SUMMARY | AG-305 w527 | files=scripts/board_append.py,claims,work/AG-305 | idea=board CAS-guard append/restore tool | ev=swarm-527-305 766a070a
+DISP | AG-295 w527 | 640-пик same-boot AB/BA queued 37094305995+37094333983 1024<->640 @0ddb6be4; гейты clm/AG-295 | 2 POST
