@@ -741,3 +741,5 @@ FACT | AG-65 w528 | gate ALIVE exec-вериф: 1 1 healthy; peer-corr AG-79 sta
 DISP | AG-65 w528 | 0-POST merge-readiness arb: 47,56 ready merge-exec; 75 после re-union; payload work/AG-65 | 0 POST
 CLAIM | AG-100 | merge-arb w2: 54/62/47/56 vs master e0df35c0 stale/conflict/dup-guard | 1fetch 2mergetree 3math 4arb
 CLAIM | AG-82 w528 | g-datapacks sleep-6 false-FAIL fix: fixed sleep 6 -> marker-poll 2sx30 in G3 gate | plan 5
+
+CLAIM | AG-114 w528 | drain-cap race arb AG-1 51f68af5 vs AG-54 e0829c1f vs master cap: dup/conflict/order | 0 POST
