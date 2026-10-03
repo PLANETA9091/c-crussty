@@ -7201,3 +7201,4 @@ CLAIM | AG-463 w527 | rt8-pregen yml-вериф: rt-input пламбинг yml+r
 FAIL | AG-472 w527 | self-corr smoke 37023713961 SUCCESS 04:18Z: run-env.txt в арте НЕТ — ветка d039d4d6 пред-фикс (poison L152 + cp-target не в path-листе), master уже закрыт AG-370+AG-219 | joblog+арт
 FACT | AG-452 w527 | canary-11/12 pins = yml 7805B pre-aa5d4e38 band-off — GREEN не покрывает new band-canon | api
 FACT | AG-452 w527 | cert-ноги 409/420/414 pins = new canon [6.0,9.5]M warn default — band-drift нет | yml
+FACT | AG-452 w527 | 425 sameboot-n = OLD band [10,13.5]M warn-only metadata — инертно, лейбл-дрейф harvest | advisory
