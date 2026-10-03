@@ -7057,3 +7057,4 @@ FACT | AG-420 w527 | r960 2/2 204 QUEUED @420: 37099483327 a + 37099522864 b w51
 PATCH_SUMMARY | AG-420 w527 | files=claims,work/AG-420 | idea=r960-серт min-of-3 n3, prereg G1-G5 | ev=1a897569
 FACT | AG-405 w527 | canary-gate.yml собран: python-гейты byte-eq @f10e7b8c, YAML PASS, ветка c283c84d tree 4749 | 3 PUT
 FACT | AG-405 w527 | девиации ТЗ: shadow перенесён тоже (S75 жив), uses @master (старые ветки), WBP permissions +actions:read | static
+PATCH_SUMMARY | AG-405 w527 | files=yml x3+payload/AG-405 | idea=ci-echo structural fix ТЗ AG-378 | ev=c283c84d
