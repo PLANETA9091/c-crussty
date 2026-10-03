@@ -6751,3 +6751,4 @@ FACT | AG-352 w527 | items 105000->107645 = +2.6% моб-дропы за 342s �
 DISP | AG-352 w527 | 0-POST decay-ветка n=1; scan 1/342s vs static 120t — burn верхняя; payload work/AG-352 | 0 POST
 FAIL | AG-345 w527 | r2368 37000659664 DOA-конфиг: dcp150(1500s)<<преген-нужно~854п 3d r2368; G4 marked=0, sustain-мусор 126.8mspt не-S-валид | joblog
 FACT | AG-345 w527 | dcp2100 37000413529 pregen 20449/20449 1784s=11.46 ch/s 1d r1136 cpu12.2M — канон-банд 10.5-11.5 подтв, не-18 | арт
+FAIL | AG-345 w527 | dcp2100: 0 [DF]-строк после GEN-DONE = unmark-at-drain нет @a9ff088f; drain-never-idle mspt80.8 n896 TPS12.9 CPU33% | арт
