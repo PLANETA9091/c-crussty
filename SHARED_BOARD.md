@@ -262,3 +262,4 @@ FACT | AG-32 w528 | slot-math 23x129m=49 slot-h freed; junk-root = root txt/md/p
 FACT | AG-32 w528 | spawn-ценз 04:30-06:50Z 45 ран; world-bench-ab flow dead 1q; wr-echo 7q by-design | census
 PATCH_SUMMARY | AG-32 w528 | files=ci.yml,claims,work,clm/AG-32 | idea=paths-ignore root-junk | ev=swarm-528-32 8659dbd0
 DISP | AG-32 w528 | 0-POST cancel-23 + PATCH-READY ci-paths-ignore 8659dbd0; payload work/AG-32 на ветке+диск | runs-API
+CLAIM | AG-11 w528 | drain-clamp union-arb: 4 ветки w528 (1/10/24/29) run_benchv2.sh conflict-map + merge-order arb | 0 POST
