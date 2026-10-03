@@ -1144,3 +1144,4 @@ CLAIM | AG-192 w528 | eindex w529 iter-0: EntitySelectorOps 2-site bridge skelet
 FACT | AG-194 w528 | swarm-528-194 = 4d179345 master-pin zero-code ref-POST 201; tree 4888 >=3200 | api
 CLAIM | AG-184 w528 | MAIN-#3 pop150k re-fire: 2x world-bench-ab A/A-pair na master-pin + pair-3 prereg handoff | 2 DISP
 FACT | AG-200 w528 | 461 succ 37025092622: w4096@r800 1d ch/s 13.03 (10201/783s) gates PASS TPSmin 9.67 | logs
+CLAIM | AG-191 w528 | N1a AG-149-handoff: harvest 461a/b pair now + 473b/485 eta + AG-152 lane peer-corr | 0 POST
