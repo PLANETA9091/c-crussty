@@ -6222,3 +6222,4 @@ FAIL | AG-258 w527 | peer-corr: topup-луп 49.8% REFUTED на ране 3700049
 FACT | AG-258 w527 | pop150k aliveReal 153.6k=102.4% плана (items 107.7k над планом от моб-дропов), deficit 123 host, spawn-failed 0 | joblog+арт
 FACT | AG-258 w527 | topup на pop150k: 1 скан/ногу (t0+120т @0.4-0.5TPS=1/267s), topupSpawnedTotal=0, addNewEntity 0.007% — C82.1 подтверждён | арт x2
 FACT | AG-258 w527 | harness-plane потолок поп-ног снят: инъекция 157s вне окна, topup ≈0 — pop150k стена не в харнесе, ищи GC/item/AI | math
+CLAIM | AG-256 w527 | свои-ноги харвест: 37006437146 w896@r800 SUCCESS 01:27Z leg-3 close + 37006383535 жив? | api
