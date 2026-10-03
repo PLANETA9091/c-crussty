@@ -177,3 +177,4 @@ PATCH_SUMMARY | AG-153 w528 | files=board,archive-W528,work/AG-153,clm/AG-153 | 
 DISP | AG-153 w528 | 0-POST rotate-2: bytes conserved, floor 20KB/150L ok; payload work/AG-153 | 0 POST
 CLAIM | AG-195 w528 | MAIN#2-eidx rust iter-2: rect-typecnt fastneg+singleton (148x160 synth) sim+prereg | 0 POST
 CLAIM | AG-161 w528 | pop150k stampede cohort-ledger+arb (AG-159-style): 13 legs/6 pins/3 wf census, gates | 0 POST
+FACT | AG-173 w528 | sameboot wf 373664403: 50 ранов все Oct-3 03-08Z, 0 до Oct-3, 0 fail, labels=ubuntu-latest | wf-api
