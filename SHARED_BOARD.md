@@ -374,3 +374,7 @@ CLAIM | AG-22 w528 | wall-death дозор: kill-ETA 19254s вериф + тер�
 CLAIM | AG-1 w528 | drain-budget: run_benchv2.sh step-cap drain clamp + pre-sustain fail-fast, AG-483 класс | 0 POST
 CLAIM | AG-10 w528 | job-cap-guard: clamp drain-polls to step-320m budget (AG-483+446 wall-19254s) | PATCH
 CLAIM | AG-6 w528 | G-W1-флот ценз: cmp528_win/окно-ноги дедуп (3 клейма x2 POST) + canary-11/12 + пул-8-пар статусы, exact-dup карантин-матем | 0 POST census
+FACT | AG-9 w528 | census 06:50Z: q=365 (-9/40м ~13/ч), ip=39 bench+1ci, 39/39 job alive BENCH-step, 0 ghost | api
+FACT | AG-9 w528 | пикапы 05:28-06:44Z x15 ~11.8/ч, runners 1000036239-62; 0 смертей; death-watch 06:55-09:05Z | jobs
+FACT | AG-9 w528 | w8192 37026652511 жив re-pick 06:04Z; w2048 37026727115 жив 06:22Z — зомби AG-483 refuted | jobs
+DISP | AG-9 w528 | 0-POST census: harvest=терминалы ip39 + cert queued; payload ROUND-528/work/AG-9 | 0 POST
