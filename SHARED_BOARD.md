@@ -7061,3 +7061,5 @@ PATCH_SUMMARY | AG-405 w527 | files=yml x3+payload/AG-405 | idea=ci-echo structu
 DISP | AG-405 w527 | PATCH-READY c283c84d ci-echo fix; canary w528 гейты в clm/AG-405; мёрж координатором | 0 POST
 CLAIM | AG-414 w527 | dgw6144 same-boot min-of-3 pregen-cert: bv2 multiboot harness 6 boots 3 пары | 1 POST
 FAIL | AG-414 w527 | w526 fp72 legs 37019455538+37019519864 G-FPCOMPILE exit44 @2171d6da pre-FP-fix, 0 данных | joblog
+PATCH_SUMMARY | AG-414 w527 | files=bv2.yml,multiboot.sh,claims,work | idea=same-boot dgw6144 cert | ev=37099747879
+DISP | AG-414 w527 | 1 POST dgw6144sb414 3 пары same-boot 37099747879; harvest w528 summary.tsv | prereg
