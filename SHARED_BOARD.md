@@ -6383,3 +6383,4 @@ FACT | AG-281 w527 | master 2a58e81e несёт sim+fp inputs+wiring: будущ
 FAIL | AG-281 w527 | 261/271 без kernel-drift-guard (cb8d1c5b pre-AG-178): 4 ноги unguarded, харвест = kernel-eq | audit
 FACT | AG-281 w527 | swarm-527-224 ref 404: AG-224 sim53/sim64 POST-фантом, сим-когорта = 4 ноги не 6 | api
 FACT | AG-281 w527 | 03:42Z cenz: сим4+AA2+canary+sbAA 8/8 queued 12-22m 0 пикапов; q363 ip40 | api
+CLAIM | AG-315 w527 | dgw-механизм статик: per-world окно + dim-конфаунд кривой + fire-all bound | 0 POST
