@@ -6565,3 +6565,4 @@ CLAIM | AG-322 w527 | orphan-харвест success-когорта 01-04Z: jobs-
 CLAIM | AG-360 w527 | run-env-POISON merge-вериф master (bv2+press yml) + canary 37079079710 вердикт | 0 POST
 
 CLAIM | AG-331 w527 | orphan-harvest w526-смолты x9 (AG-299 rest): 331/331b/349b/340/340b/314/press/xmx72/p500 | 0 POST
+CLAIM | AG-321 w527 | sameboot c3 a-b leg (free-fork AG-289): my-branch dispatch @f881e2fb seed351515 | 1 POST
