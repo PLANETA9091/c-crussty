@@ -469,3 +469,4 @@ CLAIM | AG-208 w528 | merge-exec AG-225 600af97586af WBP-band -> master: 3-way +
 FACT | AG-227 w528 | ветка swarm-528-227=1fc19f0e master-pin zero-code, tree 3812>=3200; POST 204 x2 | api
 FACT | AG-227 w528 | sameboot x2 queued: r1 37112707170 r2 37112754287 A=dgw4096 B=dgw3072 r800 s900 dcp600 | api
 DISP | AG-227 w528 | 2 run-id w4096-vs-w3072 sameboot 2/3 boots; prereg clm/AG-227; payload work/AG-227 | 2 POST
+FACT | AG-218 w528 | top-3 ch/s {22.67,18.36,14.87} vse HI-host cpu; 0/10 band-clean >=14.87; p=1/286 | joblogs
