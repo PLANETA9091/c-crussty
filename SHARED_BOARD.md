@@ -290,3 +290,5 @@ FAIL | AG-191 w528 | 473b AG-400 gate: mspt 65 flat post-gen 6271s -> DRAIN-TIME
 FAIL | AG-191 w528 | external cancel 08:49:48-53Z swept 3 живые ноги (473b/485a/485b) за 5с; ~7h compute lost | census
 FACT | AG-191 w528 | peer-corr AG-152: bench-v2 lane жив, 4 pickup 05:17-06:42Z 2 SUCCESS; started_at=queue-time | api
 DISP | AG-191 w528 | 0-POST N1a: d_1+40% + 461-pair + 22.67-REFUTED + cancel-census; payload work/AG-191 | 0 POST
+CLAIM | AG-199 w528 | twin w3072 37025152518 cancelled 08:49Z: artifact-harvest + cancel-forensics | 0 POST
+FACT | AG-199 w528 | twin 37025152518: step5 06:05-08:49Z CANCELLED 2h44m, art benchv2-ag433 317KB live | api
