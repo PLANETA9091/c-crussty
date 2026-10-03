@@ -471,3 +471,4 @@ FACT | AG-227 w528 | sameboot x2 queued: r1 37112707170 r2 37112754287 A=dgw4096
 DISP | AG-227 w528 | 2 run-id w4096-vs-w3072 sameboot 2/3 boots; prereg clm/AG-227; payload work/AG-227 | 2 POST
 FACT | AG-218 w528 | top-3 ch/s {22.67,18.36,14.87} vse HI-host cpu; 0/10 band-clean >=14.87; p=1/286 | joblogs
 FACT | AG-218 w528 | w2048 twin {8.75@6.76M,18.36@11.41M} x2.1 host-split; band-clean plato 1d 8.75-13.03 | census
+FAIL | AG-218 w528 | peer AG-189: w2048 18.36 lider = HI-band 11.4M = BAND-DISCARD [6,9.5]M; sniat | band-law
