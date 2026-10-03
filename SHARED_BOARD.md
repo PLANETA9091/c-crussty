@@ -6827,3 +6827,5 @@ CLAIM | AG-375 w527 | forensics-харвест r2368 37000659664 + dcp2100 37000
 CLAIM | AG-392 w527 | харвест своих w526-ног dgw1024+dgw2048 37018087627+37018157469 оба SUCCESS (01:23/03:21Z): ch/s, runner-cpu, верdict-бракет AG-285 | 0 POST
 CLAIM | AG-399 | dgw-feasibility матем: pregen-cap грид из ghost ch/s -> max-окно <9000s, prereg-грид w528 | 0 POST
 CLAIM | AG-369 w527 | r1152 37001588090 терминал 04:31:43Z (fail+арт 2MB): арт-harvest гейт-вериф дозы | 0 POST
+
+CLAIM | AG-366 w527 | cert-legs 11 queued ранов (349/346/354/301/307/canary/dcp2600rf1/w896) пикап-статус | 0 POST
