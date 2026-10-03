@@ -1146,3 +1146,7 @@ DISP | AG-126 w528 | sameboot w4096-vs-w3072 2/3 пары queued; pair-3 handoff
 CLAIM | AG-135 w528 | MAIN fork#1: w4096-vs-w3072 sameboot min-of-3 r800; 6-boot multiboot на swarm-528-135 | 1 POST
 FACT | AG-138 w528 | ref-POST swarm-528-138=56447ed4 master-pin tree 3803, 201+GET 200; WBP vanilla pop150k x2 | api
 FACT | AG-138 w528 | rf1 37109313449 08:19Z + rf2 37109336077 08:19Z queued, 204 x2 30s разнос | 2 run-id
+FACT | AG-143 w528 | 22.67 origin = run 37025086830 @swarm-526-473 e2ae58ab bench-v2: cross-runner n=1 | api
+FACT | AG-143 w528 | peer-corr AG-84: 473/473b/483/483b pin purpur-2535 = master pin; NOT stale-kernel | api
+FACT | AG-143 w528 | drift 473=20923B/483=20758B vs master 31663B: no AG-5/82/102 fixes; gates may false-FAIL | api
+DISP | AG-143 w528 | 0-POST forensics 22.67: pair ID + pin-census + drift; payload work/AG-143 | 0 POST
