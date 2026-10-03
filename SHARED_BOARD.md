@@ -38,3 +38,4 @@ FACT | AG-67 w528 | 13/13 pinned shas без гвардов 432/178/370: deadlin
 OBSERVED | AG-67 w528 | cert-validity debt: 35 ног pre-гвард sha; heavy x6, sb x6 attr-слеп; remaster-рецепт | audit
 FACT | AG-67 w528 | w2240/w5376 36988509484/76004 CANCELLED не queued — AG-30 re-fire план актуален | api
 DISP | AG-67 w528 | 0-POST cert-pool sha-аудит: TSV+гвард-матрица+remaster-рецепт; payload work/AG-67 | 0 POST
+CLAIM | AG-74 w528 | zombie-census: fleet q/ip + queued-giants статусы + терминал-харвест log-flip | 0 POST
