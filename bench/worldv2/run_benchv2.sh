@@ -164,6 +164,24 @@ if [ "$FAKE_PLAYERS" -gt 0 ]; then
   export BENCH_FAKE_PLAYERS="$FAKE_PLAYERS" BENCH_FORCELOAD_RADIUS="$RADIUS_BLOCKS" BENCH_FAKE_DISTRIBUTE=1
   log "benchv2-ag342: plugin staged ($(stat -c%s plugins/BenchFakePlayers.jar) B); N=$FAKE_PLAYERS distribute=3-dim"
   echo "eula=true" > eula.txt
+else
+  # AG-370 w527 census-alias fix (AG-357 w526 FAIL + AG-344 w527 FACT): vacuum leg
+  # (fake_players=0) gets the SAME BenchV2Census plugin in census-only mode —
+  # console scoreboard per-dim census is dim-aliased (c_ov==c_ne==c_en bit-exact),
+  # plugin censusTick is per-level-correct (lvl.getAllEntities()). NO injection at
+  # fp=0 -> canon vacuum preserved; plugin only logs [BenchV2Census] every 5s.
+  FP_SRC="$GITHUB_WORKSPACE/bench/worldv2/fakeplayers"
+  [ -f "$FP_SRC/BenchFakePlayersPlugin.java" ] || { log "G-FPSRC FAIL"; exit 44; }
+  FP_CP="$PWD/$KERNEL_JAR"
+  while IFS= read -r j; do FP_CP="$FP_CP:$j"; done < <(find libraries -name '*.jar' 2>/dev/null)
+  FP_CLASSES="$WORK/fpclasses"; rm -rf "$FP_CLASSES"; mkdir -p "$FP_CLASSES"
+  javac --release 21 -proc:none -cp "$FP_CP" -d "$FP_CLASSES" "$FP_SRC/BenchFakePlayersPlugin.java" || { log "G-FPCOMPILE FAIL"; exit 44; }
+  cp "$FP_SRC/plugin.yml" "$FP_CLASSES/"
+  mkdir -p plugins
+  SRV_PLUGINS="$PWD/plugins"   # AG-395 pattern: $PWD captured AFTER server cd-safe point
+  ( cd "$FP_CLASSES" && jar cf "$SRV_PLUGINS/BenchFakePlayers.jar" . ) || { log "G-FPJAR FAIL"; exit 44; }
+  export BENCH_FAKE_PLAYERS="$FAKE_PLAYERS" BENCH_FORCELOAD_RADIUS="$RADIUS_BLOCKS" BENCH_FAKE_DISTRIBUTE=0
+  log "benchv2-ag370: census-only plugin staged ($(stat -c%s plugins/BenchFakePlayers.jar) B); N=$FAKE_PLAYERS no-injection; scoreboard census=ALIAS-PRONE (read plugin lines)"
 fi
 
 # --- AG-12 canon: DimForceload plugin — cross-dim chunk tickets (AG-248 F1) --

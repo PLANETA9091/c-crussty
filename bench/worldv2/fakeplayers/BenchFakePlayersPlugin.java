@@ -54,13 +54,18 @@ public final class BenchFakePlayersPlugin extends JavaPlugin {
         try { radiusBlocks = Integer.parseInt(reqEnv("BENCH_FORCELOAD_RADIUS", "1136").trim()); }
         catch (NumberFormatException e) { radiusBlocks = 1136; }
         distribute = "1".equals(reqEnv("BENCH_FAKE_DISTRIBUTE", "0").trim());
+        // AG-370 w527 census-alias fix (AG-357 w526 + AG-344 w527): per-dim entity census
+        // MUST run on BOTH legs. Console scoreboard census is dim-aliased
+        // (c_ov==c_ne==c_en bit-exact); censusTick uses lvl.getAllEntities() = per-level
+        // correct. Registration moved BEFORE the fp<=0 early-return; injection stays
+        // fp>0-only (canon vacuum preserved at fp=0, census-only mode).
+        // 100 ticks = 5s@20TPS: alive-check + per-dim entity census (cheap logs).
+        Bukkit.getScheduler().runTaskTimer(this, this::censusTick, 20L * 5, 20L * 5);
         if (fakeCount <= 0) {
-            getLogger().info("BENCH_FAKE_PLAYERS=0 -> bench-v2 canon mode (no injection)");
+            getLogger().info("BENCH_FAKE_PLAYERS=0 -> bench-v2 canon mode (no injection, census-only)");
             return;
         }
         Bukkit.getScheduler().runTask(this, this::injectPlayers);
-        // 100 ticks = 5s@20TPS: alive-check + per-dim entity census (cheap logs).
-        Bukkit.getScheduler().runTaskTimer(this, this::censusTick, 20L * 5, 20L * 5);
     }
 
     private static String reqEnv(String k, String d) {
