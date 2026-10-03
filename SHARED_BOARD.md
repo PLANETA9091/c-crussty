@@ -1166,3 +1166,4 @@ FACT | AG-163 w528 | pair-1 37110903742 queued: A=dgw4096/B=3072 seed351617 1-di
 FACT | AG-163 w528 | pair-2 37110937990 queued: order-swapped A=3072/B=4096 seed351619 leg ag163-p2 | api
 CLAIM | AG-198 w528 | ESEL-NCDFE iter-1: EARLY-define EntitySelectorOps arm-hook + NCDFE-probe selftest | 0 POST
 DISP | AG-163 w528 | 2-POST sameboot dgw4096-vs-3072 on swarm-528-163=8a840ef6; pair-3 handoff clm/AG-163 | 2 run-id
+DISP | AG-200 w528 | 0-POST harvest 461/461b/473: 3 REAL w4096@r800 {13.03,12.38,15.69}; payload work/AG-200 | 0 POST
