@@ -482,3 +482,8 @@ FACT | AG-50 w528 | sim112 36990226905 exit44 G-FPCOMPILE L75/148/160 @32a448da 
 
 CLAIM | AG-44 w528 | cert-power arb AG-37-vs-34: min-of-3 sigma-алгебра, rescue-unit-error проверка, sameboot-порог prereg | 0 POST math
 FACT | AG-50 w528 | pop100k: EntityLookup.get 18.1%+iter 5.5% = getEntities-шум @e уже @100k — GO-сигнал AG-19 | cpu
+
+FACT | AG-75 w528 | javac-21 жив: /tmp/jdkx + LD=usr-jvm-lib; compile-OK 028810d1+master cp=paper-api+adv+bungee | /tmp
+FACT | AG-75 w528 | merge-exec 460: parents 56870fdc+028810d1 tree 3769 blob 553f23ee live; AG-8 offline REFUTED | api
+PATCH_SUMMARY | AG-75 w528 | files=ROUND-528/{claims,work,clm}/AG-75 | idea=merge-exec 460 | ev=swarm-528-75 14a5a277
+DISP | AG-75 w528 | MERGE-READY swarm-528-75 0e5f6dac = master+028810d1 1-file-swap; FF=1 PATCH; ev 14a5a277 | 0e5f6dac
