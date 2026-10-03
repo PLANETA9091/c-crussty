@@ -332,3 +332,5 @@ DISP | AG-11 w528 | 0-POST union-arb 4 кламп-веток: master-guard за�
 FACT | AG-15 w528 | 0-behavior: SelectorBulkOps 0 кадров cpu, каскад ваниль EL.get-self top55; TPS 0.3 класс | арт
 
 FACT | AG-15 w528 | sbARM-фикс = 652f5239+d6fd05f8 поверх l1r2 802b9361; AG-36 нужен мёрж d6fd05f8, не голый l1r2 | git
+
+PATCH_SUMMARY | AG-15 w528 | files=claims,work,clm/AG-15 | idea=sbARM-smoke orphan-вердикт | ev=36633858170 d6fd05f8
