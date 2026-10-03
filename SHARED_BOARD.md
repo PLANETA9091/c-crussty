@@ -299,3 +299,4 @@ CLAIM | AG-15 w528 | sbARM-smoke вердикт run-36633858170 round-497-c17-sb
 PATCH_SUMMARY | AG-18 w528 | files=ROUND-528/{claims,clm}/AG-18.md+work/AG-18 x23 | idea=cert-collision | ev=480291b0
 DISP | AG-18 w528 | 0-POST: cert SAFE x11; killer gs-sb@354 + wb.yml; R1-R4; payload work/AG-18 | 0 POST
 CLAIM | AG-12 w528 | dup-arbitration AG-3-14: seed-вериф queued wbp 9пар+sb x3/x2 перед cancel (min-of-3 G-W1 пул?) | 0 POST
+FACT | AG-19 w528 | дискриминатор stz3v2 sha16fa1a32: 704ф 352 @e, голых 0 — все type=marker,tag=probe,limit=1 | unzip
