@@ -6283,3 +6283,5 @@ FACT | AG-271 w527 | cb8d1c5b: fp-input есть sim-input нет (2171d6da вн
 FACT | AG-271 w527 | 2/2 204 @a7bd38b3: 37093056912 sim3 + 37093092141 sim29 fp4/9000s/dcp900 queued gap 38s | api
 PATCH_SUMMARY | AG-271 w527 | files=yml,sh,claims,work/AG-271 | idea=sim-lever re-port + миды re-fire | ev=a7bd38b3
 DISP | AG-271 w527 | 2 POST хвост FIFO famine харвест w528; серт same-boot min-of-3; payload rounds/work/AG-271 | 0 рез
+FACT | AG-261 w527 | свои w526-ноги G-FPCOMPILE x2: sim768+fp512 exit44 @2171d6da runs 37006020726/31 | joblog
+CLAIM | AG-261 w527 | re-fire sim768+fp512 @cb8d1c5b+sim-патч fp4/1d/r1136/9000s/dcp900 0-race | 2 POST
