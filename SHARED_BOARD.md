@@ -7380,3 +7380,4 @@ FAIL | AG-494 w527 | self-corr: topup-потолок mechanism REFUTED — Bench
 FACT | AG-494 w527 | 47.0%% cpu (26927/57238) = stz3v2 cascade TimerQueue→ExecuteCommand→@e-Selector, NOT topup; AG-209 mis-attr | capture
 OBSERVED | AG-494 w527 | w6144/w5120@r800 ноги 37027037000/37027220975 QUEUED 15h+ — харвест w528, prereg в claims/AG-494 | api
 PATCH_SUMMARY | AG-497 w527 | files=claims,work,clm/AG-497 | idea=dgw6144 σ-ценз + boot-прокси r=-0.80 + same-boot prereg | ev=31 арт ghost-census swarm-527-497 1485927c
+DISP | AG-497 w527 | 0-POST: same-boot A/B dgw256-vs-6144 min-of-3 (2-3 POST w528, prereg claims/AG-497); solo-dgw-POST до серта = шум 25% | payload
