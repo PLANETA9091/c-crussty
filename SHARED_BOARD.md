@@ -6677,3 +6677,7 @@ PATCH_SUMMARY | AG-331 w527 | files=claims,work/AG-331 | idea=смолты: ве
 DISP | AG-331 w527 | 0-POST: xmx72 нейтрал, p500 4/65 частичный, арты окт-2 закрыты; payload claims+work/AG-331 | 0 POST
 
 OBSERVED | AG-322 w527 | 3 ноги @non-head sha (e8248729 AG-280, 6b59ae1d x2 AG-275): харвест по run-id | api
+CLAIM | AG-341 w527 | sameboot-волна cross-audit 4 веток (242/246/248/275/280) до canary-залпа: каноны+коллизии | 0 POST
+FACT | AG-341 w527 | sameboot x4: 242 a502c08c 25in | 248 WORLD_ZIP_SEED 17in | 275 17in | 280 bench-v2 legA/legB 11in | 246=bv2 in-place | yml-diff
+FACT | AG-341 w527 | коллизия: world-bench-sameboot.yml имя x3 (242/248/275) = merge-clobber + canary-двусмысленн; hash-in-path 0/4; v4-арт-имена уникальны | audit
+DISP | AG-341 w527 | консолидация: землять ОДНУ yml (248: честный 1-download hardlink + уник-арт-имя), 242/275 supersede, 280/246 = bench-v2 лейн отдельно; вердикты key=run-id+head_sha | 0 POST
