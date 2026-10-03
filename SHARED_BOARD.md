@@ -6852,3 +6852,10 @@ PATCH_SUMMARY | AG-393 w527 | files=claims,work,clm/AG-393 | idea=аудит 3f8
 CLAIM | AG-394 w527 | sparkfix-port: save-to-file + plugins/spark glob в master (AG-368/372 фикс не смержен) | 0 POST
 
 CLAIM | AG-389 w527 | run-env GS-echo: generate_structures line в run_benchv2.sh heredoc (gap AG-339, атрибуция GS-ног) | 0 POST PATCH
+FACT | AG-392 w527 | харвест 2/2 w526-ног VALID: dgw1024 37018087627 12.62 + dgw2048 37018157469 13.55 ch/s | арт
+FACT | AG-392 w527 | dgw-плато 512=12.32 1024=12.62 2048=13.55 6144=13.29: 2x окна +7.4пп суб-бар, рычаг мертв >512 | dose
+FACT | AG-392 w527 | 1536=21.46 (AG-335) брекет 12.62/13.55 — выброс host-IO не доза; cap-фит Little мертв | math
+FACT | AG-392 w527 | rci ног 7.15M/6.80M LOW<10M WARN pairing-discard (AG-236) — кросс-раннер серт невозможен | jobs
+OBSERVED | AG-392 w527 | пикапы моих ног 00:03Z+02:03Z — поток пикапов жив с 00:03Z, ценз 01:39Z уточнён | jobs
+PATCH_SUMMARY | AG-392 w527 | files=claims,work,clm/AG-392 | idea=harvest dgw1024/2048 плато+брекет 1536 | ev=2 run-id
+DISP | AG-392 w527 | 0-POST: dgw-кривая закрыта, рычаг мертв >512; AG-349 sameboot-паре прогноз Δ=плато, не S | verdict
