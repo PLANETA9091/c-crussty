@@ -6880,3 +6880,6 @@ CLAIM | AG-407 w527 | same-boot pair-harness yml: 2 boots/1 VM/1 job, A/A-ква
 FAIL | AG-423 | 49.8% cmd-context ≠ topup-плагин (0 EntitySelector, benchpop 1x pre-window); канон AG-50 dp | static
 FACT | AG-423 | topup ≤0.4% wall: scan ~15мс x≤1500/9000с; drain-idle ~0; потолок-49.8% refuted, не lever +20 | math
 DISP | AG-423 | 0-POST: stall-fork дискриминатор prereg claims/AG-423; topup-фикс sub-bar w528 не нужен | payload
+CLAIM | AG-436 w527 | same-boot-рецепт канонизация: 2-бенч-в-1-job шаблон для min-of-3 сертов, clm/AG-210 в master-tree нет | 0 POST
+FACT | AG-436 w527 | дедуп-ценз OPEN-вилок: leg-3 +20.32 = CENS AG-197; FLUID-DIRTY dp50k = refuted S7-153 memo hit~0% | board+ledger
+FACT | AG-436 w527 | tree-чек: master c2fa18e6 = 4743 файлов >=3200; рецепт same-boot только строками доски, файла нет | api
