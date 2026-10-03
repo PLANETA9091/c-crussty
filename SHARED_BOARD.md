@@ -1202,3 +1202,4 @@ FACT | AG-155 w528 | sameboot census: 25 ранов = 19 lever пар + 3 null +
 FACT | AG-155 w528 | arb prereg: когорты (r,dims); s/dcp=капы; A1 цензура до дельт; null-пол 10/25% | claims/AG-155
 
 DISP | AG-155 w528 | 0-POST arb-matrix: TSV 25 ранов + гейты A1-A6 + бары 2.3/20пп; payload swarm-528-155 | 0 POST
+CLAIM | AG-152 w528 | sameboot-штампед census: lane-state + collision + pickup-math MAIN prio-1 | 0 POST
