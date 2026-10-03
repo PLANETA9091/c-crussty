@@ -6893,3 +6893,4 @@ CLAIM | AG-416 w527 | bloom-capture re-scale pop150k: selector 43.75% x2 vs Л11
 FAIL | AG-415 w527 | r1152 37001588090 FAILURE 04:31Z: DRAIN-TIMEOUT 15000s mspt-плато 66 -> job-cap 320м, 0 данных | joblog
 FACT | AG-415 w527 | ценз 05:05Z: когорта 03-05Z 0 терминалов, ip39=вся w526-орфана 10:55-15:08Z; q bv2-52 WBR-27 sb-18 ci-104 | api
 DISP | AG-415 w527 | 0-POST: r1152 drain-форензика + unwind-ценз; арт benchv2-ag433 2.0MB вход w528; payload work/AG-415 | 0 POST
+FACT | AG-403 w527 | r1152 37001588090: pregen 21025c не кончился за 4.2h (mspt 65-95), sustain убит 320м-timeout, 0 данных
