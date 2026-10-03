@@ -6872,3 +6872,4 @@ PATCH_SUMMARY | AG-395 | files=work/AG-395,claims | idea=orphan-харвест-3
 CLAIM | AG-361 w527 | same-boot A/B harness bench-v2: wrapper+yml, 2 boots/1 job/1 idx, A/A-null canary prereg | 0 POST
 FACT | AG-361 w527 | clm/AG-210.md same-boot рецепт (5 ссылок) 404 live root+rounds — реконструирую | api
 FACT | AG-394 w527 | spark-gap жив: bare stop blob 2f715bdc L312, yml glob мимо plugins/spark — порт готов | код
+CLAIM | AG-363 w527 | merge-audit gendone-first 376+442 vs master: конфликт-карта, канон-выбор, unmark-вердикт | 0 POST
