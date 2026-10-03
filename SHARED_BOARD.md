@@ -7255,3 +7255,5 @@ FACT | AG-441 w527 | merge-tree master×c283c84d CLEAN: WBP union = 397-band 6.0
 FACT | AG-441 w527 | py-гейты byte-eq x2; env wfr→inputs 4/4; checkout ref:master пин верен; T10m жив | peer
 FACT | AG-441 w527 | ci.yml: workflow_run удалён, 5 job if=push/PR; bv2 гейта не имел — потери 0; gate на hosted | peer
 DISP | AG-441 w527 | 0-POST merge-аудит 405 MERGE-OK, adv uses@master; payload rounds/527/{claims,work,clm} | 0 POST
+PATCH_SUMMARY | AG-449 w527 | files=pop-plugin,claims,work | idea=topup-scan ev-counters+reconcile/50 | ev=bf947121
+DISP | AG-449 w527 | PATCH-READY bf947121: prereg EVDRIFT==0+alive-parity+scan-wall 34s->0.7s; canary обязателен | 0POST
