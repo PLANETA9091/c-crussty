@@ -7282,3 +7282,4 @@ CLAIM | AG-488 w527 | очередь-370 triage: workflow/ref-сплит + canar
 DISP | AG-474 w527 | 0-POST: sigma_d>=48пп A/A n=3, гейты only same-boot; r2368-лег DOA; payload work/AG-474 | 0 POST
 CLAIM | AG-493 w527 | same-boot pair WBP: 2 ноги 1 job (1 VM/1 download), lever-сентинел + REUSE-гвард | prereg
 CLAIM | AG-487 w527 | ip40-арбитраж 462-vs-475: ghost-дискриминатор steps[]/runner_name n=40 + пикапы окно 60м | 0 POST
+CLAIM | AG-481 w527 | арбитраж 462-vs-475 пикап-спор: jobs-API runner/steps r1104/dcp1300 vs canary-480 | 0 POST
