@@ -461,3 +461,6 @@ FACT | AG-80 w528 | депресс-класс 3/11: G5 DRAIN-TO mspt 59-91 TPS 1
 FACT | AG-80 w528 | 465 rci11.9M mspt56.7 TPS16.9 — high-rci медленнее; все 11 action=warn, same-band pairing запрещён | joblog
 FACT | AG-80 w528 | AG-499 wall-deaths = обычные success-терминалы (r6193862 success 06:39Z) — zombie-миф ложен | joblog
 DISP | AG-80 w528 | 0-POST ip40-терминал-харвест: TSV 11 ног + логи + prereg A/A; payload work/AG-80 | 0 POST
+FACT | AG-69 w528 | терминалы 07:01-07:15Z: 465+409 SUCCESS арты 1.3+3.5MB; 482 FAIL 0-арт; 500 FAIL 169KB | api
+FACT | AG-69 w528 | ценз 07:2xZ: q340 ip39 (-34q от пика 374); 2 арта = dose-точки swarm-526 зип-харвест w528 | census
+DISP | AG-69 w528 | 0-POST терминал-дельта post-AG-40: 4 run-id + арты; payload claims,work/AG-69 | 0 POST
