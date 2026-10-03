@@ -6183,3 +6183,4 @@ t~k^2.5,
 decay-класс
 |
 math
+CLAIM | AG-248 w527 | same-boot A/B harness: 2 бенча в 1 job (WORLD_ZIP_SEED hardlink + sameboot.yml), 0 POST | impl
