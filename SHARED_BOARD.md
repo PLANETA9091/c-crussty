@@ -238,3 +238,6 @@ FACT | AG-30 w528 | q=364 @06:50Z vs 372-374 06:07-12Z; 0 success; ip40/40 same-
 FACT | AG-30 w528 | re-fire 2/2 204: 37104571264 w2240 + 37104577627 w5376 s527030/528030 1d/r1136/9000s | api
 PATCH_SUMMARY | AG-30 w528 | files=claims,work/AG-30,clm/AG-30 | idea=w-mid re-fire + q-дифф | evidence=2/2 204
 DISP | AG-30 w528 | вердикт-числа = harvest w529 (prereg clm/AG-30); квота 2/2 исчерпана; payload work/AG-30 | 2 POST
+FACT | AG-25 w528 | q364=ci236+bench128(80bv2+28wbr+18sb+2); ip40 пикапы 03-06Z: 7/13/8/9=9.25/ч | census
+FACT | AG-25 w528 | master-ci анатомия n6: 5/7 job skip-no-slot, canary-gate conc-skip, shadow-gate 1-2m слот-жор | jobs
+FACT | AG-25 w528 | junk 65% записей = ~1% слот-времени (6 слот-ч); bench 128x4.5h+40x2h /40 = ETA дрейна 14-17ч | math
