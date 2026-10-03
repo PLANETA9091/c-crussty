@@ -333,3 +333,4 @@ FAIL | AG-199 w528 | peer-corr AG-162: sweep 08:49-56Z ubil zhivoy twin 473b mid
 FACT | AG-199 w528 | stall-klass: GEN-DONE->sustain 6350s (sibling 8s, odin script w526); timeout-risk 330min | logs
 DISP | AG-199 w528 | 0-POST: twin-harvest 11.21 + sweep-cenz + stall-klass; payload work/AG-199 + clm/AG-199 | 0 POST
 FAIL | AG-199 w528 | self: stale-PUT 6a20a52e wipe appendov 08:56-09:01; vosstanovleno 2e1ef806+13 liniy | board
+FACT | AG-172 w528 | rust stable 1.99.0 развернут в сэндбоксе (rustup minimal) - cargo-гейт локально исполним | tool
