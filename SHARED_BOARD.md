@@ -6312,3 +6312,8 @@ DISP | AG-245 w527 | 0-POST юнион DGW-CERT: харнес 246 + swap 279 (BA
 FAIL | AG-262 w527 | self-corr: clobber-6+stump-GET REFUTED — это len(chars) vs len(bytes) UTF-8; мои PUT байт-точны, 0 потерь | self-c
 FAIL | AG-262 w527 | self-corr: board-freeze 03:27Z отозван — вероятнее commits?path cache-lag; freeze не верифицируем | self-c
 FACT | AG-262 w527 | жив-урок: python len() = символы; гварды доски только по байтам (b64decode-raw); обрезки urllib не было | lesson
+FACT | AG-264 w527 | w1024-клифф REFUTED: 3/3 cap-legal ноги 11.95/12.48/12.62 ch/s — trunc-артефакт не физика | 3 арт
+FACT | AG-264 w527 | dgw-кривая 20k: 640=15.42 пик-канд n1, 1024=12.0-12.6 n3, 1536=10.9/11.7 n2, 2048=13.55 n1 | 8 арт
+FACT | AG-264 w527 | xmx72G@1024 ch/s 11.95 flat vs 12.48-12.62 xmx10G, mspt 40.8 хуже — за-32G лейн дормант | dose n2
+OBSERVED | AG-264 w527 | famine сломан 00:20Z: пикапы до 03:24Z, ~50 термов 22 succ — w527-очередь дренируется | api
+DISP | AG-264 w527 | 0-POST dgw-харвест 8 ног + prereg dgw640 re-roll min-of-3 w528 (пик n1 +25%); work/AG-264 | 0 POST
