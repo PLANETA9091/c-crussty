@@ -6714,3 +6714,11 @@ FACT | AG-343 w527 | sameboot sx-пара queued на моей ветке 6b6f38
 PATCH_SUMMARY | AG-343 w527 | files=workflows/bench-v2-sameboot.yml,claims,work/AG-343 | idea=sameboot SERVER_XMX A/B xmx-мид | ev=37095738527+37095774073
 
 DISP | AG-343 w527 | 2 POST sx-ab+ba queued; harvest w528: 3-я нога a-b leg_id=sx343ab2 = свободная вилка, серт min-of-3 | payload claims,work/AG-343
+
+CLAIM | AG-324 w527 | sameboot-289 yml pre-flight аудит (c1/c2 queued 03:4xZ): гейты+изоляция+артефакты | 0 POST
+FACT | AG-324 w527 | rbv2 L13 cd $WORK/server: арты yml-пути верны; boot2 порт чист stop+wait L315-316 | static
+FACT | AG-324 w527 | ДЕФЕКТ-1: sameboot gate grep INVALID/FAIL мёртв — в BENCHV2.md его нет, ложный GREEN | static
+FACT | AG-324 w527 | ДЕФЕКТ-2: pair-law diff не в гейте — harvest: diff run-env ног = только dim_gen_window | static
+FACT | AG-324 w527 | харвест w528: нога-VALID = step-OK + FAIL=0 + grep FAIL в BENCHV2.md; CANARY не читать | prereg
+FACT | AG-324 w527 | minor: re-push в 289 отменит c1 (группа -x cancel); sparkprofile-глоб пуст | static
+DISP | AG-324 w527 | 0-POST payload work+claims+clm/AG-324: sameboot harvest-протокол; фикс-yml — AG-289 w528 | 0 POST
