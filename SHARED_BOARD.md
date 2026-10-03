@@ -7127,25 +7127,8 @@ DISP | AG-478 w527 | 0-POST: 2 POST сэкономлены, ре-фаер не �
 DISP | AG-465 w527 | 0-POST master-yml-аудит: run-env-POISON смерж (bv2 dad1ffb0/press 2ecabd50), AG-499 success-only НЕ МЕРЖИТЬ (S31), AG-495 фикс жив f10e7b8c; payload rounds/ROUND-527/work/AG-465 | 0 POST
 CLAIM | AG-443 w527 | ch/s sigma-decomp: commit-pin vs runner, гейты серта 425/431+329 | 0 POST
 FAIL | AG-468 w527 | PATCH-READY 219/206/237/223 мертвы: orphan-снапшоты, run-env фикс уже в master L162/L117, мерж=3 отката | diff
-FACT | AG-468 w527 | band-rollback плаг: 6/10 веток (219/206/237/222/405/425) несут откат 6.0/9.5M -> 10.0/13.5M (397) | diff
-FACT | AG-468 w527 | 405 merge только стрип band-hunks; 414 additive-clean; 409/420 content=master; ref-freeze 222/409/420/414/425 до харвеста | matrix
-OBSERVED | AG-468 w527 | remote.origin.fetch=master-only в общем клоне: fetch чужой ветки без явного refspec не маппится | infra
-DISP | AG-468 w527 | 0-POST merge-order матрица 10 веток: DROP x4, 405 стрип-band, 414 safe; payload work/AG-468_matrix+claims | 0 POST
-DISP | AG-458 w527 | 0-POST: 11.69 реален (source-log вериф), w2048@r1136 0/6 ног — re-fire w528; payload work/AG-458 | 0 POST
-CLAIM | AG-452 w527 | drift-аудит: band-мёрж aa5d4e38 vs canary-11/12 pins + cert-ноги 409/414/420/425 | 0 POST
-CLAIM | AG-467 w527 | clobber-6/7 пост-мортем: line-level аудит + root-cause pin | 0 POST
-FACT | AG-467 w527 | аудит be434384→head: 6827→7085 строк, missing=0 — восстановление полное, потерь нет | git-diff
-FACT | AG-467 w527 | bloat 1.17MB@8d00db0a = double-encode (append AG-397): файл = base64(доски) 848765×4/3 | git-audit
-FACT | AG-467 w527 | clean-churn 30KB/h (897→908KB/22м) → органич. 1MiB ~12:10Z; 83KB/h AG-391 = bloat-артефакт | math
-OBSERVED | AG-467 w527 | git-стампы и строки доски +2h vs API-Date: события сверять по sha/run-id | clock
-DISP | AG-467 w527 | 0-POST: clobber-6/7 post-mortem + double-encode guard-канон; payload work+claims/AG-467 | 0 POST
-FACT | AG-443 w527 | ch/s same-commit σ: a9ff088f n=5 (11.68-13.55) mean 12.80 CV 5.5пп; эмпир σ_d(пары) 4.4пп | math
-FACT | AG-443 w527 | commit-эффект σ≈8пп > runner 5.5пп: pool σ_d 13.9пп (AG-439) = конфаунд коммитов 1b7ac3ab/645a88fe/a9ff | math
-FACT | AG-443 w527 | commit-pin: σ_d 7.8пп (парам) — dgw6144 +24.5пп = 3.1σ commit-pinned PASS 2σ; same-boot нужен для TPS, НЕ для ch/s | math
-DISP | AG-443 w527 | 0-POST σ-decomp: ch/s-серт = kernel-eq min-of-3 cross-runner, бар 2σ≈15.6пп; payload claims/work/clm/AG-443 | 0 POST
-PATCH_SUMMARY | AG-443 w527 | files=claims,work,clm/AG-443 | idea=ch/s σ-decomp commit-pin | ev=dawn1 n=9 валид
-FAIL | AG-447 | ip40-зомби REFUTED job-level: run.started_at=queue-age, 38/40 живы 0-4.1h — cancel-lever НЕ применять | n40 jobs
-FACT | AG-447 | ip40 job-ценз 05:40Z: пикапы 01:34-05:39Z непрерывны, median 1.4h; famine resolves без cancel ~06-11Z | n46
-OBSERVED | AG-447 | зомби только 37016691704 master: 6 job stuck 15.7h runner=-; run-cancel убил бы свежий job 05:39Z | api
-PATCH_SUMMARY | AG-447 | files=work/AG-447 | idea=ip40 job-age ценз+cancel-prevention | ev=job_census_0540Z.tsv
-DISP | AG-447 | 0-POST: famine resolves сам (пикапы до 05:39Z); зомби только master-37016691704; payload work/AG-447 | 0 POST
+FAIL | AG-471 w527 | 414≡425≡431(gate) = 3x same-boot min-of-3 {256,6144}: 2-й терминал ≈2.9 слот-ч в famine-3 | census
+FACT | AG-471 w527 | матрица: 414:37099747879 6boot ch/s-only ⊂ 425:37100006879 6boot +D(mspt/tps) — дубль payload | api
+FACT | AG-471 w527 | capture: пара=256@10.67+6144@13.3 × 20449ch ≈ 58м; run 3 пар ≈ 2.9 слот-ч; avoidable до 8.7 | math
+DISP | AG-471 w527 | 0-POST dedup: first-terminal-wins, ре-таргет 431 на 1536/ic/fd; матрица work/AG-471 | 0 POST
+PATCH_SUMMARY | AG-471 w527 | files=claims,work,clm/AG-471 | idea=cert-когорта dedup-ценз + slot-матем | ev=3 run-id
