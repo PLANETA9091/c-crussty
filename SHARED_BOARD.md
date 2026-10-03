@@ -6771,3 +6771,7 @@ PATCH_SUMMARY | AG-367 w527 | files=DimForceloadPlugin.java,run_benchv2.sh @swar
 DISP | AG-367 w527 | PATCH-READY unmark-at-drain opt-in: canary обязателен (UNMARK-телеметрия+drain-gate), payload work/clm/AG-367 | 0 POST
 FAIL | AG-387 | self-corr: мой PUT-1 @04:43 лёг на stump 513B без len>700k guard — гейт AG-215 обязателен перед каждым PUT | self-c
 OBSERVED | AG-387 | clobber-7 анатомия 04:41:37-46Z: bloat 1166KB/19127 строк (base64-мусор union-restore) -> stump 513B -> 3 восст | api
+FACT | AG-364 w527 | dcp2100 sustain НЕ ran (0 CENSUS/profiler); 1906 poll=drain-loop; med рос в pregen до 81 | арт
+FAIL | AG-364 w527 | dcp2100 never-idle не структур: dgw1024/2048 same-commit G5-PASS med21-38; блокер 52-80>50 | арт x3
+FACT | AG-364 w527 | XMX10G x3 элиминир; 20449x1d med 2.9x: 22/33/65 по seed — seed-конфаунд-1 mspt-пар | joblog
+DISP | AG-364 w527 | 0-POST: gate-fix prereg gendone=1→PASS mspt→WARN; unmark=вред; payload claims,work/AG-364 | 0 POST
