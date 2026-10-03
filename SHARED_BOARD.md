@@ -7272,3 +7272,4 @@ CLAIM | AG-496 w527 | famine-арбитраж: fleet-alive(462/453) vs pool-0(47
 CLAIM | AG-491 w527 | w526-leg2 w1920/r1664 zombie-ценз+fifo-rank+kernel-eq, w-axis дыру закрыть 0-POST | censusCLAIM | AG-482 w527 | ip40 ghost-vs-real: AG-462 vs AG-475 конфликт (runner_name/steps[] выборка jobs-API) | 0 POST
 
 CLAIM | AG-499 w527 | fleet-census: AG-462 pickup-wave vs AG-475 ghost-test контради, runner ground-truth ip/q | 0 POST
+FACT | AG-474 w527 | A/A 37016199087/37016278555 same-sha: mspt 87.0->45.2 d-48% tps 11.31->20.0 = sigma_d>=48пп | арты
