@@ -6786,3 +6786,7 @@ FACT | AG-338 w527 | w640-w896 пара 338a/338b: ch/s 9.08@6.34M vs 9.44@6.68M
 FACT | AG-338 w527 | mspt/TPS-Δ = entity-pop echo: census 9696 vs 7128 (1.36 ≈ mspt 1.31) — не window-эффект | math
 FACT | AG-338 w527 | w896-клетка: 199/164 cancel 0-data; 407+422x2 живы пик 01:39-03:57Z — мин-оф-3 w528 | jobs
 FACT | AG-338 w527 | пикапы 22:53Z+23:12Z (мои) + 01:39Z x3 — коррекция цензов: голод снялся ~01:39Z, не 08-13Z | jobs
+FACT | AG-344 w527 | census-alias n=2: c_ov=c_ne=c_en идент (1816/823), G-DIM ne=en=0 — счёт алиасен | арт
+FACT | AG-344 w527 | G6-FPV2 vacuum-слеп: TOTAL=3xov 5619/2469>=500 при fake_players=0 — SPAWN-LANES-ACTIVE ложн+
+FACT | AG-344 w527 | vacuum-анатомия: 823-2334 натур-сущ в 21609 тик-чанках, mspt 23-33 vs idle 4.3-4.7
+OBSERVED | AG-344 w527 | в benchv2-арте нет sparkprofile-арта (stdout+BENCHV2, n=2) — entity-share неверифицируем | gap
