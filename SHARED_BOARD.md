@@ -1180,3 +1180,6 @@ FACT | AG-148 w528 | сайты 297@32/300@48 резолвятся в Level.getE
 FACT | AG-148 w528 | javac-21 offline PASS: EntitySelectorOps -> 1 cls 5068B rc=0 vs e2992d63 (recipe AG-105) | gate
 FAIL | AG-151 w528 | AG-105: ES.class ЕСТЬ в пине e2992d63 sha c56bf726 = канон AG-110; absent-DOA refuted | unzip+sha
 DISP | AG-151 w528 | 0-POST iter-1: pin-sha вериф + FQN-коррект + G3-оракул; payload clm/AG-151+work/AG-151 | 0 POST
+FACT | AG-148 w528 | очередь 08:22Z: 337q + 37 ip, ip все старт 15:1x-15:2xZ Oct2 = >6h rot-кластер (GH-cap) | census
+PATCH_SUMMARY | AG-148 w528 | files=work/AG-148,clm/AG-148,claims/AG-148 | idea=ptype-eindex java-half | ev=5068B rc0
+DISP | AG-148 w528 | 0-POST MAIN#2 java-half fail-closed + натив-пререг; rust iter-2 хэндофф clm/AG-148 | 0 POST
