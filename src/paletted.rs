@@ -58,9 +58,9 @@ pub const PALETTED_CLASS: &str = crate::classfile::PALETTED_CLASS;
 const OPS_NAME: &str = crate::classfile::PALETTED_OPS_CLASS;
 
 /// Embedded patched image (ASM COMPUTE_FRAMES output over the pinned kernel).
-const PATCHED_BYTES: &[u8] = include_bytes!("../paletted/build/PalettedContainer.patched.class");
+const PATCHED_BYTES: &[u8] = include_bytes!("../bridges/paletted/build/PalettedContainer.patched.class");
 /// Ops helper compiled against the patched shapes (stub jar).
-const OPS_BYTES: &[u8] = include_bytes!("../paletted/build/net/minecraft/world/level/chunk/PalettedContainerOps.class");
+const OPS_BYTES: &[u8] = include_bytes!("../bridges/paletted/build/net/minecraft/world/level/chunk/PalettedContainerOps.class");
 
 /// Original (pinned) kernel image length — cheap fingerprint leg.
 const ORIG_LEN: usize = 30967;

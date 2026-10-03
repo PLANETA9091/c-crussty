@@ -62,7 +62,7 @@ const OPS_CLASS: &str = "net/minecraft/world/entity/MobAiOps";
 const UPSTREAM_PUSH_CLASS: &str = "net/minecraft/world/entity/MobPushOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../mobai/build/net/minecraft/world/entity/MobAiOps.class");
+    include_bytes!("../bridges/mobai/build/net/minecraft/world/entity/MobAiOps.class");
 
 const SERVERAISTEP_DESC: &str = "()V";
 // dleg2 root-cause fix (compose-reject): валидатор требует РОВНО virtual-desc

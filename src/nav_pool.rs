@@ -62,7 +62,7 @@ use std::sync::atomic::{AtomicI64, Ordering};
 pub const NAVPOOL_CLASS: &str = "net/minecraft/world/level/pathfinder/NavPoolOps";
 
 pub const NAVPOOL_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class");
 
 pub const NAVPOOL_TICK_SIG: &str = "(IJJJ)V";
 

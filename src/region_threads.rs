@@ -67,25 +67,25 @@ const TRACKER_OPS_CLASS: &str = "net/minecraft/server/level/TrackerTickOps";
 const RNG_OPS_CLASS: &str = "net/minecraft/util/RngOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/RegionTickOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/RegionTickOps.class");
 const OPS_INNER_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/RegionTickOps$Mut.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/RegionTickOps$Mut.class");
 // S7-170 (TASK-349 delivery fix): nested GuardedNavigatingMobs MUST be defined
 // into the kernel loader — RegionTickOps.ensureNavMobsGuarded instantiates it
 // on first swap; missing define = NoClassDefFoundError on the first add flow.
 const OPS_GUARD_BYTES: &[u8] = include_bytes!(
-    "../entityinside/build/net/minecraft/world/entity/RegionTickOps$GuardedNavigatingMobs.class"
+    "../bridges/entityinside/build/net/minecraft/world/entity/RegionTickOps$GuardedNavigatingMobs.class"
 );
 const TRACKER_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/server/level/TrackerTickOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/server/level/TrackerTickOps.class");
 const RNG_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/util/RngOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/util/RngOps.class");
 
 /// S7-168 (STEAL v2 defect-fix, TASK-335): BU-DEFER bridge — sendBlockUpdated
 /// канализация для воркеров (javap-контракт: handle receiver-prepended).
 const BLOCKUPD_CLASS: &str = "net/minecraft/server/level/BlockUpdateOps";
 const BLOCKUPD_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/server/level/BlockUpdateOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/server/level/BlockUpdateOps.class");
 
 /// SCHED-DEFER (C30, ROUND-475 — rt4/bc1 thread-confinement SITE-A, lever
 /// cmp475_c30conf STRICT eq): canalization of the per-Level scheduled-tick
@@ -96,7 +96,7 @@ const BLOCKUPD_BYTES: &[u8] =
 /// DISARM → direct-vanilla fail-safe (no bridge panic, ever).
 const SCHED_OPS_CLASS: &str = "net/minecraft/world/level/BlockScheduleOps";
 const SCHED_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/level/BlockScheduleOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/level/BlockScheduleOps.class");
 const SCHEDULED_TICK_ACCESS_CLASS: &str = "net/minecraft/world/level/ScheduledTickAccess";
 
 /// NAV-POOL (TASK-410-A k5, cmp405_navplane STRICT eq): A* node-pool bridge
@@ -105,7 +105,7 @@ const SCHEDULED_TICK_ACCESS_CLASS: &str = "net/minecraft/world/level/ScheduledTi
 /// Same package as NodeEvaluator (protected `nodes` field access).
 const NAVPOOL_CLASS: &str = "net/minecraft/world/level/pathfinder/NavPoolOps";
 const NAVPOOL_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class");
 const NODE_EVALUATOR_CLASS: &str = "net/minecraft/world/level/pathfinder/NodeEvaluator";
 
 /// REFSYNC (TASK-412-A, cmp405_navplane lane via crate::emap::armed(); the
@@ -1276,7 +1276,7 @@ mod blockupd_delivery_tests {
     #[test]
     fn blockupd_ops_source_declares_no_nested_classes() {
         let src =
-            include_str!("../entityinside/net/minecraft/server/level/BlockUpdateOps.java");
+            include_str!("../bridges/entityinside/net/minecraft/server/level/BlockUpdateOps.java");
         let mut declared: Vec<String> = Vec::new();
         for line in src.lines() {
             let t = line.trim();
@@ -1308,7 +1308,7 @@ mod blockupd_delivery_tests {
     /// Build-dir mirror: exactly one BlockUpdateOps classfile exists.
     #[test]
     fn blockupd_build_dir_has_exactly_one_classfile() {
-        let dir = "entityinside/build/net/minecraft/server/level";
+        let dir = "bridges/entityinside/build/net/minecraft/server/level";
         let mut count = 0;
         let rd = std::fs::read_dir(dir).expect("build dir present (run build_blockupd_ops.sh)");
         for e in rd.flatten() {
@@ -1327,7 +1327,7 @@ mod blockupd_delivery_tests {
     #[test]
     fn blockupd_embedded_bytes_match_build_dir() {
         let on_disk =
-            std::fs::read("entityinside/build/net/minecraft/server/level/BlockUpdateOps.class")
+            std::fs::read("bridges/entityinside/build/net/minecraft/server/level/BlockUpdateOps.class")
                 .expect("built classfile present");
         assert_eq!(
             on_disk,
@@ -1374,7 +1374,7 @@ mod navpool_delivery_tests {
     #[test]
     fn navpool_ops_source_declares_no_nested_classes() {
         let src = include_str!(
-            "../entityinside/net/minecraft/world/level/pathfinder/NavPoolOps.java"
+            "../bridges/entityinside/net/minecraft/world/level/pathfinder/NavPoolOps.java"
         );
         let mut declared: Vec<String> = Vec::new();
         for line in src.lines() {
@@ -1407,7 +1407,7 @@ mod navpool_delivery_tests {
     /// Build-dir mirror: exactly one NavPoolOps classfile exists.
     #[test]
     fn navpool_build_dir_has_exactly_one_classfile() {
-        let dir = "entityinside/build/net/minecraft/world/level/pathfinder";
+        let dir = "bridges/entityinside/build/net/minecraft/world/level/pathfinder";
         let mut count = 0;
         let rd = std::fs::read_dir(dir).expect("build dir present (run build_navpool_ops.sh)");
         for e in rd.flatten() {
@@ -1426,7 +1426,7 @@ mod navpool_delivery_tests {
     #[test]
     fn navpool_embedded_bytes_match_build_dir() {
         let on_disk = std::fs::read(
-            "entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class",
+            "bridges/entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class",
         )
         .expect("built classfile present");
         assert_eq!(
@@ -1477,7 +1477,7 @@ mod navpool_delivery_tests {
     #[test]
     fn navpool_laundering_covers_every_mutable_node_field() {
         let src = include_str!(
-            "../entityinside/net/minecraft/world/level/pathfinder/NavPoolOps.java"
+            "../bridges/entityinside/net/minecraft/world/level/pathfinder/NavPoolOps.java"
         );
         for field in [
             "heapIdx", "closed", ".g =", ".h =", ".f =", "cameFrom", "walkedDistance",
@@ -1506,7 +1506,7 @@ mod sched_delivery_tests {
     #[test]
     fn sched_ops_source_declares_no_nested_classes() {
         let src =
-            include_str!("../entityinside/net/minecraft/world/level/BlockScheduleOps.java");
+            include_str!("../bridges/entityinside/net/minecraft/world/level/BlockScheduleOps.java");
         let mut declared: Vec<String> = Vec::new();
         for line in src.lines() {
             let t = line.trim();
@@ -1537,7 +1537,7 @@ mod sched_delivery_tests {
     /// Build-dir mirror: exactly one BlockScheduleOps classfile exists.
     #[test]
     fn sched_build_dir_has_exactly_one_classfile() {
-        let dir = "entityinside/build/net/minecraft/world/level";
+        let dir = "bridges/entityinside/build/net/minecraft/world/level";
         let mut count = 0;
         let rd = std::fs::read_dir(dir).expect("build dir present");
         for e in rd.flatten() {
@@ -1556,7 +1556,7 @@ mod sched_delivery_tests {
     #[test]
     fn sched_embedded_bytes_match_build_dir() {
         let on_disk = std::fs::read(
-            "entityinside/build/net/minecraft/world/level/BlockScheduleOps.class",
+            "bridges/entityinside/build/net/minecraft/world/level/BlockScheduleOps.class",
         )
         .expect("built classfile present");
         assert_eq!(
@@ -1596,7 +1596,7 @@ mod sched_delivery_tests {
     #[test]
     fn sched_bridge_fail_safe_ladder_in_source() {
         let src =
-            include_str!("../entityinside/net/minecraft/world/level/BlockScheduleOps.java");
+            include_str!("../bridges/entityinside/net/minecraft/world/level/BlockScheduleOps.java");
         assert!(src.contains("isWorker()"), "worker gate must exist");
         assert!(
             src.contains("instanceof net.minecraft.server.level.ServerLevel"),
@@ -1606,7 +1606,7 @@ mod sched_delivery_tests {
             src.contains("scheduleDisarmed()"),
             "disarm fail-safe must gate the defer path"
         );
-        let rt = include_str!("../entityinside/net/minecraft/world/entity/RegionTickOps.java");
+        let rt = include_str!("../bridges/entityinside/net/minecraft/world/entity/RegionTickOps.java");
         assert!(
             rt.contains("drainScheduledTicks") && rt.contains("schedDisarmed = true"),
             "phase-4c replay + one-shot disarm must exist in RegionTickOps"

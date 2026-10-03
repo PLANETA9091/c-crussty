@@ -43,11 +43,11 @@ pub const BRAIN_CLASS: &str = classfile::BRAIN_CLASS;
 const OPS_NAME: &str = classfile::BRAIN_OPS_CLASS;
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../randomtick/build/net/minecraft/world/entity/ai/BrainOps.class");
+    include_bytes!("../bridges/randomtick/build/net/minecraft/world/entity/ai/BrainOps.class");
 const IDKEY_BYTES: &[u8] =
-    include_bytes!("../randomtick/build/net/minecraft/world/entity/ai/BrainOps$IdKey.class");
+    include_bytes!("../bridges/randomtick/build/net/minecraft/world/entity/ai/BrainOps$IdKey.class");
 const SNAPSHOT_BYTES: &[u8] =
-    include_bytes!("../randomtick/build/net/minecraft/world/entity/ai/BrainOps$Snapshot.class");
+    include_bytes!("../bridges/randomtick/build/net/minecraft/world/entity/ai/BrainOps$Snapshot.class");
 
 static READY: AtomicBool = AtomicBool::new(false);
 static PATCHED: AtomicBool = AtomicBool::new(false);
@@ -395,7 +395,7 @@ mod tests {
     /// леге — тот же класс, что x466-C02 / Л-475-C51 дыра-5 (java-7≠rust-6).
     #[test]
     fn tick2_flags_mirror_java() {
-        const BRAIN_OPS_JAVA: &str = include_str!("../randomtick/src/BrainOps.java");
+        const BRAIN_OPS_JAVA: &str = include_str!("../bridges/randomtick/src/BrainOps.java");
         let line = BRAIN_OPS_JAVA
             .lines()
             .find(|l| l.contains("static final String TICK2_FLAGS"))

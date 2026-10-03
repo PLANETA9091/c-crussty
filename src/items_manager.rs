@@ -37,7 +37,7 @@ use std::ffi::CString;
 const IM_CLASS: &str = "net/minecraft/world/entity/ItemEntityManager";
 
 const IM_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/ItemEntityManager.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/ItemEntityManager.class");
 
 /// TASK-399-B (cmp399_shard): the Java-side gate string baked into IM_BYTES
 /// (<clinit>: ENABLED = "items_subsys2".equals(trimToEmpty(getenv))). With a

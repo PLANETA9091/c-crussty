@@ -29,9 +29,9 @@ const OPS_CLASS: &str = "net/minecraft/world/entity/FluidBitmaskOps";
 const OPS_ENTRY_CLASS: &str = "net/minecraft/world/entity/FluidBitmaskOps$Entry";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../fluid/build/net/minecraft/world/entity/FluidBitmaskOps.class");
+    include_bytes!("../bridges/fluid/build/net/minecraft/world/entity/FluidBitmaskOps.class");
 const OPS_ENTRY_BYTES: &[u8] =
-    include_bytes!("../fluid/build/net/minecraft/world/entity/FluidBitmaskOps$Entry.class");
+    include_bytes!("../bridges/fluid/build/net/minecraft/world/entity/FluidBitmaskOps$Entry.class");
 
 static ARMED: AtomicBool = AtomicBool::new(false);
 

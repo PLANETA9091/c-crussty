@@ -36,7 +36,7 @@ use std::os::raw::c_void;
 pub const NAV_CLASS: &str = "net/minecraft/server/level/NavPlaneOps";
 
 pub const NAV_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/server/level/NavPlaneOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/server/level/NavPlaneOps.class");
 
 pub const NAV_DECIDE_SIG: &str = "(IIII[I[I[D[B)I";
 

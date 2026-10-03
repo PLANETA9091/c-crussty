@@ -39,7 +39,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 const BC_CLASS: &str = "net/minecraft/world/entity/BatchCollector";
 
 const BC_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/BatchCollector.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/BatchCollector.class");
 
 fn enabled() -> bool {
     std::env::var("CRUSSTY_BATCH_COLLECTOR")

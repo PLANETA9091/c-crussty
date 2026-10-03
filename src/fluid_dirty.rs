@@ -33,9 +33,9 @@ const OPS_CLASS: &str = "net/minecraft/world/entity/FluidPushOps";
 const OPS_INNER_CLASS: &str = "net/minecraft/world/entity/FluidPushOps$ScanOut";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/FluidPushOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/FluidPushOps.class");
 const OPS_INNER_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/FluidPushOps$ScanOut.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/FluidPushOps$ScanOut.class");
 
 fn flag_on(k: &str) -> bool {
     std::env::var(k)

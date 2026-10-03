@@ -39,9 +39,9 @@ const OPS_CLASS: &str = "net/minecraft/world/entity/InsideBlockOps";
 const RECORDER_CLASS: &str = "net/minecraft/world/entity/InsideBlockOps$Recorder";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBlockOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideBlockOps.class");
 const RECORDER_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBlockOps$Recorder.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideBlockOps$Recorder.class");
 
 fn enabled() -> bool {
     std::env::var("CRUSSTY_INSIDE_CACHE")

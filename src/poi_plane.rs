@@ -52,7 +52,7 @@ const CHUNKMAP_CLASS: &str = "net/minecraft/server/level/ChunkMap";
 const OPS_CLASS: &str = "net/minecraft/world/entity/ai/village/poi/PoiOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../poi/build/net/minecraft/world/entity/ai/village/poi/PoiOps.class");
+    include_bytes!("../bridges/poi/build/net/minecraft/world/entity/ai/village/poi/PoiOps.class");
 
 // --- site 1: Level.notifyAndUpdatePhysics → Level.updatePOIOnBlockStateChange
 const NIUP_NAME: &str = "notifyAndUpdatePhysics";

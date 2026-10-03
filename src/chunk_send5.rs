@@ -55,7 +55,7 @@ use crate::classfile::{
 };
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../chunksend/build/net/minecraft/server/network/ChunkPacketEncodeOps.class");
+    include_bytes!("../bridges/chunksend/build/net/minecraft/server/network/ChunkPacketEncodeOps.class");
 
 const LEVER_ID: &str = "cmp444_chunk5";
 
@@ -432,7 +432,7 @@ mod chunkpacket_delivery_tests {
     #[test]
     fn chunkpacket_source_declares_no_nested_classes() {
         let src =
-            include_str!("../chunksend/net/minecraft/server/network/ChunkPacketEncodeOps.java");
+            include_str!("../bridges/chunksend/net/minecraft/server/network/ChunkPacketEncodeOps.java");
         for line in src.lines() {
             let t = line.trim();
             for pat in ["class ", "interface ", "enum ", "record "] {
@@ -536,7 +536,7 @@ mod chunkpacket_delivery_tests {
     #[test]
     fn chunkpacket_gate_carries_444_carrier() {
         let blob = include_bytes!(
-            "../chunksend/build/net/minecraft/server/network/ChunkPacketEncodeOps.class"
+            "../bridges/chunksend/build/net/minecraft/server/network/ChunkPacketEncodeOps.class"
         );
         for needle in [
             &b"cmp444_chunk5"[..],
@@ -553,7 +553,7 @@ mod chunkpacket_delivery_tests {
             );
         }
         let send_blob =
-            include_bytes!("../chunksend/build/net/minecraft/server/network/ChunkSendOps.class");
+            include_bytes!("../bridges/chunksend/build/net/minecraft/server/network/ChunkSendOps.class");
         // chunk4 plane rides the chunk5 carrier too (carrier semantics):
         let needle = b"cmp444_chunk5";
         assert!(

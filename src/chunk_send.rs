@@ -55,7 +55,7 @@ use crate::classfile::{
 };
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../chunksend/build/net/minecraft/server/network/ChunkSendOps.class");
+    include_bytes!("../bridges/chunksend/build/net/minecraft/server/network/ChunkSendOps.class");
 
 const LEVER_ID: &str = "cmp437_chunk4";
 
@@ -434,7 +434,7 @@ mod chunksend_delivery_tests {
     /// classfile).
     #[test]
     fn chunksend_source_declares_no_nested_classes() {
-        let src = include_str!("../chunksend/net/minecraft/server/network/ChunkSendOps.java");
+        let src = include_str!("../bridges/chunksend/net/minecraft/server/network/ChunkSendOps.java");
         for line in src.lines() {
             let t = line.trim();
             for pat in ["class ", "interface ", "enum ", "record "] {
@@ -535,7 +535,7 @@ mod chunksend_delivery_tests {
     /// plane's own blob AND the parse-plane carrier it widens.
     #[test]
     fn chunksend_gate_carries_437_carrier() {
-        let blob = include_bytes!("../chunksend/build/net/minecraft/server/network/ChunkSendOps.class");
+        let blob = include_bytes!("../bridges/chunksend/build/net/minecraft/server/network/ChunkSendOps.class");
         for needle in [
             &b"cmp437_chunk4"[..],
             b"cmp435_chunk3",
@@ -550,7 +550,7 @@ mod chunksend_delivery_tests {
             );
         }
         let parse_blob = include_bytes!(
-            "../chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class"
+            "../bridges/chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class"
         );
         let needle = b"cmp437_chunk4";
         assert!(

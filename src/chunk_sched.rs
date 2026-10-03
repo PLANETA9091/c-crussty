@@ -30,7 +30,7 @@ const TARGET_CLASS: &str = "net/minecraft/server/level/ServerChunkCache";
 const OPS_CLASS: &str = "net/minecraft/server/level/ChunkSchedOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../chunksched/build/net/minecraft/server/level/ChunkSchedOps.class");
+    include_bytes!("../bridges/chunksched/build/net/minecraft/server/level/ChunkSchedOps.class");
 
 const LEVER_ID: &str = "cmp456_chunkmono";
 
@@ -499,7 +499,7 @@ mod chunksched_delivery_tests {
     /// NoClassDefFoundError on the first getChunkNow call).
     #[test]
     fn chunksched_source_declares_no_nested_classes() {
-        let src = include_str!("../chunksched/net/minecraft/server/level/ChunkSchedOps.java");
+        let src = include_str!("../bridges/chunksched/net/minecraft/server/level/ChunkSchedOps.java");
         for line in src.lines() {
             let t = line.trim();
             for pat in ["class ", "interface ", "enum ", "record "] {
@@ -520,7 +520,7 @@ mod chunksched_delivery_tests {
     /// scripts/build_chunksched_ops.sh + scripts/check_blobs_sync.sh.
     #[test]
     fn chunksched_embedded_classfile_present_and_pinned() {
-        let bytes = include_bytes!("../chunksched/build/net/minecraft/server/level/ChunkSchedOps.class");
+        let bytes = include_bytes!("../bridges/chunksched/build/net/minecraft/server/level/ChunkSchedOps.class");
         assert_eq!(&bytes[..4], &[0xCA, 0xFE, 0xBA, 0xBE]);
         let major = u16::from_be_bytes([bytes[6], bytes[7]]);
         assert_eq!(major, 65, "bridge major must be pinned to 65");

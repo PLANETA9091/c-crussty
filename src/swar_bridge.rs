@@ -55,7 +55,7 @@ const ANCHOR_CLASS: &str = "net/minecraft/world/entity/Entity";
 /// Встроенный блоб (include_bytes! contract = NESTED путь; ×93 дисциплина:
 /// flat-копия legacy + flat==nested byte gate на пересборке).
 const BRIDGE_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/MobSwaOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/MobSwaOps.class");
 
 /// swarEpoch(mode, snapshot, nFeed, long[] feedIds, float[] feedBox,
 ///           nQ, float[] qBox, int[] outOff, long[] outRow, int[] outOvf) -> rc.

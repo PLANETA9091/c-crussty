@@ -32,7 +32,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 const TRAVEL_DIET_CLASS: &str = "net/minecraft/world/entity/TravelDietOps";
 
 const TRAVEL_DIET_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/TravelDietOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/TravelDietOps.class");
 
 fn enabled() -> bool {
     std::env::var("CRUSSTY_TRAVEL_DIET")
@@ -341,7 +341,7 @@ mod traveldiet_delivery_tests {
     /// first build strike — anonymous ThreadLocal — is the live precedent).
     #[test]
     fn traveldiet_ops_source_declares_no_nested_classes() {
-        let src = include_str!("../entityinside/net/minecraft/world/entity/TravelDietOps.java");
+        let src = include_str!("../bridges/entityinside/net/minecraft/world/entity/TravelDietOps.java");
         let mut declared: Vec<String> = Vec::new();
         for line in src.lines() {
             let t = line.trim();

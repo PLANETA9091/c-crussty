@@ -46,7 +46,7 @@ const SERVER_LEVEL: &str = classfile::SERVER_LEVEL_CLASS;
 const OPS_NAME: &str = classfile::TICKBLOCK_OPS_CLASS;
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../randomtick/build/net/minecraft/server/level/TickBlockOps.class");
+    include_bytes!("../bridges/randomtick/build/net/minecraft/server/level/TickBlockOps.class");
 
 static READY: AtomicBool = AtomicBool::new(false);
 static PATCHED_LT: AtomicBool = AtomicBool::new(false);

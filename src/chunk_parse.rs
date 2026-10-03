@@ -55,7 +55,7 @@ use crate::classfile::{
 };
 
 const OPS_BYTES: &[u8] = include_bytes!(
-    "../chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class"
+    "../bridges/chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class"
 );
 
 const LEVER_ID: &str = "cmp420_chunk2";
@@ -476,7 +476,7 @@ mod chunkparse_delivery_tests {
     /// classfile).
     #[test]
     fn chunkparse_source_declares_no_nested_classes() {
-        let src = include_str!("../chunkparse/net/minecraft/world/level/chunk/storage/ChunkParseOps.java");
+        let src = include_str!("../bridges/chunkparse/net/minecraft/world/level/chunk/storage/ChunkParseOps.java");
         for line in src.lines() {
             let t = line.trim();
             for pat in ["class ", "interface ", "enum ", "record "] {
@@ -613,7 +613,7 @@ mod chunkparse_delivery_tests {
         // cmp421_brain..cmp430_inside, cmp434_chunkpl}. The embedded bridge
         // must carry the carrier string in its constant pool (raw-byte
         // gate, x93 lesson).
-        let blob = include_bytes!("../chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class");
+        let blob = include_bytes!("../bridges/chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class");
         let needle = b"cmp434_chunkpl";
         assert!(
             blob.windows(needle.len()).any(|w| w == needle),

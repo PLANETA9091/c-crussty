@@ -7259,7 +7259,7 @@ mod alloc_diet {
     // identical), extracted 2026-09-18 for the alloc-diet patchers.
     const LIVING: &[u8] = include_bytes!("../tests/fixtures/LivingEntity.class");
     #[cfg(test)]
-    const COLPUSH_BLOB: &[u8] = include_bytes!("../colpush/build/net/minecraft/world/entity/ColpushOps.class");
+    const COLPUSH_BLOB: &[u8] = include_bytes!("../bridges/colpush/build/net/minecraft/world/entity/ColpushOps.class");
     const COLLISION: &[u8] = include_bytes!("../tests/fixtures/CollisionUtil.class");
 
     use crate::classfile::*;
@@ -9506,7 +9506,7 @@ mod sched_confine {
         // The bridge is embedded in region_threads (private consts) — mirror
         // the build output here to keep the closure check self-contained.
         let bridge = include_bytes!(
-            "../entityinside/build/net/minecraft/world/level/BlockScheduleOps.class"
+            "../bridges/entityinside/build/net/minecraft/world/level/BlockScheduleOps.class"
         );
         if let Err(e) = sched_resolution_closure(bridge) {
             panic!("RESOLUTION CLOSURE FAILED: {e} — rebuild entityinside/ bridges");

@@ -32,7 +32,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 const ZERO_ALLOC_CLASS: &str = "net/minecraft/world/level/ZeroAllocOps";
 
 const ZERO_ALLOC_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/level/ZeroAllocOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/level/ZeroAllocOps.class");
 
 fn enabled() -> bool {
     std::env::var("CRUSSTY_ZERO_ALLOC")
@@ -177,7 +177,7 @@ mod zeroalloc_delivery_tests {
     /// bridge compiles to exactly one classfile and is defined alone).
     #[test]
     fn zeroalloc_ops_source_declares_no_nested_classes() {
-        let src = include_str!("../entityinside/net/minecraft/world/level/ZeroAllocOps.java");
+        let src = include_str!("../bridges/entityinside/net/minecraft/world/level/ZeroAllocOps.java");
         let mut declared: Vec<String> = Vec::new();
         for line in src.lines() {
             let t = line.trim();
@@ -210,7 +210,7 @@ mod zeroalloc_delivery_tests {
     /// Build-dir mirror: exactly one ZeroAllocOps classfile exists.
     #[test]
     fn zeroalloc_build_dir_has_exactly_one_classfile() {
-        let dir = "entityinside/build/net/minecraft/world/level";
+        let dir = "bridges/entityinside/build/net/minecraft/world/level";
         let mut count = 0;
         let rd = std::fs::read_dir(dir).expect("build dir present (run build_zeroalloc_ops.sh)");
         for e in rd.flatten() {
@@ -229,7 +229,7 @@ mod zeroalloc_delivery_tests {
     #[test]
     fn zeroalloc_embedded_bytes_match_build_dir() {
         let on_disk =
-            std::fs::read("entityinside/build/net/minecraft/world/level/ZeroAllocOps.class")
+            std::fs::read("bridges/entityinside/build/net/minecraft/world/level/ZeroAllocOps.class")
                 .expect("built classfile present");
         assert_eq!(
             on_disk,

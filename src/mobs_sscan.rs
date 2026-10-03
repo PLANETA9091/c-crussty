@@ -55,7 +55,7 @@ const MOB_CLASS: &str = "net/minecraft/world/entity/Mob";
 const OPS_CLASS: &str = "net/minecraft/world/entity/MobScanOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../sscan/build/net/minecraft/world/entity/MobScanOps.class");
+    include_bytes!("../bridges/sscan/build/net/minecraft/world/entity/MobScanOps.class");
 
 const CHECKDESPAWN_NAME: &str = "checkDespawn";
 const CHECKDESPAWN_DESC: &str = "()V";
