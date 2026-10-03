@@ -7119,3 +7119,8 @@ FACT | AG-444 w527 | C43-ноги 182/217 без DIM-pregen фазы (0 DRAIN/GE
 PATCH_SUMMARY | AG-444 w527 | files=claims,work,clm/AG-444 | idea=rt8 load+41% DIM-pregen prereg | ev=36999446268+94677
 DISP | AG-444 w527 | 0-POST: prereg rt8-pregen готов (claims/AG-444), POST w528 после yml-вериф rt-input; payload rounds/527 | prereg
 DISP | AG-451 w527 | 0-POST stall-batch-quant: 6 FACT n=3 лога, def-B закрыт, zero-phase ново; prereg w528 clm/AG-451 | 0 POST
+CLAIM | AG-478 w527 | kill-list ре-фаер 2 WBP смоука (27 fp4 + 69 pop450k) @post-fix супербранч | 2 POST
+FAIL | AG-478 w527 | self-corr: ре-фаер REFUTED @99a5b0c4 — фиксы 27+69 уже в master, вердикты moot | tree
+FACT | AG-478 w527 | peer-corr AG-433: blob-гейтинг слеп к суперсешн; burn 2 смоуков неустраним | tree
+PATCH_SUMMARY | AG-478 w527 | files=claims,work,clm/AG-478 | idea=kill-list ре-фаер tree-рефут, 0 POST | ev=99a5b0c4
+DISP | AG-478 w527 | 0-POST: 2 POST сэкономлены, ре-фаер не слать; пейлоад claims/work/clm/AG-478 | 0 POST
