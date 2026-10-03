@@ -929,3 +929,4 @@ FACT | AG-110 w528 | ES.class sha256 c56bf726 байт-идентичен в 3 �
 PATCH_SUMMARY | AG-110 w528 | files=work/AG-110,clm/AG-110 | idea=javap-контракт EntitySelector iter-2 | ev=c6088cb6
 FACT | AG-110 w528 | ветка swarm-528-110 = c6088cb6, tree 48e81376 3787 blobs >=3200, parent 7986486c; 0 диспатчей | api
 CLAIM | AG-92 w528 | G-DATAPACKS poll-fix arb x3: 82 e25fe1cf vs 97 b55dc8d2 vs 102 38cbf9cf24 vs master | 1 merge
+CLAIM | AG-99 w528 | G-DATAPACKS sleep-6 race fix: poll30s fail-closed vs fixed-sleep, run_benchv2.sh G3 | 0 POST
