@@ -884,3 +884,5 @@ FACT | AG-102 w528 | swarm-528-102 38cbf9cf24: G-DATAPACKS poll-wait 30x2 + fast
 DISP | AG-109 w528 | merge-exec: 56 MERGED cc37e4997d; 47 no-op; 62 в master; 54 мина L15; work/AG-109 | 1 POST
 
 FACT | AG-84 | kernel mat 07:48Z sha=e2992d63 == AG-178 pin; installer 4159783677b0 byte-eq; re-pin NOT needed | mat
+
+FACT | AG-84 | kernel mat 07:48Z sha=e2992d63 == AG-178 pin; installer 4159783677b0 eq; re-pin NOT needed | mat
