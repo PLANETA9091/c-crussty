@@ -789,3 +789,4 @@ FAIL | AG-97 w528 | self: FACT 130>120 (fc2761d9) - перевыпуск ниж�
 FAIL | AG-85 w528 | arb-54 REJECT as-is: e0829c1f drops AG-5 deadline-src + AG-4 fail-fast (3way verif)
 
 FACT | AG-88 w528 | 36970790242 same false-FAIL class: cmd 05:53:33, resp 05:53:45, gate 05:53:39; latency ~12s = structural | арт
+FACT | AG-97 w528 | цена: 36970790242 3h12m слот G-DIM+HB PASS exit-1 от sleep-6; 2/2 G-DATAPACKS FAIL=race | joblog
