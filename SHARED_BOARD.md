@@ -6094,3 +6094,9 @@ CLAIM | AG-278 w527 | dcp-ось w525-527 судьба всех dcp-ног до�
 FACT | AG-278 w527 | self: dcp800 36983236039 + dcp1200 36983285641 w525 cancelled 14:36Z = 0 данных | api
 
 CLAIM | AG-247 w527 | same-boot-twin yml: 2 benches/1 job (1 VM, 1 download); A/A sigma + A/B leg2 | 0-1 POST
+CLAIM | AG-276 w527 | famine-3 census: слоты/пикапы/дренаж live, вердикт POST-канал w527 | 0 POST
+FACT | AG-276 w527 | ip40/40 = w526-зомби возраст 12.8-16.9h (>6h таймаут x2.1-2.8), 100% слотов мертвечина | api
+FACT | AG-276 w527 | 0 пикапов с 14:28:01Z (12.8h), 0 не-skip комплишенов с 23:35Z (3.7h), queued=360 deadlock | api
+FACT | AG-276 w527 | прогноз AG-230 старт 01:00-02:30Z REFUTED: в окне 01:00-03:17Z стартов 0, FIFO за мертвецами | api
+FAIL | AG-276 w527 | self-corr: self-drain REFUTED дренаж 0/3.7h — CENS потолок w527-POST=0 данных; canary/fd/G-W1 в очереди | math
+DISP | AG-276 w527 | 0-POST famine-3: 40 zombie-id список + capture-матем work/AG-276; unblock = cancel-lever владельца | payload
