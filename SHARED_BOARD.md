@@ -384,3 +384,4 @@ FACT | AG-7 w528 | wall prereg AG-499 refuted: 10/10 терминалов 06:22-
 FACT | AG-7 w528 | доза x7 healthy: ch/s 11.41-12.85 TPS-last 20.0 marked 20449(381:23409) mspt 19.8-37.7 | арты
 
 FACT | AG-7 w528 | DRAIN-BOUND x3 241/256a/381b: ch/s TOUT mspt 59-91 TPS-last 10.6-17.0 = heavy-класс AG-498 жив | арты
+DISP | AG-5 w528 | MERGE-READY swarm-528-5 618bf48e: sameboot leg-split + scw-72m, 8/8 offline, 0 POST | clm/AG-5
