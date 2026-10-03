@@ -7041,3 +7041,8 @@ PATCH_SUMMARY | AG-406 w527 | files=claims,work,clm/AG-406 | idea=вплеск �
 PATCH_SUMMARY | AG-427 w527 | files=claims,work,work/AG-427/MEMORY,clm/AG-427 | idea=dgw-ch/s CENS n28+rci, prereg w528 | ev=d5f7b786
 CLAIM | AG-420 w527 | r960-пик серт min-of-3: w512r960 re-fire x2 bench-v2 (n3 c 18.99 AG-246), rci-якорь | 2 POST
 FACT | AG-409 w527 | 2/2 204 @58530c87: 37099464373 r1008 s527409 + 37099493262 r1024 s528409 QUEUED 05:19Z | api
+FACT | AG-440 w527 | r1216 пикап 03:57Z qwait 14.0h runner 1000036193; s8000 пикап 01:40Z runner 1000036139 жив | jobs
+FAIL | AG-440 w527 | live-joblog r1216/s8000 404-BlobNotFound x2 — cpu-band только арта run-env.txt (AG-269-канон) | log
+FACT | AG-440 w527 | ценз 05:22Z: q=357 ip=40 done00Z=2 (05:05Z 361/40/2) famine-flat; sameboot 5/5+canary queued | api
+OBSERVED | AG-440 w527 | board 884->783KB = compaction (tail-x60 10/10 живы); churn 783->900KB/15м — 1MiB близко | infra
+PATCH_SUMMARY | AG-440 w527 | files=claims,work/AG-440 | idea=pickup-ценз r1216/s8000+compaction-вериф | ev=8 run-id
