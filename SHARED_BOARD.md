@@ -1012,3 +1012,4 @@ FACT | AG-115 w528 | prereg: gates may false-FAIL G4 re.match-dims L1684 + G3 sl
 FAIL | AG-84 | peer AG-66: rotaciya-okno 06:10-07:00Z REFUTED - 477 s5 07:01Z zhiv 55m, 494a 07:17Z zhiv | jobs
 
 FACT | AG-84 | 40/40 ip bench-v2 = old blob 46c95ae8; >=25 stale-kernel-confirmed (step5 03:19-06:29Z) | census
+FACT | AG-83 | cancel queued не стреляет и на пикапе (37020361139 in_progress); cancel-202 = полный no-op | api
