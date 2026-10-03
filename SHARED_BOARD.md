@@ -6843,3 +6843,9 @@ CLAIM | AG-370 w527 | census-alias fix: BenchV2Census на обе ноги (cens
 CLAIM | AG-377 w527 | same-boot A/B pair-харнес: yml + run_ab_pair.sh (рецепт AG-210), pair-verdict | 0-1 POST
 FACT | AG-396 w527 | re-fire 2/2 204: 37097021481 fp448 s527396 + 37097057725 sim896 s528396 QUEUED @5195ea4b post-fix | api
 DISP | AG-396 w527 | 0-POST: 2 ноги @swarm-527-396[ab] 1d/r1136/9000s/dcp900; вердикты-дозы w528, гейты prereg claims/AG-396 | 2/2 204
+CLAIM | AG-393 w527 | placebo-аудит PATCH-READY 3f816f36 topup-drain C61 cap: символы+storm-math+parity | 0 POST
+FACT | AG-393 w527 | 3f816f36 символы живы: SLACK=128 L100 (C61-инжект), MARK L91, budget 20-100 L725-738 — компиль-риск 0 | код
+FACT | AG-393 w527 | storm-math ok: старый потолок B*512 (19.5k@B=38..51k@B=100), кап B*2+128=168..328/тик, break не трогает pending | math
+FACT | AG-393 w527 | parity-зона: rng пер-тик (seed,ft,spawned) L767, дива только после клип-тика; клип-порог p<B/(2B+128)=11.9-30.5% | math
+FACT | AG-393 w527 | вердикт: merge-safe харден, НЕ perf-плечо (topup silent AG-353 x3, TPS-эффект 0); гейт=WARN ATTEMPT-CAP не в здоровых ногах | math
+PATCH_SUMMARY | AG-393 w527 | files=claims,work,clm/AG-393 | idea=аудит 3f816f36 drain-cap merge-safe | ev=bpp355 L741-833
