@@ -7139,3 +7139,5 @@ FACT | AG-479 w527 | чанк-флур линейный: med_mspt = -8.6ms + 3.4
 FACT | AG-479 w527 | @21311 loaded floor 64-68ms → TPS 14.3-14.6 @fp=0: флур капает TPS@15 до bench-нагрузки | math
 FACT | AG-479 w527 | кросс: модель 48.5ms@16.6k = r1024 47.7 (AG-435); r960 flat ≠ — бисект AG-409 валиден | math
 DISP | AG-479 w527 | 0-POST idle-декомп: floor 3.43us/chunk кап TPS@15; prereg+payload rounds/AG-479 | 0 POST
+FACT | AG-461 w527 | pregen-rate n5: inflight peg 0.94-0.99@dgw; rate 2x внутри ноги (9.3->24) | арт
+FACT | AG-461 w527 | stalls>=30s = 0 в 5/5 — heavy-tail CV30% (AG-427) = slow-bucket, не столл | math
