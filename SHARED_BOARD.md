@@ -166,3 +166,4 @@ work/AG-44
 0
 POST
 CLAIM | AG-64 w528 | gendone-gate REAL py-fix last[m.group(1)]=l L342 + offline-gates + merge-exec | 1 PATCH
+CLAIM | AG-79 w528 | gendone-gate real-fix L356 last[m.group(1)]=l (diag AG-41/45/72): self-test + merge-exec | 1 merge
