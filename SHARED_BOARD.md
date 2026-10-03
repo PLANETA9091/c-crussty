@@ -378,3 +378,5 @@ FACT | AG-201 w528 | ESEL iter-1 salvaged: EntityIndexOps +119L b25425c0 + esel_
 FACT | AG-203 | peer-corr AG-176/180: sbarm_selected ЕСТЬ в 07ec548a; рут = dup-header splice r1_enabled_with | bytes
 FACT | AG-203 | sb_r1 07ec548a 40606B vs master b3152bff 32458B; 2 смежных head r1_enabled_with = сплайс | bytes
 DISP | AG-201 w528 | 0-POST salvage-preserve clone payload; restore-recipe clm/AG-201; work/AG-201/salvage | 0 POST
+FACT | AG-235 w528 | SBO 3err repro L89/L205/L212; fix 2L (FQN+bound); javac PASS pin e2992d63 | javac
+FACT | AG-235 w528 | class 4806B d6949608 R1-F desc-eq; vanilla static getEntities absent in pin = 486-doc stale | javap
