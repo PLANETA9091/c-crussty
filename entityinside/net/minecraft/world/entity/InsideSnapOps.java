@@ -90,6 +90,24 @@ import net.minecraft.world.level.block.state.BlockState;
  *
  * INJECTS-ONLY: class defined into the kernel loader by src/inside_snap.rs
  * (register_natives for snapCollect; ARMED flipped by rust after selfTest).
+ *
+ * ITER-3 (P36 PRE-GATE site 1, lever cmp459_snapreg — RESEARCH-459-P36 §2;
+ * rust decision-core mirror src/inside_snap_registry.rs serve_gate, iter-2
+ * merge 0bc291ac): snapGet gains a fail-closed fast-gate at HEAD, BEFORE the
+ * serve/serve4 calls — per-thread warm slot (lanes[0] fields, stamped ONLY by
+ * the serve4 fresh-serve points), guard chain = ref/int compares + ONE
+ * long-cmp (pregEpoch vs Snap.gen, the 64-bit EPOCHS[slot] analog), then the
+ * content serve with the long builtAtGen==gen anchor ALWAYS re-checked (a
+ * 2^32-multiple drift can never serve stale — wrong serve impossible, only a
+ * slower path). ANY doubt => null => the exact legacy continuation
+ * (cold thread/slot, foreign coords, tick rollover, stale epoch, pending,
+ * Throwable). The switch (PREGATE) is flipped ONLY by InsideSnapRegistryOps
+ * .arm() after define-order+selfTest; default false = byte-for-byte dormant.
+ * This class holds NO reference to the sidecar class (NCDFE canon: definable
+ * standalone; the sidecar->flag write is the safe direction). Sites 2
+ * (secWrite — read-only consumer of Snap.gen) and 3 (Entity.lambda$...
+ * retarget) are NOT touched; the V2 serve() control body is NOT touched
+ * (slot fill lives in serve4 only — V2-only runs keep the slot cold).
  */
 public final class InsideSnapOps {
 
@@ -116,6 +134,19 @@ public final class InsideSnapOps {
     public static void v4() {
         V4 = true;
     }
+
+    /**
+     * iter-3 P36 PRE-GATE switch (site 1, lever cmp459_snapreg —
+     * RESEARCH-459-P36 §2). Flipped true ONLY by InsideSnapRegistryOps.arm()
+     * (rust probe-then-patch chain: define-order + selfTest must pass first);
+     * default false => the pre-gate block in snapGet is inert and the gate is
+     * byte-for-byte (lever off / sidecar never defined / selfTest failed).
+     * No reference to the sidecar class is held HERE (NCDFE canon — this
+     * class stays definable without the registry sidecar; the sidecar->flag
+     * write direction is the safe one). snapGet reads it jointly with ARMED,
+     * so a CHM-plane disarm (ERR_STRUCT) kills the pre-gate too.
+     */
+    static volatile boolean PREGATE = false;
 
     public static void arm() {
         ARMED = true;
@@ -153,6 +184,9 @@ public final class InsideSnapOps {
     /** Effect marker (first real HIT serve) — grep-able stdout proof. */
     private static volatile boolean FIRST_HIT_LOGGED = false;
 
+    /** Effect marker (first PREGATE slot-serve) — grep-able stdout proof. */
+    private static volatile boolean FIRST_PREGATE_LOGGED = false;
+
     // ------------------------------------------------------------------
     // SNAPSHOTS
     // ------------------------------------------------------------------
@@ -178,12 +212,17 @@ public final class InsideSnapOps {
     /** TASK-432-B: per-HIT counter — LongAdder (striped) kills the CAS
      *  contention the 4 region workers paid on every served position. */
     static final LongAdder STAT_HITS = new LongAdder();
+    /** iter-3 P36 pre-gate slot-serves (pregateHits() vs hits() = A/B coverage). */
+    static final LongAdder STAT_PREGATE = new LongAdder();
     static final AtomicLong STAT_MISSES = new AtomicLong();
     static final AtomicLong STAT_COLLECTS = new AtomicLong();
     static final AtomicLong STAT_SECTIONS = new AtomicLong();
     static final AtomicLong STAT_INVALIDATIONS = new AtomicLong();
 
     public static long hits() { return STAT_HITS.sum(); }
+
+    /** iter-3: P36 pre-gate slot-serves (the fast-gate coverage counter). */
+    public static long pregateHits() { return STAT_PREGATE.sum(); }
     public static long misses() { return STAT_MISSES.get(); }
     public static long collects() { return STAT_COLLECTS.get(); }
     public static long sections() { return SNAPS.size(); }
@@ -194,6 +233,20 @@ public final class InsideSnapOps {
     // ------------------------------------------------------------------
 
     public static BlockState snapGet(Level level, BlockPos pos) {
+        // ---- P36 PRE-GATE (site 1, iter-3; lever cmp459_snapreg —
+        // RESEARCH-459-P36 §2; rust decision core serve_gate, iter-2): ONE
+        // per-thread warm-slot long-cmp BEFORE serve/serve4. Fail-closed by
+        // construction: PREGATE flips only at InsideSnapRegistryOps.arm()
+        // (post define-order+selfTest), so lever off => inert, byte-for-byte;
+        // ANY doubt inside pregate() => null => the EXACT legacy body below
+        // (javap anchor of the wiring phase; descriptor/receiver contract
+        // unchanged so the site-3 retarget keeps linking 3B->3B).
+        if (PREGATE && ARMED) {
+            BlockState fast = pregate(level, pos);
+            if (fast != null) {
+                return fast;
+            }
+        }
         if (ARMED) {
             try {
                 BlockState hit = V4 ? serve4(level, pos) : serve(level, pos);
@@ -210,6 +263,81 @@ public final class InsideSnapOps {
             }
         }
         return level.getBlockState(pos); // bit-exact vanilla continuation (miss path)
+    }
+
+    /**
+     * P36 PRE-GATE slot-serve (site 1 fast-gate body; RESEARCH-459-P36 §1):
+     * the per-thread warm slot IS the EPOCHS[slot] carrier — the guard chain
+     * is ref/int compares + ONE long-cmp (pregEpoch vs Snap.gen), then the
+     * content serve with the long builtAtGen==gen anchor ALWAYS re-checked
+     * (P32 §3: the long anchor is the final freshness verdict — an int-wrap
+     * coincidence can never serve stale, and this mirror is 64-bit anyway).
+     * null => the caller runs the exact legacy serve/serve4 continuation
+     * (fail-closed direction only; no new source of truth — the slot mirrors
+     * the same Snap refs the CHM plane publishes, sec->snap immutable).
+     */
+    private static BlockState pregate(Level level, BlockPos pos) {
+        try {
+            Lane[] lanes = LANE_TL.get();
+            if (lanes == null) {
+                return null; // cold thread: full path owns claim + warm-up
+            }
+            Lane m = lanes[0];
+            Snap ws = m.pregSnap;
+            if (ws == null) {
+                return null; // cold slot: the next fresh serve4 stamps it
+            }
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            if (m.pregLevel != level || m.pregTick != level.getGameTime()
+                    || m.pregCx != (x >> 4) || m.pregCz != (z >> 4)
+                    || m.pregSy != (y >> 4)) {
+                return null; // foreign slot: tick-bounded lane discipline parity
+            }
+            if (m.pregEpoch != ws.gen) {
+                return null; // P36: ONE long-cmp — stale/wrap => full serve path
+            }
+            int packed = ((y & 15) << 8) | ((z & 15) << 4) | (x & 15);
+            BlockState hit = null;
+            BlockState[] a = ws.states;
+            if (a != null && ws.builtAtGen == ws.gen) {
+                hit = a[packed]; // SAME object the CHM plane serves (token identity)
+            } else {
+                BlockState sg = ws.single;
+                if (sg != null && ws.builtAtGen == ws.gen) {
+                    hit = sg; // single mode: one-object serve (bpe==0)
+                }
+            }
+            if (hit == null) {
+                return null; // pending/stale race: full path owns the rebuild
+            }
+            STAT_PREGATE.increment();
+            if (!FIRST_PREGATE_LOGGED) {
+                FIRST_PREGATE_LOGGED = true;
+                LOG.info("inside_snap: first PREGATE slot-serve (P36 long-cmp warm slot; lever cmp459_snapreg site 1)");
+            }
+            return hit;
+        } catch (Throwable t) {
+            return null; // fail-dominant: full path (same contract as snapGet)
+        }
+    }
+
+    /**
+     * P36 warm-slot stamp — the slot's ONLY writer. Called at the serve4
+     * fresh-serve points (the anchor holds there, so pregEpoch = builtAtGen
+     * IS the last-published gen). Lives on lanes[0] (the per-thread control
+     * slot — same zero-alloc trick as hint). V2-only runs (cmp432 without
+     * cmp436) never stamp: the slot stays cold, the pre-gate stays inert —
+     * fail-closed. Plain fields: same-thread access only (lanes per-thread).
+     */
+    private static void pregStamp(Lane[] lanes, Level level, long nowTick, int x, int y, int z, Snap s) {
+        Lane m = lanes[0];
+        m.pregLevel = level;
+        m.pregTick = nowTick;
+        m.pregCx = x >> 4;
+        m.pregCz = z >> 4;
+        m.pregSy = y >> 4;
+        m.pregEpoch = s.builtAtGen;
+        m.pregSnap = s;
     }
 
     // ------------------------------------------------------------------
@@ -236,6 +364,16 @@ public final class InsideSnapOps {
         int minSecY = Integer.MIN_VALUE;
         /** Per-thread last-served lane index (stored on lanes[0] — zero-alloc hint). */
         int hint;
+        // ---- iter-3 P36 pre-gate warm slot (lives on lanes[0] ONLY — the
+        // per-thread control slot, same zero-alloc trick as hint). Stamped by
+        // the serve4 fresh-serve points (pregStamp), read by pregate() at the
+        // snapGet HEAD. Plain fields: same-thread access only (lanes are
+        // per-thread; the Snap's own gen/builtAtGen stay volatile).
+        Level pregLevel;            // slot identity guard (receiver level ref)
+        long pregTick;              // tick stamp (lane discipline: never outlives the tick)
+        int pregCx, pregCz, pregSy; // chunk coords + world section Y (pos identity)
+        long pregEpoch;             // EPOCHS[slot] analog: last-published gen (ONE long-cmp)
+        Snap pregSnap;              // ref-bound slot content (sec->snap immutable)
     }
 
     // NO-INDY CLINIT (round-3 NCDFE root-cause, canon ×93-indy): the previous
@@ -464,10 +602,16 @@ public final class InsideSnapOps {
         }
         BlockState[] a = s.states;
         if (a != null && s.builtAtGen == s.gen) {
+            if (PREGATE) {
+                pregStamp(lanes, level, nowTick, x, y, z, s); // P36 slot fill
+            }
             return a[packed];
         }
         BlockState sg = s.single;
         if (sg != null && s.builtAtGen == s.gen) {
+            if (PREGATE) {
+                pregStamp(lanes, level, nowTick, x, y, z, s); // P36 slot fill
+            }
             return sg;
         }
         if (s.pending) {
