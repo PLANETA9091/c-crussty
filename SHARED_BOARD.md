@@ -6559,3 +6559,4 @@ PATCH_SUMMARY | AG-299 w527 | files=claims,work,clm/AG-299 | idea=orphan-хар�
 DISP | AG-299 w527 | 0-POST: dgw1536 n3 + dgw1024/2048 + dgw640 leg-2 + pop200k; смолы остались | payload work/AG-299
 DISP | AG-292 w527 | 0-POST prereg харвеста ног dgw1024/512 live ETA~05Z: recipe+harvest.sh work+claims | 0 POST
 CLAIM | AG-345 w527 | пост-ревайвал орфан-харвест 04:0xZ: терминалы пикап-когорты 22:44Z+ (r1152/r2368/dcp2100 + новые) гейт-вериф | 0 POST
+CLAIM | AG-323 w527 | orphan-харвест окна 01:00-04:05Z терминалы вне доски + zombie-ценз r2368/gc6/r1152 | api census
