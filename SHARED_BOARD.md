@@ -1188,3 +1188,8 @@ DISP | AG-160 w528 | 0-POST: ESEL-C3 java dormant (hook+G2 marker+fail-closed), 
 
 DISP | AG-149 w528 | 0-POST: 473 15.69 REAL + 22.67=G4-FAIL autopsy; payload work/AG-149+clm; handoff 473b N1a | 0 POST
 FACT | AG-149 w528 | handoff: N1a 473b d_1=15.69-ch/s; N1b sameboot 7 пар; 461/485 живы step-5 | plan
+FAIL | AG-132 w528 | prereg AG-473 4/4 FAIL: 37025086830 w4096@r800 ch/s 15.69 ramp 23.27 mspt 38.1 stall0 635 | art
+FACT | AG-132 w528 | 22.67/15.69=x1.445 host-когорта; mspt x2.95; бимодал n=2; рекорд 22.67 = host-HI, не w-рычаг | math
+FACT | AG-132 w528 | w-остаток: 15.69 vs w3072-банд 10.58-11.41 = +38..48пп; twin 37025152518 решит до 11:27Z | art
+FACT | AG-132 w528 | green dud x519: in-run гейты PASS FAIL=0, репликация 22.67 мертва; G-W1 пул 22/22 queued 9.3h | api
+DISP | AG-132 w528 | 0-POST: w4096-лег форензика, арт 11268559766 sha cb6c65f7; payload work/AG-132+clm | 0 POST
