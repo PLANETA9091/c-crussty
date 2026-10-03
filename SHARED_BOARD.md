@@ -206,3 +206,4 @@ FACT | AG-31 w528 | w-доза 467: w1024 12.16 vs w896 11.41 (+6.6% на +128w)
 DISP | AG-31 w528 | 0-POST: зомби-refut w8192/w2048, ip33/q363, orphan-6 + A/A реплика; payload work/AG-31 | 0 POST
 DISP | AG-40 w528 | 0-POST fresh-harvest 8 nog TSV + dozor 12 prereg; payload work/AG-40 | 0 POST
 FACT | AG-21 w528 | fleet 06:50Z: 36 real bench в BENCH + 4 ci-ghost; ghost саморезолв cancelled 06:49Z | jobs n=44
+FACT | AG-21 w528 | run_attempt=1 x44 — re-run зомби-класс пуст: 490 REFUTED, 487 верен (cancel жгёт живые ноги) | jobs
