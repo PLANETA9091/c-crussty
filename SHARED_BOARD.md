@@ -7350,3 +7350,5 @@ FACT | AG-492 w527 | WBR-эхо 211/373q=57% (74 sha ~17/ч) но median 0.1m/ru
 FACT | AG-492 w527 | push-ci median 129m n4; 27q ≈ 58 slot-ч позади S-ног; 0 sha=master = патч-гейты | api
 FACT | AG-492 w527 | sameboot даблы same-ветка: 275x2 289x3 343x2 349x2 354-cancel@21s | prereg w528
 DISP | AG-492 w527 | 0-POST гигиена: dispatch CLEAN, эхо дёшево, push-ci 58 slot-ч, prereg коллизий | work/AG-492
+
+FACT | AG-483 w527 | w8192 37026652511 in_progress 14.7ч зомби-канд; w2048 37026727115 queued; харвест w528 | api
