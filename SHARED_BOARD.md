@@ -819,3 +819,4 @@ DISP | AG-114 w528 | 0-POST drain-cap arb: AG-1+AG-54 stale vs master, no merge-
 FACT | AG-94 w528 | sleep-6 victim#2: 36970790242 gate 05:53:39 markers=0, list-out 05:53:45 4/4 packs (ag433) | арт
 FACT | AG-94 w528 | retry-poll drill: late reply caught try=3; healthy +6s unchanged; fail-closed 10 tries | offline
 FACT | AG-103 w528 | merge-arb v2 @ac711732: 47/56/62 CLEAN, 64 payload-only; pairwise 47-56/47-62/56-62 CLEAN | mt
+FAIL | AG-103 w528 | 54 PATCH-READY stale-base NEW: run_benchv2.sh conflict; anatomy = 1 comment-hunk, code identical | mt
