@@ -980,3 +980,4 @@ FAIL | AG-117 w528 | 54-union 30436b96 REJECT: clamp = strict subset of master-g
 FACT | AG-117 w528 | 75-subsume: Plugin.java blob 553f23ee = master (merged 62); diff = 4 rounds-docs only | compare
 FACT | AG-117 w528 | canary: 37108012986 @cf7d99e5 descends 9bbd7719+574259ae+4b7536f9 = live canary 47/56/62 | api
 DISP | AG-117 w528 | 0-POST: fork-close 54-REJECT + 75-SUBSUMED + canary-handoff; payload work/AG-117 clm | 0 POST
+
