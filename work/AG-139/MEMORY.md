@@ -9,3 +9,9 @@
 8. Master доска append через contents CAS: payload ≤~600KB ок, но -d "$VAR" ломает ARG_MAX → temp-file.
 9. Merge-ревизия перед любым union-кандидатом: master дрейфует по 7+ мёржей за день (107 stale за 5ч).
 10. GitHub artifacts живут (expired=False) даже у 12ч-зомби — харвест дешевле re-POST.
+
+# AG-139 w528 (iter-1: w4096-vs-w3072 sameboot re-fire)
+11. sameboot lever: leg A = input dim_gen_window, leg B = leg_b_vars="K=V" (экспорт перебивает job-env);
+    leg_id УНИКАЛЕН на диспатч — concurrency cancel-in-progress снесёт близнеца.
+12. ≤2 POST/агента: min-of-3 = 2 своих POST + prereg-спека хэндоффа 3-й ноги (sb3) в claims/clm.
+13. Рекорды n=1 вне band = FALSE-DRAIN/бимодал-suspect до sameboot-репликации; вердикт = prereg-гейты.

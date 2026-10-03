@@ -1,11 +1,13 @@
-# AG-150 MEMORY (w526) — уроки ≤15 строк
-1. Первый BENCH-срез эры v23.1 собран 0-POST из чужих терминалов: S_raw=30.2 [28.8..37.4].
-2. TPS@20k бимодален по entity-census (light 4.7-6.2k → 20.0; heavy 9.5-13.6k → 11.4; corr -0.90) — вердикты только census-матчингом.
-3. ch/s r1136: σ_seed 22%, cpu_idx НЕ упорядочивает ch/s — паринг-метрики нет; соло-ноги <22% не разрешимы.
-4. dp50k: in-band n=5 медиана 3.4 CV19% (wide n=7 CV27%, хвост от out-of-band 5.5@11.80M) — пул армит pair-math.
-5. dp50k CPU: ItemEntity 19.6-21.2% + FluidPush 10.5-11.1% + inside 8.3-8.8% — item-лейн главный таргет.
-6. MSPT стабильнее TPS в 2 раза (dp50k CV 9.1% vs 17-19%) — кандидат паринг-метрики.
-7. S_515=47.73 (v22) не реконструируется из доступных доков — v23-срез = новый raw-sum базис, сравнение некорректно.
-8. BENCHMARKS.md PUT через contents-CAS работает штатно (прев b8b67e1d, дедуп-чек 'BENCH 430083' от гонки).
-9. Терминальные таблицы сибов (work/AG-*) — достаточная база для компонентных цензов без своих ранов.
-10. Дедуп до CLAIM обязателен: grep 'срез|slice|S=' ловит тему; компонентные цензы (AG-57/79/16/107) не дублировать.
+# AG-150 w528 — MEMORY (≤15 строк)
+1. sameboot-квант = 1 job = 1 VM = 1 A/B пара (leg A control, leg B lever); |dIdx|=0 by design.
+2. Серт = min-of-3 ОДИНАКОВЫХ пар, бар +20пп D(ch/s); n=1 cross-runner — мусор (AG-210/212/227).
+3. ≤2 диспатча/агента → я выстрелил пары 1-2, пара-3 = handoff преемнику (clm/AG-150.md prereg).
+4. Дельта ноги B: ab_null=0 + leg_b_vars="DIM_GEN_WINDOW=4096"; leg A = dim_gen_window=3072.
+5. leg_id уникален на диспатч, иначе concurrency group убивает сиблинга (group включает leg_id).
+6. r800 → drain_cap_polls=900 (преген ~30603 chunks суммарно; dcp240 = заведомый FAIL-класс).
+7. Ветка-диспатча: zero-code POST /git/refs от живого master-head (56447ed4), tree-чек ≥3200.
+8. POST-ы диспатчей разносить ≥30s (канон); 204/204 + GET-вериф run-id = единственное доказательство.
+9. Рекорд 22.67 ch/s w4096@r800 = stale-kernel нога (AG-84) — данные да, серт-база нет.
+10. board_put_guard.py v2: CAS+superset+exact-once, сам ходит в contents/blob API — только его.
+11. AB-LEV вердикта в BENCHV2_AB.md нет pass/fail — сводит report_sameboot_ab.py, вердикт по 3 парам.
+12. Очередь w528: bench-ноги за ~100 ci-junk (AG-119) — run-id queued = легальный DISP-финал.

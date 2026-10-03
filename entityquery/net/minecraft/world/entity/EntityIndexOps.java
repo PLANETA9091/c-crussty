@@ -341,6 +341,122 @@ public final class EntityIndexOps {
     }
 
     // ------------------------------------------------------------------
+    // ESEL-C3 fast path (per-type singleton shortcut) — iter-1 JAVA side
+    // (AG-104 C3 + clm/AG-110 contract; MAIN OPEN claim w529).
+    //
+    // Fires ONLY for the EntityType redirect variant (mode 2) when an exact
+    // per-type view is bound AND armed: count(type)==1 over the FULL-status
+    // slice population of THIS lookup — the same population the vanilla rect
+    // walk can reach (non-FULL slices are invisible to vanilla; the view MUST
+    // exclude them — bind-time contract, see TypeIndexView).
+    //
+    // PARITY (count==1 exact):
+    //  - vanilla can append at most ONE entity (the single candidate); the
+    //    fast path appends that same entity iff bb.intersects(box) and
+    //    pred passes, checked in VANILLA ORDER (aabb first) — identical list,
+    //    identical predicate call count (stateful predicates safe: when the
+    //    aabb misses, vanilla never reaches pred and neither do we);
+    //  - except (mode 3, iter-3): single==except → vanilla appends nothing →
+    //    fast-negative;
+    //  - LIMIT semantics live in EntitySelector.addEntities (the
+    //    list.size()<limit check happens OUTSIDE this body) — with ≤1 append
+    //    per lookup the ORDER_ARBITRARY coupling (AG-104 C2) cannot drift;
+    //  - multi-level accumulation: appends preserve list identity (same
+    //    single element, same position).
+    //
+    // FAIL-CLOSED: ESEL_VIEW==null || !ESEL_ARMED || eselBroken → counts-skip
+    // walk unchanged. Any Throwable from the view → eselBroken (sticky,
+    // fail-dominant, G6) → walk. Counters monotonic (G2 ARM-СТРАЖ).
+    // iter-1 DORMANT: nothing flips ESEL_ARMED (rust per-type chains bind in
+    // iter-2) — behavior-identical to pre-ESEL by construction.
+    // ------------------------------------------------------------------
+
+    /** Exact per-type view over ONE EntityLookup (rust manager binds iter-2).
+     * Implementations MUST count only entities in slices with
+     * status.isOrAfter(FULL) — the population the vanilla walk can see. */
+    public interface TypeIndexView {
+        /** EXACT count of live entities of this type in FULL slices. */
+        int typeCount(EntityType<?> type);
+
+        /** The single entity under the count==1 contract, or null (defect). */
+        Entity typeSingle(EntityType<?> type);
+    }
+
+    /** Bound by the rust manager after per-type chains go live (iter-2). */
+    public static volatile TypeIndexView ESEL_VIEW = null;
+    /** Flipped by the rust manager AFTER chains are live (never in iter-1). */
+    public static volatile boolean ESEL_ARMED = false;
+    /** Sticky disarm on view defect (fail-dominant, G6). */
+    public static volatile boolean eselBroken = false;
+    /** G2 ARM-СТРАЖ counters (monotonic): fast path taken / fast-negatives. */
+    public static final java.util.concurrent.atomic.AtomicLong ESEL_HITS =
+            new java.util.concurrent.atomic.AtomicLong();
+    public static final java.util.concurrent.atomic.AtomicLong ESEL_FASTNEG =
+            new java.util.concurrent.atomic.AtomicLong();
+
+    /** Canonical arm marker (G2): manager MUST call this when arming. */
+    public static void eselArmMarker() {
+        System.out.println("ESEL-FAST ARMED hits=" + ESEL_HITS.get()
+                + " fastneg=" + ESEL_FASTNEG.get());
+    }
+
+    /** Pure decision core (selftest surface): 0=no-fast (vanilla walk),
+     * 1=append single, 2=fast-negative (path taken, append nothing).
+     * predPass MUST be pre-short-circuited by the caller (pred evaluated
+     * only when the aabb check passes — vanilla call-order parity). */
+    static int eselDecide(boolean eselUsable, int mode, int count, boolean singleNull,
+                          boolean isExcept, boolean aabbIntersects, boolean predPass) {
+        if (!eselUsable || (mode != 2 && mode != 3) || count != 1 || singleNull) {
+            return 0;
+        }
+        if (isExcept || !aabbIntersects || !predPass) {
+            return 2;
+        }
+        return 1;
+    }
+
+    /** True = query fully handled (append or fast-negative); false = run the
+     * counts-skip walk. Touches out ONLY via the append decision — on any
+     * defect the list stays untouched and the vanilla walk takes over. */
+    private static boolean eselFast(EntityLookup lookup, Entity except, AABB box,
+                                    List<?> out, Predicate<? super Entity> pred,
+                                    int mode, EntityType<?> type) {
+        if (!ESEL_ARMED || eselBroken || ESEL_VIEW == null || mode != 2) {
+            return false; // mode 3 (Class) → iter-3; Entity/hardcolliding → n/a
+        }
+        final Entity single;
+        final int cnt;
+        try {
+            cnt = ESEL_VIEW.typeCount(type);
+            if (cnt != 1) {
+                ESEL_HITS.getAndIncrement();
+                return false; // not a singleton: counts-skip walk (unchanged)
+            }
+            single = ESEL_VIEW.typeSingle(type);
+        } catch (Throwable t) {
+            eselBroken = true; // sticky fail-dominant
+            return false;      // pre-walk: out untouched → walk is safe
+        }
+        if (single == null) {
+            eselBroken = true; // count==1 but no single = view defect
+            return false;
+        }
+        boolean isExcept = single == except; // mode 2: except==null → false
+        boolean aabbHit = single.getBoundingBox().intersects(box);
+        boolean predPass = (isExcept || !aabbHit) ? false : (pred == null || pred.test(single));
+        int d = eselDecide(true, mode, cnt, false, isExcept, aabbHit, predPass);
+        ESEL_HITS.getAndIncrement();
+        if (d == 1) {
+            @SuppressWarnings("unchecked")
+            List<Entity> outE = (List<Entity>) out;
+            outE.add(single);
+        } else {
+            ESEL_FASTNEG.getAndIncrement();
+        }
+        return true; // d ∈ {1,2}: fully handled either way
+    }
+
+    // ------------------------------------------------------------------
     // Query bodies (the 4 redirected EntityLookup methods).
     // ------------------------------------------------------------------
 
@@ -370,6 +486,9 @@ public final class EntityIndexOps {
         if (!ENABLED || !ARMED || broken) {
             vanillaReplica(lookup, except, box, out, pred, mode, type, cls);
             return;
+        }
+        if (eselFast(lookup, except, box, out, pred, mode, type)) {
+            return; // ESEL-C3 singleton handled (append or fast-negative)
         }
         int minCX = (Mth.floor(box.minX) - 2) >> 4;
         int minCZ = (Mth.floor(box.minZ) - 2) >> 4;
