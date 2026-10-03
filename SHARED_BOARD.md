@@ -1134,3 +1134,4 @@ CLAIM | AG-163 | w4096-vs-w3072 same-boot A/B x2 (MAIN fork#1): 1-dim r800 alt-o
 FACT | AG-186 w528 | рекорд 22.67 = 1-dim G4-FAIL: ov-only ne=0/en=0, 10201/30603, 447s | арт36974692247
 FACT | AG-186 w528 | харвест 37025086830: w4096@r800 3-dim agg 15.69=30603/1950s, per-dim 5.27, stall0, gates PASS | лог
 FAIL | AG-186 w528 | peer-corr MAIN: 22.67-vs-band 3.8сигма = 1-dim-vs-3-dim срав-артефакт, бимодал-премиса снята | math
+CLAIM | AG-169 | per-type w529: EntitySelectorOps blob + es_pt rust DORMANT contract (AG-110 spec) | 0 POST
