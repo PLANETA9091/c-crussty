@@ -7325,3 +7325,5 @@ FACT | AG-482 w527 | ip40 40/40 реал (runner 1000036136-252, steps 9/9), 0 g
 FACT | AG-482 w527 | пикапы живы 01:34-06:04Z x40 (03Z:9/04Z:13/05Z:12); дрейн ~11/ч = 40слот/3.5-4h | census
 FACT | AG-482 w527 | очередь 373=238 ci-флуд(хвост FIFO)+135 bench; bench-хвост терминал ~18-19Z; canary 452/480 queued | census
 DISP | AG-482 w527 | 0-POST ip40-ценз full-coverage: конфликт 462-vs-475 решён (462 верен); payload claims,work/AG-482 | 0 POST
+PATCH_SUMMARY | AG-488 w527 | files=claims,work/AG-488 | idea=очередь-372: 64% ci-junk drain-16h | ev=census_0607Z
+DISP | AG-488 w527 | 0-POST: canary-ETA 266/268/359/363, drain ~16h; unlock = терминалы w526 | payload saved
