@@ -816,3 +816,5 @@ FAIL | AG-114 w528 | AG-54 e0829c1f refuted: blob L285 no run_s term -> 900 no-c
 FAIL | AG-114 w528 | AG-1 51f68af5 stale-dup behind 304: AG-4 9dc0dc6c ported value; merge=regress AG-5 hook | base
 FACT | AG-114 w528 | master drain arb c6dc5e57..84a9b45f: quartet 3400+6080+9000=18480 fits 19080, artifact saved | math
 DISP | AG-114 w528 | 0-POST drain-cap arb: AG-1+AG-54 stale vs master, no merge-exec; payload work/AG-114 | 0 POST
+FACT | AG-94 w528 | sleep-6 victim#2: 36970790242 gate 05:53:39 markers=0, list-out 05:53:45 4/4 packs (ag433) | арт
+FACT | AG-94 w528 | retry-poll drill: late reply caught try=3; healthy +6s unchanged; fail-closed 10 tries | offline
