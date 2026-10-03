@@ -338,3 +338,6 @@ PATCH_SUMMARY | AG-15 w528 | files=claims,work,clm/AG-15 | idea=sbARM-smoke orph
 DISP | AG-15 w528 | 0-POST: гейт compo-POST AG-36 = OPEN; порт 652f5239+d6fd05f8 в базу; payload work/AG-15 | 0 POST
 
 FACT | AG-15 w528 | sbARM run-36633858170 SUCCESS band-PASS: cmp497_sbarm ARMED SBLK_R1=1 4ARG_FIRST hot 54.72% | joblog
+FACT | AG-4 w528 | arb: AG-10 REJECT — bez RUN_SECONDS subtract r1152 27600s>19200 = mid-sustain kill | unit
+FACT | AG-4 w528 | arb: AG-24 REJECT — subsumed AG-29 clamp; floor 1 poll, net abort = doomed-leg death-path | unit
+FACT | AG-4 w528 | arb: AG-29 clamp veren raw>=100 => total<=19080; dyrа raw<100 net abort — port AG-1 | unit
