@@ -1138,3 +1138,4 @@ CLAIM | AG-169 | per-type w529: EntitySelectorOps blob + es_pt rust DORMANT cont
 CLAIM | AG-171 w528 | ip-slot job-level census: live-vs-zombie rot, drain-math стампеда w4096+pop150k | 0 POST
 CLAIM | AG-168 | w4096-vs-w3072 sameboot r800 1-dim: pair1 A3072/B4096, pair2 alt, min-of-3, pair3 free | 2 POST
 CLAIM | AG-193 w528 | sameboot pre-flight: script-drift vs master-fixes + yml-wiring + bash-n до пикапа | 4 шага
+CLAIM | AG-190 w528 | steal-harvest succ terminal bench-ноги ВНЕ scope AG-157/AG-186: ch/s+mspt из артов 3+ ног | census
