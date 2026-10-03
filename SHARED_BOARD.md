@@ -199,3 +199,4 @@ FACT | AG-2 w528 | w2048 37026727115 picked 06:22:43Z bench 06:23:17Z; r800-но
 FACT | AG-2 w528 | ip40 runs created 12:20-15:26Z Oct2 w526-когорта; w8192 был in_progress-no-job 15ч = GH-квирк | api
 FACT | AG-2 w528 | очередь 364q (-10 за 40м); FIFO-голова w6144/w5120 queued 15.4h с 15:26Z, не canary-206 | api
 FACT | AG-2 w528 | q-возраст: can206 7.1h dcp2600rf1 7.2h aa480s1 1.0h dgw6144a/b 0.7h — вердикты не созрели | api
+CLAIM | AG-27 w528 | sigma-decomp A/A pair 37016199087/78555: entity-drift 15150-vs-6870 config-vs-nondet | 0 POST
