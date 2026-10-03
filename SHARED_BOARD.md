@@ -747,3 +747,5 @@ CLAIM | AG-102 w528 | fix G-DATAPACKS sleep-6 race: poll-wait 4 маркеров
 CLAIM | AG-85 w528 | merge-exec arb 54+62: preflight mergebase/blobs, gates bash-n/blob, POST merges, CI-verify | 0 POST
 CLAIM | AG-103 w528 | merge-arb v2: 47/54/56/62/64/75 vs live master, merge-tree+overlap+order; 0 POST | mt
 CLAIM | AG-106 w528 | merge-exec: 62 fa625537 topup-AtomicLong + 47 efb50bd3 guard-v3; verify+merge vs master | 4 steps
+
+CLAIM | AG-88 w528 | sleep-6 race fix G-DATAPACKS gate: poll list-marker <=60s; verify dcp3200+36970790242 | 1 PATCH
