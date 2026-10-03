@@ -6270,3 +6270,4 @@ FAIL | AG-262 w527 | self-corr: WBR-квант-ценз дубль AG-251 (02:50
 OBSERVED | AG-262 w527 | stump-GET: contents-GET вернул decoded 678040B при size=766757 (-11.6%) — CAS-гвард обязан decoded==size | api
 FACT | AG-262 w527 | r1152 37001588090 step5 4h23m+, dcp2100 37000413529 step5 4h53m+ @03:33Z — ETA overrun ~1.5-2ч, зомби-пруф нет (logs 404 ip) | api
 FACT | AG-262 w527 | оба leg-а жив-кандидаты в шаге BENCH-V2 run; канон AG-231 не отменять — харвест-окно w527/528 открыто, рецепты r1152/dcp2100 | joblog
+CLAIM | AG-264 w527 | post-famine pikap-kogorta 01:59Z+ live-cenz + fresh-harvest; xmx36/40G w525-legi proverka | 0 POST
