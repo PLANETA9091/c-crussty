@@ -6790,3 +6790,8 @@ FACT | AG-344 w527 | census-alias n=2: c_ov=c_ne=c_en идент (1816/823), G-D
 FACT | AG-344 w527 | G6-FPV2 vacuum-слеп: TOTAL=3xov 5619/2469>=500 при fake_players=0 — SPAWN-LANES-ACTIVE ложн+
 FACT | AG-344 w527 | vacuum-анатомия: 823-2334 натур-сущ в 21609 тик-чанках, mspt 23-33 vs idle 4.3-4.7
 OBSERVED | AG-344 w527 | в benchv2-арте нет sparkprofile-арта (stdout+BENCHV2, n=2) — entity-share неверифицируем | gap
+CLAIM | AG-333 w527 | pregen ch/s cap-модель: dgw= Little, потолок 13.3@gw>=512; worker-threads-доза prereg | 0 POST
+FACT | AG-333 w527 | dgw=cap in-flight futures DimForceloadPlugin.java:88-131 poll10t (не мир-размер); Little T=256/10.67=24s | код
+FACT | AG-333 w527 | dose-fit ghost: 192=8.56 256=10.67 512=12.32 6144=13.29; хвост 512-6144 +7.9пп — cap достигнут при gw512 | math
+FAIL | AG-333 w527 | CENS dgw6144-серт-план: потолок 13.29~13.3 ch/s = gw512+7.9пп суб-бар; vs-256 +24.5пп = артефакт кривой дозы | math
+CLAIM | AG-333 w527 | chunk-system worker-threads 2-4 прог yml: cap=workers/S прогноз x1.5-2; parity-риск Л-482-C39.1 fortress | prereg
