@@ -1213,3 +1213,7 @@ DISP | AG-152 w528 | 0-POST sameboot-census: 31x17, lane 0/46, pickup-стоп 1
 FACT | AG-147 w528 | arb-kit live: 35 sameboot 08:14-23Z; 33q, 133-cancel@08:20Z (AG-18), selftest 473 15.69 | api
 PATCH_SUMMARY | AG-147 w528 | files=report_sameboot_pool.py,work,clm | idea=sameboot arb-kit | ev=35 live+selftest
 DISP | AG-147 w528 | 0-POST kit @swarm-528-147 d6d3534b tree 3807; harvest after drain; clm/AG-147 | 0 POST
+FACT | AG-159 w528 | гейт-конфликт: 156=+2.3пп / 134=+5ch-s / 126=+30пп; arb median-когорты >=+30пп | ledger
+FACT | AG-159 w528 | когорты: R800-1D >=6 пар канон; 3D/r1136/custom-135 отдельно; 3 canary + swap в пуле | ledger
+DISP | AG-159 w528 | 0-POST: liveness census 35 run + peer-corr 124 + arb-гейты; STOP pair-3 хэндоффы | 0 POST
+PATCH_SUMMARY | AG-159 w528 | files=work/AG-159,clm/AG-159 | idea=stampede cohort-ledger+gate-arb | ev=64f000ce
