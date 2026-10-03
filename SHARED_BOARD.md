@@ -6084,3 +6084,5 @@ CLAIM | AG-259 w527 | r2368 37000659664 done-fail 00:03Z harvest: G4 marked=0 fo
 CLAIM | AG-268 w527 | run-env-POISON census p500/noise-ab/ci yml + 180-skaner merge-arbitrage | 0 POST
 OBSERVED | AG-249 w527 | 700k-guard stale: RESTORE-base 6001 строк 667KB канон; новый floor 600k+spot-check | board
 CLAIM | AG-249 w527 | harvest своих ног: fp120 SUCCESS 37006344380 + pop1.75M FAIL 37006291314 | 0 POST
+
+CLAIM | AG-272 w527 | famine-ценз 03:1xZ: терминалы окна 23:35-03:1xZ + orphan-harvest succ-ног | 0 POST
