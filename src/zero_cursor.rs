@@ -37,9 +37,9 @@ const ITER_CLASS: &str = "net/minecraft/core/ZeroCursorIter";
 const OPS_CLASS: &str = "net/minecraft/core/ZeroCursorOps";
 
 const ITER_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/core/ZeroCursorIter.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/core/ZeroCursorIter.class");
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/core/ZeroCursorOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/core/ZeroCursorOps.class");
 
 const LAMBDA_NAME: &str = "lambda$betweenCornersInDirection$8";
 const LAMBDA_DESC: &str =
@@ -303,8 +303,8 @@ mod zerocursor_delivery_tests {
     #[test]
     fn zerocursor_sources_declare_no_nested_classes() {
         for src in [
-            include_str!("../entityinside/net/minecraft/core/ZeroCursorIter.java"),
-            include_str!("../entityinside/net/minecraft/core/ZeroCursorOps.java"),
+            include_str!("../bridges/entityinside/net/minecraft/core/ZeroCursorIter.java"),
+            include_str!("../bridges/entityinside/net/minecraft/core/ZeroCursorOps.java"),
         ] {
             for line in src.lines() {
                 let t = line.trim();
@@ -325,8 +325,8 @@ mod zerocursor_delivery_tests {
     #[test]
     fn zerocursor_embedded_classfiles_present_and_pinned() {
         let blobs: &[&[u8]] = &[
-            include_bytes!("../entityinside/build/net/minecraft/core/ZeroCursorIter.class"),
-            include_bytes!("../entityinside/build/net/minecraft/core/ZeroCursorOps.class"),
+            include_bytes!("../bridges/entityinside/build/net/minecraft/core/ZeroCursorIter.class"),
+            include_bytes!("../bridges/entityinside/build/net/minecraft/core/ZeroCursorOps.class"),
         ];
         for bytes in blobs {
             assert_eq!(&bytes[..4], &[0xCA, 0xFE, 0xBA, 0xBE]);

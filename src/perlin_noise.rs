@@ -62,11 +62,11 @@ const OPS_REAPER_NAME: &str = "net/minecraft/world/level/levelgen/synth/PerlinNo
 const NATIVE_BRIDGE: &str = "net/minecraft/world/level/levelgen/synth/PaperNativePerlinNoise";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps.class");
+    include_bytes!("../bridges/noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps.class");
 const OPS_HANDLE_BYTES: &[u8] =
-    include_bytes!("../noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Handle.class");
+    include_bytes!("../bridges/noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Handle.class");
 const OPS_REAPER_BYTES: &[u8] =
-    include_bytes!("../noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Reaper.class");
+    include_bytes!("../bridges/noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Reaper.class");
 
 /// Whole-body replacement spec: the kernel method's seven argument slots
 /// (this + 5 doubles + the fixedYMax flag) pass straight through to the

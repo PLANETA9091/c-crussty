@@ -31,9 +31,9 @@ const OPS_CLASS: &str = "net/minecraft/world/entity/InsideDietOps";
 const VISITOR_CLASS: &str = "net/minecraft/world/entity/InsideDietVisitor";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideDietOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideDietOps.class");
 const VISITOR_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideDietVisitor.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideDietVisitor.class");
 
 const CHECK_INSIDE_NAME: &str = "checkInsideBlocks";
 const CHECK_INSIDE_DESC: &str = "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;Lit/unimi/dsi/fastutil/longs/LongSet;I)I";
@@ -188,8 +188,8 @@ mod insidediet_delivery_tests {
     #[test]
     fn insidediet_sources_declare_no_nested_classes() {
         for src in [
-            include_str!("../entityinside/net/minecraft/world/entity/InsideDietOps.java"),
-            include_str!("../entityinside/net/minecraft/world/entity/InsideDietVisitor.java"),
+            include_str!("../bridges/entityinside/net/minecraft/world/entity/InsideDietOps.java"),
+            include_str!("../bridges/entityinside/net/minecraft/world/entity/InsideDietVisitor.java"),
         ] {
             for line in src.lines() {
                 let t = line.trim();

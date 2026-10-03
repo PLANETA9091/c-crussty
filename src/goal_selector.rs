@@ -39,7 +39,7 @@ const MOB_CLASS: &str = "net/minecraft/world/entity/Mob";
 const OPS_CLASS: &str = "net/minecraft/world/entity/ai/goal/GoalOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class");
+    include_bytes!("../bridges/goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class");
 
 /// ОКРУЖАЮЩИЙ метод, в коде которого ретаргетятся сайты (TASK-422-B FIX —
 /// ранее ошибочно сканировался Mob.tick()V: NotFound, плечо спало).

@@ -34,7 +34,7 @@ const ENTITY_CLASS: &str = "net/minecraft/world/entity/Entity";
 const OPS_CLASS: &str = "net/minecraft/world/entity/InsideBitmaskOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBitmaskOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideBitmaskOps.class");
 
 fn enabled() -> bool {
     // TASK-430-B (round-430-b-inside): the plane arms under ITS OWN lever id

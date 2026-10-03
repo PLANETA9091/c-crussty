@@ -35,7 +35,7 @@ const TARGET_CLASS: &str =
 const OPS_CLASS: &str = "net/minecraft/world/level/chunk/storage/ChunkParseDiagOps";
 
 const OPS_BYTES: &[u8] = include_bytes!(
-    "../entityinside/build/net/minecraft/world/level/chunk/storage/ChunkParseDiagOps.class"
+    "../bridges/entityinside/build/net/minecraft/world/level/chunk/storage/ChunkParseDiagOps.class"
 );
 
 fn enabled() -> bool {

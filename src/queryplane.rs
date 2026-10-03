@@ -53,7 +53,7 @@ const SLICES_CLASS: &str = classfile::SLICES_CLASS;
 const OPS_CLASS: &str = classfile::QUERY_OPS_CLASS;
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class");
+    include_bytes!("../bridges/queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class");
 
 static READY: AtomicBool = AtomicBool::new(false);
 
@@ -663,7 +663,7 @@ mod queryplane_delivery_tests {
     /// В ОДИНОЧКУ в kernel loader — вложенных классов быть не должно.
     #[test]
     fn queryplane_source_declares_no_nested_classes() {
-        let src = include_str!("../queryplane/net/minecraft/world/entity/QueryPlaneOps.java");
+        let src = include_str!("../bridges/queryplane/net/minecraft/world/entity/QueryPlaneOps.java");
         for line in src.lines() {
             let t = line.trim();
             for pat in ["class ", "interface ", "enum ", "record "] {
@@ -803,11 +803,11 @@ mod queryplane_delivery_tests {
             );
         }
         for src in [
-            include_str!("../entityinside/net/minecraft/world/entity/ItemEntityManager.java"),
-            include_str!("../mobai/net/minecraft/world/entity/MobAiOps.java"),
-            include_str!("../mobpush/net/minecraft/world/entity/MobPushOps.java"),
-            include_str!("../sscan/net/minecraft/world/entity/MobScanOps.java"),
-            include_str!("../entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java"),
+            include_str!("../bridges/entityinside/net/minecraft/world/entity/ItemEntityManager.java"),
+            include_str!("../bridges/mobai/net/minecraft/world/entity/MobAiOps.java"),
+            include_str!("../bridges/mobpush/net/minecraft/world/entity/MobPushOps.java"),
+            include_str!("../bridges/sscan/net/minecraft/world/entity/MobScanOps.java"),
+            include_str!("../bridges/entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java"),
         ] {
             assert!(
                 src.contains("cmp414_cvs"),

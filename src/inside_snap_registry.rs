@@ -99,11 +99,11 @@ const SNAP_NESTED_CLASS: &str = "net/minecraft/world/entity/InsideSnapOps$Snap";
 const LANE_NESTED_CLASS: &str = "net/minecraft/world/entity/InsideSnapOps$Lane";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapRegistryOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideSnapRegistryOps.class");
 const SNAP_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapOps$Snap.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideSnapOps$Snap.class");
 const LANE_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapOps$Lane.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideSnapOps$Lane.class");
 
 /// STRICT lever id of THIS module (закон 4 изоляция): gate lists are
 /// matched STRICT eq only — no prefix/substring, чужие STRICT-OR списки

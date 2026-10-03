@@ -46,7 +46,7 @@ const SBC_CLASS: &str =
 const OPS_CLASS: &str = "net/minecraft/world/entity/FlushOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/FlushOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/FlushOps.class");
 
 fn enabled() -> bool {
     std::env::var("CRUSSTY_FLUSH_DIET")

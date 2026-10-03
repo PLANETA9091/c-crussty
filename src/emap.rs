@@ -47,11 +47,11 @@ pub const EMAP_VALUES_CLASS: &str = "net/minecraft/server/level/EntityMapSafeVal
 pub const EMAP_ITR_CLASS: &str = "net/minecraft/server/level/EntityMapSafeItr";
 
 pub const EMAP_OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/server/level/EntityMapOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/server/level/EntityMapOps.class");
 pub const EMAP_VALUES_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/server/level/EntityMapSafeValues.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/server/level/EntityMapSafeValues.class");
 pub const EMAP_ITR_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/server/level/EntityMapSafeItr.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/server/level/EntityMapSafeItr.class");
 
 /// Fresh-gen emap-arm superset (Л-475-C52.1 / ROUND-478-A11): the
 /// ROUND-475 levers whose rt4 legs inherited vanilla-emap because the
@@ -136,7 +136,7 @@ mod tests {
     #[test]
     fn emap_embedded_bytes_match_build_dir() {
         for (name, embedded) in define_list() {
-            let file = format!("entityinside/build/{name}.class");
+            let file = format!("bridges/entityinside/build/{name}.class");
             let disk = std::fs::read(&file)
                 .unwrap_or_else(|e| panic!("{file}: {e} (run scripts/build_emap_ops.sh)"));
             assert_eq!(
@@ -150,7 +150,7 @@ mod tests {
     /// (no nested classes — S7-163).
     #[test]
     fn emap_build_dir_has_exactly_three_classfiles() {
-        let dir = "entityinside/build/net/minecraft/server/level";
+        let dir = "bridges/entityinside/build/net/minecraft/server/level";
         let n = std::fs::read_dir(dir)
             .expect("build dir present (run build_emap_ops.sh)")
             .filter_map(|e| e.ok())
@@ -169,9 +169,9 @@ mod tests {
     #[test]
     fn emap_sources_declare_no_nested_classes() {
         for src in [
-            "entityinside/net/minecraft/server/level/EntityMapOps.java",
-            "entityinside/net/minecraft/server/level/EntityMapSafeValues.java",
-            "entityinside/net/minecraft/server/level/EntityMapSafeItr.java",
+            "bridges/entityinside/net/minecraft/server/level/EntityMapOps.java",
+            "bridges/entityinside/net/minecraft/server/level/EntityMapSafeValues.java",
+            "bridges/entityinside/net/minecraft/server/level/EntityMapSafeItr.java",
         ] {
             let text = std::fs::read_to_string(src).expect(src);
             let mut declared: Vec<String> = Vec::new();

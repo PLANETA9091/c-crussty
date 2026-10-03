@@ -49,13 +49,13 @@ const BRIDGE_REAPER_NAME: &str = "net/minecraft/world/level/levelgen/synth/Impro
 const NATIVE_BRIDGE: &str = "net/minecraft/world/level/levelgen/synth/PaperNativeImprovedNoise";
 
 const BRIDGE_BYTES: &[u8] = include_bytes!(
-    "../noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps.class"
 );
 const BRIDGE_HANDLE_BYTES: &[u8] = include_bytes!(
-    "../noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Handle.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Handle.class"
 );
 const BRIDGE_REAPER_BYTES: &[u8] = include_bytes!(
-    "../noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Reaper.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Reaper.class"
 );
 
 /// G4 demonstrator batching helper (docs/G4_SITE_PATCH_DESIGN.md §5.1): the
@@ -65,7 +65,7 @@ const BRIDGE_REAPER_BYTES: &[u8] = include_bytes!(
 /// landed — with the gate off it is an inert, never-initialized class.
 const BATCH_OPS_NAME: &str = "net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps";
 const BATCH_OPS_BYTES: &[u8] = include_bytes!(
-    "../noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps.class"
 );
 /// Descriptor of the bridge noise() call the ASM patch emits — the retarget
 /// `from`/`to` descriptor (IDENTICAL on both sides: Variant R's same-stack-

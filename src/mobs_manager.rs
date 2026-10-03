@@ -38,7 +38,7 @@ const LIVING_CLASS: &str = "net/minecraft/world/entity/LivingEntity";
 const OPS_CLASS: &str = "net/minecraft/world/entity/MobPushOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../mobpush/build/net/minecraft/world/entity/MobPushOps.class");
+    include_bytes!("../bridges/mobpush/build/net/minecraft/world/entity/MobPushOps.class");
 
 /// Java-side gate baked into OPS_BYTES (<clinit>: ENABLED =
 /// "cmp401_soa" || "cmp402_comp"). The exact-match lever keeps the

@@ -32,7 +32,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 const SKIP_STORE_CLASS: &str = "net/minecraft/world/level/SkipStoreOps";
 
 pub const SKIP_STORE_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/level/SkipStoreOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/level/SkipStoreOps.class");
 
 fn enabled() -> bool {
     std::env::var("CRUSSTY_SKIP_STORE_BB")
@@ -177,7 +177,7 @@ mod skipstore_delivery_tests {
     /// bridge compiles to exactly one classfile and is defined alone).
     #[test]
     fn skipstore_ops_source_declares_no_nested_classes() {
-        let src = include_str!("../entityinside/net/minecraft/world/level/SkipStoreOps.java");
+        let src = include_str!("../bridges/entityinside/net/minecraft/world/level/SkipStoreOps.java");
         let mut declared: Vec<String> = Vec::new();
         for line in src.lines() {
             let t = line.trim();
@@ -210,7 +210,7 @@ mod skipstore_delivery_tests {
     /// Build-dir mirror: exactly one SkipStoreOps classfile exists.
     #[test]
     fn skipstore_build_dir_has_exactly_one_classfile() {
-        let dir = "entityinside/build/net/minecraft/world/level";
+        let dir = "bridges/entityinside/build/net/minecraft/world/level";
         let mut count = 0;
         let rd = std::fs::read_dir(dir).expect("build dir present (run build_skipstore_ops.sh)");
         for e in rd.flatten() {
@@ -229,7 +229,7 @@ mod skipstore_delivery_tests {
     #[test]
     fn skipstore_embedded_bytes_match_build_dir() {
         let on_disk =
-            std::fs::read("entityinside/build/net/minecraft/world/level/SkipStoreOps.class")
+            std::fs::read("bridges/entityinside/build/net/minecraft/world/level/SkipStoreOps.class")
                 .expect("built classfile present");
         assert_eq!(
             on_disk,

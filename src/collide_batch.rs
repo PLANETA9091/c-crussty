@@ -42,7 +42,7 @@ const SCAN_NAME: &str = "getCollisionsForBlocksOrWorldBorder";
 const SCAN_DESC: &str = classfile::CB_SCAN_DESC;
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/CollideBatchOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/CollideBatchOps.class");
 
 static READY: AtomicBool = AtomicBool::new(false);
 
@@ -324,7 +324,7 @@ mod collidebatch_delivery_tests {
     /// classfile).
     #[test]
     fn collidebatch_source_declares_no_nested_classes() {
-        let src = include_str!("../entityinside/net/minecraft/world/entity/CollideBatchOps.java");
+        let src = include_str!("../bridges/entityinside/net/minecraft/world/entity/CollideBatchOps.java");
         for line in src.lines() {
             let t = line.trim();
             for pat in ["class ", "interface ", "enum ", "record "] {

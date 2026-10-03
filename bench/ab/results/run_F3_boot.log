@@ -1,0 +1,833 @@
+[crussty-runtime] v2.0.0 loaded (options: modules=/home/z/server/modules;versions=/home/z/server/versions;kernel=purpur-1.21.10.jar)
+[crussty-plugin] cplugin_init: injecting Crussty CE native surface in background
+[crussty-plugin] noise_fill: kernel-policy KeepJava for Noise (kernel is not in PROVEN_WINS (no P500 WIN verdict / live verification) — default-safe KeepJava) — staying dormant despite env gate
+[crussty-plugin] item_merge: dormant (lever_flag != items_oss, vanilla item merging)
+[crussty-plugin] stagger: dormant (lever_flag != cmp401_stagger, vanilla push/goal checks)
+[crussty-plugin] tickplane: dormant (lever_flag != cmp403_tickplane, vanilla bit-for-bit)
+[crussty-plugin] cmp401_collide: dormant (lever_flag != cmp401_collide, vanilla scan)
+[crussty-plugin] cmp432_inside2: dormant (lever_flag not in {cmp432_inside2/cmp430_inside}, vanilla inside lane)
+[crussty-plugin] inside_snapreg: bridge owner armed, live-path wire = serve_gate (P36 EPOCHS[slot] long-cmp pre-gate -> P32 serveFlat -> fail-closed CHM fallback); v2 byte retargets stay iter-3 (java site-spec)
+[crussty-plugin] inside_cache: bridge owner armed, Entity stage delegated to entity_compose (S7-162 single compose-chain)
+[crussty-plugin] inside_epoch_gate: scaffold armed-flat (P36; define-site = early arm-hook, retarget lands in wiring phase)
+[crussty-plugin] inside_batch: owner armed, Entity stage delegated to entity_compose (supersede inside_cache on the isAffectedByBlocks site)
+[crussty-plugin] inside_bitmask: bridge owner armed, Entity stage delegated to entity_compose
+[crussty-plugin] parse_diag: dormant (set CRUSSTY_PARSE_DIAG=1 to enable)
+[crussty-plugin] cmp456_chunkmono: dormant (CRUSSTY_LEVER_FLAG mismatch, vanilla bit-in-byte)
+[crussty-plugin] blend_cache: dormant (prototype; set CRUSSTY_NATIVE_BLEND_CACHE=1 to run the read-only parity harness — no patch ships)
+[crussty-plugin] goal_selector: dormant (lever_flag ∉ {cmp421_brain, cmp422_brain2}, vanilla goal selector)
+[crussty-plugin] mobs_soa: dormant (set CRUSSTY_LEVER_FLAG=cmp401_soa or cmp402_comp to enable)
+[crussty-plugin] mobs_ai: dormant (lever_flag != cmp406_aibatch, vanilla mob AI plane)
+[crussty-plugin] cmp420_colpush: dormant (lever_flag != cmp420_colpush, vanilla pushEntities)
+[crussty-plugin] mobs_sscan: dormant (lever_flag != cmp406_sscan, vanilla despawn scans)
+[crussty-plugin] mobs_sense: dormant (lever_flag ∉ family, vanilla targeting scans)
+[crussty-plugin] eindex: dormant (set CRUSSTY_LEVER_FLAG=cmp405_eindex to enable)
+[crussty-plugin] esel_bind: dormant (set CRUSSTY_LEVER_FLAG=cmp529_esel to enable)
+[crussty-plugin] swar_bridge: dormant (set CRUSSTY_LEVER_FLAG=cmp458_swar to enable)
+[crussty-plugin] entity_query: dormant (lever_flag != cmp410_eindexq, vanilla goal queries)
+[crussty-plugin] cmp420_chunk2: dormant (lever_flag != cmp420_chunk2, vanilla chunk parse)
+[crussty-plugin] cmp437_chunk4: dormant (lever_flag != cmp437_chunk4, vanilla chunk send)
+[crussty-plugin] cmp444_chunk5: dormant (lever_flag != cmp444_chunk5, vanilla chunk packet encode)
+[crussty-plugin] cmp412_b2p1: queryplane dormant (lever_flag != cmp412_b2p1, vanilla entity queries)
+[crussty-plugin] poi_plane: dormant (lever_flag not in poi strict-OR family, vanilla POI plane)
+[crussty-runtime] module crussty -> init rc=0
+[crussty-runtime] pipeline ready: 1 module hook(s)
+[crussty-rcon] RCON-WATCH installed (2s cadence)
+[crussty-runtime] transform engine: 23 rule(s) registered
+[crussty:hot-reload] SIGUSR1 reload trigger armed (1 module(s) reloadable)
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/SchedulerHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/StorageHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/NetHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/TickHook" }
+[crussty-runtime] transform hook classes installed (4); transform engine armed
+Starting org.bukkit.craftbukkit.Main
+[16:50:11 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.12.1+1-1-deb13u1-Debian; Debian null) on Linux 5.10.134-013.15.kangaroo.al8.x86_64 (amd64)
+[16:50:11 INFO]: [bootstrap] Loading Purpur 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) for Minecraft 1.21.10
+[crussty-plugin] region_threads: pristine sighting net/minecraft/world/level/Level 96260 bytes
+[crussty-plugin] region_threads: pristine sighting net/minecraft/server/level/ServerLevel 142812 bytes
+[16:50:11 INFO]: [PluginInitializerManager] Initializing plugins...
+[16:50:11 INFO]: [PluginInitializerManager] Initialized 0 plugins
+[crussty-plugin] zero_cursor: pristine sighting net/minecraft/core/BlockPos 26669 bytes (major 65)
+[crussty-plugin] fluid_guard: pristine sighting 205458 bytes (major 65)
+[crussty-plugin] entity_compose: pristine sighting net/minecraft/world/entity/Entity 205458 bytes (major 65)
+[crussty-plugin] alloc_diet: pristine sighting net/minecraft/world/entity/LivingEntity 186570 bytes (major 65)
+[crussty-plugin] travel_diet: pristine sighting net/minecraft/world/entity/LivingEntity 186570 bytes (major 65)
+[crussty-plugin] alloc_diet: pristine sighting ca/spottedleaf/moonrise/patches/collisions/CollisionUtil 45439 bytes (major 65)
+[crussty-plugin] native libs: "/home/z/server/modules/crussty/native/libpaper_native_jni.so" (+ "/home/z/server/modules/crussty/native/libpaper_native_chunk_encode_jni.so")
+[crussty-plugin] attached: injecting bridge classes
+[crussty-plugin] injection loop done
+[crussty-plugin] batch: rollout gate CRUSSTY_BATCH=on -> mode=on (batch forced at any K>=1 (A/B rig; N=1 marshal penalty measurable))
+[crussty-plugin] batch: 21 kernels resolved, run() + abiVersion() registered on crussty/batch/PaperNativeBatchDispatch
+[crussty-plugin] native surface live: 98 bridge classes, 283 natives registered (0 symbols unresolved)
+[crussty-plugin] live proof: normalNoise.nativeCheck() = 1
+[crussty-plugin] live proof: ticketset binarySummary(1000) wrote 1 long(s)
+[crussty-plugin] inside_epoch_gate: blob not embedded — build entityinside via scripts/build_inside_epoch_gate.sh and wire include_bytes! (arm-hook stays dormant)
+[crussty-plugin] inside_diet: dormant (set CRUSSTY_INSIDE_DIET=1 to enable)
+[crussty-plugin] items_subsys2: dormant (set CRUSSTY_LEVER_FLAG=items_subsys2 to enable)
+[crussty-plugin] paletted: defined net/minecraft/world/level/chunk/PalettedContainerOps in launch loader (probe io/papermc/paper/plugin/PluginInitializerManager)
+[crussty-plugin] paletted: ARMED paletted-delta (PALETTED-DEMUX completion, ready to serve the patched net/minecraft/world/level/chunk/PalettedContainer at first load; 4093 Ops bytes)
+[crussty-plugin] fluid_dirty: pristine sighting net/minecraft/world/level/chunk/LevelChunk 48104 bytes (major 65)
+[crussty-plugin] fluid_bitmask: defined net/minecraft/world/entity/FluidBitmaskOps in kernel loader
+[crussty-plugin] fluid_bitmask: defined net/minecraft/world/entity/FluidBitmaskOps$Entry in kernel loader
+[crussty-plugin] fluid_bitmask: gate armed (hook consult live)
+[16:50:18 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[crussty-plugin] perlin_noise: pristine sighting 11030 bytes (major 65)
+[crussty-plugin] improved_noise: pristine sighting 5691 bytes (major 65)
+[16:50:21 INFO]: Loaded 1461 recipes
+[16:50:21 INFO]: Loaded 1574 advancements
+[16:50:21 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[16:50:22 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 511.1ms
+[16:50:22 INFO]: Starting minecraft server version 1.21.10
+[16:50:22 INFO]: Loading properties
+[16:50:22 INFO]: This server is running Purpur version 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) (Implementing API version 1.21.10-R0.1-SNAPSHOT)
+[16:50:22 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[crussty-plugin] randomtick: forcing kernel load of net/minecraft/server/level/ServerLevel (attempt 1)
+[crussty-plugin] randomtick: force load: net.minecraft.server.level.ServerLevel loaded
+[crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 1)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/ImprovedNoise, init=true) succeeded
+[crussty-plugin] alloc_diet: forcing kernel load of net/minecraft/world/entity/LivingEntity (attempt 1)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/entity/LivingEntity, init=true) succeeded
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/DensityFunctions$Noise (attempt 1)
+[crussty-plugin] brainhook: forcing kernel load of net/minecraft/world/entity/ai/Brain (attempt 1)
+[crussty-plugin] fluid_free: forcing kernel load of net/minecraft/world/level/chunk/LevelChunkSection
+[crussty-plugin] fluid_free: pristine sighting net/minecraft/world/level/chunk/LevelChunkSection 15041 bytes (major 65)
+[crussty-plugin] fluid_dirty: forcing kernel load of net/minecraft/world/level/chunk/LevelChunk
+[crussty-plugin] flush_diet: forcing kernel load of net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 1)
+[crussty-plugin] flush_diet: pristine sighting net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector 5695 bytes (major 65)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] perlin_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/PerlinNoise (attempt 1)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/PerlinNoise, init=true) succeeded
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/DensityFunctions$Noise, init=true) succeeded
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunk, init=true) succeeded
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector, init=true) succeeded
+[crussty-plugin] brainhook: force load: net.minecraft.world.entity.ai.Brain loaded
+[crussty-plugin] tickhook: forcing kernel load (attempt 1, ServerLevel=false LevelTicks=false)
+[crussty-plugin] tickhook: force load: net.minecraft.server.level.ServerLevel loaded
+[crussty-plugin] tickhook: force load: net.minecraft.world.ticks.LevelTicks loaded
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunkSection, init=true) succeeded
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 1)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator, init=true) succeeded
+[16:50:22 INFO]: Server Ping Player Sample Count: 12
+[16:50:22 INFO]: Using 4 threads for Netty based IO
+[16:50:24 INFO]: [MoonriseCommon] Paper is using 1 worker threads, 1 I/O threads
+[crussty-plugin] randomtick: defined net/minecraft/server/level/RandomTickOps in ServerLevel loader
+[crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 2)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/ImprovedNoise, init=true) succeeded
+[crussty-plugin] alloc_diet: forcing kernel load of net/minecraft/world/entity/LivingEntity (attempt 2)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/entity/LivingEntity, init=true) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 2)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] perlin_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/PerlinNoise (attempt 2)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/PerlinNoise, init=true) succeeded
+[crussty-runtime] retransform net/minecraft/server/level/ServerLevel: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/server/level/ServerLevel: class_status=0x7
+[crussty-plugin] randomtick: patched net/minecraft/server/level/ServerLevel optimiseRandomTick() (142812 -> 142273 bytes)
+[crussty-plugin] region_threads: pristine sighting net/minecraft/server/level/ServerLevel 142273 bytes
+[crussty-plugin] flush_diet: forcing kernel load of net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector, init=true) succeeded
+[crussty-plugin] brainhook: forcing kernel load of net/minecraft/world/entity/ai/Brain (attempt 2)
+[crussty-plugin] brainhook: force load: net.minecraft.world.entity.ai.Brain loaded
+[crussty-plugin] fluid_dirty: forcing kernel load of net/minecraft/world/level/chunk/LevelChunk
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunk, init=true) succeeded
+[crussty-plugin] tickhook: forcing kernel load (attempt 2, ServerLevel=true LevelTicks=false)
+[crussty-plugin] fluid_free: forcing kernel load of net/minecraft/world/level/chunk/LevelChunkSection
+[crussty-plugin] tickhook: force load: net.minecraft.world.ticks.LevelTicks loaded
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunkSection, init=true) succeeded
+[crussty-plugin] randomtick: hook armed, retransform rc=0
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/DensityFunctions$Noise (attempt 2)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/DensityFunctions$Noise, init=true) succeeded
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 2)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator, init=true) succeeded
+[crussty-plugin] randomtick: F1 ARMED (optimiseRandomTick -> RandomTickOps.run, bit-exact LCG batch)
+> > > > > > >   [16:50:25 INFO]: Default game type: SURVIVAL
+>   [16:50:25 INFO]: Generating keypair
+> > > >   [16:50:25 INFO]: Starting Minecraft server on *:25565
+>   [16:50:25 INFO]: Using epoll channel type
+> > >   [16:50:25 INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+>   [16:50:25 INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+>   [16:50:25 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>   [33;1m[16:50:25 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[m>   [33;1m[16:50:25 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[m>   [33;1m[16:50:25 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[m>   [33;1m[16:50:25 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[m>   [16:50:25 INFO]: Preparing level "world"
+> > > > [crussty-plugin] paletted: PATCHED net/minecraft/world/level/chunk/PalettedContainer (30967 -> 31363 bytes, demux fields + fast-path get + guarded mutators; paldelta EFFECT armed)
+[crussty-plugin] region_threads: pristine sighting net/minecraft/server/level/ChunkMap 62665 bytes
+> > > > [crussty-plugin] region_threads: pristine sighting net/minecraft/server/level/ServerLevel$EntityCallbacks 12348 bytes
+> > > > [crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 3)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/ImprovedNoise, init=true) succeeded
+[crussty-plugin] alloc_diet: forcing kernel load of net/minecraft/world/entity/LivingEntity (attempt 3)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/entity/LivingEntity, init=true) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 3)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] perlin_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/PerlinNoise (attempt 3)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/PerlinNoise, init=true) succeeded
+[crussty-plugin] flush_diet: forcing kernel load of net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector, init=true) succeeded
+[crussty-plugin] brainhook: forcing kernel load of net/minecraft/world/entity/ai/Brain (attempt 3)
+[crussty-plugin] brainhook: force load: net.minecraft.world.entity.ai.Brain loaded
+[crussty-plugin] fluid_dirty: forcing kernel load of net/minecraft/world/level/chunk/LevelChunk
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunk, init=true) succeeded
+[crussty-plugin] tickhook: forcing kernel load (attempt 3, ServerLevel=true LevelTicks=false)
+[crussty-plugin] tickhook: force load: net.minecraft.world.ticks.LevelTicks loaded
+[crussty-plugin] fluid_free: forcing kernel load of net/minecraft/world/level/chunk/LevelChunkSection
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunkSection, init=true) succeeded
+> [crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/DensityFunctions$Noise (attempt 3)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/DensityFunctions$Noise, init=true) succeeded
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 3)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator, init=true) succeeded
+  [16:50:26 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+>   [16:50:26 INFO]: Preparing spawn area: 100%
+>   [16:50:26 INFO]: Prepared spawn area in 3 ms
+>   [16:50:26 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+>   [16:50:26 INFO]: Preparing spawn area: 100%
+>   [16:50:26 INFO]: Prepared spawn area in 3 ms
+>   [16:50:26 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+>   [16:50:26 INFO]: Preparing spawn area: 100%
+>   [16:50:26 INFO]: Prepared spawn area in 2 ms
+>   [16:50:26 INFO]: Done preparing level "world" (1.018s)
+> > > > > > >   [16:50:27 INFO]: [spark] Starting background profiler...
+> > > > >   [16:50:27 INFO]: Starting remote control listener
+> > >   [16:50:27 INFO]: Thread RCON Listener started
+>   [16:50:27 INFO]: RCON running on 0.0.0.0:25575
+> >   [16:50:27 INFO]: Running delayed init tasks
+>   [16:50:27 INFO]: Done (17.517s)! For help, type "help"
+> > > > > > > > > > > > [crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 4)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/ImprovedNoise, init=true) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 4)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] perlin_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/PerlinNoise (attempt 4)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/PerlinNoise, init=true) succeeded
+[crussty-plugin] flush_diet: forcing kernel load of net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector, init=true) succeeded
+[crussty-plugin] brainhook: forcing kernel load of net/minecraft/world/entity/ai/Brain (attempt 4)
+[crussty-plugin] brainhook: force load: net.minecraft.world.entity.ai.Brain loaded
+[crussty-plugin] fluid_dirty: forcing kernel load of net/minecraft/world/level/chunk/LevelChunk
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunk, init=true) succeeded
+[crussty-plugin] fluid_free: forcing kernel load of net/minecraft/world/level/chunk/LevelChunkSection
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunkSection, init=true) succeeded
+[crussty-plugin] tickhook: defined net/minecraft/server/level/TickBlockOps in kernel loader
+[crussty-runtime] retransform net/minecraft/world/ticks/LevelTicks: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/ticks/LevelTicks: class_status=0x7
+> [crussty-plugin] tickhook: patched net/minecraft/world/ticks/LevelTicks runCollectedTicks()+collectTicks() (18989 -> 18903 bytes)
+[crussty-plugin] tickhook: LevelTicks retransform rc=0
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 4)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator, init=true) succeeded
+[crussty-runtime] retransform net/minecraft/server/level/ServerLevel: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/server/level/ServerLevel: class_status=0x7
+[crussty-plugin] tickhook: patched net/minecraft/server/level/ServerLevel tickBlock() (142812 -> 142308 bytes, F1 composed)
+[crussty-plugin] region_threads: pristine sighting net/minecraft/server/level/ServerLevel 142308 bytes
+> [crussty-plugin] tickhook: ServerLevel retransform rc=0
+> > [crussty-plugin] tickhook: F3 ARMED (runCollectedTicks -> TickBlockOps.runCollectedTicks, byte-exact drain mirror + section-cache window)
+[crussty-plugin] tickhook: F3 ARMED (tickBlock -> TickBlockOps.tickBlock, readBlockState lens, F1 composed)
+> > > > > > > > > > > > > > > [crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 5)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/ImprovedNoise, init=true) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 5)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] perlin_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/PerlinNoise (attempt 5)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/PerlinNoise, init=true) succeeded
+[crussty-plugin] flush_diet: forcing kernel load of net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector, init=true) succeeded
+[crussty-plugin] brainhook: forcing kernel load of net/minecraft/world/entity/ai/Brain (attempt 5)
+[crussty-plugin] fluid_dirty: forcing kernel load of net/minecraft/world/level/chunk/LevelChunk
+[crussty-plugin] brainhook: force load: net.minecraft.world.entity.ai.Brain loaded
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunk, init=true) succeeded
+> [crussty-plugin] fluid_free: forcing kernel load of net/minecraft/world/level/chunk/LevelChunkSection
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunkSection, init=true) succeeded
+> [crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 5)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator, init=true) succeeded
+> > > > > > > > > > > > > > > > > > [crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 6)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/ImprovedNoise, init=true) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 6)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] perlin_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/PerlinNoise (attempt 6)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/PerlinNoise, init=true) succeeded
+[crussty-plugin] flush_diet: forcing kernel load of net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector, init=true) succeeded
+[crussty-plugin] brainhook: forcing kernel load of net/minecraft/world/entity/ai/Brain (attempt 6)
+[crussty-plugin] fluid_dirty: forcing kernel load of net/minecraft/world/level/chunk/LevelChunk
+[crussty-plugin] brainhook: force load: net.minecraft.world.entity.ai.Brain loaded
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunk, init=true) succeeded
+> [crussty-plugin] fluid_free: forcing kernel load of net/minecraft/world/level/chunk/LevelChunkSection
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunkSection, init=true) succeeded
+> > > > > > > > > > > [crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 6)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator, init=true) succeeded
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > [crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 7)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/ImprovedNoise, init=true) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 7)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] perlin_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/PerlinNoise (attempt 7)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/PerlinNoise, init=true) succeeded
+[crussty-plugin] flush_diet: forcing kernel load of net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector
+> [crussty-plugin] improved_noise: Class.forName(net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector, init=true) succeeded
+> > > > [crussty-plugin] brainhook: force load: net.minecraft.world.entity.ai.Brain loaded
+[crussty-plugin] fluid_dirty: forcing kernel load of net/minecraft/world/level/chunk/LevelChunk
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunk, init=true) succeeded
+[crussty-plugin] fluid_free: forcing kernel load of net/minecraft/world/level/chunk/LevelChunkSection
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/chunk/LevelChunkSection, init=true) succeeded
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [16:50:36 INFO]: Thread RCON Client /127.0.0.1 started
+> > > > > > > > > > > > > [crussty-plugin] area_map: budget gate CRUSSTY_AREAMAP_BUDGET=unset -> mode=off (legacy grow-to-cap scratch (default; fail-safe))
+[crussty-plugin] area_map: budget path OFF (gate off; legacy grow-to-cap scratch)
+[crussty-plugin] brainhook: defined net/minecraft/world/entity/ai/BrainOps$IdKey in Brain loader
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$Scratch in map loader
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$1 in map loader
+[crussty-plugin] brainhook: defined net/minecraft/world/entity/ai/BrainOps$Snapshot in Brain loader
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps in map loader
+[crussty-plugin] brainhook: defined net/minecraft/world/entity/ai/BrainOps in Brain loader
+[crussty-plugin] brainhook: tick2 selfTestTickEach=true (exhaustive mid-loop-stop oracle) BEFORE arm
+[crussty-runtime] retransform ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap: is_modifiable_class=true
+[crussty-runtime] retransform ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap: class_status=0x7
+[crussty-runtime] retransform net/minecraft/world/entity/ai/Brain: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/entity/ai/Brain: class_status=0x7
+[crussty-plugin] area_map: patched ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap update() (5075 -> 3320 bytes)
+[crussty-plugin] brainhook: tick2 dormant (gate=false; oracle=true) — tickEachRunningBehavior vanilla
+[crussty-plugin] brainhook: patched net/minecraft/world/entity/ai/Brain startEachNonRunningBehavior() (32119 -> 31900 bytes)
+[crussty-plugin] area_map: hook armed, retransform rc=0
+[crussty-plugin] area_map: sighting feed: 7 full class-heap scans avoided
+[crussty-plugin] area_map: self-test OK (64 rects, native == naive set difference)
+[crussty-plugin] area_map: defined dev/crussty/areamapprobe/AreaMapProbe$RecMap in map loader
+[crussty-plugin] area_map: defined dev/crussty/areamapprobe/AreaMapProbe in map loader
+> [crussty-plugin] brainhook: hook armed, retransform rc=0
+[crussty-plugin] area_map: call-level self-test OK (141 rects via patched update(), scratch=1156 legacy arm)
+> > > [crussty-plugin] brainhook: F2 ARMED (startEachNonRunningBehavior -> BrainOps.startEachNonRunning, flat-snapshot lens)
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > [crussty-plugin] noise_fill: server booted, defining NormalNoiseBatchOps into kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Handle in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Reaper in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Recorder in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$RecorderTL in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$RecOutTL in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Census in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$TestProvider in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/DensityArrayInterpreter in kernel loader
+[crussty-plugin] noise_fill: Noise predates hook, capturing current bytes via no-op retransform
+> [crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$Noise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$Noise: class_status=0x7
+[crussty-plugin] noise_fill: capture retransform Noise rc=0 (attempt 1)
+> > > > > > [crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$Noise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$Noise: class_status=0x7
+[crussty-plugin] noise_fill: capture retransform Noise rc=0 (attempt 2)
+> > > > > [crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$Noise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$Noise: class_status=0x7
+[crussty-plugin] noise_fill: capture retransform Noise rc=0 (attempt 3)
+> > >   [31;1m[16:50:46 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH  - 1.21.10-2535-0a2dc04 (MC: 1.21.10) ---
+[m>   [31;1m[16:50:46 ERROR]: The server has not responded for 10 seconds! Creating thread dump
+[m>   [31;1m[16:50:46 ERROR]: ------------------------------
+[m>   [31;1m[16:50:46 ERROR]: Server thread dump (Look for plugins here before reporting to Purpur!):
+[m>   [31;1m[16:50:46 ERROR]: [ChunkTaskScheduler] Chunk wait task info below: 
+[m>   [31;1m[16:50:46 ERROR]: [ChunkTaskScheduler] Chunk wait: [( 101,107) in 'world']
+[m> > > > [crussty-plugin] noise_fill: resource-stream capture Noise (7343 bytes)
+[crussty-plugin] noise_fill: ShiftNoise predates hook, capturing current bytes via no-op retransform
+  [31;1m[16:50:46 ERROR]: [ChunkTaskScheduler] Chunk holder: NewChunkHolder{world=world, chunkX=101, chunkZ=107, entityChunkFromDisk=false, lastChunkCompletion={chunk_class=net.minecraft.world.level.chunk.ProtoChunk,status=minecraft:initialize_light}, currentGenStatus=minecraft:initialize_light, requestedGenStatus=minecraft:full, generationTask=null, generationTaskStatus=null, priority=BLOCKING, priorityLocked=false, neighbourRequestedPriority=null, effective_priority=BLOCKING, oldTicketLevel=31, currentTicketLevel=31, totalNeighboursUsingThisChunk=9, fullNeighbourChunksLoadedBitset=2246, currentChunkStatus=INACCESSIBLE, pendingChunkStatus=INACCESSIBLE, is_unload_safe=ticket_level, killed=false}
+[m>   [31;1m[16:50:46 ERROR]: ------------------------------
+[m>   [31;1m[16:50:46 ERROR]: Current Thread: Server thread
+[m>   [31;1m[16:50:46 ERROR]: 	PID: 153 | Suspended: false | Native: false | State: TIMED_WAITING
+[m>   [31;1m[16:50:46 ERROR]: 	Stack:
+[m>   [31;1m[16:50:46 ERROR]: 		java.base@21.0.12.1/jdk.internal.misc.Unsafe.park(Native Method)
+[m>   [31;1m[16:50:46 ERROR]: 		java.base@21.0.12.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.waitForTasks(BlockableEventLoop.java:171)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.managedBlock(BlockableEventLoop.java:161)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.managedBlock(ServerChunkCache.java:802)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.level.ServerChunkCache.syncLoad(ServerChunkCache.java:122)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunkFallback(ServerChunkCache.java:156)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunk(ServerChunkCache.java:321)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.world.level.Level.getChunk(Level.java:1006)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.level.ServerLevel.setChunkForced(ServerLevel.java:2367)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.changeForceLoad(ForceLoadCommand.java:171)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.lambda$register$3(ForceLoadCommand.java:53)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand$$Lambda/0x00007fc674e19fc0.run(Unknown Source)
+[m>   [31;1m[16:50:46 ERROR]: 		com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction$$Lambda/0x00007fc675269bb0.execute(Unknown Source)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:105)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.commands.Commands.executeCommandInContext(Commands.java:466)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:372)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:360)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:351)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.lambda$runCommand$17(DedicatedServer.java:945)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer$$Lambda/0x00007fc675262f90.run(Unknown Source)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.lambda$submitAsync$0(BlockableEventLoop.java:80)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop$$Lambda/0x00007fc6752631b8.get(Unknown Source)
+[m>   [31;1m[16:50:46 ERROR]: 		java.base@21.0.12.1/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.TickTask.run(TickTask.java:18)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.doRunTask(BlockableEventLoop.java:176)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.util.thread.ReentrantBlockableEventLoop.doRunTask(ReentrantBlockableEventLoop.java:24)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:1564)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:180)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.pollTask(BlockableEventLoop.java:150)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.MinecraftServer.pollTaskInternal(MinecraftServer.java:1544)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.MinecraftServer.pollTask(MinecraftServer.java:1538)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.MinecraftServer.recordTaskExecutionTimeWhileWaiting(MinecraftServer.java:1244)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1379)
+[m>   [31;1m[16:50:46 ERROR]: 		net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:388)
+[m> [crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise: class_status=0x7
+  [31;1m[16:50:46 ERROR]: 		net.minecraft.server.MinecraftServer$$Lambda/0x00007fc674f5e9a0.run(Unknown Source)
+[m>   [31;1m[16:50:46 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.runWith(Thread.java:1596)
+[m>   [31;1m[16:50:46 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+[m>   [31;1m[16:50:46 ERROR]: ------------------------------
+[m>   [31;1m[16:50:46 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH ---
+[m>   [31;1m[16:50:46 ERROR]: ------------------------------
+[m> [crussty-plugin] noise_fill: capture retransform ShiftNoise rc=0 (attempt 1)
+  [16:50:46 INFO]: Thread RCON Client /127.0.0.1 started
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > [crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise: class_status=0x7
+[crussty-plugin] noise_fill: capture retransform ShiftNoise rc=0 (attempt 2)
+> > [crussty-plugin] improved_noise: server booted, defining bridge into kernel loader
+[crussty-plugin] improved_noise: defined net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps in kernel loader
+[crussty-plugin] improved_noise: defined net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Handle in kernel loader
+[crussty-plugin] improved_noise: defined net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Reaper in kernel loader
+[crussty-plugin] improved_noise: defined net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps in kernel loader
+[crussty-plugin] batch: arm net/minecraft/world/level/levelgen/synth/ImprovedNoise.noise id=none T=16 site=improved_noise
+[crussty-plugin] batch: site improved_noise retargeted 1 call site(s) -> ImprovedNoiseBatchOps.noise (T=16); flush leg = zero-op dispatcher round-trip, sampling stays bit-exact single-call (no noise batch kernel — LOW tier, honest demonstrator)
+[crussty-plugin] improved_noise: computed patch for noise() (5691 -> 5476 bytes), orig major 65 patch major 65
+[crussty-plugin] perlin_noise: server booted, defining bridge into kernel loader
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/synth/ImprovedNoise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/synth/ImprovedNoise: class_status=0x7
+[crussty-plugin] perlin_noise: defined net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps in kernel loader
+[crussty-plugin] perlin_noise: defined net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Handle in kernel loader
+[crussty-plugin] perlin_noise: defined net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Reaper in kernel loader
+[crussty-plugin] improved_noise: hook serve 5476 bytes (major 65)
+[crussty-plugin] perlin_noise: computed patch for getValue(DDDDDZ)D (11030 -> 10765 bytes), orig major 65 patch major 65
+[crussty-plugin] improved_noise: hook armed, retransform rc=0
+[crussty-plugin] improved_noise: sighting feed: 7 full class-heap scans avoided
+[crussty-plugin] improved_noise: self-test passed (native handle round-trip through real bridge)
+[crussty-plugin] batch: helper self-test passed (ImprovedNoiseBatchOps flush round-trip = abi 262165, flushes=8)
+> [crussty-runtime] retransform net/minecraft/world/level/levelgen/synth/PerlinNoise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/synth/PerlinNoise: class_status=0x7
+[crussty-plugin] perlin_noise: hook serve 10765 bytes (major 65)
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise: class_status=0x7
+[crussty-plugin] perlin_noise: hook armed, retransform rc=0
+[crussty-plugin] perlin_noise: sighting feed: 7 full class-heap scans avoided
+[crussty-plugin] perlin_noise: self-test passed (whole-object handle round-trip through real bridge, deterministic)
+[crussty-plugin] noise_fill: capture retransform ShiftNoise rc=0 (attempt 3)
+> > > > > [crussty-plugin] noise_fill: resource-stream capture ShiftNoise (1480 bytes)
+[crussty-plugin] noise_fill: NoiseInterpolator predates hook, capturing current bytes via no-op retransform
+> > [crussty-runtime] retransform net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator: class_status=0x7
+[crussty-plugin] noise_fill: capture retransform NoiseInterpolator rc=0 (attempt 1)
+> > > > > > > > > > > > > [crussty-plugin] batch_collector: defined net/minecraft/world/entity/BatchCollector in kernel loader
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator: class_status=0x7
+[crussty-plugin] zero_alloc_ops: defined net/minecraft/world/level/ZeroAllocOps in kernel loader
+[crussty-plugin] skip_store_ops: defined net/minecraft/world/level/SkipStoreOps in kernel loader
+[crussty-plugin] travel_diet: defined net/minecraft/world/entity/TravelDietOps in kernel loader
+[crussty-plugin] travel_diet: computed living patch (Retargeted { sites: 1 }, 186570 -> 185967 bytes)
+[crussty-plugin] traverse_ops: defined nested net/minecraft/world/level/TraverseOps$LongTable in kernel loader
+[crussty-plugin] traverse_ops: defined net/minecraft/world/level/TraverseOps (+1 nested) in kernel loader
+[crussty-plugin] noise_fill: capture retransform NoiseInterpolator rc=0 (attempt 2)
+> [crussty-runtime] retransform net/minecraft/world/entity/LivingEntity: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/entity/LivingEntity: class_status=0x7
+[crussty-plugin] alloc_diet: pristine sighting net/minecraft/world/entity/LivingEntity 186529 bytes (major 65)
+> [crussty-plugin] travel_diet: living arm armed, retransform rc=0
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator: class_status=0x7
+> [crussty-plugin] noise_fill: capture retransform NoiseInterpolator rc=0 (attempt 3)
+> > > > > > > [crussty-plugin] noise_fill: resource-stream capture NoiseInterpolator (4865 bytes)
+> [crussty-plugin] noise_fill: computed patch for Noise fillArray (7343 -> 7504 bytes), orig major 65 patch major 65
+> [crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$Noise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$Noise: class_status=0x7
+[crussty-plugin] noise_fill: Noise hook armed, retransform rc=0
+[crussty-plugin] noise_fill: computed patch for ShiftNoise fillArray (1480 -> 1646 bytes), orig major 65 patch major 65
+> [crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise: class_status=0x7
+[crussty-plugin] noise_fill: ShiftNoise hook armed, retransform rc=0
+[crussty-plugin] noise_fill: computed patch for NoiseInterpolator fillArray (4865 -> 4996 bytes), orig major 65 patch major 65
+> [crussty-runtime] retransform net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator: class_status=0x7
+[crussty-plugin] noise_fill: NoiseInterpolator hook armed, retransform rc=0
+[crussty-plugin] noise_fill: CRUSSTY_NOISE_FILL SELFTEST PASS handles=0 freed=0 CRUSSTY_NOISE_FILL_CENSUS calls=0 sumN=0 minN=0 maxN=0 avgN=0.0 fallbacks=0
+> > > > > > > > > > > > > > > > > > > > > > > > >   [31;1m[16:50:51 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH  - 1.21.10-2535-0a2dc04 (MC: 1.21.10) ---
+[m>   [31;1m[16:50:51 ERROR]: The server has not responded for 15 seconds! Creating thread dump
+[m>   [31;1m[16:50:51 ERROR]: ------------------------------
+[m>   [31;1m[16:50:51 ERROR]: Server thread dump (Look for plugins here before reporting to Purpur!):
+[m>   [31;1m[16:50:51 ERROR]: [ChunkTaskScheduler] Chunk wait task info below: 
+[m>   [31;1m[16:50:51 ERROR]: [ChunkTaskScheduler] Chunk wait: [( 104,103) in 'world']
+[m>   [31;1m[16:50:51 ERROR]: [ChunkTaskScheduler] Chunk holder: NewChunkHolder{world=world, chunkX=104, chunkZ=103, entityChunkFromDisk=false, lastChunkCompletion={chunk_class=net.minecraft.world.level.chunk.ProtoChunk,status=minecraft:initialize_light}, currentGenStatus=minecraft:initialize_light, requestedGenStatus=minecraft:full, generationTask=null, generationTaskStatus=null, priority=BLOCKING, priorityLocked=false, neighbourRequestedPriority=null, effective_priority=BLOCKING, oldTicketLevel=31, currentTicketLevel=31, totalNeighboursUsingThisChunk=12, fullNeighbourChunksLoadedBitset=3247335, currentChunkStatus=INACCESSIBLE, pendingChunkStatus=INACCESSIBLE, is_unload_safe=ticket_level, killed=false}
+[m>   [31;1m[16:50:51 ERROR]: ------------------------------
+[m>   [31;1m[16:50:51 ERROR]: Current Thread: Server thread
+[m>   [31;1m[16:50:51 ERROR]: 	PID: 153 | Suspended: false | Native: true | State: RUNNABLE
+[m>   [31;1m[16:50:51 ERROR]: 	Stack:
+[m>   [31;1m[16:50:51 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.yield0(Native Method)
+[m>   [31;1m[16:50:51 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.yield(Thread.java:445)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.waitForTasks(BlockableEventLoop.java:170)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.managedBlock(BlockableEventLoop.java:161)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.managedBlock(ServerChunkCache.java:802)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.level.ServerChunkCache.syncLoad(ServerChunkCache.java:122)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunkFallback(ServerChunkCache.java:156)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunk(ServerChunkCache.java:321)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.world.level.Level.getChunk(Level.java:1006)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.level.ServerLevel.setChunkForced(ServerLevel.java:2367)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.changeForceLoad(ForceLoadCommand.java:171)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.lambda$register$3(ForceLoadCommand.java:53)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand$$Lambda/0x00007fc674e19fc0.run(Unknown Source)
+[m>   [31;1m[16:50:51 ERROR]: 		com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction$$Lambda/0x00007fc675269bb0.execute(Unknown Source)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:105)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.commands.Commands.executeCommandInContext(Commands.java:466)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:372)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:360)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:351)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.lambda$runCommand$17(DedicatedServer.java:945)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer$$Lambda/0x00007fc675262f90.run(Unknown Source)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.lambda$submitAsync$0(BlockableEventLoop.java:80)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop$$Lambda/0x00007fc6752631b8.get(Unknown Source)
+[m>   [31;1m[16:50:51 ERROR]: 		java.base@21.0.12.1/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.TickTask.run(TickTask.java:18)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.doRunTask(BlockableEventLoop.java:176)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.util.thread.ReentrantBlockableEventLoop.doRunTask(ReentrantBlockableEventLoop.java:24)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:1564)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:180)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.pollTask(BlockableEventLoop.java:150)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.MinecraftServer.pollTaskInternal(MinecraftServer.java:1544)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.MinecraftServer.pollTask(MinecraftServer.java:1538)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.MinecraftServer.recordTaskExecutionTimeWhileWaiting(MinecraftServer.java:1244)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1379)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:388)
+[m>   [31;1m[16:50:51 ERROR]: 		net.minecraft.server.MinecraftServer$$Lambda/0x00007fc674f5e9a0.run(Unknown Source)
+[m>   [31;1m[16:50:51 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.runWith(Thread.java:1596)
+[m>   [31;1m[16:50:51 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+[m>   [31;1m[16:50:51 ERROR]: ------------------------------
+[m>   [31;1m[16:50:51 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH ---
+[m>   [31;1m[16:50:51 ERROR]: ------------------------------
+[m> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > [crussty-plugin] fluid_guard: server booted, defining bridge into kernel loader
+[crussty-plugin] inside_batch: server booted, defining bridge into kernel loader
+[crussty-plugin] inside_bitmask: server booted, defining bridge into kernel loader
+> [crussty-plugin] inside_batch: defined net/minecraft/world/entity/InsideBatchOps in kernel loader
+[crussty-plugin] inside_batch: CRUSSTY_INSIDE_BATCH ARMED (insideBatchMask bulk batch -> net/minecraft/world/entity/InsideBatchOps)
+[crussty-plugin] cmp456_chunkmono_p31snap: ARMED (inside_batch bridge defined+natives+noteBatchArmed; strict vanilla tail)
+[crussty-plugin] inside_snapreg: server booted, defining bridge into kernel loader
+[crussty-plugin] inside_bitmask: defined net/minecraft/world/entity/InsideBitmaskOps in kernel loader
+[crussty-plugin] fluid_guard: defined net/minecraft/world/entity/FluidPushGuardHook in kernel loader
+[crussty-plugin] fluid_guard: defined net/minecraft/world/entity/FluidPushGuardHook$GuardEntry in kernel loader
+[crussty-plugin] cmp459_snapreg: defined net/minecraft/world/entity/InsideSnapOps$Snap in kernel loader
+[crussty-plugin] cmp459_snapreg: defined net/minecraft/world/entity/InsideSnapOps$Lane in kernel loader
+[crussty-plugin] cmp459_snapreg: defined net/minecraft/world/entity/InsideSnapRegistryOps in kernel loader
+[crussty-plugin] cmp459_snapreg: selfTest=true BEFORE arm
+[crussty-plugin] cmp456_chunkmono_p31snap: ARMED snapreg sidecar (flat registry defined+selfTest+armed; v1: no retarget sites, fail-closed CHM fallback)
+[crussty-plugin] inside_snapreg: bridge defined+selfTest+armed, BRIDGE_READY (v2: section-creation + wide-gate retargets)
+[crussty-plugin] inside_snapreg: P36 epoch pre-gate live on the REG carrier (EPOCHS[slot] long-cmp before full serve; long builtAtGen==gen = final freshness anchor)
+  [33;1m[16:50:52 WARN]: Exception in thread "Thread-917" java.lang.NoClassDefFoundError: net/minecraft/world/entity/InsideSnapOps
+[m>   [33;1m[16:50:52 WARN]: 	at net.minecraft.world.entity.InsideSnapRegistryOps.arm(InsideSnapRegistryOps.java:109)
+[m>   [33;1m[16:50:52 WARN]: Caused by: java.lang.ClassNotFoundException: net.minecraft.world.entity.InsideSnapOps
+[m>   [33;1m[16:50:52 WARN]: 	at java.base/java.net.URLClassLoader.findClass(URLClassLoader.java:445)
+[m>   [33;1m[16:50:52 WARN]: 	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:593)
+[m>   [33;1m[16:50:52 WARN]: 	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
+[m>   [33;1m[16:50:52 WARN]: 	... 1 more
+[m> [crussty-plugin] fluid_guard: computed patch for updateFluidHeightAndDoFluidPushing(Lnet/minecraft/tags/TagKey;D)Z (205458 -> 204078 bytes), orig major 65 patch major 65
+[crussty-plugin] zero_cursor: server booted, defining bridges into kernel loader
+[crussty-plugin] inside_bitmask: bridge defined+armed, BRIDGE_READY (Entity stage composes via entity_compose)
+[crussty-plugin] entity_compose: stage inside_batch composed (supersede inside_cache, Retargeted { sites: 1 })
+[crussty-plugin] entity_compose: stage inside_bitmask composed (Retargeted { sites: 1 })
+[crussty-plugin] inside_cache: server booted, defining bridge into kernel loader
+[crussty-plugin] inside_cache: defined net/minecraft/world/entity/InsideBlockOps in kernel loader
+[crussty-plugin] inside_cache: defined net/minecraft/world/entity/InsideBlockOps$Recorder in kernel loader
+[crussty-plugin] inside_cache: bridge defined, BRIDGE_READY (Entity stage composes via entity_compose)
+> [crussty-plugin] region_threads: server booted, defining bridge into kernel loader
+[crussty-plugin] region_threads: defined net/minecraft/world/entity/RegionTickOps in kernel loader
+[crussty-plugin] region_threads: defined net/minecraft/world/entity/RegionTickOps$Mut in kernel loader
+[crussty-plugin] region_threads: defined net/minecraft/world/entity/RegionTickOps$GuardedNavigatingMobs in kernel loader
+[crussty-plugin] region_threads: defined net/minecraft/server/level/TrackerTickOps in kernel loader
+[crussty-plugin] region_threads: defined net/minecraft/util/RngOps in kernel loader
+[crussty-plugin] region_threads: defined net/minecraft/server/level/BlockUpdateOps in kernel loader
+[crussty-plugin] region_threads: emap fence define probe = OK (armed, will compose)
+[crussty-plugin] region_threads: BU-DEFER composed: sendBlockUpdated -> BlockUpdateOps.handle (sites:1)
+[crussty-plugin] region_threads: computed patches (ServerLevel 142812 -> 142603 bytes Retargeted { sites: 1 }; EntityCallbacks 12348 -> 12504 bytes add=Retargeted { sites: 1 } remove=Retargeted { sites: 1 }; Level 96260 -> 96331 bytes Retargeted { sites: 1 })
+[crussty-runtime] retransform net/minecraft/world/entity/Entity: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/entity/Entity: class_status=0x7
+[crussty-plugin] zero_cursor: defined net/minecraft/core/ZeroCursorIter + net/minecraft/core/ZeroCursorOps in kernel loader
+[crussty-plugin] zero_cursor: computed redirect for net/minecraft/core/BlockPos (26669 -> 26613 bytes, Retargeted { sites: 1 })
+[crussty-plugin] fluid_guard: hook serve 204078 bytes (major 65)
+[crussty-plugin] entity_compose: pristine sighting net/minecraft/world/entity/Entity 204078 bytes (major 65)
+> > [crussty-plugin] fluid_guard: hook armed, retransform rc=0
+[crussty-plugin] fluid_guard: self-test passed (guard cache operational in kernel loader)
+[crussty-runtime] retransform net/minecraft/core/BlockPos: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/core/BlockPos: class_status=0x7
+[crussty-plugin] zero_cursor: hook serve net/minecraft/core/BlockPos 26613 bytes
+[crussty-plugin] zero_cursor: net/minecraft/core/BlockPos armed, retransform rc=0
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [31;1m[16:50:56 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH  - 1.21.10-2535-0a2dc04 (MC: 1.21.10) ---
+[m>   [31;1m[16:50:56 ERROR]: The server has not responded for 20 seconds! Creating thread dump
+[m>   [31;1m[16:50:56 ERROR]: ------------------------------
+[m>   [31;1m[16:50:56 ERROR]: Server thread dump (Look for plugins here before reporting to Purpur!):
+[m>   [31;1m[16:50:56 ERROR]: [ChunkTaskScheduler] Chunk wait task info below: 
+[m>   [31;1m[16:50:56 ERROR]: [ChunkTaskScheduler] Chunk wait: [( 107,101) in 'world']
+[m>   [31;1m[16:50:56 ERROR]: [ChunkTaskScheduler] Chunk holder: NewChunkHolder{world=world, chunkX=107, chunkZ=101, entityChunkFromDisk=false, lastChunkCompletion={chunk_class=net.minecraft.world.level.chunk.ProtoChunk,status=minecraft:initialize_light}, currentGenStatus=minecraft:initialize_light, requestedGenStatus=minecraft:full, generationTask=null, generationTaskStatus=null, priority=BLOCKING, priorityLocked=false, neighbourRequestedPriority=null, effective_priority=BLOCKING, oldTicketLevel=31, currentTicketLevel=31, totalNeighboursUsingThisChunk=12, fullNeighbourChunksLoadedBitset=3247328, currentChunkStatus=INACCESSIBLE, pendingChunkStatus=INACCESSIBLE, is_unload_safe=ticket_level, killed=false}
+[m>   [31;1m[16:50:56 ERROR]: ------------------------------
+[m>   [31;1m[16:50:56 ERROR]: Current Thread: Server thread
+[m>   [31;1m[16:50:56 ERROR]: 	PID: 153 | Suspended: false | Native: false | State: TIMED_WAITING
+[m>   [31;1m[16:50:56 ERROR]: 	Stack:
+[m>   [31;1m[16:50:56 ERROR]: 		java.base@21.0.12.1/jdk.internal.misc.Unsafe.park(Native Method)
+[m>   [31;1m[16:50:56 ERROR]: 		java.base@21.0.12.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.waitForTasks(BlockableEventLoop.java:171)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.managedBlock(BlockableEventLoop.java:161)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.managedBlock(ServerChunkCache.java:802)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.level.ServerChunkCache.syncLoad(ServerChunkCache.java:122)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunkFallback(ServerChunkCache.java:156)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunk(ServerChunkCache.java:321)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.world.level.Level.getChunk(Level.java:1006)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.level.ServerLevel.setChunkForced(ServerLevel.java:2367)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.changeForceLoad(ForceLoadCommand.java:171)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.lambda$register$3(ForceLoadCommand.java:53)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand$$Lambda/0x00007fc674e19fc0.run(Unknown Source)
+[m>   [31;1m[16:50:56 ERROR]: 		com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction$$Lambda/0x00007fc675269bb0.execute(Unknown Source)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:105)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.commands.Commands.executeCommandInContext(Commands.java:466)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:372)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:360)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:351)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.lambda$runCommand$17(DedicatedServer.java:945)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer$$Lambda/0x00007fc675262f90.run(Unknown Source)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.lambda$submitAsync$0(BlockableEventLoop.java:80)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop$$Lambda/0x00007fc6752631b8.get(Unknown Source)
+[m>   [31;1m[16:50:56 ERROR]: 		java.base@21.0.12.1/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.TickTask.run(TickTask.java:18)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.doRunTask(BlockableEventLoop.java:176)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.util.thread.ReentrantBlockableEventLoop.doRunTask(ReentrantBlockableEventLoop.java:24)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:1564)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:180)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.pollTask(BlockableEventLoop.java:150)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.MinecraftServer.pollTaskInternal(MinecraftServer.java:1544)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.MinecraftServer.pollTask(MinecraftServer.java:1538)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.MinecraftServer.recordTaskExecutionTimeWhileWaiting(MinecraftServer.java:1244)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1379)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:388)
+[m>   [31;1m[16:50:56 ERROR]: 		net.minecraft.server.MinecraftServer$$Lambda/0x00007fc674f5e9a0.run(Unknown Source)
+[m>   [31;1m[16:50:56 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.runWith(Thread.java:1596)
+[m>   [31;1m[16:50:56 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+[m>   [31;1m[16:50:56 ERROR]: ------------------------------
+[m>   [31;1m[16:50:56 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH ---
+[m>   [31;1m[16:50:56 ERROR]: ------------------------------
+[m> > > > > > > > > > > > > > > > >   [16:50:56 INFO]: [3m[37m[Rcon: Marked 64 chunks in minecraft:overworld from [100, 100] to [107, 107] to be force loaded][0m
+>   [16:50:56 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > [crussty-plugin] alloc_diet: server booted, defining EntityQueryOps into kernel loader
+[crussty-plugin] alloc_diet: defined net/minecraft/world/entity/EntityQueryOps in kernel loader
+[crussty-plugin] alloc_diet: computed patch for net/minecraft/world/entity/LivingEntity (186570 -> 186759 bytes, Retargeted { sites: 1 })
+[crussty-plugin] alloc_diet: computed patch for ca/spottedleaf/moonrise/patches/collisions/CollisionUtil (45439 -> 45546 bytes, Retargeted { sites: 1 })
+[crussty-runtime] retransform net/minecraft/world/entity/LivingEntity: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/entity/LivingEntity: class_status=0x7
+[crussty-plugin] alloc_diet: hook serve net/minecraft/world/entity/LivingEntity 186759 bytes
+> > [crussty-plugin] alloc_diet: net/minecraft/world/entity/LivingEntity armed, retransform rc=0
+[crussty-runtime] retransform ca/spottedleaf/moonrise/patches/collisions/CollisionUtil: is_modifiable_class=true
+[crussty-runtime] retransform ca/spottedleaf/moonrise/patches/collisions/CollisionUtil: class_status=0x7
+[crussty-plugin] alloc_diet: hook serve ca/spottedleaf/moonrise/patches/collisions/CollisionUtil 45546 bytes
+[crussty-plugin] alloc_diet: ca/spottedleaf/moonrise/patches/collisions/CollisionUtil armed, retransform rc=0
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [31;1m[16:51:06 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH  - 1.21.10-2535-0a2dc04 (MC: 1.21.10) ---
+[m>   [31;1m[16:51:06 ERROR]: The server has not responded for 10 seconds! Creating thread dump
+[m>   [31;1m[16:51:06 ERROR]: ------------------------------
+[m>   [31;1m[16:51:06 ERROR]: Server thread dump (Look for plugins here before reporting to Purpur!):
+[m>   [31;1m[16:51:06 ERROR]: [ChunkTaskScheduler] Chunk wait task info below: 
+[m>   [31;1m[16:51:06 ERROR]: [ChunkTaskScheduler] Chunk wait: [( -104,-108) in 'world']
+[m>   [31;1m[16:51:06 ERROR]: [ChunkTaskScheduler] Chunk holder: NewChunkHolder{world=world, chunkX=-104, chunkZ=-108, entityChunkFromDisk=false, lastChunkCompletion={chunk_class=net.minecraft.world.level.chunk.ProtoChunk,status=minecraft:initialize_light}, currentGenStatus=minecraft:initialize_light, requestedGenStatus=minecraft:full, generationTask=null, generationTaskStatus=null, priority=BLOCKING, priorityLocked=false, neighbourRequestedPriority=null, effective_priority=BLOCKING, oldTicketLevel=31, currentTicketLevel=31, totalNeighboursUsingThisChunk=3, fullNeighbourChunksLoadedBitset=3247104, currentChunkStatus=INACCESSIBLE, pendingChunkStatus=INACCESSIBLE, is_unload_safe=ticket_level, killed=false}
+[m>   [31;1m[16:51:06 ERROR]: ------------------------------
+[m>   [31;1m[16:51:06 ERROR]: Current Thread: Server thread
+[m>   [31;1m[16:51:06 ERROR]: 	PID: 153 | Suspended: false | Native: false | State: TIMED_WAITING
+[m>   [31;1m[16:51:06 ERROR]: 	Stack:
+[m>   [31;1m[16:51:06 ERROR]: 		java.base@21.0.12.1/jdk.internal.misc.Unsafe.park(Native Method)
+[m>   [31;1m[16:51:06 ERROR]: 		java.base@21.0.12.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.waitForTasks(BlockableEventLoop.java:171)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.managedBlock(BlockableEventLoop.java:161)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.managedBlock(ServerChunkCache.java:802)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.level.ServerChunkCache.syncLoad(ServerChunkCache.java:122)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunkFallback(ServerChunkCache.java:156)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunk(ServerChunkCache.java:321)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.world.level.Level.getChunk(Level.java:1006)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.level.ServerLevel.setChunkForced(ServerLevel.java:2367)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.changeForceLoad(ForceLoadCommand.java:171)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.lambda$register$3(ForceLoadCommand.java:53)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand$$Lambda/0x00007fc674e19fc0.run(Unknown Source)
+[m>   [31;1m[16:51:06 ERROR]: 		com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction$$Lambda/0x00007fc675269bb0.execute(Unknown Source)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:105)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.commands.Commands.executeCommandInContext(Commands.java:466)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:372)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:360)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:351)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.lambda$runCommand$17(DedicatedServer.java:945)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer$$Lambda/0x00007fc675262f90.run(Unknown Source)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.lambda$submitAsync$0(BlockableEventLoop.java:80)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop$$Lambda/0x00007fc6752631b8.get(Unknown Source)
+[m>   [31;1m[16:51:06 ERROR]: 		java.base@21.0.12.1/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.TickTask.run(TickTask.java:18)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.doRunTask(BlockableEventLoop.java:176)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.util.thread.ReentrantBlockableEventLoop.doRunTask(ReentrantBlockableEventLoop.java:24)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:1564)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:180)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.pollTask(BlockableEventLoop.java:150)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.MinecraftServer.runAllTasksAtTickStart(MinecraftServer.java:1191)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1364)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:388)
+[m>   [31;1m[16:51:06 ERROR]: 		net.minecraft.server.MinecraftServer$$Lambda/0x00007fc674f5e9a0.run(Unknown Source)
+[m>   [31;1m[16:51:06 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.runWith(Thread.java:1596)
+[m>   [31;1m[16:51:06 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+[m>   [31;1m[16:51:06 ERROR]: ------------------------------
+[m>   [31;1m[16:51:06 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH ---
+[m>   [31;1m[16:51:06 ERROR]: ------------------------------
+[m> > [crussty-plugin] flush_diet: server booted, defining bridge into kernel loader
+[crussty-plugin] flush_diet: defined net/minecraft/world/entity/FlushOps in kernel loader
+[crussty-plugin] flush_diet: computed patch for net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector (5695 -> 5798 bytes, Retargeted { sites: 2 })
+[crussty-runtime] retransform net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector: class_status=0x7
+[crussty-plugin] flush_diet: hook serve net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector 5798 bytes
+[crussty-plugin] flush_diet: net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector armed, retransform rc=0
+> [crussty-plugin] fluid_dirty: server booted, defining bridge into kernel loader
+[crussty-plugin] fluid_dirty: defined net/minecraft/world/entity/FluidPushOps in kernel loader
+[crussty-plugin] fluid_dirty: defined net/minecraft/world/entity/FluidPushOps$ScanOut in kernel loader
+[crussty-plugin] fluid_dirty: computed patch for net/minecraft/world/level/chunk/LevelChunk (48104 -> 48329 bytes, Retargeted { sites: 1 })
+[crussty-plugin] fluid_free: server booted, defining bridge into kernel loader
+[crussty-plugin] fluid_free: defined net/minecraft/world/entity/FluidOps in kernel loader
+[crussty-plugin] fluid_free: computed section splice (15041 -> 15088 bytes)
+[crussty-runtime] retransform net/minecraft/world/level/chunk/LevelChunkSection: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/chunk/LevelChunkSection: class_status=0x7
+[crussty-plugin] fluid_free: hook serve net/minecraft/world/level/chunk/LevelChunkSection 15088 bytes
+[crussty-runtime] retransform net/minecraft/world/level/chunk/LevelChunkSection: RetransformClasses failed: INVALID_CLASS (code 64, name JVMTI_ERROR_UNSUPPORTED_REDEFINITION_SCHEMA_CHANGED)
+[crussty-plugin] fluid_free: net/minecraft/world/level/chunk/LevelChunkSection armed, retransform rc=-5
+[crussty-plugin] fluid_free: entity chain composed (Retargeted { sites: 2 })
+[crussty-plugin] entity_compose: stage fluid_free composed (fgate)
+[crussty-plugin] fluid_dirty: entity chain rejected (expected exactly one scan site per wrapper (water=0, lava=0)), serving chain-only
+[crussty-plugin] entity_compose: stage fluid_dirty rejected, chain continues WITHOUT fluid_dirty (fail-dominant)
+[crussty-plugin] entity_compose: stage region_rng composed (Retargeted { sites: 1 })
+[crussty-plugin] entity_compose: stage batch_ctor composed (Retargeted { sites: 1 })
+[crussty-plugin] entity_compose: stage traversal composed (Retargeted { sites: 1 })
+[crussty-plugin] entity_compose: stage zeroin composed (Retargeted { sites: 3 })
+[crussty-plugin] entity_compose: stage sbb composed (Retargeted { sites: 1 })
+[crussty-plugin] entity_compose: stage traveldiet composed (Retargeted { sites: 2 })
+> [crussty-runtime] retransform net/minecraft/world/entity/Entity: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/entity/Entity: class_status=0x7
+[crussty-plugin] entity_compose: hook serve net/minecraft/world/entity/Entity 203179 bytes
+[crussty-runtime] retransform net/minecraft/world/level/chunk/LevelChunk: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/chunk/LevelChunk: class_status=0x7
+[crussty-plugin] fluid_dirty: hook serve net/minecraft/world/level/chunk/LevelChunk 48329 bytes
+[crussty-plugin] region_threads: computed patches (ServerLevel 142812 -> 142603 bytes Retargeted { sites: 1 }; EntityCallbacks 12348 -> 12504 bytes add=Retargeted { sites: 1 } remove=Retargeted { sites: 1 }; Level 96260 -> 96331 bytes Retargeted { sites: 1 }; ChunkMap 62665 -> 62765 bytes Retargeted { sites: 1 }; Entity rng+chain via entity_compose)
+[crussty-plugin] fluid_dirty: net/minecraft/world/level/chunk/LevelChunk armed, retransform rc=0
+> [crussty-plugin] entity_compose: ARMED chain [inside_batch->inside_bitmask->fluid_free->rng->batch->traversal->zeroin->sbb->traveldiet], 205458 -> 203179 bytes, retransform rc=0
+> [crussty-runtime] retransform net/minecraft/server/level/ServerLevel: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/server/level/ServerLevel: class_status=0x7
+[crussty-plugin] region_threads: hook serve net/minecraft/server/level/ServerLevel 142603 bytes
+> > [crussty-runtime] retransform net/minecraft/server/level/ServerLevel$EntityCallbacks: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/server/level/ServerLevel$EntityCallbacks: class_status=0x7
+[crussty-plugin] region_threads: hook serve net/minecraft/server/level/ServerLevel$EntityCallbacks 12504 bytes
+> > > [crussty-runtime] retransform net/minecraft/world/level/Level: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/Level: class_status=0x7
+[crussty-plugin] region_threads: hook serve net/minecraft/world/level/Level 96331 bytes
+[crussty-runtime] retransform net/minecraft/server/level/ChunkMap: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/server/level/ChunkMap: class_status=0x7
+[crussty-plugin] region_threads: hook serve net/minecraft/server/level/ChunkMap 62765 bytes
+[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel=0 EntityCallbacks=0 Level=0 ChunkMap=0 NodeEvaluator=-1 ScheduledTickAccess=-1 (Entity via entity_compose; navpool vanilla; sched vanilla; emap vanilla (lever off or define failed); refsync vanilla (lever off or define failed); retransform:)
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [16:51:10 INFO]: [STDOUT] [net.minecraft.world.entity.RegionTickOps] [S7-170] nav-mobs guarded: level=minecraft:overworld seeded=13
+> > > > > > > > > > > > > > >   [31;1m[16:51:11 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH  - 1.21.10-2535-0a2dc04 (MC: 1.21.10) ---
+[m>   [31;1m[16:51:11 ERROR]: The server has not responded for 15 seconds! Creating thread dump
+[m>   [31;1m[16:51:11 ERROR]: ------------------------------
+[m>   [31;1m[16:51:11 ERROR]: Server thread dump (Look for plugins here before reporting to Purpur!):
+[m>   [31;1m[16:51:11 ERROR]: [ChunkTaskScheduler] Chunk wait task info below: 
+[m>   [31;1m[16:51:11 ERROR]: [ChunkTaskScheduler] Chunk wait: [( -103,-108) in 'world']
+[m>   [31;1m[16:51:11 ERROR]: [ChunkTaskScheduler] Chunk holder: NewChunkHolder{world=world, chunkX=-103, chunkZ=-108, entityChunkFromDisk=false, lastChunkCompletion={chunk_class=net.minecraft.world.level.chunk.ProtoChunk,status=minecraft:initialize_light}, currentGenStatus=minecraft:initialize_light, requestedGenStatus=minecraft:full, generationTask=null, generationTaskStatus=null, priority=BLOCKING, priorityLocked=false, neighbourRequestedPriority=null, effective_priority=BLOCKING, oldTicketLevel=31, currentTicketLevel=31, totalNeighboursUsingThisChunk=5, fullNeighbourChunksLoadedBitset=3247104, currentChunkStatus=INACCESSIBLE, pendingChunkStatus=INACCESSIBLE, is_unload_safe=ticket_level, killed=false}
+[m>   [31;1m[16:51:11 ERROR]: ------------------------------
+[m>   [31;1m[16:51:11 ERROR]: Current Thread: Server thread
+[m>   [31;1m[16:51:11 ERROR]: 	PID: 153 | Suspended: false | Native: false | State: RUNNABLE
+[m>   [31;1m[16:51:11 ERROR]: 	Stack:
+[m>   [31;1m[16:51:11 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.yield0(Native Method)
+[m>   [31;1m[16:51:11 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.yield(Thread.java:445)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.waitForTasks(BlockableEventLoop.java:170)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.managedBlock(BlockableEventLoop.java:161)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.managedBlock(ServerChunkCache.java:802)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.level.ServerChunkCache.syncLoad(ServerChunkCache.java:122)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunkFallback(ServerChunkCache.java:156)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunk(ServerChunkCache.java:321)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.world.level.Level.getChunk(Level.java:1006)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.level.ServerLevel.setChunkForced(ServerLevel.java:2367)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.changeForceLoad(ForceLoadCommand.java:171)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.lambda$register$3(ForceLoadCommand.java:53)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand$$Lambda/0x00007fc674e19fc0.run(Unknown Source)
+[m>   [31;1m[16:51:11 ERROR]: 		com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction$$Lambda/0x00007fc675269bb0.execute(Unknown Source)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:105)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.commands.Commands.executeCommandInContext(Commands.java:466)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:372)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:360)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:351)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.lambda$runCommand$17(DedicatedServer.java:945)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer$$Lambda/0x00007fc675262f90.run(Unknown Source)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.lambda$submitAsync$0(BlockableEventLoop.java:80)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop$$Lambda/0x00007fc6752631b8.get(Unknown Source)
+[m>   [31;1m[16:51:11 ERROR]: 		java.base@21.0.12.1/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.TickTask.run(TickTask.java:18)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.doRunTask(BlockableEventLoop.java:176)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.util.thread.ReentrantBlockableEventLoop.doRunTask(ReentrantBlockableEventLoop.java:24)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:1564)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:180)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.pollTask(BlockableEventLoop.java:150)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.MinecraftServer.runAllTasksAtTickStart(MinecraftServer.java:1191)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1364)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:388)
+[m>   [31;1m[16:51:11 ERROR]: 		net.minecraft.server.MinecraftServer$$Lambda/0x00007fc674f5e9a0.run(Unknown Source)
+[m>   [31;1m[16:51:11 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.runWith(Thread.java:1596)
+[m>   [31;1m[16:51:11 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+[m>   [31;1m[16:51:11 ERROR]: ------------------------------
+[m>   [31;1m[16:51:11 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH ---
+[m>   [31;1m[16:51:11 ERROR]: ------------------------------
+[m> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [16:51:15 INFO]: [3m[37m[Rcon: Marked 64 chunks in minecraft:overworld from [-108, -108] to [-101, -101] to be force loaded][0m
+>   [16:51:15 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [31;1m[16:51:25 ERROR]: [STDERR] [net.minecraft.world.entity.RegionTickOps] [crussty-plugin] batch_collector: telemetry tick=600 instances=75 workers=2
+[m> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [31;1m[16:51:35 ERROR]: [STDERR] [net.minecraft.world.entity.RegionTickOps] [crussty-plugin] batch_collector: telemetry tick=1200 instances=131 workers=2
+[m> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [31;1m[16:51:45 ERROR]: [STDERR] [net.minecraft.world.entity.RegionTickOps] [crussty-plugin] batch_collector: telemetry tick=1800 instances=131 workers=2
+[m> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [16:51:50 INFO]: Thread RCON Client /127.0.0.1 started
+>   [16:51:50 INFO]: Thread RCON Client /127.0.0.1 shutting down
+> >   [16:51:50 INFO]: Thread RCON Client /127.0.0.1 started
+>   [16:51:50 INFO]: [3m[37m[Rcon: Unmarked all force loaded chunks in minecraft:overworld][0m
+>   [16:51:50 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [16:51:50 INFO]: Thread RCON Client /127.0.0.1 started
+>   [16:51:50 INFO]: [3m[37m[Rcon: Stopping the server][0m
+>   [16:51:50 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [16:51:51 INFO]: Stopping server
+>   [16:51:51 INFO]: Saving players
+> [16:51:51 INFO]: Saving worlds
+[16:51:51 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[16:51:51 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[16:51:51 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[16:51:51 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world'
+[16:51:53 INFO]: [ChunkHolderManager] Saved 2312 block chunks, 288 entity chunks, 1 poi chunks in world 'world' in 2.82s
+[16:51:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world'
+[16:51:53 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world'
+[16:51:53 INFO]: Saving chunks for level 'ServerLevel[world_nether]'/minecraft:the_nether
+[16:51:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[16:51:53 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[16:51:53 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_nether'
+[16:51:53 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world_nether' in 0.00s
+[16:51:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_nether'
+[16:51:53 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_nether'
+[16:51:53 INFO]: Saving chunks for level 'ServerLevel[world_the_end]'/minecraft:the_end
+[16:51:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[16:51:53 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[16:51:53 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_the_end'
+[16:51:53 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world_the_end' in 0.00s
+[16:51:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_the_end'
+[16:51:53 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_the_end'
+[16:51:53 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[16:51:53 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[16:51:53 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[16:51:53 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[16:51:53 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[16:51:53 INFO]: All RegionFile I/O tasks to complete
+[16:51:53 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[16:51:53 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...

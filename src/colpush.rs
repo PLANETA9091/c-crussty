@@ -57,7 +57,7 @@ use std::sync::{Mutex, OnceLock};
 const TARGET_CLASS: &str = "net/minecraft/world/entity/LivingEntity";
 const OPS_CLASS: &str = "net/minecraft/world/entity/ColpushOps";
 
-const OPS_BYTES: &[u8] = include_bytes!("../colpush/build/net/minecraft/world/entity/ColpushOps.class");
+const OPS_BYTES: &[u8] = include_bytes!("../bridges/colpush/build/net/minecraft/world/entity/ColpushOps.class");
 
 const PROBE_MAGIC: i32 = 0x435050; // "CP"
 const ERR_STRUCT: i32 = -1;

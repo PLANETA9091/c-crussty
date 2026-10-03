@@ -43,7 +43,7 @@ pub const SERVER_LEVEL_CLASS: &str = classfile::SERVER_LEVEL_CLASS;
 const OPS_NAME: &str = classfile::RANDOMTICK_OPS_CLASS;
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../randomtick/build/net/minecraft/server/level/RandomTickOps.class");
+    include_bytes!("../bridges/randomtick/build/net/minecraft/server/level/RandomTickOps.class");
 
 static READY: AtomicBool = AtomicBool::new(false);
 static PATCHED: AtomicBool = AtomicBool::new(false);

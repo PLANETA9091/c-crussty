@@ -31,7 +31,7 @@ const METHOD_NAME: &str = "mergeWithNeighbours";
 const METHOD_DESC: &str = "()V";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../items/build/net/minecraft/world/entity/item/ItemMergeOps.class");
+    include_bytes!("../bridges/items/build/net/minecraft/world/entity/item/ItemMergeOps.class");
 
 /// Whole-body replacement spec: the kernel method's only argument slot (this)
 /// passes straight through to the static bridge.

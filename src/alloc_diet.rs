@@ -34,7 +34,7 @@ const COLLISION_CLASS: &str = "ca/spottedleaf/moonrise/patches/collisions/Collis
 const OPS_CLASS: &str = "net/minecraft/world/entity/EntityQueryOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityquery/build/net/minecraft/world/entity/EntityQueryOps.class");
+    include_bytes!("../bridges/entityquery/build/net/minecraft/world/entity/EntityQueryOps.class");
 
 fn enabled() -> bool {
     std::env::var("CRUSSTY_ALLOC_DIET")

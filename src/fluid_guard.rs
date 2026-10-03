@@ -29,9 +29,9 @@ const HOOK_NAME: &str = "net/minecraft/world/entity/FluidPushGuardHook";
 const HOOK_ENTRY_NAME: &str = "net/minecraft/world/entity/FluidPushGuardHook$GuardEntry";
 
 const HOOK_BYTES: &[u8] =
-    include_bytes!("../fluid/build/net/minecraft/world/entity/FluidPushGuardHook.class");
+    include_bytes!("../bridges/fluid/build/net/minecraft/world/entity/FluidPushGuardHook.class");
 const HOOK_ENTRY_BYTES: &[u8] =
-    include_bytes!("../fluid/build/net/minecraft/world/entity/FluidPushGuardHook$GuardEntry.class");
+    include_bytes!("../bridges/fluid/build/net/minecraft/world/entity/FluidPushGuardHook$GuardEntry.class");
 
 /// Whole-body replacement spec: the kernel method's three argument slots
 /// (this + TagKey + double) pass straight through to the static bridge —

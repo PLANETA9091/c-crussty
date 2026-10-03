@@ -28,7 +28,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 const TRAVERSE_CLASS: &str = "net/minecraft/world/level/TraverseOps";
 
 const TRAVERSE_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/level/TraverseOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/level/TraverseOps.class");
 
 /// Nested classes compiled out of TraverseOps.java. EVERY nested classfile
 /// produced by the build MUST be listed here and defined into the kernel
@@ -40,7 +40,7 @@ const TRAVERSE_BYTES: &[u8] =
 const TRAVERSE_NESTED: &[(&str, &[u8])] = &[(
     "net/minecraft/world/level/TraverseOps$LongTable",
     include_bytes!(
-        "../entityinside/build/net/minecraft/world/level/TraverseOps$LongTable.class"
+        "../bridges/entityinside/build/net/minecraft/world/level/TraverseOps$LongTable.class"
     ),
 )];
 
@@ -199,7 +199,7 @@ mod nested_delivery_tests {
     /// implicitly, so the offline lockstep harness cannot catch this).
     #[test]
     fn every_nested_class_of_traverse_ops_is_embedded() {
-        let src = include_str!("../entityinside/net/minecraft/world/level/TraverseOps.java");
+        let src = include_str!("../bridges/entityinside/net/minecraft/world/level/TraverseOps.java");
         let mut declared: Vec<String> = Vec::new();
         for line in src.lines() {
             let t = line.trim();
@@ -241,7 +241,7 @@ mod nested_delivery_tests {
     /// unlisted (build-time mirror of the source-parse guard).
     #[test]
     fn build_dir_classfiles_match_embedded_set() {
-        let dir = "entityinside/build/net/minecraft/world/level";
+        let dir = "bridges/entityinside/build/net/minecraft/world/level";
         let expected_top = format!("{dir}/TraverseOps.class");
         let mut expected: Vec<String> = vec![expected_top];
         for (name, _) in super::TRAVERSE_NESTED {

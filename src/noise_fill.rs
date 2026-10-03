@@ -50,31 +50,31 @@ const FILLARRAY_DESC: &str = "([DLnet/minecraft/world/level/levelgen/DensityFunc
 const POLICY_KERNEL: &str = "noiseFillArrayWholeBody";
 
 const OPS_BYTES: &[u8] = include_bytes!(concat!(
-    "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps.class"
 ));
 const OPS_HANDLE_BYTES: &[u8] = include_bytes!(concat!(
-    "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Handle.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Handle.class"
 ));
 const OPS_REAPER_BYTES: &[u8] = include_bytes!(concat!(
-    "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Reaper.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Reaper.class"
 ));
 const OPS_RECORDER_BYTES: &[u8] = include_bytes!(concat!(
-    "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Recorder.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Recorder.class"
 ));
 const OPS_RECORDER_TL_BYTES: &[u8] = include_bytes!(concat!(
-    "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$RecorderTL.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$RecorderTL.class"
 ));
 const OPS_REC_OUT_TL_BYTES: &[u8] = include_bytes!(concat!(
-    "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$RecOutTL.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$RecOutTL.class"
 ));
 const OPS_CENSUS_BYTES: &[u8] = include_bytes!(concat!(
-    "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Census.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Census.class"
 ));
 const OPS_TEST_PROVIDER_BYTES: &[u8] = include_bytes!(concat!(
-    "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$TestProvider.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$TestProvider.class"
 ));
 const OPS_INTERP_BYTES: &[u8] = include_bytes!(concat!(
-    "../noise/build/net/minecraft/world/level/levelgen/DensityArrayInterpreter.class"
+    "../bridges/noise/build/net/minecraft/world/level/levelgen/DensityArrayInterpreter.class"
 ));
 
 const OPS_EMBEDS: [(&str, &[u8]); 9] = [

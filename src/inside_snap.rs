@@ -61,9 +61,9 @@ const SNAP_CLASS: &str = "net/minecraft/world/entity/InsideSnapOps$Snap";
 const LANE_CLASS: &str = "net/minecraft/world/entity/InsideSnapOps$Lane";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideSnapOps.class");
 const SNAP_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapOps$Snap.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideSnapOps$Snap.class");
 // ROUND-3 NCDFE FIX (run 35902792520 root-cause): the inside2 serve-fastpath
 // added the nested class `InsideSnapOps$Lane` but the bridge-define step never
 // defined it into the kernel loader — clinit (or first resolution) of
@@ -74,7 +74,7 @@ const SNAP_BYTES: &[u8] =
 // build_432b_blobs.sh, define_class here, java side also de-indy'd: no
 // Lane-typed resolution is reachable from <clinit> any more).
 const LANE_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapOps$Lane.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideSnapOps$Lane.class");
 
 const PROBE_MAGIC: i32 = 0x42534E50; // "BSNP"
 const ERR_STRUCT: i32 = -1;

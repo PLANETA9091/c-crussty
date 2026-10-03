@@ -42,7 +42,7 @@ const SECTION_CLASS: &str = "net/minecraft/world/level/chunk/LevelChunkSection";
 const OPS_CLASS: &str = "net/minecraft/world/entity/FluidOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/FluidOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/FluidOps.class");
 
 fn enabled() -> bool {
     std::env::var("CRUSSTY_FLUID_FREE")

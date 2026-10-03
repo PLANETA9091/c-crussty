@@ -43,9 +43,9 @@ const LEVEL_CLASS: &str = "net/minecraft/world/level/Level";
 const WRAPPED_GOAL_CLASS: &str = "net/minecraft/world/entity/ai/goal/WrappedGoal";
 
 const PUSH_BYTES: &[u8] =
-    include_bytes!("../stagger/build/net/minecraft/world/entity/PushStaggerOps.class");
+    include_bytes!("../bridges/stagger/build/net/minecraft/world/entity/PushStaggerOps.class");
 const GOAL_BYTES: &[u8] =
-    include_bytes!("../stagger/build/net/minecraft/world/entity/ai/goal/target/GoalStaggerOps.class");
+    include_bytes!("../bridges/stagger/build/net/minecraft/world/entity/ai/goal/target/GoalStaggerOps.class");
 
 const GET_PUSHABLES_DESC: &str =
     "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;";

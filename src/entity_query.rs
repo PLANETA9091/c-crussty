@@ -84,7 +84,7 @@ const TARGETS: &[(&str, &str, &str)] = &[
 const OPS_CLASS: &str = "net/minecraft/world/entity/EntityGoalQueryOps";
 
 const OPS_BYTES: &[u8] = include_bytes!(
-    "../entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class"
+    "../bridges/entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class"
 );
 
 /// Owner + call replaced in both target methods.
@@ -1275,8 +1275,8 @@ mod tests {
 
 #[cfg(test)]
 mod entityquery_delivery_tests {
-    const SRC: &str = include_str!("../entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java");
-    const BLOB: &str = "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class";
+    const SRC: &str = include_str!("../bridges/entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java");
+    const BLOB: &str = "bridges/entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class";
 
     #[test]
     fn entityquery_lever_gate_carries_full_era_union() {

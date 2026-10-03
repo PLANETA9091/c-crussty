@@ -58,7 +58,7 @@ const MOBPUSH_CLASS: &str = "net/minecraft/world/entity/MobPushOps";
 const OPS_CLASS: &str = "net/minecraft/world/entity/SenseOps";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../sense/build/net/minecraft/world/entity/SenseOps.class");
+    include_bytes!("../bridges/sense/build/net/minecraft/world/entity/SenseOps.class");
 
 const ERR_STRUCT: i32 = -1;
 const ERR_RANGE: i32 = -2;

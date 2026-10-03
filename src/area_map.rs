@@ -35,13 +35,13 @@ const OPS1_NAME: &str = "ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOp
 const NATIVE_CLASS: &str = "ca/spottedleaf/moonrise/common/misc/PaperNativeAreaMap";
 
 const OPS1_BYTES: &[u8] = include_bytes!(
-    "../area-map/build/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$1.class"
+    "../bridges/area-map/build/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$1.class"
 );
 const SCRATCH_BYTES: &[u8] = include_bytes!(
-    "../area-map/build/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$Scratch.class"
+    "../bridges/area-map/build/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$Scratch.class"
 );
 const OPS_BYTES: &[u8] = include_bytes!(
-    "../area-map/build/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps.class"
+    "../bridges/area-map/build/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps.class"
 );
 
 // TASK-64 variant C: budgeted-scratch policy, same three class names, built
@@ -49,13 +49,13 @@ const OPS_BYTES: &[u8] = include_bytes!(
 // scripts/build_area_map_budget.sh (see that source for the policy and the
 // measured closed-native contract it relies on).
 const BUDGET_OPS1_BYTES: &[u8] = include_bytes!(
-    "../area-map/build-budget/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$1.class"
+    "../bridges/area-map/build-budget/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$1.class"
 );
 const BUDGET_SCRATCH_BYTES: &[u8] = include_bytes!(
-    "../area-map/build-budget/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$Scratch.class"
+    "../bridges/area-map/build-budget/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$Scratch.class"
 );
 const BUDGET_OPS_BYTES: &[u8] = include_bytes!(
-    "../area-map/build-budget/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps.class"
+    "../bridges/area-map/build-budget/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps.class"
 );
 
 // TASK-68 call-level probe: a deterministic Java driver
@@ -70,9 +70,9 @@ const BUDGET_OPS_BYTES: &[u8] = include_bytes!(
 const PROBE_NAME: &str = "dev/crussty/areamapprobe/AreaMapProbe";
 const PROBE_RECMAP_NAME: &str = "dev/crussty/areamapprobe/AreaMapProbe$RecMap";
 const PROBE_BYTES: &[u8] =
-    include_bytes!("../area-map/build-probe/dev/crussty/areamapprobe/AreaMapProbe.class");
+    include_bytes!("../bridges/area-map/build-probe/dev/crussty/areamapprobe/AreaMapProbe.class");
 const PROBE_RECMAP_BYTES: &[u8] =
-    include_bytes!("../area-map/build-probe/dev/crussty/areamapprobe/AreaMapProbe$RecMap.class");
+    include_bytes!("../bridges/area-map/build-probe/dev/crussty/areamapprobe/AreaMapProbe$RecMap.class");
 /// Rect count of the driver matrix (must match AreaMapProbe.TOTAL_RECTS:
 /// 3 guard rows + retry + escalate + grow + 64 same-state + 7 spots + 64 sweep).
 const PROBE_TOTAL_RECTS: i32 = 141;

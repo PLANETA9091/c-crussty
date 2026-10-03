@@ -76,7 +76,7 @@ pub fn enabled() -> bool {
 /// источник: entityinside/net/minecraft/world/entity/InsideBatchOps.java,
 /// сборка scripts/build_inside_batch_ops.sh, flat==nested gate).
 const BRIDGE_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBatchOps.class");
+    include_bytes!("../bridges/entityinside/build/net/minecraft/world/entity/InsideBatchOps.class");
 
 /// Gate-видимость для entity_compose stage (S7-162 supersede-дисциплина).
 pub fn enabled_pub() -> bool {

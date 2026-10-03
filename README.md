@@ -1,232 +1,152 @@
-# c-crussty — the Crussty CE native surface as a CRUSSTY module
+# c-crussty — native optimization module for the CRUSSTY platform
 
-**c-crussty** is a [CRUSSTY](https://github.com/PLANETA9091/CRUSSTY) c-plugin
-module that injects the full **Crussty CE JNI bridge** into any Paper-family
-kernel (Paper/Purpur, unmodified): **98 bridge classes** backed by **283 native
-JNI exports** from two closed-source shared libraries
-(`libpaper_native_jni.so`, `libpaper_native_chunk_encode_jni.so`), plus two
-targeted **hot-patches** on kernel classes. It is pure infrastructure: it
-changes no gameplay values and adds no content — it makes the Crussty CE
-native surface *callable* from the kernel and optimizes two well-defined
-kernel hot paths (area-map updates, improved-noise sampling).
+**c-crussty** is a [CRUSSTY](https://github.com/PLANETA9091/CRUSSTY) platform
+module that injects the full **Crussty CE native surface** into any unmodified
+Paper-family kernel (Paper/Purpur): **98 bridge classes** backed by **283
+native JNI exports** from two shared libraries (`libpaper_native_jni.so`,
+`libpaper_native_chunk_encode_jni.so`), plus targeted **hot-patches** of two
+kernel hot paths. It changes no gameplay values and adds no content — pure
+infrastructure: it makes the CE native surface *callable* from the kernel and
+optimizes well-defined kernel hot paths with native Rust kernels.
 
-The bridge classes are *not* part of Crussty CE — this module synthesizes them
-at runtime: for every `Java_*` export in the JNI manifest it defines a
-`public static native` class in the exact package the symbol name implies
-(bootstrap loader) and binds the resolved symbol via `RegisterNatives`.
+- Platform / runtime: [CRUSSTY](https://github.com/PLANETA9091/CRUSSTY) (JVMTI
+  agent + module runtime). This repo is one module of that platform.
+- Language: **Rust** (`src/` module + SDK + recovered CE kernel sources in
+  `native/`); the kernel-derived Java bridge material lives under
+  [`bridges/`](docs/BRIDGES.md) and is excluded from the language stats by
+  policy — see [`.gitattributes`](.gitattributes).
 
-## Status — what works today
+## Measured: vanilla Paper vs Paper+c-crussty
 
-| Capability | State | Evidence |
-|---|---|---|
-| Native surface injection — 98 bridge classes / 283 natives | ✅ working | live boot on Purpur 1.21.10 + CRUSSTY launcher: `98 bridge classes, 283 natives registered, 0 unresolved` |
-| `SingleUserAreaMap.update()` hot-patch | ✅ working, verified live | patched `5075 → 3320` bytes, retransform rc=0, 64-rect self-test OK (native == naive set difference) |
-| `ImprovedNoise.noise(DDDDD)D` hot-patch | ✅ working, **off by default** (env gate) | pristine sighting major 65 → patched `5691 → 5403` bytes → retransform rc=0 → native handle round-trip self-test passed |
-| `PerlinNoise.getValue` whole-body native bridge | ✅ working, **on by default** (TASK-148 promotion; opt-out env `CRUSSTY_NATIVE_PERLIN_NOISE=0`) | TASK-74 G-AB live A/B n=5/arm ABBA: wall −12.3%, cpu_burst −11.1% median (p=0.0079), parity 0/20000 bit-exact — [`bench/e2e/results/PERLIN_AB_2026-09-09.md`](bench/e2e/results/PERLIN_AB_2026-09-09.md) |
-| Injection live-proof (self-check at boot) | ✅ working | `nativeCheck() = 1`; `binarySummary(1000)` wrote 1 long through a real kernel |
-| P500 benchmark baseline | ✅ recorded | 49 groups, 129 kernels, 0 crashes — see [`bench/p500/`](bench/p500/README.md) |
+Real-server paired A/B (Purpur 1.21.10, OpenJDK 21, fixed-seed world, 128
+chunks of fresh worldgen per run, byte-identical world restore, exact
+Mann-Whitney). Full protocol, arm validation and raw data:
+[`bench/ab/results/PAPER_AB_2026-10-03.md`](bench/ab/results/PAPER_AB_2026-10-03.md).
 
-## Architecture
+| metric (median) | vanilla | +c-crussty (default) | Δ | +c-crussty (all levers) | Δ |
+|---|---:|---:|---:|---:|---:|
+| worldgen burst, CPU-s | 37.91 | 35.66 | **−5.9%** | 57.27 | +51.1% |
+| worldgen burst, wall s | 41.0 | 38.0 | **−7.3%** | 55.5 | +35.4% |
+| boot, s | 15.99 | 15.24 | −4.7% | 16.40 | +2.6% |
+| RSS after burst, MB | 1122 | 1136 | +1.2% | 1421 | +26.6% |
 
-```
-                   CRUSSTY runtime (JVMTI agent, launcher.jar)
-                        │  dlopen modules/crussty/libcrussty.so
-                        ▼
-              cplugin_init(api, vm, options)          ← the only required export
-                │
-                ├── area_map::register()          ── byte hooks (class-file load)
-                ├── improved_noise::register()       no JVM work here
-                └── spawn inject_surface thread
-                        │  +3 s (VM up)
-                        ▼
-   dlopen native/libpaper_native_jni.so (+ chunk_encode lib)
-                        │
-                        ▼
-   define_and_register loop  ── per bridge class (98):
-        bridge_class_bytes() → define_class (bootstrap loader)
-        dlsym each export   → RegisterNatives
-                        │
-                        ▼
-   live_proof: nativeCheck()=1 · binarySummary(1000) writes 1 long
-                        │
-                        ▼
-   area_map::activate() ────────┐   background workers: wait for kernel
-   improved_noise::activate() ──┘   class → define helpers into the kernel
-                                    loader → ONE retransform → self-test
-```
+- **Default posture** (what gets deployed) is cheaper than vanilla; the same
+  lever family measured **significant** live on a bigger burst: PerlinNoise
+  whole-body native bridge −11.1% cpu / −12.3% wall, exact MW p = 0.0079,
+  parity 0/20000 bit-exact ([report](docs/results/PERLIN_AB_2026-09-09.md)).
+- **All-levers posture** is *slower* on this burst (p = 0.006) — measured on
+  purpose, and exactly why the kernel policy ships only proven wins. A FAIL
+  is published, never hidden.
+- Idle RSS with pure injection (stock JVM, `-agentpath` only, zero flags):
+  **−29%** vs the flag-configured series
+  ([report](docs/results/TASK129_PURE_INJECT_2026-09-09.md)).
 
-Details, sequence diagrams and failure-mode analysis: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+### Native kernel-level wins (P500 sweep: Paper-algorithm port vs optimized)
 
-## Layout
+129 kernels / 49 groups / 0 crashes
+([report](docs/results/P500_REPORT.md)):
 
-- `src/` — Rust module (`lib.rs` pipeline, `jni_table.rs` 283-entry bridge table, `bridge_class.rs` classfile writer, `classfile.rs` bytecode surgery, `area_map.rs`, `improved_noise.rs`, `loader.rs`)
-- `cplug-abi/`, `cplug-sdk/` — vendored module ABI + SDK (byte hooks, ASM weaving, kernel-class polling)
-- `area-map/` — Java sources of the Moonrise `SingleUserAreaMapOps` bridge, `build/` — compiled (embedded via `include_bytes!`)
-- `noise/` — Java sources of the noise bridge (`ImprovedNoiseNativeOps`), `build/` — compiled
-- `native/` — Crussty CE binaries + `JNI_EXPORTS.manifest` (single source of truth for the bridge table) + MIT license, see [`native/MANIFEST.md`](native/MANIFEST.md)
-- `bench/p500/` — the P500 JNI kernel benchmark, see [`bench/p500/README.md`](bench/p500/README.md)
-- `bench/lifecycle/` — P500-style A/B of the noise-handle lifecycle (old finalize+global-map vs phantom reaper+striped maps) over the real `libpaper_native_jni.so` kernels; report in `bench/lifecycle/results/LIFECYCLE_REPORT.md`
-- `docs/` — architecture deep dive ([`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md))
-- `scripts/build_noise.sh` — rebuilds the noise bridge classes with a pinned `--release` (class-version guard, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) §9)
-- `tests/fixtures/` — test fixtures
+| speedup | kernel | old → optimized |
+|---:|---|---|
+| **318×** | NoiseChunkBlendCache empty-blender | 74.2 µs → 233 ns |
+| 3.34× | NoiseInterpolatorSlice jagged → flat | 6.2 ms → 1.9 ms |
+| 1.24× | NoiseChunkFlatCacheContext | 23.7 µs → 19.2 µs |
+| 1.22× | ImprovedNoiseInline gradient switch | 9.3 µs → 7.6 µs |
 
-## Build
+All numbers, gates and honesty rules: [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md).
 
-```bash
-# toolchain (once): Rust via rustup
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-cargo build --release          # → target/release/libcrussty.so  (cdylib)
-```
+## How it plugs into CRUSSTY
 
-Runtime dependencies `native/libpaper_native_jni.so` and
-`native/libpaper_native_chunk_encode_jni.so` are committed here (see
-`native/MANIFEST.md` for provenance and SHA-256); the module is a dead
-injector without them.
-
-## Deploy
-
-The CRUSSTY runtime scans `modules/` recursively; every module is a directory
-holding the shared library, its manifest and its native payloads:
+The CRUSSTY runtime scans `modules/` recursively and `dlopen`s every module;
+each module must export `cplugin_init(api, vm, options)`:
 
 ```
 modules/crussty/
-├── libcrussty.so                 # cargo build --release artifact
+├── libcrussty.so                 # this repo, cargo build --release
 ├── module.json                   # {"id":"crussty","version":"0.1.0"}
-└── native/
+└── native/                       # Crussty CE payloads (deliberately not a plugin dir)
     ├── libpaper_native_jni.so            # 280 exports
     ├── libpaper_native_chunk_encode_jni.so  # 3 exports
-    ├── JNI_EXPORTS.manifest
-    ├── MANIFEST.md · LICENSE
+    ├── JNI_EXPORTS.manifest      # single source of truth for the bridge table
+    └── MANIFEST.md · LICENSE     # provenance + SHA-256 + MIT
 ```
 
-(`native/` is deliberately a subdir without `module.json`, so the runtime's
-plugin scan skips it; the injector falls back to the module dir itself if
-`native/` is absent.)
-
-**Deploy requirements** (mirror the `cp` conventions in
-[`native/MANIFEST.md`](native/MANIFEST.md)): the CRUSSTY runtime
-(`libcrussty_runtime.so`) must include the TASK-08 ClassFileLoadHook name fix
-(engine commit `66ff504`, "derive class name from class bytes, not the VM
-buffer") — older runtimes intermittently drop hook events whose name is read
-off the VM's non-NUL-terminated buffer (`ImprovedNoisejaE`), so armed capture
-becomes non-deterministic. Module builds >= capture-hardening (`625c564`)
-additionally retry the retransform ×3 and fall back to the kernel-loader
-resource stream, which restores deterministic arming on residual races.
-
-## Run
-
-Start the kernel through the CRUSSTY launcher (it loads the runtime, which
-dlopens every module). The module registers itself at `cplugin_init` and does
-all JVM work on background threads — no agent flags needed:
-
-```bash
-cd server/
-java -jar launcher.jar nogui          # or: crussty run
-```
-
-## Operational law & measurement posture (2026-09-09)
-
-**INJECTS-ONLY** (owner directive, [`docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md`](docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md)):
-the product is a pure agent injection — the Rust module plus `-agentpath` and
-nothing else. JVM launch flags are never used as optimization or measurement
-levers; config files, gameplay values and kernel launch lines stay untouched.
-
-- **Canonical launch:** stock Temurin 21 + ONLY `-agentpath` (zero JVM options,
-  default ergonomics). Validated live: boot parity with the historical
-  flag-era band, idle RSS **−29%** vs the flag-configured series — the RAM
-  goal delivered with no flags at all
-  ([`bench/graal_ab/results/TASK129_PURE_INJECT_2026-09-09.md`](bench/graal_ab/results/TASK129_PURE_INJECT_2026-09-09.md)).
-- **Measurement:** external observers only (`jcmd GC.heap_info`,
-  `/proc/<pid>/smaps_rollup`, `GC.class_histogram`) — no NMT or
-  flag-instrumented runs.
-- **Reclaim health channel:** periodic C3 cadence probes on the canonical
-  rig, gated by **gate v2** `max(R0×1.10, R0+100MB)`
-  ([`docs/C3_GATE_V2_PROTOCOL_2026-09-09.md`](docs/C3_GATE_V2_PROTOCOL_2026-09-09.md));
-  v2 miss = exceeds all attributed benign residue classes → leak protocol.
-
-Expected boot log:
+At init the module dlopens the payloads, synthesizes every bridge class the
+manifest implies (bootstrap loader, `RegisterNatives`), proves itself live
+(`nativeCheck() = 1`, a real kernel writes through the bridge), then arms the
+hot-patches: `SingleUserAreaMap.update()` (default **on**) and
+`ImprovedNoise.noise(DDDDD)D` (env-gated, default off; perlin bridge default
+on since TASK-148). Expected boot markers:
 
 ```
 [crussty-plugin] native surface live: 98 bridge classes, 283 natives registered (0 symbols unresolved)
 [crussty-plugin] live proof: normalNoise.nativeCheck() = 1
-[crussty-plugin] live proof: ticketset binarySummary(1000) wrote 1 long(s)
-[crussty-plugin] area_map: patched ... update() (5075 -> 3320 bytes)   # once the kernel class loads
+[crussty-plugin] area_map: patched ... update() (5075 -> 3320 bytes)
 [crussty-plugin] area_map: self-test OK (64 rects, native == naive set difference)
 ```
 
-**Env gate:** the `ImprovedNoise` hot-patch is off by default. Enable it by
-setting the variable in the environment *at server start*:
+Run: start the kernel through the CRUSSTY runtime (`java
+-agentpath:libcrussty_runtime.so=modules=<dir>;... -jar purpur.jar nogui`) —
+no other flags, ever (owner law: injects only,
+[`docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md`](docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md)).
 
-```bash
-CRUSSTY_NATIVE_IMPROVED_NOISE=1 java -jar launcher.jar nogui
+## Layout
+
+```
+src/            Rust module (lib.rs pipeline, jni_table.rs 283-entry table,
+                classfile.rs bytecode surgery, hot-patch + bridge lanes)
+cplug-abi/      module ABI (vendored platform contract)
+cplug-sdk/      byte hooks, ASM weaving, kernel-class polling (vendored SDK)
+native/         Crussty CE payloads (.so + manifest) + recovered full Rust
+                sources of the CE kernels + noise_ab A/B instrument
+bridges/        kernel-derived Java bridge sources + compiled payloads
+                (embedded via include_bytes!) — see docs/BRIDGES.md
+scripts/        pinned per-bridge rebuild recipes (scripts/build_*.sh)
+bench/          measurement: ab/ (real-server A/B), p500/ (kernel sweep),
+                world3/ (owner-rig world benchmark harness)
+tools/          vendored build tools (ECJ compiler)
+tests/          fixtures + kernel-coupled smoke/fuzz harnesses
+docs/           ARCHITECTURE · BENCHMARKS · BRIDGES · KERNEL_POLICY · results/
 ```
 
-## P500 benchmark
-
-P500 is the revived Crussty CE kernel benchmark: it measures every kernel
-group that has an `old*`/optimized kernel pair with identical synthesized
-arguments, one JVM fork per group, median-of-5 time-batched, min-of-medians
-over a forward/reverse pass to kill order bias. Baseline (2-CPU sandbox, JDK
-21): 49 groups, 129 kernels, 0 crashes; headline win **NoiseChunkBlendCache
-244×** (67 µs → 275 ns); four genuine scale-invariant regressions are
-documented and flagged do-not-wire.
+## Build
 
 ```bash
-cd bench/p500/
-python3 gen_p500_bench.py   # JNI_EXPORTS.manifest → stubs + G<gid> groups + Bench.java
-./run_p500.sh               # javac + one JVM per group → results/p500_raw.tsv
-python3 aggregate_p500.py   # → results/P500_REPORT.md
+cargo build --release    # → target/release/libcrussty.so (cdylib)
+cargo test               # 417 tests incl. byte-parity delivery gates
+(cd native && cargo test)  # recovered CE kernels: 317 selftests
 ```
 
-Results: [`bench/p500/results/P500_REPORT.md`](bench/p500/results/P500_REPORT.md),
-scaling study: [`bench/p500/results/P500_SCALING.md`](bench/p500/results/P500_SCALING.md).
+Runtime needs the two `native/*.so` payloads (committed; provenance and
+SHA-256 in [`native/MANIFEST.md`](native/MANIFEST.md)).
 
-## Verification story
+## Benchmarks
 
-Everything the module claims is checked *live, on the running kernel*:
+```bash
+bash bench/ab/run_paper_ab.sh seed     # one-time fixed-seed world
+bash bench/ab/run_paper_ab.sh A 1      # vanilla leg  (B = module-default,
+bash bench/ab/run_paper_ab.sh F 1      # full-surface) → bench/ab/results/
+python3 bench/ab/aggregate_paper_ab.py
+```
 
-1. **Injection live-proof** — after the `define_and_register` loop the module
-   calls two real natives through the injected bridge: `nativeCheck()`
-   (jboolean, always 1 — define + register + symbol resolve all worked) and
-   `binarySummary(1000)` (a real benchmark kernel that must write exactly one
-   long into an array — array passthrough works).
-2. **area_map self-test** — after patching, the real bridge
-   (`nativeUpdateOpsBatch`) is driven over 64 deterministic random rectangles
-   and every produced `(op, x, z)` is compared against the naive set
-   difference (adds = new∖old, removes = old∖new).
-3. **improved_noise self-test** — after activation, the real bridge
-   (`nativeBuildHandle`/`nativeNoise`/`nativeFreeHandle`) is driven over a
-   synthetic 256-byte permutation: handle builds, samples are finite and
-   deterministic, handle frees cleanly.
-4. **P500 harness** — reproducible old-vs-optimized measurement of the whole
-   native surface, used as the regression gate when the `.so` files change.
+`bench/p500/` regenerates and runs the kernel sweep;
+`bench/world3/` holds the owner-rig MineShield-3 world-bench harness.
 
-## Docs
+## Kernel policy & verification
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — deep dive: component map, classfile patcher, byte-hook contract, both hot-patches end-to-end, native surface inventory, failure modes
-- [`docs/KERNEL_POLICY.md`](docs/KERNEL_POLICY.md) — enforced kernel-selection policy: do-not-wire registry (4 confirmed P500 regressions), proven-win whitelist, `CRUSSTY_KERNEL_POLICY` override
-- [`docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md`](docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md) — standing owner law: injects only, no JVM flags as levers
-- [`docs/C3_GATE_V2_PROTOCOL_2026-09-09.md`](docs/C3_GATE_V2_PROTOCOL_2026-09-09.md) — reclaim gate v2 pre-registration (max(R0×1.10, R0+100MB)) + 10-run calibration
-- [`docs/RESULTS_LEDGER.md`](docs/RESULTS_LEDGER.md) — append-only results ledger (grep by `§N`; live health-channel history incl. C3 cadence probes)
-- [`bench/p500/README.md`](bench/p500/README.md) — P500 methodology & fairness protocol
-- [`native/MANIFEST.md`](native/MANIFEST.md) — provenance, license (`native/LICENSE`, MIT © ANDMC / P500 Project Contributors) and SHA-256 of the bundled binaries
+- [`docs/KERNEL_POLICY.md`](docs/KERNEL_POLICY.md) — enforced selection
+  policy: proven-win whitelist vs do-not-wire registry (documented
+  regressions), env overrides.
+- Everything the module claims is checked live: injection self-proof at boot,
+  64-rect set-difference self-test (area-map), handle round-trip self-test
+  (noise), byte-parity delivery tests per bridge payload, kernel sweep as the
+  `.so` regression gate.
 
-## Contributing (including autonomous agents)
+## For agents
 
-Development is agent-driven. Before working on this repo:
-
-1. **Read `worklog.md` first** (mirrored to the private `crussty-dev-logs`
-   repo) — it holds project context, session history and the template.
-2. Work autonomously; never change gameplay values, never ask the user to
-   test.
-3. **Append a session section** after finishing (`SESSION NNN — date —
-   topic`, Work Log + Stage Summary + NEXT), following the template at the
-   bottom of the worklog, and push it.
-4. Every nontrivial claim must be backed by a live proof or a benchmark
-   artifact in the repo (see the verification story above).
-
-Rules of thumb: `src/jni_table.rs` is generated from
-`native/JNI_EXPORTS.manifest` — never edit it by hand; bridge classfiles in
-`area-map/build/` and `noise/build/` are compiled artifacts embedded via
-`include_bytes!` — rebuild them from `area-map/` / `noise/` sources with a
-pinned `--release` (see `scripts/build_noise.sh`).
+The development worklog lives in the private
+[`crussty-dev-logs`](https://github.com/PLANETA9091/crussty-dev-logs) repo
+(`c-crussty/` folder) — read it before working here, append after. Historical
+canon files (BENCHMARKS/PROGRESS/RESULTS_LEDGER/CRON_PROMPT_P501/…) are
+archived there under `archive-2026-10-03/`; pre-restructure tree:
+tag `pre-restructure-2026-10`.

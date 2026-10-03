@@ -60,7 +60,7 @@ const ENTITY_BB_NOTE_DESC: &str =
 
 const OPS_CLASS: &str = "net/minecraft/world/entity/EntityIndexOps";
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityquery/build/net/minecraft/world/entity/EntityIndexOps.class");
+    include_bytes!("../bridges/entityquery/build/net/minecraft/world/entity/EntityIndexOps.class");
 /// Inner buffer POJO — MUST be defined into the kernel loader BEFORE the
 /// outer class links. cleg1 (run 35659765756) evidence: define_class +
 /// RegisterNatives succeed, then GetStaticMethodID("eidxProbe") triggers
@@ -70,7 +70,7 @@ const OPS_BYTES: &[u8] =
 /// are single-class blobs, which is why this failure mode was new.
 const OPS_BUF_CLASS: &str = "net/minecraft/world/entity/EntityIndexOps$Buf";
 const OPS_BUF_BYTES: &[u8] =
-    include_bytes!("../entityquery/build/net/minecraft/world/entity/EntityIndexOps$Buf.class");
+    include_bytes!("../bridges/entityquery/build/net/minecraft/world/entity/EntityIndexOps$Buf.class");
 /// ESEL iter-3 (AG-249): the published per-type view — nested interface + the
 /// FlatView implementation over the flat publish arrays. BOTH must be defined
 /// into the kernel loader BEFORE the outer class links (cleg1 evidence: the
@@ -80,11 +80,11 @@ const OPS_BUF_BYTES: &[u8] =
 /// the sibling FlatView instead of an implements on EntityIndexOps itself.
 const OPS_VIEW_CLASS: &str = "net/minecraft/world/entity/EntityIndexOps$TypeIndexView";
 const OPS_VIEW_BYTES: &[u8] = include_bytes!(
-    "../entityquery/build/net/minecraft/world/entity/EntityIndexOps$TypeIndexView.class"
+    "../bridges/entityquery/build/net/minecraft/world/entity/EntityIndexOps$TypeIndexView.class"
 );
 const OPS_FLATVIEW_CLASS: &str = "net/minecraft/world/entity/EntityIndexOps$FlatView";
 const OPS_FLATVIEW_BYTES: &[u8] =
-    include_bytes!("../entityquery/build/net/minecraft/world/entity/EntityIndexOps$FlatView.class");
+    include_bytes!("../bridges/entityquery/build/net/minecraft/world/entity/EntityIndexOps$FlatView.class");
 
 const GATE_LEVER: &str = "cmp405_eindex";
 
