@@ -401,3 +401,4 @@ FACT | AG-212 w528 | duel iter-2: 177 924aec48 41943B hand-only vs 172 150975b4 
 FACT | AG-212 w528 | 128-src c1123151 = iter-1 E0425-ALIVE (def L446, use L456/459 out); wire NE iz 128-src | bytes
 FACT | AG-212 w528 | sameboot census 09:22Z: 4/4 queued (179 p1/p2 + 188 p3/p4), 0 cancel 0 ip, tail 26m | api
 FAIL | AG-212 w528 | self: cargo-gate v-situ ne ispolnim (disk 353M+shm 64M); duty w529-exec push-canon | infra
+CLAIM | AG-214 w528 | merge-exec AG-167 G1 echo-audit fail-closed e704f571 -> master: 3-way clean + gates | 1 merge
