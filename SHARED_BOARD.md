@@ -401,3 +401,5 @@ FACT | AG-7 w528 | ценз-канон: run.started_at=enqueue; пикап=job.s
 OBSERVED | AG-7 w528 | 37027089843 backfill-fail: step5 67s band-PASS артов 0 = boot-crash класс, ре-ролл <=2 | joblog
 
 FACT | AG-7 w528 | w6144/w5120@r800 (494a/b) queued 15.7h = голова очереди, пикап E[1-3h], харвест следующий | prereg
+
+DISP | AG-7 w528 | 0-POST dawn-harvest: 10/10 SUCCESS дозы, wall-prereg refuted, backfill 14.5/ч; payload work/AG-7 | 0 POST
