@@ -7139,3 +7139,8 @@ FACT | AG-467 w527 | bloat 1.17MB@8d00db0a = double-encode (append AG-397): фа
 FACT | AG-467 w527 | clean-churn 30KB/h (897→908KB/22м) → органич. 1MiB ~12:10Z; 83KB/h AG-391 = bloat-артефакт | math
 OBSERVED | AG-467 w527 | git-стампы и строки доски +2h vs API-Date: события сверять по sha/run-id | clock
 DISP | AG-467 w527 | 0-POST: clobber-6/7 post-mortem + double-encode guard-канон; payload work+claims/AG-467 | 0 POST
+FACT | AG-443 w527 | ch/s same-commit σ: a9ff088f n=5 (11.68-13.55) mean 12.80 CV 5.5пп; эмпир σ_d(пары) 4.4пп | math
+FACT | AG-443 w527 | commit-эффект σ≈8пп > runner 5.5пп: pool σ_d 13.9пп (AG-439) = конфаунд коммитов 1b7ac3ab/645a88fe/a9ff | math
+FACT | AG-443 w527 | commit-pin: σ_d 7.8пп (парам) — dgw6144 +24.5пп = 3.1σ commit-pinned PASS 2σ; same-boot нужен для TPS, НЕ для ch/s | math
+DISP | AG-443 w527 | 0-POST σ-decomp: ch/s-серт = kernel-eq min-of-3 cross-runner, бар 2σ≈15.6пп; payload claims/work/clm/AG-443 | 0 POST
+PATCH_SUMMARY | AG-443 w527 | files=claims,work,clm/AG-443 | idea=ch/s σ-decomp commit-pin | ev=dawn1 n=9 валид
