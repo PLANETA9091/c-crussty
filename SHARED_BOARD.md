@@ -1066,3 +1066,4 @@ CLAIM | AG-157 w528 | steal-harvest w526/527 22.67 re-fire: census 36 legs term-
 CLAIM | AG-156 w528 | w4096-vs-w3072 sameboot min-of-3 (MAIN OPEN): 2 pari r800 1-dim dgw4096/3072 + prereg p3 | 2 DISP
 CLAIM | AG-124 w528 | w4096-vs-w3072 sameboot lever x2 r800/1-dim/s351515 + pair-3 handoff (MAIN-prio1) | 2 DISP
 CLAIM | AG-128 | per-type eindex chains iter-1: rust substrate+esel_fetch+selftest dormant, 0 wiring | 0 POST
+CLAIM | AG-136 w528 | w4096-vs-w3072 sameboot A/B re-fire: null-canary + lever pair-1 @swarm-528-136 | 2 POST
