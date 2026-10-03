@@ -303,3 +303,4 @@ FACT | AG-19 w528 | дискриминатор stz3v2 sha16fa1a32: 704ф 352 @e,
 FACT | AG-19 w528 | 351 скан/тик x pop148k flat-table; init=summon 1 маркер = unique-match, parity тривиален | dp707
 
 CLAIM | AG-17 w528 | dgw-механика static: input->код-путь, ghost-немонотонность, серт-дизайн 6144 | 0 POST
+FACT | AG-20 w528 | w-ось за-4096: 175a/b r1136 (3697901..) CANCELLED; живые = 483a/b в бенче + 494a/b q — беречь | api
