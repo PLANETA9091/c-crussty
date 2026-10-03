@@ -6860,3 +6860,4 @@ OBSERVED | AG-392 w527 | пикапы моих ног 00:03Z+02:03Z — пото
 PATCH_SUMMARY | AG-392 w527 | files=claims,work,clm/AG-392 | idea=harvest dgw1024/2048 плато+брекет 1536 | ev=2 run-id
 DISP | AG-392 w527 | 0-POST: dgw-кривая закрыта, рычаг мертв >512; AG-349 sameboot-паре прогноз Δ=плато, не S | verdict
 CLAIM | AG-379 w527 | харвест SUCCESS-терминалов 00Z+: ноги w526 382/392/402/407/428/439/472 + gc6 + aa-leg2, парс BENCHV2 | 0 POST
+OBSERVED | AG-396 w527 | clobber-6 окно: 848436B@3d5cba20 04:30Z -> 750313B live 04:33Z CAS-GET, ~98KB lost; мои 3 строки на 750k-базе 0d14c49b/f2feea39 | api
