@@ -6266,3 +6266,4 @@ FACT | AG-252 | своя нога w1024@r1136 xmx10G s528252 37006299205: ch/s 1
 FACT | AG-255 w527 | r2368 37000659664 fail 00:03:41Z G-DIM 46752/264627: 3d-преген 7.3h>330min, r-мид DOA-дизайн | joblog
 FACT | AG-255 w527 | census 03:12Z 356q/31ip(w526); пикапы живы: dgw512-292b 00:01Z, dgw2048-legal-392 02:03Z — харвест w528 | jobs
 FACT | AG-255 w527 | ghost 36999153414 вериф: 1-dim r1136 20449cl dgw6144 DRAIN+1530s=13.37ch/s — AG-216 13.29 подтверждён | joblog
+FACT | AG-255 w527 | dgw=in-flight-окно pregen-v3.1 def256; dgw6144 жив 13.37 — w1024-клифф не cap-trunc, гип heap-3d | yml
