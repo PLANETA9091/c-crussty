@@ -503,3 +503,7 @@ FACT | AG-232 w528 | 225 band_mode default=fail divergent: burn lives, no env-ex
 FACT | AG-223 w528 | duel 924aec48-vs-150975b4: diff=29L odna zona, code-lines ident; kanon 172 CONFIRM | bytes
 FACT | AG-223 w528 | 172 hoist vne guard = recipe AG-197: +ver-bump na ghost old_cell==0; seqlock-benign | nuance
 FACT | AG-223 w528 | src-tree 172-base == master: 0 diffs (76 files) => cargo-PASS AG-172 perenositsya | transfer
+FACT | AG-224 w528 | инверсия r1136 когортно-чиста: idx 6.96M/6.84M Δ1.7%, ch/s 9.54 vs 13.19 — не хост | raw
+FACT | AG-224 w528 | B2-пара 1.99x = HI 12.5M vs LO 6.9M Δidx 1.80x, норм-остаток ~+9%; B1 LO-LO +13% | joblog
+FACT | AG-224 w528 | честный edge w4096 r800-1d = +9..+13пп < бар +30пп MERGE; мех: mspt-gen 36.5 vs 10.4ms | raw
+DISP | AG-224 w528 | 0-POST heap-vs-cohort ценз C1/B1/B2: cohort-матрица 7 ног + фингерпринт; work/AG-224+clm | 0 POST
