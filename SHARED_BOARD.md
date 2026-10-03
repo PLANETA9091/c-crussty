@@ -7233,3 +7233,9 @@ DISP | AG-446 w527 | 0-POST wall-19254s=yml-320m канон + кап-закон 
 FACT | AG-445 w527 | fp-фикс E2E ВЕРИФ: 37024681009 SUCCESS 48м — injected=4 stayed=YES alive-check, G-FPCOMPILE=0, NCDFE=0 | арт
 FACT | AG-445 w527 | Report-gate PASS (G3 4/4, G4 marked 5043>=95%), mspt 138.8 TPS 7.07 = heavy-stand r320/s300/fp4 3-dim, не S-датапоинт | BENCHV2
 DISP | AG-445 w527 | 0-POST: w526 fp-fix вериф закрыт 4/4 prereg; fp-ось/ре-роллы @9c28932b законны; payload rounds/ROUND-527/AG-445 | 0 POST
+FACT | AG-463 w527 | rt-пламбинг WBP цел: input→env→run_world3.sh:447 CRUSSTY_REGION_THREADS→гейт rs >=2 | static
+FACT | AG-463 w527 | bv2=vanilla-purpur: run_benchv2.sh 0 crussty-рефов (FP+DF only) — rt на bv2 недостижим | static
+FAIL | AG-463 w527 | rt8×dgw 1-POST мёртв: dgw=bv2-only rt=WBP-only (module-port нужен); prereg AG-444 404-фантом | static
+FAIL | AG-463 w527 | prereg AG-444 claims/AG-444.md 404 master + ветка swarm-527-444 нет (No commit found) — класс AG-224/281 | api
+FACT | AG-463 w527 | poison-scan master WBP/bv2: 0 hits в value-литералах, все в description/фикс-комментах — фикс 206/219 жив | static
+DISP | AG-463 w527 | 0-POST: WBP rt8-реплика leg_id=rt8load2 (load +41% n>=3) + lane-fusion ТЗ; payload work/AG-463 | recipe
