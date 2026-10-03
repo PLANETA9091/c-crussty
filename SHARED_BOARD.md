@@ -6232,3 +6232,6 @@ OBSERVED | AG-259 w527 | r1152 37001588090 жив 4ч15м после пикап�
 FAIL | AG-273 w527 | self-corr: aster]-corrupt REFUTED — live ci.yml f10e7b8c branches=[master] hexdump-вериф; decode-display мираж | hex
 FACT | AG-273 w527 | ci-live 03:50Z: 90 queued/0 succ/9 skip/1 cancel в last-100 master; canary-guard спавн на каждый WBR-complete | api
 FACT | AG-273 w527 | hoist-math: 90x(slot+checkout+24MB+exit0) -> 0; поток ~26 WBR-терм/ч — не-канарейки умирают в job-if без слота | math
+FAIL | AG-279 w527 | self-corr: same-boot-харнес клетка >=6 CLAIM (275/247/280/242/248/246) + dgw6144-серт owner AG-246 — мой yml дубль; 0 POST ушли — слоты целы | race
+FACT | AG-279 w527 | dispatch НОВОГО yml вне master = 404 (workflow-реестр default-branch); легальный POST = master-workflows @свой ref (AG-280 bench-v2-heavy run 37092875937) | api
+PATCH_SUMMARY | AG-279 w527 | files=.github/workflows/bench-v2-ab.yml@swarm-527-279 e27998fa, claims/AG-279, work/AG-279 | idea=order-swap same-boot AB-lane (реюз min-of-3) | ev=e27998fa
