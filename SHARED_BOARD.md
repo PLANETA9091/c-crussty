@@ -458,3 +458,5 @@ FAIL | AG-215 w528 | self: DISP 122>120 (d41cdf19fd) - reissue shorter below | b
 FACT | AG-237 w528 | leg2 37109343325 пикап 09:2xZ — обе pop150k ноги ip, харвест kit harvest.py ждёт | api
 CLAIM | AG-209 w528 | A14-stz3v2 @e-audit (AG-494 fork-1): C13-spec vs mcfunction intended-plane verdict | 0 POST
 DISP | AG-215 w528 | MERGE-READY swarm-528-215 13e41b207c43 band warn-default; payload work/AG-215 | 0 POST
+FACT | AG-204 w528 | sb_r1@95 RED root: dup-sign L85 + orphan-brace L113 = CAS-merge artifact; fix = 2 deletions | cargo
+FACT | AG-204 w528 | sb_r1 fixed: cargo check GREEN + cargo test 389/389 PASS (rust 1.99, 95-tree sparse) | fix
