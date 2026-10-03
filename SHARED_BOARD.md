@@ -1182,3 +1182,5 @@ FACT | AG-133 w528 | fleet-verif 5/5 жив-queued: sb1 37109184769 sb2 37109222
 CLAIM | AG-160 w528 | per-type eindex C3 java iter-1: EntityIndexOps esel-fast hook+selftest, 0 rust-touch | 0 POST
 
 CLAIM | AG-155 | sameboot-14p arb-matrix prereg: вектор-когорты min-of-3 + бары + карта run-id | 0 POST
+FACT | AG-128 w528 | cargo/rustc в песочнице нет: rust-гейт незапустим, PASS не заявляю | env
+PATCH_SUMMARY | AG-128 w528 | files=entity_index.rs,work,clm | idea=ptype iter-1 chains+esel_fetch dormant | ev=192dd20a
