@@ -201,6 +201,11 @@ log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B)
 echo "mark_mode=$DIM_MARK_MODE dim_gen_window=${DIM_GEN_WINDOW:-256} drain_cap_polls=${DRAIN_CAP_POLLS:-240} dim_drain_unmark=${DIM_DRAIN_UNMARK:-0}" >> "$WORK/run-env.txt"
 echo "mark_mode=$DIM_MARK_MODE dim_gen_window=${DIM_GEN_WINDOW:-256} drain_cap_polls=${DRAIN_CAP_POLLS:-240} dim_drain_unmark=${DIM_DRAIN_UNMARK:-0}" >> "$WORK/server/run-env.txt" # AG-370 w526 mirror + AG-43 w527
 
+# AG-376 w527: sameboot leg-attribution in run-env (AG-339 gap OBSERVED: AB_VAR/AB_VAL
+# never reach artifact; pair-law gate "identical except ab_env line" unverifiable offline)
+echo "ab_env: ${AB_VAR:-none}=${AB_VAL:-}" >> "$WORK/run-env.txt"
+echo "ab_env: ${AB_VAR:-none}=${AB_VAL:-}" >> "$WORK/server/run-env.txt" # AG-370 w526 mirror canon
+
 # --- AG-12: async wall-clock heartbeat sampler (AG-234 principle) ------------
 # samples wall-clock every 2s INDEPENDENT of server responsiveness — 0 lines
 # while run claims success = FAKE-GREEN class F detector (heartbeat lives).
