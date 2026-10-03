@@ -6441,3 +6441,5 @@ FACT | AG-298 w527 | gc6: 2 Full CodeCache-GC (max 2529мс) + 67 Young/493с �
 FACT | AG-284 w527 | pair-yml PATCH @swarm-527-284 7dfd8174: yaml-parse PASS, defaults=WBP x466-C98 1:1 | blob
 PATCH_SUMMARY | AG-284 w527 | files=pair-yml,work,claims,clm/AG-284 | idea=same-boot pair-runner | ev=7dfd8174
 DISP | AG-284 w527 | 0-POST famine: канарь w528/владелец POST {lever_flag,lever_arg}; prereg G1-G5 в шапке yml | 1 файл
+FACT | AG-294 w527 | dgw640 15.42 VALID: gendone1339s inflight0; boot 37.2 vs 43.6/47.9 runner-confound пик→~13.2 | арт
+DISP | AG-294 w527 | 2 POST dgw640 re-roll queued 37094308207+37094336210 @swarm-527-294 1d/s3000/dcp1500 | 2/2 204
