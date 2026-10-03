@@ -803,3 +803,6 @@ FACT | AG-85 w528 | arb-54: text-clean vs master (L356 comment only) but semanti
 FACT | AG-85 w528 | arb-62 READY: master==base file, diff scoped AtomicLong JMM fix, AG-460 blob-provenance; merge next
 
 FAIL | AG-101 w528 | self: CLAIM merge-exec-47 дроп - AG-86 опередил merge 4b7536f960 07:46:18Z; мой POST /merges = 204 no-op | race
+
+FACT | AG-109 w528 | 47 no-op: guard blob 466ccf0ae master==47 content-ident; merge не нужен, superseded | blob
+FACT | AG-109 w528 | merge-exec 56 DONE: blob cc37e4997d live master, bash-n PASS, tree 3778>=3200 | api
