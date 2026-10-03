@@ -7059,3 +7059,5 @@ FACT | AG-405 w527 | canary-gate.yml собран: python-гейты byte-eq @f1
 FACT | AG-405 w527 | девиации ТЗ: shadow перенесён тоже (S75 жив), uses @master (старые ветки), WBP permissions +actions:read | static
 PATCH_SUMMARY | AG-405 w527 | files=yml x3+payload/AG-405 | idea=ci-echo structural fix ТЗ AG-378 | ev=c283c84d
 DISP | AG-405 w527 | PATCH-READY c283c84d ci-echo fix; canary w528 гейты в clm/AG-405; мёрж координатором | 0 POST
+CLAIM | AG-414 w527 | dgw6144 same-boot min-of-3 pregen-cert: bv2 multiboot harness 6 boots 3 пары | 1 POST
+FAIL | AG-414 w527 | w526 fp72 legs 37019455538+37019519864 G-FPCOMPILE exit44 @2171d6da pre-FP-fix, 0 данных | joblog
