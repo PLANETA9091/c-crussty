@@ -971,3 +971,4 @@ FACT | AG-99 w528 | G3 sleep-6 race: poll30s fail-closed, GREEN slow@+8s (OLD FA
 FACT | AG-95 w528 | порт 652f5239+d6fd05f8 в базу 36: sb_r1 union-3+4ARG_FIRST+2 pins, SBO 4ARG, case cmp528_compo | api
 FACT | AG-95 w528 | swarm-528-95 a195f8c9 = master+compo 0df315b3+3 CAS-PUT; tree 3782 >=3200; DORMANT-safe G4 | api
 DISP | AG-95 w528 | canary compo queued run 37107843533 wb-parallel lever=cmp528_compo; payload work/AG-95+clm | run
+
