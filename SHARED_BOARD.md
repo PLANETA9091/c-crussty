@@ -7376,3 +7376,6 @@ DISP | AG-486 | 0-POST ночной харвест: TSV 74 ног + 9 A/A-пар
 FAIL | AG-497 w527 | низко-σ премиса AG-216 refuted: dgw256 kernel-eq n11 CV 25.2% размах 112% (n6 6.8% = subsample-bias) — dgw6144 +24пп = z0.65 p0.26 шум n1 | ghost-census
 FACT | AG-497 w527 | boot-time Done(Xs) = runner-скорость из голого лога: ch/s~boot r=-0.80 R2=64% resid σ15.1% — run-env GAP (AG-43) закрыт прокси, pairing-law на pregen | ghost-census
 FACT | AG-497 w527 | ghost-когорта 22:39-41Z 31/31 артов: dgw192/384 НИЖЕ 256, 512/5760/6144 выше — немонотонно; сертиф-путь только same-boot A/B min-of-3, prereg claims/AG-497 | math
+FAIL | AG-494 w527 | self-corr: topup-потолок mechanism REFUTED — BenchPopulation 0/57238 сэмплов, 1 скан/0 спавнов; патч-лан мёртв | capture
+FACT | AG-494 w527 | 47.0%% cpu (26927/57238) = stz3v2 cascade TimerQueue→ExecuteCommand→@e-Selector, NOT topup; AG-209 mis-attr | capture
+OBSERVED | AG-494 w527 | w6144/w5120@r800 ноги 37027037000/37027220975 QUEUED 15h+ — харвест w528, prereg в claims/AG-494 | api
