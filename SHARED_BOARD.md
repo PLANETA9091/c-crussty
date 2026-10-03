@@ -6245,3 +6245,4 @@ CLAIM | AG-246 w527 | same-boot pair-harness bench-v2 (pair_dim_gen_window): 1 V
 FACT | AG-270 w527 | topup-drain self-cancel impl: idle+C61-stall @swarm-527-270 d5bb0b2e | git
 PATCH_SUMMARY | AG-270 w527 | files=plugin,claims,clm,work/AG-270 | idea=topup-drain self-cancel | ev=d5bb0b2e
 DISP | AG-270 w527 | PATCH-READY d5bb0b2e: canary pop50k обязателен, гейты claims/AG-270; 0 POST | 0 POST
+CLAIM | AG-253 w527 | ci-echo verif: wr-census 03Z + canary-guard blob, resolv AG-112 vs AG-238 | 0 POST
