@@ -12,6 +12,7 @@ WORK="${BENCH_WORK:-$PWD/run}"
 mkdir -p "$WORK/server"
 cd "$WORK/server"
 log() { echo "[benchv2 $(date -u +%H:%M:%S)] $*"; }
+BENCH_T0="${BENCH_T0:-$(date +%s)}"  # AG-432 w527: wall-clock anchor for job-deadline guard (L133 job cap)
 
 # --- pins (sha512, Modrinth API 2026-10-01; anti-alias lesson dp13-16) ------
 PURPUR_URL="https://api.purpurmc.org/v2/purpur/1.21.10/2535/download"
@@ -273,7 +274,21 @@ cmd "dimchunks"; sleep 3   # G-DIM early census from plugin
 
 # --- drain poll: MSPT back to near-idle => chunk system drained --------------
 DRAIN_TS=""; DRAIN_TIMEOUT=1
-for i in $(seq 1 "${DRAIN_CAP_POLLS:-240}"); do  # AG-400 x523 #16f: cap env-tunable via dispatch input (240x10s=2400s >= pregen 974-2272s @9-21ch/s)
+# AG-432 w527 deadline guard. Forensics 2026-10-03: r1152 37001588090 (cap 1500) and
+# dcp2100 37000413529 (cap 2100) both died at the bench-v2.yml L133 320m job kill —
+# mid-drain/mid-sustain, report-gate skipped, 0 data, 10.7 slot-h burned. Root cause:
+# dispatchers raised DRAIN_CAP_POLLS without deadline math (cap 1500-2100 polls = 250-350m
+# > job budget). eff_cap keeps sustain RUN_SECONDS + 600s report/upload reserve inside 318m.
+# Fail-open floor 100s; drain is a lower-bound phase (AG-400), so trimming is measurement-neutral.
+DRAIN_EFF_CAP="${DRAIN_CAP_POLLS:-240}"
+DEADLINE_REMAIN=$(( 318*60 - ( $(date +%s) - BENCH_T0 ) - ${RUN_SECONDS:-300} - 600 ))
+[ "$DEADLINE_REMAIN" -lt 100 ] && DEADLINE_REMAIN=100
+DEADLINE_CAP=$(( DEADLINE_REMAIN / 10 ))
+if [ "$DEADLINE_CAP" -lt "$DRAIN_EFF_CAP" ]; then
+  log "WARN DRAIN-DEADLINE cap=$DEADLINE_CAP (dispatch asked $DRAIN_EFF_CAP) — job 318m margin: sustain ${RUN_SECONDS:-300}s + 600s report protected (AG-432 w527)"
+  DRAIN_EFF_CAP="$DEADLINE_CAP"
+fi
+for i in $(seq 1 "$DRAIN_EFF_CAP"); do  # AG-400 x523 #16f: cap env-tunable; AG-432: deadline-clamped (see above)
   sleep 10
   cmd "spark tps"   # AG-342 fix (blocker #11): parse Tick durations med from spark tps output (spark mspt console = silent)
   ts=$(date +%s)
@@ -323,7 +338,7 @@ print(('1 ' if g else '0 ')+('1' if lp else '0'))" "$EXP_PD" 2>/dev/null) || gat
   fi
   grep -qi "Exception in thread" server-stdout.log && { log "FATAL: main-thread exception during drain"; break; }
 done
-[ "$DRAIN_TIMEOUT" = "0" ] || log "WARN DRAIN-TIMEOUT ($(( ${DRAIN_CAP_POLLS:-240} * 10 ))s) — ch/s reported as lower bound (AG-400: cap env-tunable)"
+[ "$DRAIN_TIMEOUT" = "0" ] || log "WARN DRAIN-TIMEOUT ($(( DRAIN_EFF_CAP * 10 ))s of asked ${DRAIN_CAP_POLLS:-240}) — ch/s reported as lower bound (AG-400: cap env-tunable; AG-432: deadline-trim)"
 
 # --- SUSTAIN phase: spawn-storm window, TPS/MSPT sampling + profiler ---------
 cmd "spark profiler start"; sleep 3
