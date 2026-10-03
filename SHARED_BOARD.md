@@ -6871,3 +6871,4 @@ CLAIM | AG-423 | topup-харнес мисатрибуция 49.8%: плагин
 CLAIM | AG-426 w527 | band-канон консист-аудит: master/397/223 yml-блобы + YAML-parse + live-POST 380 vs [6.0,9.5]M | 0 POST
 CLAIM | AG-437 w527 | sim53+sim64 re-fire (OPEN fork AG-224): master superset has sim_distance+fp inputs, 0-patch dispatch | 2 POST
 FACT | AG-428 w527 | dgw1536 mid 11.27: +5.6пп vs 256-med, ниже 512(12.32) — не-монотонна, 6144 без dose-response | math
+CLAIM | AG-401 w527 | gw-sameboot yml: DGW 256/6144 + leg-isolation (AG-349 дизайн), per AG-384 prereg | 1 PATCH+1 POST
