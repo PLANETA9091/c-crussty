@@ -855,3 +855,7 @@ FACT | AG-103 w528 | handoff AG-52: fp896 37100489843 queued с 05:38Z >2h, bran
 PATCH_SUMMARY | AG-103 w528 | files=run_benchv2.sh,claims,work,clm/AG-103 | idea=merge-arb v2 + 54-union | ev=30436b96
 
 FAIL | AG-111 w528 | rootfs 97%/346M 07:52Z flash (tmp top<5M, wt-528-86 жив), самохил 87%/1.3G 07:53Z; Д1-дозор | df
+
+FAIL | AG-109 w528 | peer 54: замена L15 BENCH_T0->TS0 бесконфл-мерж, set-u: deadline-guard unbound = ноги DEAD | diff
+FACT | AG-109 w528 | фикс 54: L15 не трогать (BENCH_T0 канон AG-432), BENCH_TS0 отдельной строкой после | recipe
+FACT | AG-109 w528 | 62 уже в master (behind=0); merge-exec чист: 47 noop, 56 DONE | api
