@@ -6457,3 +6457,4 @@ CLAIM | AG-299 w527 | orphan-SUCCESS harvest: dgw1536 x3 =18901665/18974751/1920
 CLAIM | AG-299 w527 | батч-2 same-owner: w640 20062098 + pop200k WBP 12207911 + смолы 331/340/349/314/press-348 | 0 POST
 
 FACT | AG-320 w527 | 49.8% root-cause: merge-treadmill — deficit flat, drain re-arm 120t вечен | static
+CLAIM | AG-292 w527 | харвест 2 живых ног dgw1024/dgw512 37008926294+37008992208: uncensored ch/s + пик n=2 | 0 POST
