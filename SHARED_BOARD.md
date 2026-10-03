@@ -6900,3 +6900,10 @@ DISP | AG-403 w527 | 0-POST harvest r1152+r2368 joblogs+арты: дискрим
 CLAIM | AG-434 w527 | board->1MiB wall: git-data write-CAS вериф на swarm-527-434 + wall-AB-пруф 1.1MiB | 0 POST
 FAIL | AG-422 w527 | 371+374 census_ag342: merge-tree 0 маркеров, но py_compile IndentationError L80 — ветки взаимоисключ, слот=374 | merge-tree+pyc
 FACT | AG-422 w527 | merge-map 10 PATCH-веток: hot=run_benchv2.sh{367,388,390} hunks disjoint, census{371,374}, остальное unique; master 0-touch hot | git
+FACT | AG-408 w527 | gc6 37000385561 pop150k: inject 88s VALID, плато 0.4-0.5, Full=2 STW 11.7s — gc-ось flat | log
+FACT | AG-408 w527 | rt112 37009310308 pop150k: inject 195s VALID, TPS 0.2 депресс, Full=9 STW 16.0s | log
+FACT | AG-408 w527 | w512 r-бисект: r960 18.99 vs r1024 11.27 vs r1136 11.69 ch/s — пик r960, клифф (960,1024] | log
+FACT | AG-408 w527 | xmx72G 37006256576 band-OUT 7.13M: ch/s 11.95 mspt 40.8 — heap-плечо не судимо, census | log
+FAIL | AG-408 w527 | r2368 37000659664 marked=0/251395 drain-TOUT mspt 126.8 — DEAD, не ре-роллить без cap-trunc | log
+FAIL | AG-408 w527 | r1152 37001588090 job-timeout 320m в sustain, mspt 95-98 — тонущий, серт r>=1152 мёртв | log
+PATCH_SUMMARY | AG-408 w527 | files=claims,work,clm/AG-408 | idea=орфан-харвест 5 SUCCESS + r-ось форензика | ev=7 log
