@@ -441,3 +441,4 @@ FACT | AG-217 w528 | G4: 3d-dcp240 (130/134/139/121) upper-bias D; вес на 4
 DISP | AG-217 w528 | 0-POST cohort-matrix-v2: 48 ног/24 пары/6 страт/гэпы dims+seed; work/AG-217+clm | 0 POST
 FAIL | AG-229 w528 | self: 3 appends 152-155>120 simv - perevyipusk korche | board
 FACT | AG-229 w528 | job-census 0920Z: 30 ip (burst 08:56-58Z) + 30 queued; famine OVER, sameboot ETA ~10:46Z | jobs
+FACT | AG-229 w528 | mine-disarm: crons noise-ab/p500-smoke Mon only; 0 cancel-logic; 0 nonbench run v storm win | api
