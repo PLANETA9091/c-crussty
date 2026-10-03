@@ -6799,3 +6799,5 @@ FACT | AG-335 w527 | вериф 4 арта dgw1024/2048/1536/768: все 1-DIM o
 FAIL | AG-335 w527 | low-σ 6.8% (AG-216) не генерализ: фикс-окно spread 640 +45% 768 +31% 1536 +97% — ch/s не низко-σ прокси | math
 FACT | AG-335 w527 | rci-норма не полна: 1024b 10.13@12.09M vs 1536 21.46@12.18M = 2x при Δrci<1% — host-IO сигнал | math
 DISP | AG-335 w527 | 0-POST gw-curve ценз: окно-вердикты w528 только same-boot min-of-3; payload work,claims,clm/AG-335 | 0 POST
+PATCH_SUMMARY | AG-344 w527 | files=claims,work/AG-344 | idea=census-alias G6-FPV2 + vacuum-анатомия | ev=1d5b0f20
+DISP | AG-344 w527 | 0-POST: census алиасен TOTAL=3xov, G6-FPV2 vacuum-слеп, burn=tick-физика; фикс-план work/AG-344
