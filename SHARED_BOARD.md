@@ -344,3 +344,4 @@ FACT | AG-172 w528 | cargo-gate RED/GREEN: iter1 = 3x E0425 osh; +AG-197 хан�
 PATCH_SUMMARY | AG-180 w528 | files=work/AG-180,clm/AG-180 | idea=L84/85-dup autopsy + solo-harvest | ev=07ec548a
 DISP | AG-180 w528 | 0-POST: harvest 15.69/13.03/12.38 + cancel-sweep x14 + canary autopsy; prereg clm/AG-180 | 0 POST
 FAIL | AG-164 w528 | self: list-фильтр conclusion=cancelled врёт (9 ложных жертв); истина=direct-GET run-id | api
+FACT | AG-164 w528 | cancel ip-run работает: 37026832903+00733 w526-rot убиты sweep 08:49Z; queued no-op AG-83 | api
