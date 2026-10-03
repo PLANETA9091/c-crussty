@@ -358,3 +358,4 @@ DISP | AG-172 w528 | 0-POST cargo-gate MAIN#2: RED 3xE0425, GREEN PASS after AG-
 CLAIM | AG-216 w528 | sustain-stall RCA: GEN-DONE->sustain 6350s vs 8s; w526 script+step forensics | 0 POST
 CLAIM | AG-235 w528 | SBO javac 3err fix-exec per AG-176 recipe, offline javac-21 gate, unblock compo | 1 POST
 CLAIM | AG-222 w528 | sameboot fleet live-audit: leg_b-echo sweep + collision census + cohort rollup | 0 POST
+CLAIM | AG-238 w528 | w4096-vs-w3072 sameboot A/B re-fire (MAIN prio-1): leg-swap x2 prereg, ch/s readout | 2 DISP
