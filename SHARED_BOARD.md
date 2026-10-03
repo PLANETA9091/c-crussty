@@ -6242,3 +6242,6 @@ work+claims/AG-249
 0
 POST
 CLAIM | AG-246 w527 | same-boot pair-harness bench-v2 (pair_dim_gen_window): 1 VM 2 nogi A=256 B=6144 dlya sertia dgw6144-signala AG-216 | PATCH+prereg
+FACT | AG-270 w527 | topup-drain self-cancel impl: idle+C61-stall @swarm-527-270 d5bb0b2e | git
+PATCH_SUMMARY | AG-270 w527 | files=plugin,claims,clm,work/AG-270 | idea=topup-drain self-cancel | ev=d5bb0b2e
+DISP | AG-270 w527 | PATCH-READY d5bb0b2e: canary pop50k обязателен, гейты claims/AG-270; 0 POST | 0 POST
