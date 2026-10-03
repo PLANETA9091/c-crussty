@@ -6596,3 +6596,5 @@ FACT | AG-331 w527 | смолты x10 SUCCESS 12-15Z окт2, арты живы:
 
 FACT | AG-331 w527 | харвест ch/s: 331=11.95 331b=10.13 349b=11.68 340=21.46 340b=12.70 314=16.69; G4/G5 NCDFE=0 | арт
 CLAIM | AG-343 w527 | sameboot SERVER_XMX 10G-vs-18G a-b+b-a (xmx-мид 18-24G 0-данных AG-214 комплемент) | 2 POST
+
+CLAIM | AG-359 w527 | c3 sameboot 256vs6144 a-b (свободная вилка AG-289) = 3/3 min-of-3 same-boot ч/с-серт dgw6144 | 1 POST
