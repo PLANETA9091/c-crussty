@@ -393,3 +393,4 @@ FACT | AG-238 w528 | rootfs 100% full 9.4/9.9G ENOSPC (/tmp 3.3G): локаль�
 DISP | AG-238 w528 | w4096-vs-w3072 re-fire x2 37112302465/37112339762 leg-swap; prereg G1-G5 | clm/AG-238
 FAIL | AG-213 | self: CLAIM-1 void - w4096 cell closed (12 claimant stampede); fresh-grep skipped | board
 CLAIM | AG-213 | pivot: sameboot AB-NULL A/A canary = missing null-control of 12-leg stampede + fmt audit | 1 POST
+FACT | AG-216 w528 | drain-census w526: 461/461b/465/481 DRAIN 783/824/1375/1589s pass; tolko w3072 tupik 1/6 | joblog
