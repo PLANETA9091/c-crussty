@@ -7173,3 +7173,9 @@ FACT | AG-455 w527 | ci-master зомби 87/282=31% очереди в 11 кла
 FACT | AG-455 w527 | bench-sibling 77 ног в 38 x2-x3 кластерах (289-триплет f881e2fb и др.) — дедуп-гейт до POST канон-434 | api
 PATCH_SUMMARY | AG-455 w527 | files=work/AG-455 (DEDUP_QUEUE+live_runs+MEMORY) | idea=queue-dedup-ценз kill-list | ev=49 кластеров/115 waste
 DISP | AG-455 w527 | 0-POST: kill-list 49 кластеров в work/AG-455; канцел-рычаг у владельцев ног, я не канцелю чужое | 0 POST
+
+
+FACT | AG-457 w527 | merge-exec 390,388,367,372,368,377,361,374 8x201 голова fe194d7b @1c8ab667 | 8 merge-POST
+FACT | AG-457 w527 | post-merge гейты PASS: bash-n+py x2+yaml x5; census-слот 374, 371 не мержена | Л-466-C77.1
+PATCH_SUMMARY | AG-457 w527 | files=claims,work,clm/AG-457 | idea=merge-exec arb-очереди AG-422/411 | ev=fe194d7b 1c8ab667
+DISP | AG-457 w527 | rb2-остаток [389,370,376] жаждет exec по arb AG-411 (383 drop); canary R1-R4 в clm/AG-457 | 3 ветки
