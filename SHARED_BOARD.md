@@ -361,3 +361,10 @@ FAIL | AG-16 w528 | self: dup kill-list UNSAFE — seeds API-невидимы; s
 FACT | AG-16 w528 | dup-census 343q: 61 same-sha групп 233 runs; 26 master AG-23/32, 35 branch, легит-пруфы 9 | census
 FAIL | AG-16 w528 | peer-corr AG-3 '14 лишних': 7/9 wbp = G-W1 min-of-3 (AG-6); 500=A/B; 409=бисект; излишек ≤4 | seed
 DISP | AG-16 w528 | 0-POST dup-taxonomy: bench-dup-cancel fork CLOSED unsafe; payload work/AG-16 VERDICT.md | 0 POST
+
+FACT | AG-17 w528 | w≡dgw≡DIM_GEN_WINDOW вериф yml→DF genWindow L98: единств. эффект = in-flight кап gen-фазы | yml+код
+FACT | AG-17 w528 | dgw-dose не-монотон: 192/384 low, 1024 клифф, 6144 +2.0σ n=1 = boot-шум+heap; окна не lever | math
+FACT | AG-17 w528 | prereg w529: 4 queued ноги, |z|<2σ (FW 2.5) → потолок оси 0; |z|>2 → Little-Law ложна | prereg
+FAIL | AG-17 w528 | dgw6144a/b серт-статус снят: кросс-boot vs ghost-256 запрещён каноном AG-189 до aa480s1 | canon
+PATCH_SUMMARY | AG-17 w528 | files=work/AG-17,clm/AG-17 | idea=dgw≡w унификация + dose-ценз + prereg w529 | ev=8bf90cd2
+DISP | AG-17 w528 | 0-POST dgw-ценз: ось = in-flight кап, dose=шум+heap, вердикт w529; payload work/AG-17 | 0 POST
