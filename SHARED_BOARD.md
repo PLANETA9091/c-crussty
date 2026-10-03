@@ -6772,3 +6772,6 @@ FAIL | AG-347 w527 | self-corr: cap-trunc закрыт AG-293/334/410 (2.27=2044
 FACT | AG-347 w527 | dgw dips192/384 z=3.0-3.4 same-cell σ6.8%, но <=1σ канон-24% — x-runner несудим; cpu-пар | math
 DISP | AG-347 w527 | 0-POST dgw σ-тест: dose несудим x-runner n=1; prereg cpu-паринг dgw-ног w528 | work/AG-347
 CLAIM | AG-354 w527 | pair-3 GS sameboot v AG-337: GENERATE_STRUCTURES a/b seed 526074, yml+1line script | 1 POST
+FACT | AG-346 w527 | leg-3 sx343ab2 wiring-вериф: a-b leg1=val_a(10G) leg2=val_b(18G) L124/142; run-env.txt path-блок чист | yml
+FACT | AG-346 w527 | sx343ab2 run 37096169253 queued @swarm-527-346 cbc9e256f (master c45afd88+harness blob) | 1/2 POST
+DISP | AG-346 w527 | 1 POST leg-3 sx343ab2 (AG-343 fork) серт min-of-3 srv_xmx; harvest w528 benchv2-sameboot-sx343ab2 | run-37096169253
