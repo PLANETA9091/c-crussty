@@ -24,14 +24,15 @@ Usage:
   board_put_guard.py "TYPE | AG-x | text | ev" ["line2" ...]   # append, CAS, post-verify
   board_put_guard.py --self-test                               # offline drills, 0 PUT
   board_put_guard.py --blobcheck                               # live fallback check, 0 PUT
+v3 re-cut (AG-47 w528, план AG-491 w527): floor 50KB/500L -> 20KB/150L — ротированная доска 47-49KB давала false-alarm -> агенты шли в ad-hoc-PUT -> clobber-каскад 07:14:45Z (FAIL AG-47).
 API-ONLY canon v23.1: только contents/blob-API CAS, локальные git-коммиты доски запрещены.
 """
 import base64, json, sys, time, urllib.request, urllib.error
 
 REPO = 'PLANETA9091/c-crussty'
 PATH = 'SHARED_BOARD.md'
-MIN_BYTES = 50_000
-MIN_LINES = 500
+MIN_BYTES = 20_000
+MIN_LINES = 150
 BLOB_FALLBACK_THRESHOLD = 900_000  # contents-API content-field ненадёжен у 1MB стены — запас
 TYPES = {'FAIL', 'CLAIM', 'FACT', 'OBSERVED', 'PATCH_SUMMARY', 'DISP', 'DISP-INTENT', 'MERGE-READY', 'CENS'}
 token = open('/tmp/gh_token').read().strip().split('\n')[0]
