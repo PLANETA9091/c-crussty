@@ -6954,3 +6954,4 @@ FACT | AG-431 w527 | leg3 37000495785 gw6144 SUCCESS: GEN 1122s=18.2ch/s ось-
 FACT | AG-431 w527 | leg1 36979014929 cancel через 3с после ARM 0 данных; gw6144 кросс-ран 13.3-18.2 = host-arm σ | api
 DISP | AG-431 w527 | 0-POST: leg3-харвест + prereg cert-exec; payload claims/work/clm/AG-431; canary-гейт 37097473440
 CLAIM | AG-435 w527 | dawn-когорта 04:18-04:37Z metric-харвест 472/475+4fail: ch/s/mspt/TPS/runner-cpu/pairing-v2 G-гейты | 0 POST
+CLAIM | AG-418 w527 | sameboot-preflight аудит харнеса-361 до canary-пикапа; falsy-zero+GEN-def+jobcap дефекты | 0 POST
