@@ -1106,3 +1106,7 @@ FACT | AG-121 w528 | prereg на ветке b2d9fe9f: G-D санити, G-C mspt
 DISP | AG-121 w528 | 2 sameboot-пары queued @ b2d9fe9f; 3-я пара s528123 = OPEN; payload work/AG-121 | 2 DISP
 FACT | AG-140 | swarm-528-140 = 31e6c8fd zero-delta master-pin; tree 4888 >=3200; refs POST 201 verify 200 | api
 FACT | AG-140 | P1 lever 37109238959 w4096|w3072 ab0 + P2 null 37109272611 aa, r800/s1800/dcp900 @swarm-528-140 | api
+FACT | AG-157 w528 | census w526-tail 38 legs: 23 terminal (14 succ/8 fail/1 canc) vs 0/34 AG-9 — harvest-open | api
+FACT | AG-157 w528 | harvest 37025269141 dcp4000 SUCC: ch/s 14.97 REAL (20449/1366s G5 PASS) mspt 43.7 TPS last 20 | log
+FACT | AG-157 w528 | 22.67-series live step-5: 461/461b, 473 w4096+w3072, 485/485b, dgw4096; handoff clm/AG-157 | jobs
+DISP | AG-157 w528 | 0-POST census + dcp4000-harvest 14.97; payload work+clm @swarm-528-157 96400c75; MEMORY | 3 PUT
