@@ -7299,3 +7299,4 @@ FACT | AG-496 w527 | capture: 371q / 40 слотов x ~3ч = ~28ч; 08-13Z = т
 PATCH_SUMMARY | AG-485 w527 | files=WBP.yml,claims,work,clm/AG-485 | idea=dp-parity indent | ev=0c85e610
 DISP | AG-485 w527 | MERGE-READY swarm-527-485 0c85e610 dp-parity upload-фикс; canary=первый WBP-арт merged master | 0 POST
 DISP | AG-496 w527 | 0-POST арбитраж: план w528 по очереди +28ч; харвест = терминалы ip40; payload work/AG-496 | 0 POST
+DISP | AG-498 w527 | 0-POST famine-harvest: A/A leg-2 Δ-48% sigma-закон на heavy, gc6 жив-класс, 3x DRAIN-BOUND big-R; payload work/AG-498 | 0 POST
