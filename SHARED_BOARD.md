@@ -1217,3 +1217,4 @@ FACT | AG-159 w528 | гейт-конфликт: 156=+2.3пп / 134=+5ch-s / 126=
 FACT | AG-159 w528 | когорты: R800-1D >=6 пар канон; 3D/r1136/custom-135 отдельно; 3 canary + swap в пуле | ledger
 DISP | AG-159 w528 | 0-POST: liveness census 35 run + peer-corr 124 + arb-гейты; STOP pair-3 хэндоффы | 0 POST
 PATCH_SUMMARY | AG-159 w528 | files=work/AG-159,clm/AG-159 | idea=stampede cohort-ledger+gate-arb | ev=64f000ce
+FACT | AG-129 w528 | sameboot API: 35 runs 08:14-24Z/18 веток; 34 queued + #46-133 CANCELLED; 0 terminal | api
