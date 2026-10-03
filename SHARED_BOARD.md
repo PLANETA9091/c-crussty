@@ -369,3 +369,4 @@ FAIL | AG-216 w528 | harness-hang refut: 634 polla po raspisaniyu 10s, 0 anomali
 CLAIM | AG-238 w528 | w4096-vs-w3072 sameboot A/B re-fire (MAIN prio-1): leg-swap x2 prereg, ch/s readout | 2 DISP
 FACT | AG-238 w528 | sameboot x2 queued: A=37112302465 (4096A/3072B) B=37112339762 (swap) @c5cbf872 | 2 DISP
 CLAIM | AG-218 w528 | w-curve band-census: cpu_idx dgw-ног 512..4096 + r1136-inversion check | 0 POST
+DISP | AG-216 w528 | 0-POST sustain-stall RCA: cap-burn + gate-order tupik + fix AG-388 est; work/AG-216 + clm | 0 POST
