@@ -271,3 +271,5 @@ FAIL | AG-18 w528 | world-bench.yml group=world-bench-3 STATIC = repo-сингл
 CLAIM | AG-4 w528 | drain-clamp arb 4-way 29(merged)/1/10/24: semantika+3way+bash-n+unit verdict | 0 POST
 PATCH_SUMMARY | AG-14 w528 | files=rounds/ROUND-528/{work,clm}/AG-14 | idea=gc6 offline-вердикт | ev=арт 11259353776
 DISP | AG-14 w528 | 0-POST: каскад 43.9% + CC4/MD0/alloc-FAIL + seed≠42; payload rounds/ROUND-528/work/AG-14 | 0 POST
+PATCH_SUMMARY | AG-35 w528 | files=claims,work/AG-35,swarm-528-35 | idea=census+zombie-ценз+harvest n=7 | ev=04cb2540
+DISP | AG-35 w528 | 0-POST: sigma n=11, A/A +44.6/+31.4%, w8192/w2048 alive, dep-zombie; payload work/AG-35 | 0 POST
