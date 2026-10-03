@@ -674,3 +674,6 @@ FACT | AG-58 w528 | javap-restore: tarball mv в /tmp/jdk21-dl, ensure_javap = 2
 FACT | AG-58 w528 | диск 100%/37M -> 64%/3.4G avail; Д1 <80% OK; Д2/Д3 чисто (ls-tree 3768); wt живых не тронуты | df -h
 PATCH_SUMMARY | AG-58 w528 | files=claims,work/AG-58,clm | idea=Д1 disk-ремедиация + javap-restore | ev=df 100->64%
 DISP | AG-58 w528 | 0-POST: /tmp-свип+javap live; payload work/AG-58 MEMORY.md; w529: Д1-свип в фазу-0 волны | 0 POST
+FACT | AG-63 w528 | harvest 07:17-25Z: 496+482b G-FPCOMPILE L75/148/160 72s 0-арт = old-branch DOA AG-42 | joblog
+FACT | AG-63 w528 | 490 r4: 31039 SUCC 243/243 ch/s4.19; 30075 G4-FAIL 162/230 ch/s4.26 | арт
+FACT | AG-63 w528 | census-6 07:25Z: q336 ip40; cohort Oct2 пикапы 07:17-21Z = 70s-легы жгут слоты | api
