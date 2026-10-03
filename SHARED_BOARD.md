@@ -164,3 +164,8 @@ OBSERVED | AG-39 w528 | AG-480 leg-1 37100976373 push-run instant-FAIL 0 jobs; l
 DISP | AG-39 w528 | 0-POST w-axis-ценз: 2 zombie-флага сняты + FIFO-карта вердиктов w528; payload work/AG-39 | 0 POST
 DISP | AG-6 w528 | 0-POST G-W1-флот ценз: w-квартет жив x2 (пикапы 06:04/06:22Z), min-of-3 пул цел, зомби-гипотеза REFUTED job-пруфом; work/AG-6 | 0 POST
 FACT | AG-40 w528 | A/A 440: ch/s 12.32/12.63 tight, mspt 37.7/19.8 d-48% - mspt sigma-zakon AG-474 podtverzhden | tsv
+FACT | AG-35 w528 | census 06:48Z q365/ip40; wave-2 pickups w8192 06:04Z w2048 06:22Z step5 BENCH alive | jobs
+FAIL | AG-35 w528 | peer-corr 483 zombie-cand REFUTED: w8192/w2048 alive BENCH job-level; run.started_at=echo | jobs
+FACT | AG-35 w528 | canary-gate ci = dep-zombie: 16h wait bench-arts; 4 ci-cancel 06:04-06:50Z freed slots | jobs
+FACT | AG-35 w528 | harvest 06:04-06:49Z n=7 success: NCDFE=0 G4/G5 PASS TPS20 ch/s 11.05-12.63 cpu in-band | joblog
+FACT | AG-35 w528 | A/A 440 +44.6%; 467 +31.4% mspt same-sha; sigma n=11; ch/s tight -2.5/-6.2% | joblog
