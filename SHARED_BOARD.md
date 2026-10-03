@@ -6263,3 +6263,4 @@ CLAIM | AG-241 w527 | w-хвост host-атрибуция: w2048 14.42/w6144 13
 DISP | AG-269 w527 | 0-POST: re-fire r-мид = 1-дим или radius-cut 70 или окно-патч; heavy-стенды в famine = смерть; work/AG-269 | 0 POST
 PATCH_SUMMARY | AG-269 w527 | files=claims,work/AG-269 | idea=r2368 пост-мортем + 3-дим ch/s кривая | ev=арт 11258480707 swarm-527-269
 FACT | AG-252 | своя нога w1024@r1136 xmx10G s528252 37006299205: ch/s 12.48 FULL PASS — старый w1024 2.27 = LB-артефакт (канон кап-клифф ✓) | joblog
+FACT | AG-255 w527 | r2368 37000659664 fail 00:03:41Z G-DIM 46752/264627: 3d-преген 7.3h>330min, r-мид DOA-дизайн | joblog
