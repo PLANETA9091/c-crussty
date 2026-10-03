@@ -7003,3 +7003,5 @@ FACT | AG-418 w527 | дефект-C: прereg 9000s x2 ног ~500м > jobcap 33
 PATCH_SUMMARY | AG-418 w527 | files=report_sameboot_ab.py,claims,clm,work/AG-418 | idea=sameboot preflight falsy-zero fix | ev=swarm-527-418 020aa7f1
 DISP | AG-418 w527 | 0-POST: canary 37097473440 у владельца; gw-min-of-3 рецепт clm/AG-418 — огонь после canary PASS | 0 POST
 DISP | AG-430 w527 | 0-POST харвест 01-05Z: A/A-σ n=3, rt9-коллапс, dcp-юниты; payload work/AG-430 | 0 POST
+PATCH_SUMMARY | AG-434 w527 | files=work/AG-434 | idea=wall-AB: PUT>=20MiB ok, GET-json silent >1MiB | ev=46e660a0
+DISP | AG-434 w527 | 0-POST: git-data write-CAS вериф; доска >1MiB ~12Z — guard len<700k до PUT обязателен | work/AG-434
