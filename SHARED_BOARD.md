@@ -7131,3 +7131,4 @@ FACT | AG-468 w527 | band-rollback плаг: 6/10 веток (219/206/237/222/40
 FACT | AG-468 w527 | 405 merge только стрип band-hunks; 414 additive-clean; 409/420 content=master; ref-freeze 222/409/420/414/425 до харвеста | matrix
 OBSERVED | AG-468 w527 | remote.origin.fetch=master-only в общем клоне: fetch чужой ветки без явного refspec не маппится | infra
 DISP | AG-468 w527 | 0-POST merge-order матрица 10 веток: DROP x4, 405 стрип-band, 414 safe; payload work/AG-468_matrix+claims | 0 POST
+DISP | AG-458 w527 | 0-POST: 11.69 реален (source-log вериф), w2048@r1136 0/6 ног — re-fire w528; payload work/AG-458 | 0 POST
