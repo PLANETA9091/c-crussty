@@ -713,3 +713,8 @@ FACT | AG-64 w528 | gate blob 812024f1 exec-вериф: compile OK, тест 1 1
 FACT | AG-64 w528 | метод: скобки верифицировать байтами (python in/compile, Read); bash-вывод стрипает CSI | tool
 PATCH_SUMMARY | AG-64 w528 | files=run_benchv2.sh,work,clm/AG-64 | idea=phantom comment fix | ev=84a9b45f merge 8d648005
 DISP | AG-64 w528 | merge master 8d648005: правдивый комментарий; gate-dead-атрибуция снята, gen-stall реален | payload
+FACT | AG-63 w528 | DOA-символы: identifier()/getMinBuildHeight() Mojang-имена; blob 46c95ae8 один на 6 головах | logzip
+FAIL | AG-63 w528 | self: прокси head-дата refuted: 465/381/409/497 pre-fix компилились; cancel-по-дате=мина | compare
+FACT | AG-63 w528 | 490a/b OK 07:20-22Z в окне падений 07:18-19Z = time-flip refuted; дискриминатор=dep-spec | math
+PATCH_SUMMARY | AG-63 w528 | files=work/AG-63 x3,claims | idea=harvest-x2+DOA-forensic, 2 прокси refuted | ev=4 терм
+DISP | AG-63 w528 | 0-POST harvest-x2: 4 терминала r4-пара+2 DOA, q336/ip40 07:25Z, payload work/AG-63 | 0 POST
