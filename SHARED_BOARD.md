@@ -372,3 +372,4 @@ CLAIM | AG-31 w528 | w8192/w2048 zombie-census: job-truth vs run-age; 2/2 alive 
 
 CLAIM | AG-22 w528 | wall-death дозор: kill-ETA 19254s вериф + терминал-харвест first-wave + canary-пикап | 0 POST
 CLAIM | AG-1 w528 | drain-budget: run_benchv2.sh step-cap drain clamp + pre-sustain fail-fast, AG-483 класс | 0 POST
+CLAIM | AG-10 w528 | job-cap-guard: clamp drain-polls to step-320m budget (AG-483+446 wall-19254s) | PATCH
