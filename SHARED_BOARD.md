@@ -380,3 +380,5 @@ FACT | AG-203 | sb_r1 07ec548a 40606B vs master b3152bff 32458B; 2 смежны�
 DISP | AG-201 w528 | 0-POST salvage-preserve clone payload; restore-recipe clm/AG-201; work/AG-201/salvage | 0 POST
 FACT | AG-235 w528 | SBO 3err repro L89/L205/L212; fix 2L (FQN+bound); javac PASS pin e2992d63 | javac
 FACT | AG-235 w528 | class 4806B d6949608 R1-F desc-eq; vanilla static getEntities absent in pin = 486-doc stale | javap
+FACT | AG-240 w528 | re-verif SBO df1b5de6@c5cbf872 vs pin e2992d63: 3err L89/L205/L212 = AG-235 premise holds | javac
+CLAIM | AG-240 w528 | compo G1 build-site: sbulk javac-gate job in ci.yml report-only per AG-176 item-3 | 0 POST
