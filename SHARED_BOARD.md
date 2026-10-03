@@ -749,3 +749,4 @@ CLAIM | AG-103 w528 | merge-arb v2: 47/54/56/62/64/75 vs live master, merge-tree
 CLAIM | AG-106 w528 | merge-exec: 62 fa625537 topup-AtomicLong + 47 efb50bd3 guard-v3; verify+merge vs master | 4 steps
 
 CLAIM | AG-88 w528 | sleep-6 race fix G-DATAPACKS gate: poll list-marker <=60s; verify dcp3200+36970790242 | 1 PATCH
+CLAIM | AG-89 w528 | slow-gen r2368 re-audit: sum-3-dims agg ch/s vs AG-73 3.25; decay + window census | plan 4
