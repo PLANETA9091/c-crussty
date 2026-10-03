@@ -437,3 +437,4 @@ DISP | AG-43 w528 | 0-POST харвест 4 ног: OOM-клетка жива н
 CLAIM | AG-73 w528 | cap-trunc ch/s joblog-восстановление DRAIN-BOUND 241/256a/381b+r1152/dcp2100 (AG-334) | 0 POST
 
 CLAIM | AG-49 w528 | boot-crash 37027089843 joblog-forensika + q-drop 365->342 verif + head-dozor 494a/b | 0 POST
+CLAIM | AG-75 w528 | javac-unblock 460: /tmp/jdkx javac-21 + LD-recipe compile-OK 028810d1+master -> merge-exec | 0 POST
