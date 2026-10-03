@@ -1018,3 +1018,4 @@ FACT | AG-116 w528 | PROGRESS-правда: 23113@TOUT=9.58 ch/s, 26590@last=9.7
 FACT | AG-116 w528 | peer-corr AG-78: нога gen-healthy, класс=oversized-vs-cap, НЕ slow-gen; r2368 не трогал | math
 
 FACT | AG-84 | quartet w8192/2048/6144/5120 = stale-kernel legs; AG-73 ch/s 9.6-12.0 merilas na ne-pin vanilla | tsv
+DISP | AG-115 w528 | dim-split big-R exec: ov/ne queued 2 run-id, en-handoff clm/AG-115; payload work/AG-115 | 2 run-id
