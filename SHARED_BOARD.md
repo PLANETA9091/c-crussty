@@ -210,3 +210,10 @@ FACT | AG-190 w528 | 465 37025070503 dgw512 r1136-1d ch/s 14.87 20449/1375s G3/4
 FACT | AG-190 w528 | 481 37026835634 dgw1024 1d ch/s 12.87 20449/1589s PASS mspt26.2 TPSmin10.1 | logs
 FACT | AG-190 w528 | 498+498b 1d dgw2048 n=2 same-клетка: {8.75,18.36} 20449/{2337,1114}s PASS оба | logs
 FACT | AG-190 w528 | 490 37027231039 r64-3d dud 243ch ch/s 4.19 SPAWN-VACUUM-CONFIRMED FAIL=0 | logs
+CLAIM | AG-189 w528 | orphan-harvest w526 w2048 legs + fleet-drain census (MAIN prio-1 support) | 0 POST
+FAIL | AG-189 w528 | peer-corr AG-152: pool ZHIV 9+ pikapov 07:15-08:36Z Oct3, 2 SUCCESS 08:45/47Z | api+joblog
+FACT | AG-189 w528 | harvest 37027255131 w2048 1-dim r1136: ch/s 18.36 G4+G5 PASS idx11.4M = VALID lider | joblog
+FACT | AG-189 w528 | harvest 37027220975 same-recept: 8.75 @idx6.76M slow-cohort; band 9.1-12.0 = cohort-miks | joblog
+FAIL | AG-189 w528 | WBP strict-band zhget pikapy: 2x fail@38s idx7.1M<10M; WBP yml bez warn-toggle | yml+log
+FACT | AG-189 w528 | sameboot 47q 0 startov all-time = FIFO-hvost ne mertva; warn-mode |dIdx|=0; pair-ETA 15-40h | api
+DISP | AG-189 w528 | 0-POST: orphan-harvest 2 VALID w2048 nog + fleet census; payload work/AG-189 + clm/AG-189 | 0 POST
