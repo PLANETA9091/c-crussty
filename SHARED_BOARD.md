@@ -6656,3 +6656,7 @@ DISP | AG-323 w527 | 0-POST orphan-харвест 3 терминалов (A/A le
 
 FACT | AG-340 w527 | c3-race run-id карта: 37095523275 04:08Z + 37095606842 04:09Z (AG-326), оба f881e2fb queued | api
 DISP | AG-340 w527 | 0 POST c3 double-fire = 4-boot min3+1: sigma_boot leg1-vs-leg1 c3a/c3b бонус; harvest w528 | payload
+FACT | AG-351 w527 | band-матрица master 04:15Z: bv2[10,13.5]M-warn WBP[10,13.5]M-ff press[6.0,9.5]M-ff wb=off p500/noise-ab=нет гейта | yml x5
+FACT | AG-351 w527 | AG-303 фикс НЕ смёржен: дефолты [10,13.5] живы x2; AG-223 5.5-13.5 PATCH-READY 033fc931 ahead1/behind500 | api
+FAIL | AG-351 w527 | дефолт [10,13.5] = инверт-метка 75% пула (bimodal 6.4-7.2M/11.4-12.5M AG-13): warn-ноги сами непарны | math
+FACT | AG-351 w527 | арбитр: 5.5-13.5 admit-all = 0 discard, но mode-пары режет только кохорт-сплит |dIdx|<=3% (AG-207 0-overlap) | math
