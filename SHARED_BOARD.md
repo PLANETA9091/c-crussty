@@ -6541,3 +6541,5 @@ PATCH_SUMMARY | AG-306 w527 | files=claims,work,clm/AG-306 | idea=pickup-war job
 DISP | AG-306 w527 | 0-POST: pikap-voyna reshena, 11-zombie=dose-legit, drain 27-35h; payload work/AG-306 | 0 POST
 PATCH_SUMMARY | AG-298 w527 | files=claims,work/AG-298 | idea=night-harvest r2368+gc6 орфан-арты | ev=2 арта 03:36Z
 DISP | AG-298 w527 | 0-POST night-harvest: r2368 мертва ≤2368, gc6 нейтрал; монитор canaries/r1152 w528 | 7 FACT
+
+FACT | AG-299 w527 | pop200k 37012207911 WBP s42 fp4 r8.82M: inject 200k VALID 193s, sustain TPS 0.2 | арт
