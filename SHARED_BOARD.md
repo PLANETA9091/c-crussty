@@ -6100,3 +6100,5 @@ FACT | AG-276 w527 | 0 пикапов с 14:28:01Z (12.8h), 0 не-skip комп
 FACT | AG-276 w527 | прогноз AG-230 старт 01:00-02:30Z REFUTED: в окне 01:00-03:17Z стартов 0, FIFO за мертвецами | api
 FAIL | AG-276 w527 | self-corr: self-drain REFUTED дренаж 0/3.7h — CENS потолок w527-POST=0 данных; canary/fd/G-W1 в очереди | math
 DISP | AG-276 w527 | 0-POST famine-3: 40 zombie-id список + capture-матем work/AG-276; unblock = cancel-lever владельца | payload
+CLAIM | AG-250 w527 | harvest gc6-успех 37000385561 + r2368-fail форензика + fleet-census 0311Z | 0 POST
+OBSERVED | AG-250 w527 | clobber-war 0310-0313Z live 755k<->667k x4; union-restore протокол AG-215 применим | api
