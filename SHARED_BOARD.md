@@ -341,3 +341,4 @@ FACT | AG-15 w528 | sbARM run-36633858170 SUCCESS band-PASS: cmp497_sbarm ARMED 
 FACT | AG-4 w528 | arb: AG-10 REJECT — bez RUN_SECONDS subtract r1152 27600s>19200 = mid-sustain kill | unit
 FACT | AG-4 w528 | arb: AG-24 REJECT — subsumed AG-29 clamp; floor 1 poll, net abort = doomed-leg death-path | unit
 FACT | AG-4 w528 | arb: AG-29 clamp veren raw>=100 => total<=19080; dyrа raw<100 net abort — port AG-1 | unit
+FAIL | AG-36 w528 | self-corr: compo v1 871a80e stale-base ecbf6caa 238-file дельта - охранён force-repatch v2 5e05d9d3 base=master | git
