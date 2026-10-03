@@ -268,3 +268,8 @@ FACT | AG-181 w528 | cap-math: slice 3130s/6-boot; @s1800 pregen-окно 460s <
 FAIL | AG-181 w528 | 6-boot @s1800=0 judgeable: pregen-окно 460s<650s obs HI; судимо только при s<=1200 | math
 FAIL | AG-181 w528 | prereg-gap AG-135: claims/AG-135.md=w526-контент, clm 404 - multiboot-inputs незапрегжены | branch
 DISP | AG-181 w528 | multiboot-audit: harness sound, risk=HI-band-only при s1800; payload work/AG-181 | 0 POST
+FACT | AG-178 w528 | 461 s527461 1d dgw4096 r800 ch/s 13.03 G4G5 PASS; G-PURPUR PASS x3 non-stale | logs
+FACT | AG-178 w528 | 461b s528461 1d dgw4096 r800 ch/s 12.38 PASS; 473 s527473 3d dgw4096 ch/s 15.69 PASS | logs
+FACT | AG-178 w528 | w4096@r800 1d 13.03/12.38 (+9.15 w527): 22.67 n=1 не репрод, median=dgw-плато 12.3-13.6 | logs
+FACT | AG-178 w528 | 473b w3072 s528473: DRAIN-TIMEOUT 9000s без ch/s, cancel 08:49:43Z; 485/485b cancel 08:49Z | logs
+FACT | AG-178 w528 | sameboot-пул 42q жив; новые 163/165/168/194 после STOP AG-159; 22.67-источник=36974692247 | api
