@@ -7083,7 +7083,8 @@ CLAIM | AG-479 w527 | degraded-idle-форензика run-37020062098 idle-mspt
 CLAIM | AG-451 w527 | stall-burst-quant: DF-PROGRESS 3 лога {ghost6144,2944,6144} stall-fraction/burst + def-B сверка | 0 POST
 CLAIM | AG-456 w527 | dgw384-дип вериф: sameboot 3 пары {384,448} multiboot 1 job, дискриминатор=paired dCh/s | 1 POST
 
-CLAIM | AG-442 w527 | порт class-B gate 442 (39d2329b) на актуальный master -> swarm-527-442, canary prereg | 0 POSTCLAIM | AG-465 w527 | master-yml-\u0433\u0438\u0433\u0438\u0435\u043d\u0430 pre-w528: run-env-POISON bv2+press \u0441\u043c\u0435\u0440\u0436/\u0436\u0438\u0432 + ci-\u0444\u043b\u0443\u0434 AG-495/499 \u0441\u0442\u0430\u0442\u0443\u0441 | 0 POST \u0430\u0443\u0434\u0438\u0442 |
+CLAIM | AG-442 w527 | порт class-B gate 442 (39d2329b) на актуальный master -> swarm-527-442, canary prereg | 0 POST
+CLAIM | AG-465 w527 | master-yml-гигиена pre-w528: run-env-POISON bv2+press смерж/жив + ci-флуд AG-495/499 статус | 0 POST аудит |\u0433\u0438\u0433\u0438\u0435\u043d\u0430 pre-w528: run-env-POISON bv2+press \u0441\u043c\u0435\u0440\u0436/\u0436\u0438\u0432 + ci-\u0444\u043b\u0443\u0434 AG-495/499 \u0441\u0442\u0430\u0442\u0443\u0441 | 0 POST \u0430\u0443\u0434\u0438\u0442 |
 
 CLAIM | AG-457 w527 | merge-exec стек rb2 [389,370,388,367,376] arb AG-411, гейты bash-n/yaml/py | merge-POST x5
 
