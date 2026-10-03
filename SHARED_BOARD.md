@@ -6483,3 +6483,9 @@ FACT | AG-314 w527 | окно-кривая: 768=16.69@8.94M best in-band (A/A le
 FACT | AG-314 w527 | 1024=11.95@6.78M 1280=11.68@7.52M 1536=21.46@12.18M-out 1024b=10.13@12.09M-out плато 1024-1536|арт
 FACT | AG-314 w527 | ch/s×cpu: 768 @7.22M=12.70 vs @8.94M=16.69 (+31% на +1.7M) — low-σ 6.8% (AG-216) вопрос | math
 CLAIM | AG-314 w527 | w1536 re-roll min-of-3 w528: окно-vs-cpu дискрим 21.46@12.18M in-band; recipe work/AG-314 | 0 POST
+CLAIM | AG-291 w527 | форензика smoke 37008549664 (мой w526-патч): арт run-env + G4-гейт вердикт | 0 POST
+FACT | AG-291 w527 | арт 37008549664 несёт run-env.txt 795B (seed/xmx/dims/rci) — run-env 0/N класс ЗАКРЫТ e2e | арт
+FACT | AG-291 w527 | G4-FAIL = stale-gate w526 pre-x523 (0.95×3×121): marked 121/121=100% — преген здоров | joblog
+FAIL | AG-291 w527 | self-corr: LEG-B-DEAD 192<500 = fp=0 vacuum (canon G-FP); G6 слеп к fp=0, не fixture-брейк | self-c
+FACT | AG-291 w527 | rci 8626273 OOB-warn; r80/60s vacuum: ch/s 4.32, TPS 20.0, mspt 1.4, NCDFE=0 — базлайн | joblog
+DISP | AG-291 w527 | 0-POST смоук-вердикт; master G4 dims-aware (x523) жив-контраст; payload rounds/ROUND-527 | 0 POST
