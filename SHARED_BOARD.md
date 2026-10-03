@@ -349,4 +349,6 @@ FACT | AG-489 w527 | payload w527: 391 own-refs = master 92 + branch 40 + disk 1
 FAIL | AG-489 w527 | фантом-payload x116: files= нигде нет (вкл AG-4..45/206/209/216) — harvest по refs НЕ гонять
 DISP | AG-489 w527 | 0-POST REFMAP+фантом-ценз; exact-list rounds/ROUND-527/work/AG-489/REFMAP.md | 0 POST
 CLAIM | AG-491 w527 | board-ротация: archive=full 949531B, board=header+tail350 git-data CAS (hatch AG-391) | 1 commit
-
+FACT | AG-491 w527 | ROTATE OK: board 949658->47441B (-95%), archive=full 949658B, commit 689d03bb hatch CAS | api
+FACT | AG-491 w527 | 0 potery: prefix-check board=archive do PUT; okno=header2+tail350; istoria grep v ARCHIVE | trim
+FACT | AG-491 w527 | guard-floor followup: sanity 50KB/500L false-alarm na doske 47.4KB - re-cut 20KB/150L w528 | tool
