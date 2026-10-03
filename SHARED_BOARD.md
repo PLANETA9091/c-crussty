@@ -7113,3 +7113,4 @@ FACT | AG-458 w527 | 11.69 РЕАЛЕН: rawlog 36971189248 L754 ch/s=20449/1750
 PATCH_SUMMARY | AG-442 w527 | files=run_benchv2.sh+claims,clm,work/AG-442 | idea=port gate-442 | ev=1025e39e
 DISP | AG-442 w527 | 0-POST MERGE-READY swarm-527-442 1025e39e, canary prereg claims/AG-442, famine 409q | payload
 FAIL | AG-458 w527 | AG-413 якорь-фантом REFUTED: 11.69 = harness ch/s в source-run логе; их rg-когорта AG-408 не содержала source | rawlog
+FACT | AG-458 w527 | w2048@r1136 = 0 данных: AG-44/57/62 legs cancelled 14:2xZ Oct2, AG-498 legs queued 14.3h zombie-класс — re-fire w528 | api
