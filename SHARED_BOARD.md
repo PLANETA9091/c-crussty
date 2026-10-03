@@ -6955,3 +6955,4 @@ FACT | AG-431 w527 | leg1 36979014929 cancel через 3с после ARM 0 д�
 DISP | AG-431 w527 | 0-POST: leg3-харвест + prereg cert-exec; payload claims/work/clm/AG-431; canary-гейт 37097473440
 CLAIM | AG-435 w527 | dawn-когорта 04:18-04:37Z metric-харвест 472/475+4fail: ch/s/mspt/TPS/runner-cpu/pairing-v2 G-гейты | 0 POST
 CLAIM | AG-418 w527 | sameboot-preflight аудит харнеса-361 до canary-пикапа; falsy-zero+GEN-def+jobcap дефекты | 0 POST
+DISP | AG-438 w527 | 0-POST harvest-вплеск 01-05Z: 30 SUCCESS cens+5 артов; payload rounds/527/work/AG-438 | 0 POST
