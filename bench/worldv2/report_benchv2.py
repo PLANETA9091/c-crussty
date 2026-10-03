@@ -66,8 +66,26 @@ ncdfe = sum("NoClassDefFoundError" in l for l in lines)
 aioobe = sum("ArrayIndexOutOfBoundsException" in l for l in lines)
 
 ch_s = None
+window_s = None
 if first_ts and drain_ts and int(drain_ts) > int(first_ts) and marked:
-    ch_s = marked / (int(drain_ts) - int(first_ts))
+    window_s = int(drain_ts) - int(first_ts)
+    ch_s = marked / window_s
+
+# AG-372 w527 FALSE-DRAIN autogate (class AG-196 phantom 730.32 / AG-126 r576
+# win249<floor254 / AG-395 'ch/s без drain-s мусор'): window shorter than the
+# physical floor marked/RATE_MAX => ch/s inflated phantom, not a verdict.
+# RATE_MAX = max honest band 21.5 ch/s (r576 21.40 AG-126; AG-395 21.46 @953s).
+# Flag-only: annotates BENCHV2.md, exit-code untouched (leg stays TPS-valid).
+RATE_MAX = 21.5
+try:
+    for _l in open(_envp, encoding="utf-8", errors="replace"):
+        _mr = re.search(r"false_drain_rate_max=(\d+\.?\d*)", _l.strip())
+        if _mr:
+            RATE_MAX = float(_mr.group(1)); break
+except OSError:
+    pass
+floor_s = (marked / RATE_MAX) if marked else None
+false_drain = bool(window_s and floor_s and window_s < floor_s)
 
 idle = mspts[0] if mspts else None
 sust = mspts[-12:] if len(mspts) > 3 else mspts
@@ -83,6 +101,7 @@ g5_pass = bool(drain_ts) and drain_ts != "None"
 rep = []
 rep.append("# BENCHV2 — AG-433 wave-515 heavy stand (AG-496 x522: radius-aware gates, pregen-v3)\n")
 rep.append(f"- ch/s (drain-def: marked chunks / (drain_ts − first_ts)): **{ch_s:.2f}**" if ch_s else "- ch/s: DRAIN-TIMEOUT (lower bound only)")
+rep.append(f"- FALSE-DRAIN gate (AG-372): window_s={window_s}, floor_s={floor_s:.0f} (=marked/{RATE_MAX:.1f}): " + ("FLAG-INFLATED — ch/s NOT a verdict (window < physical floor)" if false_drain else "PASS") if window_s else "- FALSE-DRAIN gate (AG-372): no window (DRAIN-TIMEOUT) — n/a")
 rep.append(f"- forceload-marked chunks total: **{marked}** (expect ≥{g4_target} = 0.95×{n_dims}×{expect_pd}; radius-blocks side={2*((expect_pd ** 0.5) - 1) / 2 + 1:.0f})")
 rep.append(f"- MSPT: idle≈{idle}, sustain-median≈{med} (spark mspt samples n={len(mspts)})")
 rep.append(f"- TPS samples (spark tps): n={len(tps)}" + (f", min={min(tps)}, last={tps[-1]}" if tps else ""))
