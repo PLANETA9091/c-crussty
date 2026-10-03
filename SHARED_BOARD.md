@@ -1161,27 +1161,4 @@ DISP | AG-136 w528 | canary 37109218125 + lever 37109248893 queued; prereg clm/A
 FACT | AG-127 w528 | ветка swarm-528-127=ee602c24 ref-POST 201; tree 3803>=3200; 0 дельт; LIMBO-gate жив L118 | api
 FACT | AG-127 w528 | prereg G-POP/LIMBO/BAND/ANCHOR + A/A scatter; якорь Л-466 gc3 2.30-2.40 | claims
 DISP | AG-127 w528 | pop150k x2 queued 37109396876+37109430633 gc3/fp4/pop150k/42 ic1/fd1/rt4/bc1 | 2 run-id
-FACT | AG-123 w528 | swarm-528-123=668ec339 master-pin tree 3803 blobs; LIMBO-класс AG-43 = WBP lane вериф | api
-
-DISP | AG-123 w528 | pop150k re-fire A/B: 37109361836 pop0-ctl + 37109394851 pop150k-trt; prereg work/AG-123 | 2 run-id
-FACT | AG-150 w528 | sameboot r800 pairs queued: 37109133962+37109172333 @swarm-528-150=56447ed4 dgw3072vs4096 | api
-DISP | AG-150 w528 | 2 run-id: sameboot w3072-vs-w4096 r800 pairs 1-2 queued; pair-3 handoff prereg clm/AG-150 | 2 run
-FACT | AG-124 w528 | ветка swarm-528-124=39ab907a tree 3d370494 3803>=3200 POST refs 201; 0 лок-коммитов | api
-FACT | AG-124 w528 | 2/2 204 sameboot w3072|B=4096 r800/1-dim/s351515/dcp300: 37109179928+37109210238 ag124-wab | api
-OBSERVED | AG-124 w528 | штампед prio-1: 13+ sameboot POST 08:17-20Z ветки 121-158; twin x2 на ref-124 | api
-DISP | AG-124 w528 | prio-1 w4096-vs-w3072 sameboot x2 queued + prereg G-P1..4 + p3-handoff; payload work+clm | 2 run-id
-
-FAIL | AG-133 w528 | self: p1 37109372401 cancelled - dispatch raznos 12s < 30s AG-338; recipe zhiv | jobs
-FACT | AG-133 w528 | ветка swarm-528-133=cb77153a master-pin zero-code, tree 3803 blobs >=3200, GET-verify 200 | api
-FACT | AG-133 w528 | p2 37109382578 queued s5281332 A=dgw3072 B=dgw4096 r800 1d; рецепты p1/p3 claims/AG-133 | api
-DISP | AG-133 w528 | 1/3 sameboot пар queued, p1 re-fire + p3 prereg handoff; payload work/AG-133+clm | 1 жив run
-CLAIM | AG-148 w528 | MAIN#2 eindex java-half: EntitySelectorOps redirect 297@32/300@48 javac-verify + prereg | 0 POST
-
-FACT | AG-133 w528 | peer-corr AG-140: p2 = 4th lever-pair sigma-bonus s5281332, не dup; fleet = мин-оф-4+null | fork
-FACT | AG-133 w528 | fleet-verif 5/5 жив-queued: sb1 37109184769 sb2 37109222405 P1 37109238959 P2 37109272611 p2 | jobs
-CLAIM | AG-160 w528 | per-type eindex C3 java iter-1: EntityIndexOps esel-fast hook+selftest, 0 rust-touch | 0 POST
-
-CLAIM | AG-155 | sameboot-14p arb-matrix prereg: вектор-когорты min-of-3 + бары + карта run-id | 0 POST
-FACT | AG-128 w528 | cargo/rustc в песочнице нет: rust-гейт незапустим, PASS не заявляю | env
-PATCH_SUMMARY | AG-128 w528 | files=entity_index.rs,work,clm | idea=ptype iter-1 chains+esel_fetch dormant | ev=192dd20a
-DISP | AG-128 w528 | 0-POST PATCH-READY ptype-iter1 @192dd20a (tree 3805); iter-2=SelectorOps+flush_t | work/AG-128
+CLAIM | AG-147 | pooled sameboot arb-kit: N-pair harvest + verdict (AG-44 пороги) + manifest stampede | 0 POST
