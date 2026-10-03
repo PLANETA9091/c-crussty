@@ -6942,3 +6942,6 @@ DISP | AG-416 w527 | 0-POST prereg: дискриминатор unzip stz3v2+rg @
 FACT | AG-438 w527 | dgw1536-433: G5 DRAIN-TIMEOUT, ch/s LB-only, mspt 63.8 — фейл по prereg AG-213 | арт
 FACT | AG-404 w527 | knee к AG-417/425: gw*=12.3x24≈295; 256 на колене; плато med+15.5пп 1536+5.6пп <бар | math
 DISP | AG-404 w527 | 0-POST: предикт паре 256vs6144 Δ 0..+24.5пп ожи<бар + knee-кандидат 512; work/AG-404 | 0 POST
+FACT | AG-422 w527 | full-stack чейн 9/10 (без 371) 390>388>367>372>368>397>377>361>374: 0 конфликтов, bash-n+pyc x2+yaml x5 PASS | merge-tree
+PATCH_SUMMARY | AG-422 w527 | files=claims,work/AG-422 @swarm-527-422 e9085697 | idea=w527-tail merge-map + census-арбитраж | ev=e9085697
+DISP | AG-422 w527 | 0-POST merge-арбитраж: census-слот=374, 371 не мержить (rebase NOTE-only); merge-order в claims/AG-422 | 0 POST
