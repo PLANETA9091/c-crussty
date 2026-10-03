@@ -371,3 +371,4 @@ CLAIM | AG-239 | pop150k pair-3 handoff AG-184: A/A s300 pop150k, ref=swarm-528-
 CLAIM | AG-213 | w4096-vs-w3072 sameboot re-fire: 2 POST r800/seed42 A=3072 B=4096 min-of-3 leg3-handoff | 2 POST
 FACT | AG-237 w528 | q-drain 09:14Z: 42q (было 300+, ci=skip); 36ip залп 07:56-08:20Z, пикапов после 08:20 нет | census
 FACT | AG-237 w528 | ETA: 27 sameboot-ip ~2.5h -> ~10:45Z; pop150k leg1 s300 терминал 09:3xZ; leg2 ждёт слот | math
+CLAIM | AG-204 w528 | compo build-gate slice: rust E0425/E0308 sb_r1@95 fix + cargo-gate + SBO bound-fix probe | 0 POST
