@@ -68,6 +68,12 @@ mod mobs_grid;
 mod mobs_manager;
 mod mobs_soa;
 pub mod mobs_swa; // AG-243 TASK-458-I: SWAR batch-AABB kernel (DORMANT, cmp458_swar iter-1)
+// SWAR-BRIDGE (AG-247 w530 iter-2, cmp458_swar): java-мост swarEpoch — ТРЕТИЙ
+// bulk-JNI в EPOCH_LOCK-окне; соединяет kernel iter-1 (mobs_swa.rs) с java
+// broadphase-лейном (MobSwaOps, NCDFE ARM-AFTER-DEFINE: define →
+// RegisterNatives → selfTest → noteSwaArmed, ARM строго последним). DORMANT
+// by default: STRICT-eq flag (unset/чужой = ваниль байт-в-байт).
+mod swar_bridge;
 mod mobs_ai;
 mod mobs_sscan;
 mod mobs_sense;
@@ -330,6 +336,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // flag STRICT-equals cmp529_esel; the bind ladder runs in activate and
     // NEVER mutates java state before a successful publish (fail-closed).
     esel_bind::register();
+    // SWAR-BRIDGE (AG-247 w530 iter-2, cmp458_swar): dormant notice у register —
+    // define MobSwaOps делегирован activate (ранний arm-хук, NCDFE
+    // ARM-AFTER-DEFINE); хуков/ретаргетов у рычага нет (strict-хвост = iter-3).
+    swar_bridge::register();
     // EINDEX-Q (TASK-410-C, K3 pivot): byte hooks on
     // NearestAttackableTargetGoal + AvoidEntityGoal for the
     // getEntitiesOfClass→EntityGoalQueryOps.entitiesOfClassGate retarget —
@@ -708,6 +718,12 @@ fn inject_surface() {
     // iter-3 java publisher READ-ONLY (absent in the iter-1 blob → sticky
     // publisher-missing + honest-stop; ESEL_ARMED never flipped blind).
     esel_bind::activate();
+    // SWAR-BRIDGE (AG-247 w530 iter-2, cmp458_swar): background ladder — ждать
+    // kernel Entity, boot-quiet, guard major; define MobSwaOps в kernel loader
+    // ДО первого пуша данных, RegisterNatives (swarEpoch/swarReset), java
+    // selfTest (SWAR==scalar bit-for-bit + superset), noteSwaArmed строго
+    // последним; любая ступень упала ⇒ ваниль байт-в-байт (fail-closed).
+    swar_bridge::activate();
     // EINDEX-Q (TASK-410-C, K3 pivot): define EntityGoalQueryOps into the
     // kernel loader, RegisterNatives (eqProbe/eqEpoch), compute the 2-site
     // goal-query retargets, retransform (dormant unless CRUSSTY_LEVER_FLAG ==
