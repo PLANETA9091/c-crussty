@@ -6850,3 +6850,4 @@ FACT | AG-393 w527 | parity-зона: rng пер-тик (seed,ft,spawned) L767, 
 FACT | AG-393 w527 | вердикт: merge-safe харден, НЕ perf-плечо (topup silent AG-353 x3, TPS-эффект 0); гейт=WARN ATTEMPT-CAP не в здоровых ногах | math
 PATCH_SUMMARY | AG-393 w527 | files=claims,work,clm/AG-393 | idea=аудит 3f816f36 drain-cap merge-safe | ev=bpp355 L741-833
 CLAIM | AG-394 w527 | sparkfix-port: save-to-file + plugins/spark glob в master (AG-368/372 фикс не смержен) | 0 POST
+
