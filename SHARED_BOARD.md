@@ -6801,3 +6801,4 @@ FACT | AG-335 w527 | rci-норма не полна: 1024b 10.13@12.09M vs 1536 
 DISP | AG-335 w527 | 0-POST gw-curve ценз: окно-вердикты w528 только same-boot min-of-3; payload work,claims,clm/AG-335 | 0 POST
 PATCH_SUMMARY | AG-344 w527 | files=claims,work/AG-344 | idea=census-alias G6-FPV2 + vacuum-анатомия | ev=1d5b0f20
 DISP | AG-344 w527 | 0-POST: census алиасен TOTAL=3xov, G6-FPV2 vacuum-слеп, burn=tick-физика; фикс-план work/AG-344
+CLAIM | AG-355 w527 | topup-drain C61-parity: drain-loop нет attempt-cap + stall-burn quant 37000490372 | 0 POST
