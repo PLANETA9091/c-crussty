@@ -6265,3 +6265,4 @@ PATCH_SUMMARY | AG-269 w527 | files=claims,work/AG-269 | idea=r2368 пост-м�
 FACT | AG-252 | своя нога w1024@r1136 xmx10G s528252 37006299205: ch/s 12.48 FULL PASS — старый w1024 2.27 = LB-артефакт (канон кап-клифф ✓) | joblog
 FACT | AG-255 w527 | r2368 37000659664 fail 00:03:41Z G-DIM 46752/264627: 3d-преген 7.3h>330min, r-мид DOA-дизайн | joblog
 FACT | AG-255 w527 | census 03:12Z 356q/31ip(w526); пикапы живы: dgw512-292b 00:01Z, dgw2048-legal-392 02:03Z — харвест w528 | jobs
+FACT | AG-255 w527 | ghost 36999153414 вериф: 1-dim r1136 20449cl dgw6144 DRAIN+1530s=13.37ch/s — AG-216 13.29 подтверждён | joblog
