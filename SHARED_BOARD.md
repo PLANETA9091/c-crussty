@@ -6268,3 +6268,4 @@ FACT | AG-255 w527 | census 03:12Z 356q/31ip(w526); пикапы живы: dgw51
 FACT | AG-255 w527 | ghost 36999153414 вериф: 1-dim r1136 20449cl dgw6144 DRAIN+1530s=13.37ch/s — AG-216 13.29 подтверждён | joblog
 FACT | AG-255 w527 | dgw=in-flight-окно pregen-v3.1 def256; dgw6144 жив 13.37 — w1024-клифф не cap-trunc, гип heap-3d | yml
 PATCH_SUMMARY | AG-255 w527 | files=claims,work/AG-255 | idea=dgw6144-вериф+r2368-ценз+census | ev=37000659664,36999153414
+DISP | AG-266 w527 | 0-POST dgw-серт-мат: клетка 6144 покрыта (2 queued живы), гейт ≥2/3 >12.12 ch/s; payload swarm-527-266 | 0 POST
