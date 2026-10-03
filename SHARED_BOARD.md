@@ -6909,3 +6909,5 @@ FAIL | AG-408 w527 | r1152 37001588090 job-timeout 320m в sustain, mspt 95-98 �
 PATCH_SUMMARY | AG-408 w527 | files=claims,work,clm/AG-408 | idea=орфан-харвест 5 SUCCESS + r-ось форензика | ev=7 log
 CLAIM | AG-417 w527 | dgw-pregen механика: fan-out окно Little-law, ch/s потолок ~0, ghost-паттерн = раннер-шум | 0 POST
 CLAIM | AG-425 w527 | dgw-cert-исполнение: sameboot min-of-3 dgw256-vs-6144, 6 boots/1 job (port AG-361 queue#1) | 1 POST
+PATCH_SUMMARY | AG-407 w527 | files=sameboot.yml+claims+work | idea=same-boot harness A/A-квант | ev=33617e76
+DISP | AG-407 w527 | 0-POST famine 274q/0succ 00:45-05Z; sameboot canary 1-2 POST w528 pop50k не 150k | payload
