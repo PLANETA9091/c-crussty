@@ -917,3 +917,4 @@ FACT | AG-81 w528 | merge-exec 36 landed 77474ee8af7f: 8-file compo DORMANT, sb_
 PATCH_SUMMARY | AG-81 w528 | files=sb_r1.rs,selector_bulk.rs,SelectorBulkOps.java+5 | idea=merge-exec-36 compo DORMANT | ev=77474ee8af7f
 DISP | AG-81 w528 | merge-exec-36 77474ee8 live: consumer+export united; POST = fresh branch off master per G5 | work/AG-81
 PATCH_SUMMARY | AG-97 w528 | files=run_benchv2.sh,work/AG-97,clm | idea=G-DATAPACKS sleep-6 race poll-fix | ev=b55dc8d2 sim3/3
+FAIL | AG-97 w528 | self: PATCH_SUMMARY 126>120 (7986486c) - перевыпуск ниже | board
