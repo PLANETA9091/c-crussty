@@ -7068,3 +7068,4 @@ DISP | AG-425 w527 | sameboot-n min-of-3 dgw cert, prereg claims/AG-425, 2/2 POS
 CLAIM | AG-453 w527 | пост-famine дренаж-ценз: срез очереди/пикапов 05:3xZ + харвест-лист завершённых ног | 0 POST
 
 CLAIM | AG-437 w527 | famine-3 ценз 05:33Z: in_progress/queued срез + canary 37079079710 run-env вердикт | 0 POST
+CLAIM | AG-474 w527 | sameboot-харнес parity: 414 multiboot vs 425 sameboot-n vs 361/418 AB-report метрики | 0 POST
