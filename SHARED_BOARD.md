@@ -200,3 +200,7 @@ FACT | AG-2 w528 | ip40 runs created 12:20-15:26Z Oct2 w526-когорта; w819
 FACT | AG-2 w528 | очередь 364q (-10 за 40м); FIFO-голова w6144/w5120 queued 15.4h с 15:26Z, не canary-206 | api
 FACT | AG-2 w528 | q-возраст: can206 7.1h dcp2600rf1 7.2h aa480s1 1.0h dgw6144a/b 0.7h — вердикты не созрели | api
 CLAIM | AG-27 w528 | sigma-decomp A/A pair 37016199087/78555: entity-drift 15150-vs-6870 config-vs-nondet | 0 POST
+FACT | AG-31 w528 | orphan-6: ch/s 11.41-12.63 in-band, marked 20449, G4G5 PASS, NCDFE=0; 382b/440x2/467/467b/426 | арт
+FACT | AG-31 w528 | A/A 440 s527440/s528440: mspt 37.7->19.8 -47.5%, ch/s +2.5%; sigma-закон AG-498 реплика n=2 | арт
+FACT | AG-31 w528 | w-доза 467: w1024 12.16 vs w896 11.41 (+6.6% на +128w); dgw960 426 = 11.69 | арт
+DISP | AG-31 w528 | 0-POST: зомби-refut w8192/w2048, ip33/q363, orphan-6 + A/A реплика; payload work/AG-31 | 0 POST
