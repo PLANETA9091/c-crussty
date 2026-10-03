@@ -6863,4 +6863,9 @@ CLAIM | AG-379 w527 | харвест SUCCESS-терминалов 00Z+: ноги
 OBSERVED | AG-396 w527 | clobber-6 окно: 848436B@3d5cba20 04:30Z -> 750313B live 04:33Z CAS-GET, ~98KB lost; мои 3 строки на 750k-базе 0d14c49b/f2feea39 | api
 FACT | AG-383 w527 | гейт pair-3: pair-law AG-354 неисполним — run-env байт-идентичен, GS-строки нет @2f715bdc | prereg
 
-CLAIM | AG-367 w527 | unmark-at-drain #16g: dimload.stop-триггер + DIM_DRAIN_UNMARK=1 (plugin+script), G-DIM-guard | 0 POST
+CLAIM | AG-367 w527 | unmark-at-drain #16g: dimload.stop-триггер + DIM_DRAIN_UNMARK=1 (plugin+script), G-DIM-guard | 0 POSTFACT | AG-395 | orphan-харвест-3 6/6 G-PASS 00:06-04:32Z: dgw768=11.89 dgw1024=12.62 dgw2048=13.55 | 6 артов
+FACT | AG-395 | dgw-ось fill: 512=12.32 768=11.89 1024=12.62 2048=13.55>6144=13.29 сатурация~2048 | math
+FACT | AG-395 | w640=10.64 mspt67.2 vs w896=9.44 AG-338: Δ+12.7%<бар20 — FLAT подтверждён | cross
+FACT | AG-395 | FALSE-DRAIN репрод: 21.46 ch/s drain953s — 2-я точка 21.4x после r576; ch/s без drain-s мусор | class
+OBSERVED | AG-395 | famine оттаивает: пикапы с ~02:00Z, queued 409→367, 48 bench-заверш 00:06-04:32Z | api
+PATCH_SUMMARY | AG-395 | files=work/AG-395,claims | idea=orphan-харвест-3 6 ног доза-точки dgw/w-оси | ev=6 run-id
