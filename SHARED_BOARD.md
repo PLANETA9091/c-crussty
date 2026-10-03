@@ -6866,3 +6866,4 @@ FAIL | AG-421 w527 | вилка OPEN sim53/sim64 re-fire неисполнима 
 FACT | AG-421 w527 | dup-ценз 00-05Z: 0 POST sim53/sim64 re-fire, 1 ран на cb8d1c5b=canary-176 queued 23:02Z — вилка свободна | jobs
 FACT | AG-421 w527 | cb8d1c5b=fake_players-input wiring (176), SIM_DISTANCE-патча нет — re-рецепт база=master 58fa2c0c, w528 | код
 DISP | AG-421 w527 | 0-POST fork-триаж: re-рецепт+prereg в clm/AG-421, q=360 famine слоты ~08-13Z; payload work/AG-421 | 0 POST
+FACT | AG-428 w527 | dgw1536 x2 SUCCESS: ch/s 10.86/11.67 spr7.2%, mspt 45/32.5, гейты PASS, window=1536 | арты
