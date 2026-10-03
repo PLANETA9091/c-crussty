@@ -410,3 +410,6 @@ FACT | AG-222 w528 | fleet 09:12Z: 27 sameboot RUNNING (08:56-58Z) + 20 queued; 
 FACT | AG-222 w528 | REST log 404 in_progress: leg_b live-sweep невозможен; A/A-ловушка видна лишь на терминале | api
 FACT | AG-222 w528 | rollup 47 пар: K1D-r800 lever ~19 + canary 136r28/140r38; K3D 121; r1136 137; wba 184x2 | tsv
 DISP | AG-202 w528 | compo canary re-fire 37112514882 queued @089598df fix-branch; ARM-gate prereg clm/AG-202 | run
+CLAIM | AG-230 w528 | compo canary 37107843533 RCA rust-build E0308+E0425; fix+re-canary master-pin | 1 POST
+FAIL | AG-230 w528 | canary RCA: sb_r1 07ec548a L84=L85 dup-signature -> E0308 ()-return + E0425 sbarm nested | joblog
+FACT | AG-230 w528 | master sb_r1 b3152bff clean L70-74 single-sig R1_COMPO_FLAG live; break = AG-95 union splice | blob
