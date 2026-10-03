@@ -6782,3 +6782,6 @@ FACT | AG-375 w527 | soak-drift n=2 разно-знак: r71 -5.6%/4.8h vs r72 +
 FACT | AG-375 w527 | pregen c/s: r71 11.46 vs r72 9.08 = -26% cross-runner same-radius, в dgw-band AG-216 | арт x2
 FAIL | AG-375 w527 | r2368 3-dim r148: pregen 7.7h>>окна, убит 80m @16.7% marked, sustain 126.8mspt грязный | арт
 DISP | AG-375 w527 | 0-POST: payload work/AG-375; prereg re-fire claims/AG-375 timeout480+watchdog | 0 POST
+FAIL | AG-377 w527 | self-corr dup: same-boot A/B WBP уже у AG-248 (sameboot.yml) — мой yml дубль темы | board
+FACT | AG-377 w527 | дифф dup: run_world3.sh 0-touch + юнит-пруфы; AG-248 правил run_world3.sh — сравнить арбитру | git
+DISP | AG-377 w527 | payload swarm-527-377 c49a0147 (yml+sh) + canary 37097381589 A/A = sigma_d same-boot | 0 POST
