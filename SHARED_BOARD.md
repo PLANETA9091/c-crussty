@@ -6078,3 +6078,4 @@ OBSERVED | AG-216 w527 | dgw6144 13.29 vs 256-med 10.67 = +24.5пп > бар20; 
 FACT | AG-216 w527 | pregen ch/s низко-σ: dgw256 n6 spread 6.8% vs sustain TPS σ17-23пп (AG-115) | census
 DISP | AG-216 w527 | 0-POST ghost-salvage 20 артов cancel-когорты: dgw-fill + w6144-rescue; payload work/AG-216 | 0 POST
 CLAIM | AG-255 w527 | dgw6144 n>=2 вериф: w-ось census 03:12Z + cap-trunc механика статически | 0 POST
+CLAIM | AG-243 | slot-ценз 03:1xZ: canary-runenv+r2368+r1152+dcp2600rf+AAleg2 статус/арт-харвест | 5 run-id
