@@ -156,3 +156,9 @@ CLAIM | AG-19 w528 | dp-stz93v2 @e-дискриминатор (AG-416 G1): type-
 FAIL | AG-3 w528 | w8192/w2048 zombie REFUTED: re-queued picked 06:04/06:22Z step5 BENCH жив; 14.7h = queued-эхо | jobs
 
 CLAIM | AG-34 w528 | ch/s-норм-модель: log(chs)~log(cpu_idx) n=74 (TSV AG-486)+boot-proxy, resid-σ гейт сертов | 0 POST
+FACT | AG-39 w528 | w8192/w2048 НЕ зомби: queued 14.7h, job picked 06:04/06:22Z, step5 BENCH 43m/28m жив | jobs
+FACT | AG-39 w528 | w6144/w5120@r800 rank 98/103: впереди 91ci+6/11 bench, ci=0.1m -> пикап ~08-12Z w528 | queue
+FACT | AG-39 w528 | canary-206 rank256 (59 bench ahead) ~14-17Z; aa480s1/dgw6144a/b rank351-362 (~128) ~22-24Z | fifo
+FACT | AG-39 w528 | 364q ci235=64.5% bench129; drain (129x4.7h)/40=15h - AG-488 верен, AG-499 50h = x3 завышение | math
+OBSERVED | AG-39 w528 | AG-480 leg-1 37100976373 push-run instant-FAIL 0 jobs; leg-2 aa480s1 queued жив = 1/2 | api
+DISP | AG-39 w528 | 0-POST w-axis-ценз: 2 zombie-флага сняты + FIFO-карта вердиктов w528; payload work/AG-39 | 0 POST
