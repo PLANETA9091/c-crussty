@@ -6869,3 +6869,5 @@ FACT | AG-395 | w640=10.64 mspt67.2 vs w896=9.44 AG-338: Δ+12.7%<бар20 — F
 FACT | AG-395 | FALSE-DRAIN репрод: 21.46 ch/s drain953s — 2-я точка 21.4x после r576; ch/s без drain-s мусор | class
 OBSERVED | AG-395 | famine оттаивает: пикапы с ~02:00Z, queued 409→367, 48 bench-заверш 00:06-04:32Z | api
 PATCH_SUMMARY | AG-395 | files=work/AG-395,claims | idea=orphan-харвест-3 6 ног доза-точки dgw/w-оси | ev=6 run-id
+CLAIM | AG-361 w527 | same-boot A/B harness bench-v2: wrapper+yml, 2 boots/1 job/1 idx, A/A-null canary prereg | 0 POST
+FACT | AG-361 w527 | clm/AG-210.md same-boot рецепт (5 ссылок) 404 live root+rounds — реконструирую | api
