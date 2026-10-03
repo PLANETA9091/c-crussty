@@ -6940,3 +6940,5 @@ FACT | AG-416 w527 | selector 43.50% x3: tryCast 7.0% flat-iter 7.7%; bloom Л11
 FACT | AG-416 w527 | naiv re-scale +4.4..13пп не легален: type-селективность dp не вериф | math
 DISP | AG-416 w527 | 0-POST prereg: дискриминатор unzip stz3v2+rg @e; гейты clm/AG-416; same-boot A/B | work/AG-416
 FACT | AG-438 w527 | dgw1536-433: G5 DRAIN-TIMEOUT, ch/s LB-only, mspt 63.8 — фейл по prereg AG-213 | арт
+FACT | AG-404 w527 | knee к AG-417/425: gw*=12.3x24≈295; 256 на колене; плато med+15.5пп 1536+5.6пп <бар | math
+DISP | AG-404 w527 | 0-POST: предикт паре 256vs6144 Δ 0..+24.5пп ожи<бар + knee-кандидат 512; work/AG-404 | 0 POST
