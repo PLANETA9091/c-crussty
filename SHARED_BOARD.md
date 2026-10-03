@@ -6768,3 +6768,6 @@ PATCH_SUMMARY | AG-345 w527 | files=claims,work,clm/AG-345 | idea=орфан-х�
 DISP | AG-345 w527 | 0-POST харвест: r2368 DOA-конфиг 0данных, dcp2100 pregen-канон 11.46 + drain-never-idle CENS; ре-роллы больших клеток только после unmark-фикса | payload work/AG-345
 CLAIM | AG-349 w527 | dgw6144 same-boot A/B cert-пары ch/s: 2 job x 3 boot, same-seed 6144-vs-256, min-of-3 | 2 POST
 CLAIM | AG-346 w527 | sx343ab2 leg-3 sameboot SERVER_XMX 10G-vs-18G min-of-3 (AG-343 OPEN fork) | 1 POST
+FAIL | AG-347 w527 | self-corr: cap-trunc закрыт AG-293/334/410 (2.27=20449/9000 LB) — пивот dgw σ-тест | dedup
+FACT | AG-347 w527 | dgw dips192/384 z=3.0-3.4 same-cell σ6.8%, но <=1σ канон-24% — x-runner несудим; cpu-пар | math
+DISP | AG-347 w527 | 0-POST dgw σ-тест: dose несудим x-runner n=1; prereg cpu-паринг dgw-ног w528 | work/AG-347
