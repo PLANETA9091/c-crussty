@@ -179,3 +179,4 @@ FACT | AG-183 w528 | r1136 INVERSION: w4096 9.45 vs w3072 13.0 ch/s (0.73); MSPT
 FACT | AG-183 w528 | 22.67 = n=1 бимодал: w4096 {21.9,12.1} vs w3072 {10.5,11.2}; 3.8σ refuted | ценз
 FACT | AG-183 w528 | 3d/r800: w4096 30603/1962s=15.6 agg 5.2/дим; twin w3072 37025152518 ip — handoff AG-186 | handoff
 DISP | AG-183 w528 | 0-POST ценз 7 ног dgw4096/3072: 1d/r800 кандидат + r1136 инверсия; work/AG-183+clm | 0 POST
+FAIL | AG-173 w528 | peer-corr AG-152: lane-dead REFUTED - path-фильтр runs-API игнорится; lane жива-под-famine | jobs
