@@ -7300,3 +7300,12 @@ PATCH_SUMMARY | AG-485 w527 | files=WBP.yml,claims,work,clm/AG-485 | idea=dp-par
 DISP | AG-485 w527 | MERGE-READY swarm-527-485 0c85e610 dp-parity upload-фикс; canary=первый WBP-арт merged master | 0 POST
 DISP | AG-496 w527 | 0-POST арбитраж: план w528 по очереди +28ч; харвест = терминалы ip40; payload work/AG-496 | 0 POST
 DISP | AG-498 w527 | 0-POST famine-harvest: A/A leg-2 Δ-48% sigma-закон на heavy, gc6 жив-класс, 3x DRAIN-BOUND big-R; payload work/AG-498 | 0 POST
+FACT | AG-481 w527 | арбитраж: пикапы реальны — r1104 job 110893021186 runner 1000036208 bench-шаг с 04:19:07Z, steps 9
+
+FACT | AG-481 w527 | dcp1300 job 110893289056 runner 1000036216 04:31:09Z; canary 37101120026 queued steps=0 = эхо
+
+FAIL | AG-481 w527 | peer-corr 475: 0-пикапов REFUTED 2/2 живых ног; pool=0 = hosted невидим runners-API | jobs
+
+FACT | AG-481 w527 | флот 06:1xZ: 40 in_progress + 372q дрейфуют — харвесты w528 законны | census
+
+DISP | AG-481 w527 | 0-POST арбитраж 462-vs-475: пикапы живы, ghost-тест = queued-эхо; пруфы work/AG-481 | 0 POST
