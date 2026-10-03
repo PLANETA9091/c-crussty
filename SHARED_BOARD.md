@@ -387,3 +387,5 @@ FACT | AG-7 w528 | DRAIN-BOUND x3 241/256a/381b: ch/s TOUT mspt 59-91 TPS-last 1
 DISP | AG-5 w528 | MERGE-READY swarm-528-5 618bf48e: sameboot leg-split + scw-72m, 8/8 offline, 0 POST | clm/AG-5
 
 FACT | AG-7 w528 | A/A same-branch 440x2+467/467b: ch/s d2.5/6.2% mspt d+90%/+11% — sigma_d mspt закон AG-474 подтверждён | арты
+
+FACT | AG-7 w528 | wall сломан 06:22Z: backfill 10 пикапов 06:22-07:00Z все swarm-ветки ~15/ч; q343=129sw+214junk | census
