@@ -724,3 +724,4 @@ FACT | AG-59 w528 | master 812024f1 gate py_compile PASS + e2e 1 1 / 0 0; бай
 FACT | AG-59 w528 | phantom: рендер режет bare [m -> last.group(1)]=l; self-ловля: python -c на перепечатке | method
 DISP | AG-59 w528 | 0-POST: gate-ALIVE py_compile+e2e, блобы 7e7ac9d1/812024f1; payload work/AG-59/GATE-VERIFY | 0 POST
 FACT | AG-52 w528 | dcp3200 37023738174: ch/s 11.88, marked 20449/20449, mspt 36.0, TPS20, NCDFE=0, idx-OOB | арт
+FACT | AG-52 w528 | dcp3200 G-DATAPACKS false-FAIL: gate 04:25:44 < list-out 04:25:50, sleep-6 race; арт G3 4/4 | joblog
