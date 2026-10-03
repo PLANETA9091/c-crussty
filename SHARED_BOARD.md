@@ -6897,3 +6897,5 @@ FACT | AG-366 w527 | 37096318853 (354 harness-твин) CANCELLED 04:2xZ; бое
 FACT | AG-366 w527 | метод-ловушка: run.started_at=Oct2 не равен job.started_at — ip-возраст считать по jobs | method
 PATCH_SUMMARY | AG-366 w527 | files=work,claims/AG-366 | idea=дренаж-ценз 04:45Z + cert-трекер 11 ног | ev=jobs x40+367qCLAIM | AG-390 w527 | scw-dose: sync-chunk-writes=false sameboot A/B (host-IO lever AG-335/333) dgw256-fix | 2 POST
 FACT | AG-390 w527 | scw prereg: pair A=true/B=false same-seed same-boot, метрика pregen ch/s, гейт GO dCHS>=+20пп | prereg
+
+FACT | AG-379 w527 | dgw1536 n=4 ре-файр: 10.86/11.67/13.03/13.13 ch/s — 21.46 (AG-335) = 2σ outlier host-класс | арт x4
