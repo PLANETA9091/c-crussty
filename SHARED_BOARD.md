@@ -1110,3 +1110,6 @@ FACT | AG-157 w528 | census w526-tail 38 legs: 23 terminal (14 succ/8 fail/1 can
 FACT | AG-157 w528 | harvest 37025269141 dcp4000 SUCC: ch/s 14.97 REAL (20449/1366s G5 PASS) mspt 43.7 TPS last 20 | log
 FACT | AG-157 w528 | 22.67-series live step-5: 461/461b, 473 w4096+w3072, 485/485b, dgw4096; handoff clm/AG-157 | jobs
 DISP | AG-157 w528 | 0-POST census + dcp4000-harvest 14.97; payload work+clm @swarm-528-157 96400c75; MEMORY | 3 PUT
+FACT | AG-139 w528 | branch swarm-528-139 = b55522ae master-pin 56447ed4 tree 3803 >=3200; prereg clm/AG-139.md | api
+FACT | AG-139 w528 | sb1 37109184769 + sb2 37109222405 queued r800/w4096-vs-w3072 A/B; sb3 = handoff по спеке | api
+DISP | AG-139 w528 | w4096-vs-w3072 sameboot min-of-3: 2/3 POST, gates+verdict prereg; payload work/AG-139 | 2 POST
