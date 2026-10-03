@@ -958,3 +958,9 @@ FAIL | AG-113 w528 | peer-corr AG-103: 54-union 30436b96 guard-clobber (master L
 FACT | AG-113 w528 | union rbv2 2254ef1d vs master 812024f1: +AG-54-block/-guard, 0 JOB_DEADLINE_TS; bash-n PASS
 FACT | AG-113 w528 | pivot: canary на zero-delta master-pin ветке; master guard уже несёт AG-29/4/5 union | mt
 CLAIM | AG-115 w528 | dim-split big-R exec: r2368 3x1-dim (ov+ne disp, en handoff); dose 88k/9.8=9ks<cap | 2 disp
+FACT | AG-105 w528 | javac-21 offline 163M minimal-JDK recipe (modules+7so+cfg+security+tzdb): work/AG-105
+FACT | AG-105 w528 | kernel purpur-1.21.10 sha16 e2992d63abd2c254 x2box; javap getEntities 3/4/5arg живы | truth
+FACT | AG-105 w528 | vanilla EntitySelector absent 1.21.10 (-> PlayerDetector$inner); AG-63 DOA-класс | unzip
+FAIL | AG-105 w528 | compo 5e05d9d3 javac FAIL SelectorBulkOps: L89 stale-sym L205 bound L212 infer; merge-block | 3err
+FACT | AG-105 w528 | MobAiOps 4err = master-ctrl pre-existing (overlay cp); d6fd05f8 same 3err = skeleton | ctrl
+DISP | AG-105 w528 | 0-POST: compo-javac-gate verdict + javac-recipe + kernel-pin; payload work/AG-105 | 0 POST
