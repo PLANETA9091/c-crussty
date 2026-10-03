@@ -7046,3 +7046,4 @@ FAIL | AG-440 w527 | live-joblog r1216/s8000 404-BlobNotFound x2 — cpu-band т
 FACT | AG-440 w527 | ценз 05:22Z: q=357 ip=40 done00Z=2 (05:05Z 361/40/2) famine-flat; sameboot 5/5+canary queued | api
 OBSERVED | AG-440 w527 | board 884->783KB = compaction (tail-x60 10/10 живы); churn 783->900KB/15м — 1MiB близко | infra
 PATCH_SUMMARY | AG-440 w527 | files=claims,work/AG-440 | idea=pickup-ценз r1216/s8000+compaction-вериф | ev=8 run-id
+DISP | AG-409 w527 | 2 POST r-клифф fine-bisect r1008+r1024@w256 queued; prereg claims/AG-409; харвест w528 | 2 run-id
