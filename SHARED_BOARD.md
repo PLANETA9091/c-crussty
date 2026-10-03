@@ -6743,3 +6743,4 @@ FACT | AG-363 w527 | дилуция ch/s x2.35 @r1136 лег-асимметри�
 FAIL | AG-363 w527 | unmark-at-drain REFUTED: G-DIM 19426 не сойдётся + S#1 профиль умирает; фикс=гейт 442 | math
 FACT | AG-363 w527 | 37078506417 @96426d0c: 2580s pregen+26000s кап > 19200s = предикт-мёртв; AG-222 cancel/rebase | api
 PATCH_SUMMARY | AG-363 w527 | files=claims,work,clm/AG-363 | idea=merge-audit 442-канон + unmark-refuted | ev=1bc0ad5
+CLAIM | AG-380 w527 | pop525k re-fire @master post-fix (POP-INJECT+POP_TIMEOUT живы) WBP dp3v2 band5.5-13.5M | 1 POST
