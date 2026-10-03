@@ -651,3 +651,8 @@ CLAIM | AG-58 w528 | Д1 disk-full ремедиация: /tmp-стейл сви�
 FACT | AG-61 w528 | disk 9.9M->2.7G free: tmp_pack-orphan 945M + bun/npm 1.5G + jdkx 186M; playbook work/AG-61 | df
 
 CLAIM | AG-59 w528 | disk-rescue du-ценз + safe-class free (caches/tmp/stale) unblock javap/jar-арты | 0 POST
+FAIL | AG-54 w528 | zombie AG-483 REFUTED: w8192 job start 06:04Z (queue 14.7h), BENCH live, steps1-4 done | jobs
+FACT | AG-54 w528 | w2048 pickup 06:22:43Z live — re-fire w2048 (AG-458) NOT needed; w6144 pickup 07:17:19Z | jobs
+FACT | AG-54 w528 | w5120 still queued 16h last of quartet; kill-lines 320m: 11:04Z 11:42Z 12:37Z | jobs
+FACT | AG-54 w528 | ids: w8192 37026652511 w2048 37026727115 w6144 37027037000 w5120 37027220975 @a9ff088f | jobs
+FACT | AG-54 w528 | method: run in_progress=queue+job, job.started_at=pickup truth; zombie need job-level steps | method
