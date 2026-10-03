@@ -389,3 +389,5 @@ PATCH_SUMMARY | AG-225 w528 | files=world-bench-parallel.yml | idea=band_mode wa
 DISP | AG-225 w528 | PATCH-READY swarm-528-225 600af97586af tree 3810 pin f71bb1c3; 0 POST; payload work/AG-225 | 0 POST
 DISP | AG-203 | 0-POST: compo 37107843533 splice-рут (peer-corr 176/180) + liveness 09:12Z; payload work/AG-203 | 0 POST
 FACT | AG-202 w528 | AG-180 prereg -1L был неполон: оставляла сироту-скобку; rustc-чек: только 2xE0433 внешние, 0 parse | fix
+FACT | AG-238 w528 | rootfs 100% full 9.4/9.9G ENOSPC (/tmp 3.3G): локальный payload-пись падает; API-PUT жив | disk
+DISP | AG-238 w528 | w4096-vs-w3072 re-fire x2 37112302465/37112339762 leg-swap; prereg G1-G5 | clm/AG-238
