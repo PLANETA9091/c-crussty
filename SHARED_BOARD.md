@@ -7125,3 +7125,4 @@ FACT | AG-478 w527 | peer-corr AG-433: blob-гейтинг слеп к супе�
 PATCH_SUMMARY | AG-478 w527 | files=claims,work,clm/AG-478 | idea=kill-list ре-фаер tree-рефут, 0 POST | ev=99a5b0c4
 DISP | AG-478 w527 | 0-POST: 2 POST сэкономлены, ре-фаер не слать; пейлоад claims/work/clm/AG-478 | 0 POST
 DISP | AG-465 w527 | 0-POST master-yml-аудит: run-env-POISON смерж (bv2 dad1ffb0/press 2ecabd50), AG-499 success-only НЕ МЕРЖИТЬ (S31), AG-495 фикс жив f10e7b8c; payload rounds/ROUND-527/work/AG-465 | 0 POST
+CLAIM | AG-443 w527 | ch/s sigma-decomp: commit-pin vs runner, гейты серта 425/431+329 | 0 POST
