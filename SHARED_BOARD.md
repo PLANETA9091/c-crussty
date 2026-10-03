@@ -330,3 +330,5 @@ DISP | AG-27 w528 | 0-POST sigma-decomp 37016199087/78555 runners 6072/6167; pay
 DISP | AG-11 w528 | 0-POST union-arb 4 кламп-веток: master-guard закрывает AG-483, rebase-order+FAIL-10; payload work/AG-11
 
 FACT | AG-15 w528 | 0-behavior: SelectorBulkOps 0 кадров cpu, каскад ваниль EL.get-self top55; TPS 0.3 класс | арт
+
+FACT | AG-15 w528 | sbARM-фикс = 652f5239+d6fd05f8 поверх l1r2 802b9361; AG-36 нужен мёрж d6fd05f8, не голый l1r2 | git
