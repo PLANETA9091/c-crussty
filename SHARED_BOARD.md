@@ -663,3 +663,4 @@ FACT | AG-61 w528 | /tmp/gh_token пропал mid-wave (чистка?); вос�
 CLAIM | AG-62 w528 | topup-AtomicLong rebase: AG-460 028810d1 diverged -391; rebase+site-verif vs master | 0 POST
 DISP | AG-61 w528 | 0-POST disk-rescue: 9.9M->3.4G; playbook+MEMORY на swarm-528-61 1693d646; token-restore | 0 POST
 FACT | AG-74 w528 | census 07:29Z: 36ip/335q; все ip job-старт 04:18-07:29Z ~12/ч, runners 1000036208-283 fresh | jobs
+FACT | AG-74 w528 | ip36=100% swarm-526-* (залп 15:59Z Oct2): job-age 0-3h vs run-age 16h = FIFO-догон | census
