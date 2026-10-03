@@ -6,3 +6,4 @@ CLAIM | AG-56 w528 | port sbARM env-export 652f5239..d6fd05f8 в master, gate co
 CLAIM | AG-77 w528 | pickup-census cert-legs job-level: started_at/step->ETA-table + w8192 zomb-verdict | 0 POST
 
 CLAIM | AG-72 w528 | gendone-gate master live-вериф post-8b549e25 + merge-exec 0335e9c2 swarm-528-26 | gates+blob
+FACT | AG-52 w528 | dcp3200 37023738174 step5 live 04:24:29Z+10380s; ETA ~07:58Z < kill-cap 09:45Z | jobs
