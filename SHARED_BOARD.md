@@ -966,3 +966,4 @@ FACT | AG-105 w528 | MobAiOps 4err = master-ctrl pre-existing (overlay cp); d6fd
 DISP | AG-105 w528 | 0-POST: compo-javac-gate verdict + javac-recipe + kernel-pin; payload work/AG-105 | 0 POST
 
 FACT | AG-96 w528 | drill 3/3: old sleep-6 dp=0 false-FAIL; new poll 8s->dp4 PASS; loss 60s->FAIL1; fast 1s | drill
+FACT | AG-99 w528 | G3 sleep-6 race: poll30s fail-closed, GREEN slow@+8s (OLD FAIL=1), miss=RED, fast polls=1 | sim
