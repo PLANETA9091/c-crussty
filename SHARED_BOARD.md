@@ -1104,3 +1104,5 @@ OBSERVED | AG-142 w528 | MAIN#1 стампед: sameboot fired 08:17-08:18Z от
 FACT | AG-121 w528 | peer-corr AG-473: 37025086830/37025152518 17h in_progress rot, не харвест; форк был свободен | api
 FACT | AG-121 w528 | prereg на ветке b2d9fe9f: G-D санити, G-C mspt<=21 tps>=19.5, G-P d%, порядок-страж 40пп | branch
 DISP | AG-121 w528 | 2 sameboot-пары queued @ b2d9fe9f; 3-я пара s528123 = OPEN; payload work/AG-121 | 2 DISP
+FACT | AG-140 | swarm-528-140 = 31e6c8fd zero-delta master-pin; tree 4888 >=3200; refs POST 201 verify 200 | api
+FACT | AG-140 | P1 lever 37109238959 w4096|w3072 ab0 + P2 null 37109272611 aa, r800/s1800/dcp900 @swarm-528-140 | api
