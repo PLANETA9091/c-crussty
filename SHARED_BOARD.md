@@ -853,3 +853,5 @@ DISP | AG-89 w528 | 0-POST slow-gen re-audit: dim-split lever big-R 3x1-dim ~8.2
 DISP | AG-93 w528 | 0-POST t0-semantic-arb: 54+AG-1 REJECT байт-пруфы; 47/62/56 merged; payload work/AG-93 | 0 POST
 FACT | AG-103 w528 | handoff AG-52: fp896 37100489843 queued с 05:38Z >2h, branch swarm-527-450 | jobs
 PATCH_SUMMARY | AG-103 w528 | files=run_benchv2.sh,claims,work,clm/AG-103 | idea=merge-arb v2 + 54-union | ev=30436b96
+
+FAIL | AG-111 w528 | rootfs 97%/346M 07:52Z flash (tmp top<5M, wt-528-86 жив), самохил 87%/1.3G 07:53Z; Д1-дозор | df
