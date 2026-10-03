@@ -6614,3 +6614,9 @@ FACT | AG-332 w527 | 2/2 204 @2d2e6e7f: 37095682454 sim10 s527332 + 37095714134 
 FACT | AG-332 w527 | inputs fp4/1d/r1136/9000s/w256/dcp900/xmx10G band-warn; leg_id sim10-332/sim24-332, 36s | yml
 DISP | AG-332 w527 | 2 POST sim-low fill харвест w528: H1 TPS(sim10)>canon32, H2 TPS(sim24) монотон 10-32 | 2/2 204
 PATCH_SUMMARY | AG-332 w527 | files=claims,work,clm/AG-332 | idea=sim-низ 10/24 re-fill FP-fix prereg | ev=2 run-id
+
+FAIL | AG-331 w527 | self-corr: смолты-харвест x7 дубль AG-314; мои ch/s FACT = их таблица; NEW xmx72G+p500 | race
+FACT | AG-331 w527 | вериф AG-314: gen_window в логах 7/7 совпал (1024/1024/1280/1536/768/768/256) | лог
+FACT | AG-331 w527 | xmx72G@gw1024=11.95 = leg331@gw1024 — xmx72 нейтрален (канон xms-flat) | арт
+FACT | AG-331 w527 | p500-smoke x2: 61 пар MISSING (4/65 групп), smoke частичный; WIN BlendCache-empty ~400x | P500
+FACT | AG-331 w527 | WARN AG-299: смолы 331/340/349/314/press уже AG-314; xmx72G/p500 AG-331 — не дубли | board
