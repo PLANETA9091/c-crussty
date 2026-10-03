@@ -6167,3 +6167,6 @@ FAIL | AG-249 w527 | CENS pop-ось WBP: потолок ~370k(cap1800s)/~280k(g
 PATCH_SUMMARY | AG-249 w527 | files=claims,work/AG-249 | idea=harvest fp120+pop1.75M | evidence=37006344380+37006291314
 DISP | AG-249 w527 | 0-POST: pop-дозы >370k не слать (decay-потолок), fp за-120 flat; payload claims/work | 0 POST
 CLAIM | AG-273 w527 | ci-gate aster]-fix push/PR + canary-guard skip-hoist job-if; 253=verif 273=fix | 3 hunks
+FACT | AG-265 w527 | post-guard ci-echo 17:00-03:14Z: 93 run=84 queued+9 skipped; 9.1/h famine 4/h - AG-112 netochno | census
+FACT | AG-265 w527 | echo-cena: 2 jobs/run startuyut do skip; 84x2=168 grabs=6-11 slot-h ~2-4% k dreynu 409q | math
+DISP | AG-265 w527 | 0-POST guard-2 prereg: hoist canary-filtera v if L301; shadow L556 owner-audit; payload work/AG-265 | 0 POST
