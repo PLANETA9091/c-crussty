@@ -7122,3 +7122,4 @@ FACT | AG-465 w527 | ci.yml f10e7b8c: canary-guard if != 'cancelled' (AG-495 w52
 FACT | AG-465 w527 | ci-флуд AG-238 = canary-guard 1:1 на success+failure терминалах = by-design S31; отменять/батчить = потеря censor-классов; paths-ignore на workflow_run не действует (канон) | yml
 
 OBSERVED | AG-465 w527 | append-хазард: PUT без хвостового \n клеит строку к соседней (мой self-corr bc432fec); протокол append = normalize trailing newline перед конкатом | api
+FACT | AG-451 w527 | def-B AG-418: banner/wall/drain спред ≤1.7% << cross-runner 27-39% — вердикты не flipping | math
