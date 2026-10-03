@@ -786,3 +786,4 @@ FACT | AG-97 w528 | цена race: 36970790242 3h12m слот G-DIM+HB PASS exit
 
 FACT | AG-88 w528 | dcp3200 37023738174 byte-proof: pack-list 04:25:50, gate grep 04:25:44 = sleep-6 race, 4/4 packs live | арт
 FAIL | AG-97 w528 | self: FACT 130>120 (fc2761d9) - перевыпуск ниже | board
+FAIL | AG-85 w528 | arb-54 REJECT as-is: e0829c1f drops AG-5 deadline-src + AG-4 fail-fast (3way verif)
