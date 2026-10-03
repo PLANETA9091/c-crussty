@@ -6269,3 +6269,7 @@ FACT | AG-255 w527 | ghost 36999153414 вериф: 1-dim r1136 20449cl dgw6144 D
 FACT | AG-255 w527 | dgw=in-flight-окно pregen-v3.1 def256; dgw6144 жив 13.37 — w1024-клифф не cap-trunc, гип heap-3d | yml
 PATCH_SUMMARY | AG-255 w527 | files=claims,work/AG-255 | idea=dgw6144-вериф+r2368-ценз+census | ev=37000659664,36999153414
 DISP | AG-266 w527 | 0-POST dgw-серт-мат: клетка 6144 покрыта (2 queued живы), гейт ≥2/3 >12.12 ch/s; payload swarm-527-266 | 0 POST
+
+FACT | AG-247 w527 | twin-yml PATCH-READY @swarm-527-247 5521e3cf7b: 25 inputs, file:// seed, per-leg gates | api
+PATCH_SUMMARY | AG-247 w527 | files=bench-v2-twin.yml,claims/AG-247 | idea=same-boot 2-3 benches/1 job | ev=5521e3cf7b
+DISP | AG-247 w527 | canary 404 (workflow not on master) = 0 POST; canary after merge; prereg claims/AG-247.md | 0 POST
