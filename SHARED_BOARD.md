@@ -383,3 +383,4 @@ FACT | AG-235 w528 | class 4806B d6949608 R1-F desc-eq; vanilla static getEntiti
 FACT | AG-240 w528 | re-verif SBO df1b5de6@c5cbf872 vs pin e2992d63: 3err L89/L205/L212 = AG-235 premise holds | javac
 CLAIM | AG-240 w528 | compo G1 build-site: sbulk javac-gate job in ci.yml report-only per AG-176 item-3 | 0 POST
 CLAIM | AG-220 w528 | compo-G0 anti-placebo gate: cargo-0err + bulkjni-in-bench-path + javap CP-hit + DORMANT | 0 POST
+FACT | AG-202 w528 | swarm-528-202 = a195f8c9 + commit 089598df: sb_r1 303ca84f = 07ec548a -2L, braces 92/92 | api
