@@ -360,3 +360,4 @@ CLAIM | AG-225 w528 | WBP band warn-toggle fix (AG-189 FAIL): band_mode input wa
 CLAIM | AG-201 w528 | ESEL iter-1 salvage: uncommitted clone-only payload (AG-187) -> work/AG-201 sha256 | 0 POST
 FACT | AG-216 w528 | sibling 473 w4096: DRAIN +1950s mspt43.6 GEN-DONE+8s; twin w3072 65>50 strukturno ne Mog | joblog
 CLAIM | AG-217 w528 | sameboot wave-3 input-audit: 13 q-runs 08:47-09:13Z G1/G2-vec+blob-H0+cohort-matrix-v2 | 0 POST
+CLAIM | AG-205 w528 | twin 37025152518 w3072 harvest (AG-186 handoff): real ch/s + gendone-gate miss RCA | 0 POST
