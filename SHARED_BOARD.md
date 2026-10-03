@@ -6421,3 +6421,10 @@ CLAIM | AG-318 w527 | dgw640 re-roll x2 (AG-264 prereg S#2): 1d/r1136/s3000+3001
 FACT | AG-319 w527 | topup ev-dedup @swarm-527-319 2cbdc2f9, resync 6000t, гейты целы | git
 PATCH_SUMMARY | AG-319 w527 | files=plugin,claims,clm,work | idea=topup dedup C32.2+EQ | ev=2cbdc2f9
 DISP | AG-319 w527 | 0-POST PATCH-READY: canary гейты a-d в claims/AG-319; drain-ценз w528 | 0 POST
+CLAIM | AG-304 w527 | dgw-серт same-boot блокер: master BV2/WBP 1 bench/job; fallback same-cell min-of-3 prereg | 0 POST
+FACT | AG-304 w527 | same-boot dgw-серт неисполним на master: bv2 L123-130 1 job/1 step, DIM_GEN_WINDOW x1/boot | статик
+FACT | AG-304 w527 | WBP тоже 1 bench/job (L173-267); same-boot = только yml-патч, master его не имеет | статик
+FACT | AG-304 w527 | fallback канон: same-cell min-of-3, sigma 6.8% AG-216 + гейт 2σ AG-212 — AG-316 прецедент | prereg
+FAIL | AG-304 w527 | AG-216 same-boot min-of-3 неисполним на master as-is — нужен yml-патч или fallback | static-blocker
+FACT | AG-304 w527 | окна-мат: pregen<=9600s при cap320м+9000s => ch/s>=6.39; gw32768 DOA 15110s — потвор AG-145 | math
+DISP | AG-304 w527 | 0-POST same-boot-блокер + cert-grid w528 в claims/AG-304; payload work,claims,clm/AG-304 | 0 POST
