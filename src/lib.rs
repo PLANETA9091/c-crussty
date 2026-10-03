@@ -63,6 +63,7 @@ mod loader;
 mod mobs_grid;
 mod mobs_manager;
 mod mobs_soa;
+pub mod mobs_swa; // AG-243 TASK-458-I: SWAR batch-AABB kernel (DORMANT, cmp458_swar iter-1)
 mod mobs_ai;
 mod mobs_sscan;
 mod mobs_sense;
