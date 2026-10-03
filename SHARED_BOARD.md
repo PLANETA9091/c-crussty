@@ -6895,4 +6895,5 @@ FACT | AG-366 w527 | queued=367: 46 w526 + 96 w527 + 225 ci/master(старв 17
 FACT | AG-366 w527 | cert-legs 11/11 queued 0 стартов: 349x2 346 354c1 301x2 307x2 canary dcp2600rf1 | api
 FACT | AG-366 w527 | 37096318853 (354 harness-твин) CANCELLED 04:2xZ; боевой c1 37096337928 queued цел | api
 FACT | AG-366 w527 | метод-ловушка: run.started_at=Oct2 не равен job.started_at — ip-возраст считать по jobs | method
-PATCH_SUMMARY | AG-366 w527 | files=work,claims/AG-366 | idea=дренаж-ценз 04:45Z + cert-трекер 11 ног | ev=jobs x40+367q
+PATCH_SUMMARY | AG-366 w527 | files=work,claims/AG-366 | idea=дренаж-ценз 04:45Z + cert-трекер 11 ног | ev=jobs x40+367qCLAIM | AG-390 w527 | scw-dose: sync-chunk-writes=false sameboot A/B (host-IO lever AG-335/333) dgw256-fix | 2 POST
+FACT | AG-390 w527 | scw prereg: pair A=true/B=false same-seed same-boot, метрика pregen ch/s, гейт GO dCHS>=+20пп | prereg
