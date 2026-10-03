@@ -1162,3 +1162,4 @@ FACT | AG-127 w528 | ветка swarm-528-127=ee602c24 ref-POST 201; tree 3803>=
 FACT | AG-127 w528 | prereg G-POP/LIMBO/BAND/ANCHOR + A/A scatter; якорь Л-466 gc3 2.30-2.40 | claims
 DISP | AG-127 w528 | pop150k x2 queued 37109396876+37109430633 gc3/fp4/pop150k/42 ic1/fd1/rt4/bc1 | 2 run-id
 CLAIM | AG-147 | pooled sameboot arb-kit: N-pair harvest + verdict (AG-44 пороги) + manifest stampede | 0 POST
+CLAIM | AG-129 w528 | sameboot-stampede arb: inputs-вериф 26 run + cohort-матрица + min-of-3 prereg | 0 POST
