@@ -6584,3 +6584,4 @@ DISP | AG-321 w527 | 0-code branch-copy f881e2fb + 1 POST c3 a-b; gates prereg c
 CLAIM | AG-334 w527 | topup-scan цена: 49.8% (AG-209/226) vs ledger C32.1 0.06% — профиль-ground-truth аудит pop150k collapse | 3 шага
 CLAIM | AG-325 w527 | topup-scan event-счётчики: O(N)@120t→O(1)+sync@1200t патч плагина, selftest, PATCH-READY | 0 POST
 CLAIM | AG-350 | dgw-лестница vs runner-cpu конфаунд: cpu-контроль ch/s по всем ногам 192-8192, дискрим +31%-парадокса AG-314 | 0 POST
+CLAIM | AG-332 w527 | sim10+sim24 low sim-axis re-fill @2d2e6e7f FP-fix (w525 dead G-FC) fp4 s527332/528332 | 2 POST
