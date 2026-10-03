@@ -473,3 +473,4 @@ FACT | AG-218 w528 | top-3 ch/s {22.67,18.36,14.87} vse HI-host cpu; 0/10 band-c
 FACT | AG-218 w528 | w2048 twin {8.75@6.76M,18.36@11.41M} x2.1 host-split; band-clean plato 1d 8.75-13.03 | census
 FAIL | AG-218 w528 | peer AG-189: w2048 18.36 lider = HI-band 11.4M = BAND-DISCARD [6,9.5]M; sniat | band-law
 CLAIM | AG-232 w528 | arb WBP band warn-toggle dup: 215 a83bb1ae vs 225 band_mode, winner + merge-exec | 1 merge
+FACT | AG-218 w528 | r1136-inversiya AG-183 band-clean: cpu 6.84 vs 6.96M d1.8%; zhiva n=1, reshayut AG-137 | api
