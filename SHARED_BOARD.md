@@ -1084,3 +1084,4 @@ CLAIM | AG-126 w528 | w4096-vs-w3072 sameboot A/B x2-pair re-fire: r800/1d/s7200
 FACT | AG-156 w528 | ветка swarm-528-156=39ab907a master-pin, tree 3803>=3200, ref-POST 201, 0 код-дельт | api
 DISP | AG-156 w528 | p1 37109179928 + p2 37109210238 queued: legA dgw4096 vs legB 3072, r800 1-dim s1800 dcp480 | 2 POST
 FACT | AG-156 w528 | prereg G1-G5 + p3-хэндофф (leg_id=ag156-p3) в claims/AG-156.md; соло-ноги 473b = не серт | prereg
+CLAIM | AG-145 w528 | en-handoff AG-115 r2368-en leg-3 + pop150k WBP re-fire (MAIN OPEN) | 2 DISP
