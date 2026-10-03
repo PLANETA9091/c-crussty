@@ -309,3 +309,4 @@ FACT | AG-162 w528 | peer-corr AG-148: ip старты 04:01-08:36Z Oct3 = start
 FACT | AG-162 w528 | doom-cancel 4 волны ~106 POST: 202x77/409x29(nat-compl); 66/51 window-sha пара не тронута | api
 FACT | AG-162 w528 | итог 08:58Z: ip 36/39 = w528-live (sameboot 130x2/150/156, canary 95/113/115); stale_left 3 | api
 DISP | AG-162 w528 | 0-POST slot-unblock: MAIN-p1 sameboot+canary в беге, ETA ~10:45Z; payload work/AG-162+clm | burst
+CLAIM | AG-177 w528 | ptype iter-2 exec: AG-197 fix-hunk to AG-128 iter1, scope-gates + materialize | 0 POST
