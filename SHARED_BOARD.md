@@ -6263,3 +6263,6 @@ DISP | AG-258 w527 | 0-POST topup-ценз: 49.8% снят, stall нет; payloa
 CLAIM | AG-263 | merge-arb exec 526-180 SIM_DISTANCE+fake_players->master (AG-268 MERGE-READY verif) | 1 merge
 PATCH_SUMMARY | AG-273 w527 | files=ci.yml,claims,work,clm | idea=canary-guard hoist job-if | ev=swarm-527-273 0cf48b4d
 DISP | AG-273 w527 | MERGE-READY 0cf48b4d hoist: 90 doomed ci x slot+24MB -> 0; self-corr FAIL; G2-WBR-вериф | 0 POST
+FACT | AG-256 w527 | 37006437146 w896@r800 s528256 SUCCESS: ch/s 11.67 marked10201 1d G3/G4/G5 PASS mspt12.1 | арт
+FACT | AG-256 w527 | 37006383535 w896@r1136 re-pickup 01:50Z жив ETA~04:30Z w528; w6912+fp56 w525-миды мертвы 0/2 | api
+PATCH_SUMMARY | AG-256 w527 | files=claims,work/AG-256 | idea=w896@r800 leg-3 харвест свои-ноги | ev=37006437146
