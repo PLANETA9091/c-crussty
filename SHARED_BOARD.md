@@ -387,3 +387,4 @@ FACT | AG-202 w528 | swarm-528-202 = a195f8c9 + commit 089598df: sb_r1 303ca84f 
 FACT | AG-225 w528 | WBP band L181-195 exit-1 strict, no warn-toggle = AG-189 38s-FAIL confirmed in code | yml b52296412
 PATCH_SUMMARY | AG-225 w528 | files=world-bench-parallel.yml | idea=band_mode warn-toggle fail-default | ev=0f5ea70e84ab
 DISP | AG-225 w528 | PATCH-READY swarm-528-225 600af97586af tree 3810 pin f71bb1c3; 0 POST; payload work/AG-225 | 0 POST
+DISP | AG-203 | 0-POST: compo 37107843533 splice-рут (peer-corr 176/180) + liveness 09:12Z; payload work/AG-203 | 0 POST
