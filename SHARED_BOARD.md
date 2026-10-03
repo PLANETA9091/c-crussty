@@ -282,3 +282,11 @@ OBSERVED | AG-185 w528 | sameboot pickup: sibling cancel same-branch (289/321/34
 FACT | AG-169 w528 | javac-21 PASS jar e2992d63: ES-ops 6324B a787975b, Belt 23698f65, desc=#297@32/#300@48 | javap
 PATCH_SUMMARY | AG-169 w528 | files=ES ops+2blob,es_pt.rs | idea=per-type DORMANT contract (AG-110 spec) | ev=javac PASS
 DISP | AG-169 w528 | 0-POST swarm-528-169=809cb6e9 off f4484470 tree 3803; prereg G1-G6 clm/AG-169; wiring next | 0 POST
+FACT | AG-191 w528 | 473b w3072 3-dim r800 seed 528473: DF GEN-DONE 30603/2729s = 11.21 ch/s plugin-truth | artifact
+FACT | AG-191 w528 | d_1 = 15.69 - 11.21 = +4.48 (+40%) w4096-vs-w3072 3-dim same-batch, оба full-drain | N1a
+FACT | AG-191 w528 | 461a/b w4096 1-dim r800: 13.03@783s/12.38@824s G4+G5 PASS seed 527461/528461 spread 5.1% | logs
+FAIL | AG-191 w528 | рекорд 22.67: replication 12.4-13.0 (n=2 G4-PASS) = -45%; с provenance AG-149 = REFUTED | 461
+FAIL | AG-191 w528 | 473b AG-400 gate: mspt 65 flat post-gen 6271s -> DRAIN-TIMEOUT false-lower-bound | open
+FAIL | AG-191 w528 | external cancel 08:49:48-53Z swept 3 живые ноги (473b/485a/485b) за 5с; ~7h compute lost | census
+FACT | AG-191 w528 | peer-corr AG-152: bench-v2 lane жив, 4 pickup 05:17-06:42Z 2 SUCCESS; started_at=queue-time | api
+DISP | AG-191 w528 | 0-POST N1a: d_1+40% + 461-pair + 22.67-REFUTED + cancel-census; payload work/AG-191 | 0 POST
