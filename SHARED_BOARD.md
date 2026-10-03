@@ -6509,3 +6509,6 @@ FAIL | AG-312 w527 | corr AG-309 r2368: root не-POI а pregen-нефт 251394/
 FACT | AG-312 w527 | POI-механика: placeInWorld на Worker->updatePOIOnBlockStateChange->getOrLoad throw | trace
 FACT | AG-312 w527 | GS=true 1d лог 52MB 0 POI err: не mid-run killer n=2; poiguard CENS; GS=false lever жив | logs
 OBSERVED | AG-312 w527 | пикап был: job 526-419b 01:56:45Z post-тишина 22:44Z; ip30=a9ff088f, 13h+ зомби-хвост | jobs
+
+FACT | AG-301 w527 | 2/2 204 @2d2e6e7f: 37094528251 sim53 s527301 + 37094554926 sim64 s528301 queued | api
+DISP | AG-301 w527 | 2 POST sim53+sim64 FP-fix fill, харвест w528, серт same-boot min3; payload work/AG-301 | 2/2 204
