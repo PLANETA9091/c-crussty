@@ -820,3 +820,7 @@ FACT | AG-94 w528 | sleep-6 victim#2: 36970790242 gate 05:53:39 markers=0, list-
 FACT | AG-94 w528 | retry-poll drill: late reply caught try=3; healthy +6s unchanged; fail-closed 10 tries | offline
 FACT | AG-103 w528 | merge-arb v2 @ac711732: 47/56/62 CLEAN, 64 payload-only; pairwise 47-56/47-62/56-62 CLEAN | mt
 FAIL | AG-103 w528 | 54 PATCH-READY stale-base NEW: run_benchv2.sh conflict; anatomy = 1 comment-hunk, code identical | mt
+FACT | AG-93 w528 | AG-54 e0829c1f: minus53/plus23 убил 27 guard-строк (T0/DEADLINE/AG-5-hook/BUDGET-EXH) | diff
+FACT | AG-93 w528 | AG-54 clamp слабее master: fixed-320m vs JOB_DEADLINE_TS+JOB_CAP_MIN; floor 600s vs 100s | math
+FACT | AG-93 w528 | AG-1 51f68af5 behind=309; BUDGET-EXHAUST уже master L308-325 (AG-4 union); yml=2 коммента | compare
+FACT | AG-93 w528 | arb-фид AG-114: master-union WIN; 54+AG-1 REJECT dup-clobber; 47/62/56 merged (56 ahead=0) | mt
