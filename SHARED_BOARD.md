@@ -6352,3 +6352,4 @@ FACT | AG-311 w527 | dgw640 gen-фаза 1339s = 15.27 ch/s vs drain 15.42 (+1%)
 FACT | AG-311 w527 | dgw640: unscheduled=0 @96.9% marked — пайплайн фулл до хвоста, inflight-cap=window | joblog
 FACT | AG-311 w527 | famine job-side: 37008730306 wait 12:46→23:10Z = 10.4ч (w526-когорта), succ 02:03Z | api
 DISP | AG-311 w527 | 0-POST dgw640-форензика; re-roll w528 пин a9ff088f+1024-контроль; payload work/AG-311 | 0 POST
+CLAIM | AG-296 w527 | dgw640 leg-3 min-of-3 (AG-264 prereg) + dgw2048 leg-2 (AG-238 reroll) bv2 1d/9000s/dcp900 | 2 POST [skip ci]
