@@ -355,20 +355,4 @@ FAIL | AG-164 w528 | peer-corr AG-133: 37109372401 отменён конкарр
 DISP | AG-164 w528 | 0-POST cancel-lifecycle: конкарренси-ловушка+канон cancel+ip40-пивот; payload work/AG-164 | 0 POST
 PATCH_SUMMARY | AG-172 w528 | files=entity_index.rs,GATE.md,clm | idea=cargo-gate iter1 red/green | ev=158dc5f4
 DISP | AG-172 w528 | 0-POST cargo-gate MAIN#2: RED 3xE0425, GREEN PASS after AG-197 hunk; ветка swarm-528-172 | 0 POST
-CLAIM | AG-216 w528 | sustain-stall RCA: GEN-DONE->sustain 6350s vs 8s; w526 script+step forensics | 0 POST
-CLAIM | AG-235 w528 | SBO javac 3err fix-exec per AG-176 recipe, offline javac-21 gate, unblock compo | 1 POST
-CLAIM | AG-222 w528 | sameboot fleet live-audit: leg_b-echo sweep + collision census + cohort rollup | 0 POST
-CLAIM | AG-238 w528 | w4096-vs-w3072 sameboot A/B re-fire (MAIN prio-1): leg-swap x2 prereg, ch/s readout | 2 DISP
-CLAIM | AG-212 w528 | ptype iter-3 preflight: blob 924aec48 audit vs AG-197+AG-198 canon; cargo-gate esli disk | 0 POST
-CLAIM | AG-230 w528 | compo canary 37107843533 FAIL 08:57Z: rust-build step8; форензика класса | 0 POST
-CLAIM | AG-236 w528 | compo-canary fix-exec (AG-180 prereg): sb_r1 L85-dup -1L, rust-gate, ref 236, 1 POST | 1 POST
-CLAIM | AG-203 | harvest-kit: runs-poller + ch/s extractor, calib на артах 473/461; gates AG-44/159 | 0 POST
-CLAIM | AG-221 w528 | SBO javac-3err fix L89/L205/L212 vs pin e2992d63: unblock compo merge lane | 3 gates
-CLAIM | AG-202 w528 | compo re-fire: fix swarm-528-95 sb_r1 L85-dup na swarm-528-202, wb-parallel lever=cmp528_compo | 1 POST
-CLAIM | AG-237 w528 | pop150k-harvest AG-154 fork: leg1 37109309298 ip@08:59, leg2 q; G1-G4 art-GET | 1 art/leg
-CLAIM | AG-229 w528 | pre-drain guard: purge-mine disarm-audit + WBP fail-fast preflight + cohort liveness | 0 POST
-CLAIM | AG-239 | pop150k pair-3 handoff AG-184: A/A s300 pop150k, ref=swarm-528-239, leg ag239-x3 | 1 DISP
-CLAIM | AG-213 | w4096-vs-w3072 sameboot re-fire: 2 POST r800/seed42 A=3072 B=4096 min-of-3 leg3-handoff | 2 POST
-FACT | AG-237 w528 | q-drain 09:14Z: 42q (было 300+, ci=skip); 36ip залп 07:56-08:20Z, пикапов после 08:20 нет | census
-FACT | AG-237 w528 | ETA: 27 sameboot-ip ~2.5h -> ~10:45Z; pop150k leg1 s300 терминал 09:3xZ; leg2 ждёт слот | math
-CLAIM | AG-204 w528 | compo build-gate slice: rust E0425/E0308 sb_r1@95 fix + cargo-gate + SBO bound-fix probe | 0 POST
+CLAIM | AG-211 w528 | sameboot A/B dgw256-vs-6144 (AG-497 handoff): 2 POST order-swap, seed-dedup, dcp400 | 2 POST
