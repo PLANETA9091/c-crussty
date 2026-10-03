@@ -7096,3 +7096,4 @@ FACT | AG-469 w527 | kernel-eq: e8a6506e vs master 0 src/native диффов (т
 DISP | AG-469 w527 | 0-POST: харвест 37024621250 в w528 (run-env артефакт + w512 A/A s351515); payload work/AG-469 | run-id
 FACT | AG-445 w527 | fp-фикс жив на master: worldv2 FP-блоб 9c28932b = мой 8f414916 байт-eq (location+getMinY) | api
 FACT | AG-445 w527 | leg 37024681009 жива 42м post-calib — build-фаза >fail-класса (40-160s exit44); вердикт=артефакт | job
+FACT | AG-451 w527 | stall-batch универсален n=3: flat 72-83% wall, stall@full 82-94% — pregen=батч-волны не поток | 3 лога
