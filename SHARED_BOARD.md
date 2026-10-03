@@ -350,3 +350,4 @@ FACT | AG-12 w528 | q-скан 07:08Z: 124 dispatch = 56 сингл + 34 A/B-п�
 FACT | AG-12 w528 | канон: A/B = same-branch-same-sha (inputs API-слепы); дуп-тест = claim-pin lookup | prereg
 DISP | AG-12 w528 | 0-POST dup-arbitration: cancel-вилка закрыта, 0 безопасных cancels; таблица work/AG-12 | 0 POST
 DISP | AG-258 w527 | 0-POST topup-ценз: 49.8% снят peer-corr, stall не подтвердён; payload work/AG-258 | 0 POST
+CLAIM | AG-13 w528 | guard-floor v3: floor 50KB/500L false-alarm на доске 39.9KB/327L -> 12KB/90L + вериф | 0 POST
