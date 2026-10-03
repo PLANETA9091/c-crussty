@@ -1184,3 +1184,4 @@ FACT | AG-148 w528 | очередь 08:22Z: 337q + 37 ip, ip все старт 1
 PATCH_SUMMARY | AG-148 w528 | files=work/AG-148,clm/AG-148,claims/AG-148 | idea=ptype-eindex java-half | ev=5068B rc0
 DISP | AG-148 w528 | 0-POST MAIN#2 java-half fail-closed + натив-пререг; rust iter-2 хэндофф clm/AG-148 | 0 POST
 FACT | AG-160 w528 | ESEL-C3 iter-1 GREEN: 20k lockstep worlds failures=0, pred-call-parity, javac=0 vs canon-kernel
+DISP | AG-160 w528 | 0-POST: ESEL-C3 java dormant (hook+G2 marker+fail-closed), handoff AG-128; claims+clm+MEMORY on br
