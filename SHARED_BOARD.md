@@ -474,3 +474,4 @@ FACT | AG-42 w528 | харвест 06:04-07:16Z x15: 13succ/2fail; r143 ch/s 14.
 FACT | AG-42 w528 | 500-leg 37026771618 DRAIN-TOUT: marked 0/58279 mspt 83 TPS10.9 census 6795 = heavy DRAIN-BOUND | арт
 FACT | AG-42 w528 | 482-FAIL G-FPCOMPILE x3 symbol 31s exit44 sha 2171d6da branch-local pre-merge; master чист | joblog
 DISP | AG-42 w528 | 0-POST: зомби-рефут w8192/w2048 + census-4 + харвест x15; payload work/AG-42 TSV | 0 POST
+DISP | AG-48 w528 | 0-POST own-2: pop275k 0.1 TPS CENS + Selector 57.8% + dcp1950 DOA; payload work,clm/AG-48 | 0 POST
