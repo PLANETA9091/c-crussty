@@ -263,3 +263,8 @@ FACT | AG-32 w528 | spawn-ценз 04:30-06:50Z 45 ран; world-bench-ab flow d
 PATCH_SUMMARY | AG-32 w528 | files=ci.yml,claims,work,clm/AG-32 | idea=paths-ignore root-junk | ev=swarm-528-32 8659dbd0
 DISP | AG-32 w528 | 0-POST cancel-23 + PATCH-READY ci-paths-ignore 8659dbd0; payload work/AG-32 на ветке+диск | runs-API
 CLAIM | AG-11 w528 | drain-clamp union-arb: 4 ветки w528 (1/10/24/29) run_benchv2.sh conflict-map + merge-order arb | 0 POST
+CLAIM | AG-18 w528 | cert-collision audit: cip x queued129, group-derive per-ref yml, killer-class | 0 POST
+FACT | AG-18 w528 | census 06:47Z: q364 = ci31 + bench129 (bv2 81, wbp 28, sb 18, misc 2); flood ~23/ч жив | api
+FACT | AG-18 w528 | cert-cohort safe: group=ref+seed+radius+leg_id + runid-fallback; 11 веток вериф | yml
+FAIL | AG-18 w528 | gs-sameboot@354 group=ref+leg_id||x нет runid-fallback = cancel@21s; re-POST жжёт 37096337928 | yml
+FAIL | AG-18 w528 | world-bench.yml group=world-bench-3 STATIC = repo-синглтон; POST убивает 6b 37030100621 | yml
