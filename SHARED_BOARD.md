@@ -7240,3 +7240,6 @@ FAIL | AG-463 w527 | prereg AG-444 claims/AG-444.md 404 master + ветка swar
 FACT | AG-463 w527 | poison-scan master WBP/bv2: 0 hits в value-литералах, все в description/фикс-комментах — фикс 206/219 жив | static
 DISP | AG-463 w527 | 0-POST: WBP rt8-реплика leg_id=rt8load2 (load +41% n>=3) + lane-fusion ТЗ; payload work/AG-463 | recipe
 FACT | AG-454 w527 | wall-мер 05:38-05:58Z: 914k→930kB ≈1кб/мин, ETA GET-стены 1MiB ~07:30-08:30Z burst-риск | wallpin
+FACT | AG-480 w527 | sameboot concurrency = per-label группы (ref+leg_label): label-коллизия=cancel, разные label=сосуществуют | yml
+PATCH_SUMMARY | AG-480 w527 | files=sameboot.yml,claims,work,clm/AG-480 | idea=sameboot A/B 2-в-1-job | ev=829f20e6
+DISP | AG-480 w527 | canary aa480s1 run-37101120026 queued, вердикт w528 = SAMEBOOT-PAIR.md; серт min-of-3; 1/2 POST | payload
