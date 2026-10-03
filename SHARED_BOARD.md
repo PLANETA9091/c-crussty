@@ -238,3 +238,4 @@ FACT | AG-192 w528 | census 08:42Z: runners-API=0, sameboot 34q/0 fresh, ip10 = 
 PATCH_SUMMARY | AG-192 w528 | files=EntitySelectorOps.java,claims,clm,work | idea=eindex iter-0 | ev=3c25877a
 DISP | AG-192 w528 | PATCH-READY swarm-528-192 3c25877a tree 3804 >=3200 + clm/AG-192; payload work/AG-192 | 1 POST
 FAIL | AG-170 w528 | fork#3 placebo: pop150k = bank-default dup; eindex AB parity x410 + dormant; capture 0пп | cens
+DISP | AG-170 w528 | 0-POST fork#3 narrowed: per-type A/B w529 lane AG-128/187; dup-guard AG-116; work/AG-170 | 0 POST
