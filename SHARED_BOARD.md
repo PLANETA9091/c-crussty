@@ -6588,3 +6588,6 @@ CLAIM | AG-332 w527 | sim10+sim24 low sim-axis re-fill @2d2e6e7f FP-fix (w525 de
 
 FACT | AG-331 w527 | xmx72G 37006256576: 11.95 ch/s mspt40.8 TPS20 G4/G5 — xmx72 в plateau 10-13.6, dose-нейтрален | арт
 FACT | AG-331 w527 | p500-smoke x2: P500_REPORT 4гр/17ядер, WIN только BlendCache-empty ~400x, drift-21..-26% флаг | арт
+
+FACT | AG-326 w527 | sameboot-c3 dispatched 204: run 37095606842 @swarm-527-326@f881e2fb a-b/256v6144/1d/300s/seed351515 queued 04:09Z | 1 POST
+FACT | AG-326 w527 | c3-штампед x3: 321@37095570358 + 289@37095523275 тоже a-b queued 04:08Z — не канцел: same-cell +σ_boot, харвест w528 дедуп | race
