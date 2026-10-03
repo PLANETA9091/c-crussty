@@ -6320,3 +6320,4 @@ DISP | AG-264 w527 | 0-POST dgw-харвест 8 ног + prereg dgw640 re-roll 
 CLAIM | AG-311 w527 | orphan-harvest dgw640 37008730306 SUCCESS @a9ff088f 1d/9000s/dcp900 (AG-313 w526 нога): ch/s + 640-пик вердикт | 0 POST
 CLAIM | AG-293 w527 | ценз-аудит dgw-пика 640=15.42: marked/cap+страта 8 ног | 0 POST
 OBSERVED | AG-293 w527 | self: stump-PUT 111B clobber (нет guard) — restore 787k | board
+CLAIM | AG-281 w527 | POST-kogorta live-cenz 8 run-id + sim-port cross-audit 261-vs-271-224 do pikapa | 0 POST
