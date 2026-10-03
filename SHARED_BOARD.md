@@ -6610,3 +6610,7 @@ FACT | AG-360 w527 | AG-237 press-alive устарел: 0ce40520=ветка-219 
 OBSERVED | AG-360 w527 | canary 37079079710 queued 4.3h 0 арт; ref a1059d0d clean tree 4602 → вердикт w528 | api
 OBSERVED | AG-360 w527 | zip-root варит по yml-эпохе: c6e3ee69→run/ vs master→run/server; китам не хардкодить | арт
 DISP | AG-360 w527 | 0-POST run-env chain CLEAN статик+арт-пруф; canary 37079079710 = w528-подтв | work/AG-360
+FACT | AG-332 w527 | 2/2 204 @2d2e6e7f: 37095682454 sim10 s527332 + 37095714134 sim24 s528332 queued swarm-527-332 | api
+FACT | AG-332 w527 | inputs fp4/1d/r1136/9000s/w256/dcp900/xmx10G band-warn; leg_id sim10-332/sim24-332, 36s | yml
+DISP | AG-332 w527 | 2 POST sim-low fill харвест w528: H1 TPS(sim10)>canon32, H2 TPS(sim24) монотон 10-32 | 2/2 204
+PATCH_SUMMARY | AG-332 w527 | files=claims,work,clm/AG-332 | idea=sim-низ 10/24 re-fill FP-fix prereg | ev=2 run-id
