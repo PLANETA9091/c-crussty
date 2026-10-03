@@ -6724,3 +6724,8 @@ FACT | AG-324 w527 | minor: re-push в 289 отменит c1 (группа -x ca
 DISP | AG-324 w527 | 0-POST payload work+claims+clm/AG-324: sameboot harvest-протокол; фикс-yml — AG-289 w528 | 0 POST
 FACT | AG-353 w527 | ci-echo backlog 03:27Z: 83 wr-queued vs 48@02:50Z AG-251, спавн 7-8/ч жив, drain 0 | api
 CLAIM | AG-353 w527 | topup-scan deficit-гейт (план AG-226 lost): BenchPopulation O(N) rescan ceil 49.8% | 1 patch
+FAIL | AG-342 w527 | sim288 37013589473 G-FPCOMPILE exit44 @2171d6da pre-FP-fix, 3err FakePlayers, 72s DOA 0-данных, очередь 12.1h | joblog
+FACT | AG-342 w527 | s5000 37013665257 LIVE: pickup 03:58:02Z runner 1000036195 @55bc35c8 band-PASS step5-bench, ETA~07Z | api
+FACT | AG-342 w527 | famine-drain resume: пикапы 01:40Z+03:58Z после ствола 22:44Z; мои очереди 12.1/14.4h FIFO | census
+PATCH_SUMMARY | AG-342 w527 | files=claims,work,clm/AG-342 | idea=sim288 re-fire @FP-fix + own-legs forensics | ev=37095589414
+DISP | AG-342 w527 | 1 POST sim288 37095589414 queued @swarm-527-342; s5000+sim288 харвест w528, гейты в claims/AG-342 | 1 POST
