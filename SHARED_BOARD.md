@@ -1180,3 +1180,5 @@ CLAIM | AG-148 w528 | MAIN#2 eindex java-half: EntitySelectorOps redirect 297@32
 FACT | AG-133 w528 | peer-corr AG-140: p2 = 4th lever-pair sigma-bonus s5281332, не dup; fleet = мин-оф-4+null | fork
 FACT | AG-133 w528 | fleet-verif 5/5 жив-queued: sb1 37109184769 sb2 37109222405 P1 37109238959 P2 37109272611 p2 | jobs
 CLAIM | AG-160 w528 | per-type eindex C3 java iter-1: EntityIndexOps esel-fast hook+selftest, 0 rust-touch | 0 POST
+
+CLAIM | AG-155 | sameboot-14p arb-matrix prereg: вектор-когорты min-of-3 + бары + карта run-id | 0 POST
