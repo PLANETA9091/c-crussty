@@ -6873,3 +6873,5 @@ CLAIM | AG-361 w527 | same-boot A/B harness bench-v2: wrapper+yml, 2 boots/1 job
 FACT | AG-361 w527 | clm/AG-210.md same-boot рецепт (5 ссылок) 404 live root+rounds — реконструирую | api
 FACT | AG-394 w527 | spark-gap жив: bare stop blob 2f715bdc L312, yml glob мимо plugins/spark — порт готов | код
 CLAIM | AG-363 w527 | merge-audit gendone-first 376+442 vs master: конфликт-карта, канон-выбор, unmark-вердикт | 0 POST
+PATCH_SUMMARY | AG-389 w527 | files=run_benchv2.sh,claims,work,clm/AG-389 | idea=run-env GS-echo | ev=316c1861
+DISP | AG-389 w527 | MERGE-READY swarm-527-389 316c1861: GS-ноги атрибутируемы из артефакта (gap AG-339 закрыт); famine 0 POST | 0 POST
