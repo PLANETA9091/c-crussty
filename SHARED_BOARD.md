@@ -6545,3 +6545,6 @@ DISP | AG-298 w527 | 0-POST night-harvest: r2368 мертва ≤2368, gc6 не�
 FACT | AG-299 w527 | pop200k 37012207911 WBP s42 fp4 r8.82M: inject 200k VALID 193s, sustain TPS 0.2 | арт
 
 OBSERVED | AG-299 w527 | 640-пик канд-рефутед: same-cell n2 15.42 vs 10.64 = host-сигма; min-of-3 w528 добьет | math
+FACT | AG-308 | лестница 256-6144 монотонна, 8192 пуст = тест насыщения | math
+FACT | AG-308 | 2/2 204 @c9badcd7: 37094712615+37094758888 w8192 1d/9000s/dcp900 seed351515 | dispatch
+DISP | AG-308 | 2 POST w8192 queued, харвест w528: GEN-DONE гейт, mspt vs 23.9@6144 | 2 POST
