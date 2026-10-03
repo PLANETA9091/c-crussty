@@ -1,0 +1,169 @@
+# SAME-BOOT A/B PAIR workflow (AG-377 w527).
+#
+# WHY: cross-runner pairs are unjudgeable (AG-210: 94/94 WBP successes = 94
+# unique ephemeral runners, 0 reuse; AG-212: cross-runner sigma_d ~12pp >>
+# 2.3pp merge gate; AG-164: cert = same-boot min-of-3; AG-227: same-runner
+# infeasible). The ONLY legal certification quantum is TWO boots inside ONE
+# job on ONE VM (recipe AG-210 w527: "2-bench-в-1-job, 1 download, boots
+# подряд").
+#
+# WHAT: one job = one same-boot pair.
+#   legA = LEVER_FLAG armed (empty input => same-boot A/A sigma pair)
+#   legB = vanilla control (lever forced empty)
+# Both legs run bench/world3/run_world3.sh UNMODULATED via bench/world3/
+# run_ab_pair.sh (WORK-parametric, re-entrant), sharing VM + build + .so;
+# the world is re-downloaded from the SAME URL per leg => world_sha256
+# bit-equal. Env vector = frozen bank canon (x466-C98): 640/300s/fp4/gc3/
+# ic1/fd1/rt4/bc1/pop150k/seed42/10G/xms4G. Legs differ ONLY in
+# CRUSSTY_LEVER_FLAG/CRUSSTY_LEVER_ARG.
+#
+# OUTPUT: ab-run/PAIR-VERDICT.txt (tail(<20) TPS medians, pair delta %,
+# world-sha pair-eq, fixture gates) + full per-leg world3 artifacts.
+# COST: ~2x bench wall per job (2 boots), still ONE queue slot.
+# CERT RULE: 1 pair = measurement quantum; merge gates need min-of-3 pairs.
+# Entity recon step is intentionally omitted (diagnostic-only in WBP; pair
+# math needs BOTTLENECKS_3.md/run-env/server-stdout, not javap dumps).
+
+name: world-bench-ab
+
+on:
+  workflow_dispatch:
+    inputs:
+      lever_flag:
+        description: 'Leg-A lever id (empty = same-boot A/A sigma calibration pair)'
+        required: false
+        default: ''
+      lever_arg:
+        description: 'Leg-A lever argument (legB always gets empty lever)'
+        required: false
+        default: ''
+      seconds:
+        description: 'No-player run window in seconds (per leg)'
+        required: false
+        default: '300'
+      population_target:
+        description: 'Population injection target (0 = off; canon 150000)'
+        required: false
+        default: '150000'
+      cpu_band_min:
+        description: 'Runner calibration band min (pair-hunter fast-fail pre-download)'
+        required: false
+        default: '10000000'
+      cpu_band_max:
+        description: 'Runner calibration band max'
+        required: false
+        default: '13500000'
+
+permissions:
+  contents: read
+
+concurrency:
+  # AG-217 port of the x515 lesson: run_id fallback keeps groups per-run so a
+  # leg-B rerun can never cancel a running sibling pair on the same ref.
+  group: world-bench-ab-${{ github.ref }}-${{ inputs.lever_flag || format('anon-{0}', github.run_id) }}-${{ inputs.lever_arg || format('anonx-{0}', github.run_id) }}
+  cancel-in-progress: true
+
+jobs:
+  ab-pair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout c-crussty (module)
+        uses: actions/checkout@v4
+
+      - name: Runner calibration band gate (pair-hunter fast-fail, S7-96d)
+        if: inputs.cpu_band_min != '' && inputs.cpu_band_max != ''
+        run: |
+          set -euo pipefail
+          IDX=$(python3 -c '
+          import time
+          t=time.time(); x=1
+          for _ in range(6000000):
+              x=(x*1103515245+12345)&0x7fffffff
+          print(f"{6000000/(time.time()-t):.0f}")')
+          echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}]"
+          echo "runner_cpu_index=$IDX" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$IDX" -lt "${{ inputs.cpu_band_min }}" ] || [ "$IDX" -gt "${{ inputs.cpu_band_max }}" ]; then
+            echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail pre-download (pairing discard, not a bench failure)"
+            exit 1
+          fi
+
+      - name: Checkout CRUSSTY (engine runtime)
+        uses: actions/checkout@v4
+        with:
+          repository: PLANETA9091/CRUSSTY
+          path: CRUSSTY
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build engine runtime + module (Rust only, ONE build shared by both legs)
+        run: |
+          set -euo pipefail
+          (cd CRUSSTY/runtime && cargo build --release)
+          cargo build --release
+          cp CRUSSTY/runtime/target/release/libcrussty_runtime.so "$RUNNER_TEMP/"
+          cp target/release/libcrussty.so "$RUNNER_TEMP/"
+          touch "$RUNNER_TEMP/.built"
+
+      - name: SAME-BOOT A/B pair (legA lever / legB vanilla, boots back-to-back)
+        timeout-minutes: 105
+        env:
+          WORLD_URL: ${{ inputs.world_url || 'https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip' }}
+          FORCELOAD_RADIUS: '640'
+          RUN_SECONDS: ${{ inputs.seconds || '300' }}
+          FAKE_PLAYERS: '4'
+          FLUID_GUARD: '1'
+          GC_TUNE: '3'
+          INSIDE_CACHE: '1'
+          FLUSH_DIET: '1'
+          FLUID_DIRTY: '0'
+          FLUID_BITMASK: '0'
+          REGION_THREADS: '4'
+          BATCH_COLLECTOR: '1'
+          DATAPACK_URL: ''
+          SKIP_STORE_BB: '0'
+          REGION_STEAL: '0'
+          BU_DEFER: '0'
+          POPULATION_TARGET: ${{ inputs.population_target || '150000' }}
+          POPULATION_SEED: '42'
+          SERVER_XMX: '10G'
+          SERVER_XMS: '4G'
+          NATIVES_TGZ: 'https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz'
+          RUNTIME_SO: ${{ runner.temp }}/libcrussty_runtime.so
+          # lever passes WITHOUT || fallback: empty input must stay empty
+          # (A/A sigma-pair mode; legB lever is forced empty inside the wrapper)
+          LEVER_FLAG_A: ${{ inputs.lever_flag }}
+          LEVER_ARG_A: ${{ inputs.lever_arg }}
+        run: bash bench/world3/run_ab_pair.sh
+
+      - name: Upload pair artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: ignore
+          name: world3-ab-pair
+          path: |
+            ab-run/PAIR-VERDICT.txt
+            ab-run/legA/BOTTLENECKS_3.md
+            ab-run/legA/run-env.txt
+            ab-run/legA/server-stdout.log
+            ab-run/legA/gc.log
+            ab-run/legA/cpu-collapsed.txt
+            ab-run/legA/wall-collapsed.txt
+            ab-run/legA/alloc-collapsed.txt
+            ab-run/legA/cpu-flamegraph.html
+            ab-run/legB/BOTTLENECKS_3.md
+            ab-run/legB/run-env.txt
+            ab-run/legB/server-stdout.log
+            ab-run/legB/gc.log
+            ab-run/legB/cpu-collapsed.txt
+            ab-run/legB/wall-collapsed.txt
+            ab-run/legB/alloc-collapsed.txt
+            ab-run/legB/cpu-flamegraph.html
