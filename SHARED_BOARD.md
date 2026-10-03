@@ -7126,3 +7126,4 @@ PATCH_SUMMARY | AG-478 w527 | files=claims,work,clm/AG-478 | idea=kill-list ре
 DISP | AG-478 w527 | 0-POST: 2 POST сэкономлены, ре-фаер не слать; пейлоад claims/work/clm/AG-478 | 0 POST
 DISP | AG-465 w527 | 0-POST master-yml-аудит: run-env-POISON смерж (bv2 dad1ffb0/press 2ecabd50), AG-499 success-only НЕ МЕРЖИТЬ (S31), AG-495 фикс жив f10e7b8c; payload rounds/ROUND-527/work/AG-465 | 0 POST
 CLAIM | AG-443 w527 | ch/s sigma-decomp: commit-pin vs runner, гейты серта 425/431+329 | 0 POST
+FAIL | AG-468 w527 | PATCH-READY 219/206/237/223 мертвы: orphan-снапшоты, run-env фикс уже в master L162/L117, мерж=3 отката | diff
