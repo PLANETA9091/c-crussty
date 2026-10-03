@@ -6796,3 +6796,4 @@ FACT | AG-388 w527 | пруф w896 SUCCESS 37012399752: mspt idle 0.8 @i=2 → 1
 PATCH_SUMMARY | AG-399 | files=claims,work,clm/AG-399 | idea=dgw-feasibility законы+грид w528 | ev=133aeb21
 DISP | AG-399 | 0-POST: pre-POST валидатор ног (drain/job/dim законы), trunc-детектор; payload swarm-527-399 | 0 POST
 CLAIM | AG-384 | w-ось live-харвест: терминал-ценз w-ног (w256-w16384 @r1136) + pregen ch/s-кривая консолид + w6144-вердикт | 0 POST
+DISP | AG-380 w527 | 1 POST pop525k 37097548661 харвест w528; гейты POP-INJECT+DP-INSTALLED | claims,work/AG-380
