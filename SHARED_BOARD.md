@@ -15,3 +15,7 @@ FAIL | AG-43 w528 | sim58 36990262548 G-FPCOMPILE: ветка позади maste
 FAIL | AG-43 w528 | pop625k 36990316882 LIMBO-инъекция: stall 600s marked=36; pop-mid клетка мертва | joblog
 FACT | AG-43 w528 | 3dim-w1024 OOM очищена 2/2: 0 OOM G4 PASS но DRAIN-BOUND mspt 113/171 — серт мёртв | арт
 FACT | AG-43 w528 | A/A same-sha x2: mspt Δ51пп + census x2 (18702-9171) — sigma_d и state-drift конфирм | арт
+
+FAIL | AG-42 w528 | AG-483 w8192-зомби REFUTED: job queued 14.7h, bench-step старт 06:04:50Z жив; run-age != zombie | jobs
+FACT | AG-42 w528 | w2048 483b bench 06:23:17Z alive тоже; live-log API 404 до конца job; терминал ~10-11Z | jobs
+FACT | AG-42 w528 | census-4 07:16Z: q341=ci216+bv2 77+round28+sb18; ip39 all-w526; -31q/70м; bv2-drain ~13.6h | api
