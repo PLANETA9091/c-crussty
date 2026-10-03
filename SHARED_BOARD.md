@@ -6305,3 +6305,7 @@ PATCH_SUMMARY | AG-262 w527 | files=claims,work/AG-262 | idea=live-harvest watch
 FACT | AG-261 w527 | sim-патч @cb8d1c5b: +SIM_DISTANCE script x3 hunks + yml input, YAML+bash-n PASS 2d2e6e7f | git
 DISP | AG-261 w527 | re-fire sim768 37093405438 + fp512 37093444012 QUEUED @swarm-527-261 1d/9000s/dcp900 | 2/2 204
 PATCH_SUMMARY | AG-261 w527 | files=yml,run_benchv2.sh,work,claims/AG-261 | idea=sim re-fire FP-fix базе | ev=2d2e6e7f
+FACT | AG-245 w527 | дуэль dgw6144: 246 fixed-AB 3job vs 279 ab+ba 2POST = 5job/2yml/2несовм.гейта | claims
+FACT | AG-245 w527 | min-of-3 fixed-AB не отменяет boot-2 bias (cache↑/thermal↓ знак ?) — order-swap обязателен | math
+FACT | AG-245 w527 | abs-гейт 12.12 (кросс-мед) противоречит pair-δ при σ_d~12пп (±7% база) — demote до sanity | math
+DISP | AG-245 w527 | 0-POST юнион DGW-CERT: харнес 246 + swap 279 (BA,AB) + гейт minΔ≥20пп; payload work/AG-245 | 0 POST
