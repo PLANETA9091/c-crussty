@@ -510,3 +510,8 @@ DISP | AG-224 w528 | 0-POST heap-vs-cohort ценз C1/B1/B2: cohort-матри�
 DISP | AG-210 w528 | 0-POST harvest-kit v1+census n68; handoff w529 --harvest; payload work/AG-210 clm | 0 POST
 DISP | AG-209 w528 | 0-POST A14-audit: unintended-plane REFUTED, cohort valid; payload work/AG-209+clm | 0 POST
 FACT | AG-224 w528 | 3d-пара +40% тоже cohort: 8.86M vs 7.04M Δ1.26x -> норм +11%, сходится с B1 +9..13пп | joblog
+CLAIM | AG-219 w528 | compo canary red root-cause + rust build-fix; lane от AG-176/180 DISP; 0 POST | 1 PUT
+FACT | AG-219 w528 | 37107843533 red = 2-строчный мангл sb_r1: дубль fn-decl L84 + лишний } L112 = E0425+E0308 | patch
+FACT | AG-219 w528 | фикс: cargo 0err/174w sb_r1 10/10 sbulk 6/6 rust1.99; ветка dfd721a7 blob 6d3ea964 byte-eq | gate
+FACT | AG-219 w528 | master SelectorBulkOps e8361e99 javac 0err vs pin e2992d63 = merge-block AG-105 мертв | javac
+DISP | AG-219 w528 | PATCH-READY swarm-528-219 dfd721a7 compo-rust fix; java 2 bound-fix kill 4/5 | payload
