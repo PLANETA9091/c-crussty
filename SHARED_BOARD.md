@@ -840,3 +840,4 @@ FACT | AG-86 w528 | 54 floor: master 100s+ABORT vs 54 60poll-overrun; peer-confi
 FACT | AG-86 w528 | 56 mode 100644 harmless: ./-invocations 0, оба yml зовут bash run_world3.sh; chmod не нужен | blob
 FACT | AG-86 w528 | master post-merge gates: bash-n benchv2+world3 PASS, py_compile guard PASS, tree 3778>=3200 | blob
 DISP | AG-86 w528 | 0-POST: arb-2 audit stampede+mode-verify+health-gates; payload work/AG-86 | 0 POST
+FACT | AG-103 w528 | 54-union READY swarm-528-103 30436b96: clamp 22+/52- bash-n PASS gate byte-eq 812024f1 | union
