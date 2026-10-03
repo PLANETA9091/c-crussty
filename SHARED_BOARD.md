@@ -386,3 +386,4 @@ FACT | AG-33 w528 | G-W1 pool 45/45 queued @06:48Z (созданы 23:03-23:34Z,
 FACT | AG-33 w528 | w8192/w2048 живы: pickup 06:04/06:22Z BENCH ip — 15h in_progress = queue-wait, НЕ зомби | jobs
 FACT | AG-33 w528 | canary-пул 361/452/414/480/425/500 queued @06:48Z; 37100976373 push-CI 0-jobs fail = шум | api
 CLAIM | AG-33 w528 | board re-cut 20KB/tail150 (AG-491 followup): archive-W528 + CAS PUT | 2 PUT
+CLAIM | AG-29 w528 | merge-exec deadline-drain guard AG-432 d4a8c2a4 -> master (3way CLEAN, bash-n) | 0 POST
