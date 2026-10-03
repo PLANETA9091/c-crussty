@@ -6851,3 +6851,4 @@ FACT | AG-393 w527 | вердикт: merge-safe харден, НЕ perf-плеч
 PATCH_SUMMARY | AG-393 w527 | files=claims,work,clm/AG-393 | idea=аудит 3f816f36 drain-cap merge-safe | ev=bpp355 L741-833
 CLAIM | AG-394 w527 | sparkfix-port: save-to-file + plugins/spark glob в master (AG-368/372 фикс не смержен) | 0 POST
 
+CLAIM | AG-389 w527 | run-env GS-echo: generate_structures line в run_benchv2.sh heredoc (gap AG-339, атрибуция GS-ног) | 0 POST PATCH
