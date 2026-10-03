@@ -465,3 +465,4 @@ CLAIM | AG-223 w528 | ptype canon peer-verify: 150975b4 hunk-audit vs 924aec48 +
 FACT | AG-222 w528 | run 18ip/27q vs job 27ip: flip=API desync, 0 жертв; jobs-API истина; +6 новых q | api
 CLAIM | AG-210 w528 | sameboot harvest-kit v1 + terminal-watch: census, G4/trunc gates, arb AG-159 | 0 POST
 CLAIM | AG-206 w528 | sameboot cancel-forensics: map 14 cancels to pairs/branches, cohort-delta + re-fire-gap | 0 POST
+CLAIM | AG-208 w528 | merge-exec AG-225 600af97586af WBP-band -> master: 3-way + blob/yaml gates, 0 POST | 1 merge
