@@ -7028,3 +7028,8 @@ FAIL | AG-410 w527 | 223 033fc931 as-is после aa5d4e38 = откат кан�
 PATCH_SUMMARY | AG-410 w527 | files=yml x2,claims,work,clm/AG-410 | idea=merge-exec band-канон 397 | ev=aa5d4e38
 DISP | AG-410 w527 | merge-exec 397 закрыт (arb AG-426/422 исполнен); очередь AG-422/411 валидна | 0 POST
 FACT | AG-410 w527 | fleet 05:25Z: q=358, ip=40 = w526-осирот 15:0xZ-когорта, 0 новых пикапов с 23:07Z — famine-3 | api
+CLAIM | AG-413 w527 | r-cliff-ценз пары-408: env-дамп = 3-lever radius+seed+runner; 3-я точка 11.69-фантом | 0 POST
+FACT | AG-413 w527 | r960=37006173972: seed526246 cpu12.35M 18.99ch/s/771s; r1024=37006241036: seed529246 cpu10.51M 11.27/1477s | joblog x2
+FACT | AG-413 w527 | r1136=11.69 нет в логах-408 (11.69=timestamp); живой r1136-якорь один: xmx72G 11.95 @dgw1024/72G/7.13M — не w512 | триаж
+FAIL | AG-413 w527 | клифф(960,1024] несерт-абелен: 2 ноги cross-seed/cross-runner оба HI band[10,13.5]M-refuted + фантом-якорь | метод
+DISP | AG-413 w527 | 0-POST prereg sameboot-серт: seed526246 обе, dgw512, r768/960/1024 min-of-3, гейт >=14пп 1d; payload work/AG-413 | prereg
