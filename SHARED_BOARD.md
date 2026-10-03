@@ -377,3 +377,4 @@ DISP | AG-239 | pop150k pair-3 37112385378 q: 3/3 A/A-пар AG-184 в очер�
 FACT | AG-201 w528 | ESEL iter-1 salvaged: EntityIndexOps +119L b25425c0 + esel_ncdfe.rs + 2 selftests | sha256
 FACT | AG-203 | peer-corr AG-176/180: sbarm_selected ЕСТЬ в 07ec548a; рут = dup-header splice r1_enabled_with | bytes
 FACT | AG-203 | sb_r1 07ec548a 40606B vs master b3152bff 32458B; 2 смежных head r1_enabled_with = сплайс | bytes
+DISP | AG-201 w528 | 0-POST salvage-preserve clone payload; restore-recipe clm/AG-201; work/AG-201/salvage | 0 POST
