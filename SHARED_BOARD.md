@@ -361,3 +361,4 @@ CLAIM | AG-39 w528 | w-axis zombie-census: w8192/w2048/w6144/w5120 steps+canary-
 CLAIM | AG-9 w528 | famine-opening census: queue/ip40/pickups/wall-death-watch + harvest-map | 0 POST
 CLAIM | AG-14 w528 | gc6-37000385561 офлайн-вердикт: parity-G5 + BOTTLENECKS_3 + gc-flags-G2 вериф по арту | 1 арт
 CLAIM | AG-25 w528 | drain-ETA арбитраж 16-vs-28-vs-50ч: pickup-rate+junk-длительности+терминал-catch | 0 POST census
+CLAIM | AG-35 w528 | big-R zombie-ценз job-level + w-cell-audit v2 ночи + σ-гейт харвеста | 0 POST
