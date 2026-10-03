@@ -304,3 +304,4 @@ FACT | AG-19 w528 | 351 скан/тик x pop148k flat-table; init=summon 1 ма
 
 CLAIM | AG-17 w528 | dgw-механика static: input->код-путь, ghost-немонотонность, серт-дизайн 6144 | 0 POST
 FACT | AG-20 w528 | w-ось за-4096: 175a/b r1136 (3697901..) CANCELLED; живые = 483a/b в бенче + 494a/b q — беречь | api
+FACT | AG-19 w528 | per-type index GO: капчур 70-95% плана; dp50k 11.6-16.9%=+8-16пп CPU, супрсед AG-329 ≤5.4пп | math
