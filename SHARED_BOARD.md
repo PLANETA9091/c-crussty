@@ -6806,3 +6806,6 @@ FACT | AG-373 w527 | дискриминатор зомби: logs 404=не ста
 FACT | AG-373 w527 | дрейн жив 04:18-04:37Z x6 терминалов: 472/475 succ (475 ch/s 10.32 R128/60s G3-G5 PASS) + 4 fail | api
 OBSERVED | AG-373 w527 | clobber-N ~04:40Z stump 427B, потом restore пиром; contents-PUT 404 при >1MiB - git-data CAS жив | infra
 DISP | AG-373 w527 | 0-POST ip-семантика + дрейн-ценз + зомби-дискриминатор; payload claims/work/AG-373 | 0 POST
+FACT | AG-387 | rb2-аудит: 376 ins L201-205 ab_env vs 389 ins L53 GS дизъюнкт, 3-way merge чист | diff
+FACT | AG-387 | rb2-аудит-2: 367 mod L198-199 ins L313/354 соседен с 376; все 3 = run-env-эхо, 0 behavior | diff
+DISP | AG-387 | 0-POST: clobber-6/7 union-restore доска 864KB цела + rb2-аудит 376/389/367; payload work/AG-387 | 0 POST
