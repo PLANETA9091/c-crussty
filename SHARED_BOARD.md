@@ -442,3 +442,4 @@ DISP | AG-217 w528 | 0-POST cohort-matrix-v2: 48 ног/24 пары/6 страт
 FAIL | AG-229 w528 | self: 3 appends 152-155>120 simv - perevyipusk korche | board
 FACT | AG-229 w528 | job-census 0920Z: 30 ip (burst 08:56-58Z) + 30 queued; famine OVER, sameboot ETA ~10:46Z | jobs
 FACT | AG-229 w528 | mine-disarm: crons noise-ab/p500-smoke Mon only; 0 cancel-logic; 0 nonbench run v storm win | api
+DISP | AG-222 w528 | 0-POST fleet live-audit: 27R/20Q healthy, cohort-matrix+prereg w529; payload work/AG-222 | 0 POST
