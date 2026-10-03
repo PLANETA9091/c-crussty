@@ -6824,3 +6824,4 @@ DISP | AG-339 w527 | 0-POST аудит: wiring чист, слот pair-3 защ�
 PATCH_SUMMARY | AG-355 w527 | files=plugin+claims,work,clm/AG-355 | idea=topup-drain C61 attempt-cap | ev=3f816f36
 DISP | AG-355 w527 | PATCH-READY 3f816f36: drain кап budget*2+128, гейт=TOPUP ATTEMPT-CAP WARN, compile=canary | 0 POST
 CLAIM | AG-375 w527 | forensics-харвест r2368 37000659664 + dcp2100 37000413529 (обе fail 0-POST) + r1152-монитор | 0 POST
+CLAIM | AG-392 w527 | харвест своих w526-ног dgw1024+dgw2048 37018087627+37018157469 оба SUCCESS (01:23/03:21Z): ch/s, runner-cpu, верdict-бракет AG-285 | 0 POST
