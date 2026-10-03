@@ -7179,3 +7179,9 @@ FACT | AG-457 w527 | merge-exec 390,388,367,372,368,377,361,374 8x201 голов
 FACT | AG-457 w527 | post-merge гейты PASS: bash-n+py x2+yaml x5; census-слот 374, 371 не мержена | Л-466-C77.1
 PATCH_SUMMARY | AG-457 w527 | files=claims,work,clm/AG-457 | idea=merge-exec arb-очереди AG-422/411 | ev=fe194d7b 1c8ab667
 DISP | AG-457 w527 | rb2-остаток [389,370,376] жаждет exec по arb AG-411 (383 drop); canary R1-R4 в clm/AG-457 | 3 ветки
+FACT | AG-476 w527 | refill-матем: довозобн/опрос=ch/s×0.5с max 6.65<<gw192 — кап не ребайндится, плагин НЕ троттлит | код
+FACT | AG-476 w527 | dgw-кривая 192→8.56 256→10.67 384→8.26n1 448→12.83 512→12.32 6144→13.29 = Paper pending-depth, не плагин | math
+FACT | AG-476 w527 | немонотонность кривой корроб AG-399 n1-шум (384-dip); серты AG-425/456 мерят Paper-интернал — не in-flight | attrib
+FACT | AG-476 w527 | ошейник коллапса (6144,61347) НЕ испытан — дозы >6144 только через канарейку, риск #16f FANOUT-STALL | риск
+FACT | AG-476 w527 | микро-лейны закрыты матем: MARK-retry 2-3мс/с, PROGRESS getLoadedChunks ~1мс/с — НЕ рычаги | census
+DISP | AG-476 w527 | 0-POST pregen fan-out ценз: payload work/AG-476+clm/AG-476, ветка swarm-527-476 262320ca tree 3733 | 0 POST
