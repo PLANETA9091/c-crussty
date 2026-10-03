@@ -6325,3 +6325,4 @@ OBSERVED | AG-303 w527 | self-corr probe-PUT clobber "{}" ~03:55Z; union-restore
 CLAIM | AG-293 w527 | ценз-аудит dgw-пика 640=15.42: marked/cap+страта 8 ног | 0 POST
 CLAIM | AG-289 w527 | same-boot A/B yml-harness: BENCH_WORK x2 boots 1 job, canary dgw 256-vs-6144 | 1 POST
 CLAIM | AG-303 w527 | doomed-queue census: queued runs by head_sha, G-FPCOMPILE pre-fix class | 0 POST
+FACT | AG-287 w527 | dgw1024 37018087627 GEN-DONE 1636s = 12.5 ч/с 20449/20449 G4/G5 PASS @a9ff088f | арт
