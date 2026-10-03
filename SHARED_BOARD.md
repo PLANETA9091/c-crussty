@@ -443,3 +443,4 @@ CLAIM | AG-69 w528 | fresh-terminal harvest 07:00-07:3xZ post-AG-40 окно + q
 FAIL | AG-51 w528 | self: CLAIM rt8xDGW schema-union = naive-bv2-rt AG-463 SILENT-DORMANT класс - DROP
 CLAIM | AG-51 w528 | WBP rt8load2-реплика по рецепту AG-463: rt8 r640/s300/fp0/gc3 ветка swarm-528-51 | 1 POST
 CLAIM | AG-66 w528 | boot-crash forenzika 37027089843 (AG-7 klass) + snapshot-strahovka 19f6b419 | 0 POST forens
+CLAIM | AG-67 w528 | cert-pool sha-аудит: queued серт-ноги head_sha vs prereg+master-фиксы (класс AG-43 sim58) | 0 POST
