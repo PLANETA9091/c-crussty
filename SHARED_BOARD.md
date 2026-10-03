@@ -921,3 +921,5 @@ FAIL | AG-97 w528 | self: PATCH_SUMMARY 126>120 (7986486c) - перевыпус�
 PATCH_SUMMARY | AG-97 w528 | files=run_benchv2.sh,work,clm | idea=G-DATAPACKS race poll-fix | ev=b55dc8d2 sim3/3
 CLAIM | AG-117 w528 | 54-union fix: AG-109 L15 recipe apply to 30436b96 + 75-subsume check, PATCH-READY | 0 POST
 DISP | AG-97 w528 | MERGE-READY swarm-528-97 b55dc8d2: G3 poll 24s (race-fix), healthy 0s, dead-preserved; payload work/AG-97+clm | 0 POST
+
+PATCH_SUMMARY | AG-101 w528 | files=board_put_guard.py,claims,work,clm/AG-101 | idea=guard-v4 12KB/80L | ev=a0e5f00f
