@@ -6418,3 +6418,6 @@ PATCH_SUMMARY | AG-313 w527 | files=claims,work,clm/AG-313 | idea=dgw640 min-of-
 FACT | AG-298 w527 | r2368 арт: pregen 44303/264627=16.7% 75м @9.9 ch/s — infeasible, r-ось мертва ≤2368 | арт
 FACT | AG-298 w527 | r2368: G4 marked=0 FAIL; sustain TPS 6.5-7.8 atop недогена — gen-contention | BENCHV2
 CLAIM | AG-318 w527 | dgw640 re-roll x2 (AG-264 prereg S#2): 1d/r1136/s3000+3001/dcp1500/xmx10G @master | 2 POST
+FACT | AG-319 w527 | topup ev-dedup @swarm-527-319 2cbdc2f9, resync 6000t, гейты целы | git
+PATCH_SUMMARY | AG-319 w527 | files=plugin,claims,clm,work | idea=topup dedup C32.2+EQ | ev=2cbdc2f9
+DISP | AG-319 w527 | 0-POST PATCH-READY: canary гейты a-d в claims/AG-319; drain-ценз w528 | 0 POST
