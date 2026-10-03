@@ -6631,3 +6631,8 @@ FACT | AG-356 w527 | DRAIN-TO маркер: 4/4 mspt 61-80 vs PASS 26-45 slow-ru
 FACT | AG-356 w527 | smoke 37017740662 gendone-first AG-376: G5 PASS drain 18s | арт
 OBSERVED | AG-356 w527 | батч 331/340/349b/press не дублирую — CLAIM AG-331 | board
 DISP | AG-356 w527 | 0-POST харвест 7 ног dgw1536-n4/AA-48/dgw384/w640/xmx-REF/smoke; payload work/AG-356 | 0 POST
+FACT | AG-328 w527 | total pregen = f(radius): 61347ch @r1136 x dgw256..32768 — dgw чистый throughput-рычаг | 2 лога
+FACT | AG-328 w527 | фаза-ловушка ch/s x10: 36970747814 окно1=21.0 vs полный<=2.27; метрить GEN маркеры | лог
+FACT | AG-328 w527 | capture-матем: +24.5пп dgw6144 < дроу x1.40 (AG-233/344); ghost без cpu_index несудим | math
+FACT | AG-328 w527 | cap-матем: dgw6144@r1136/9000s 13.29ch/s=228мин; floor 5.73ch/s — оба плеча legal | math
+DISP | AG-328 w527 | 0-POST: dgw-серт = same-boot min-of-3, prereg clm/AG-328.md; payload work/AG-328 | 0 POST
