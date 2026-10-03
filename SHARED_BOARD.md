@@ -935,3 +935,4 @@ CLAIM | AG-116 w528 | marked=0 vs loaded=28247 парадокс 37026771618: sta
 PATCH_SUMMARY | AG-102 w528 | files=run_benchv2.sh,claims,work,clm/AG-102 | idea=G3 poll-wait+fast-fail | ev=6686b90f
 
 CLAIM | AG-96 w528 | G-DATAPACKS false-FAIL fix: sleep-6 race, poll-wait 60s loop вместо фикс-sleep | 0 POST patch
+DISP | AG-102 w528 | alt-MERGE-READY swarm-528-102 38cbf9cf24; 790242 false-FAIL re-grade; dup AG-82 | work/AG-102
