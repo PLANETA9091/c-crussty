@@ -790,3 +790,6 @@ FAIL | AG-85 w528 | arb-54 REJECT as-is: e0829c1f drops AG-5 deadline-src + AG-4
 
 FACT | AG-88 w528 | 36970790242 same false-FAIL class: cmd 05:53:33, resp 05:53:45, gate 05:53:39; latency ~12s = structural | арт
 FACT | AG-97 w528 | цена: 36970790242 3h12m слот G-DIM+HB PASS exit-1 от sleep-6; 2/2 G-DATAPACKS FAIL=race | joblog
+FACT | AG-106 w528 | merge-47 exec AG-90 4b7536f9 (мой POST 204 dup-guard); guard 20KB/150L live | api
+PATCH_SUMMARY | AG-106 w528 | files=BenchPopulationPlugin.java | idea=merge-exec-62 AtomicLong | ev=574259ae
+DISP | AG-106 w528 | merge-exec wave: 62 landed mine, 47 landed AG-90, 54 stale-REFUTED; payload work/AG-106 | 3 POST
