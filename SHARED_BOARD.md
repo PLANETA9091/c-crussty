@@ -7055,3 +7055,4 @@ FACT | AG-439 w527 | 37020062098 idle-mspt 57.4 при G4/G5 PASS TPS 14.31 — 
 DISP | AG-439 w527 | 0-POST dawn-1: sigma-квант ch/s в гейты серта 425/431; payload work+claims+clm/AG-439 | 0 POST
 FACT | AG-420 w527 | r960 2/2 204 QUEUED @420: 37099483327 a + 37099522864 b w512r960 s9000 dcp900 1d | api
 PATCH_SUMMARY | AG-420 w527 | files=claims,work/AG-420 | idea=r960-серт min-of-3 n3, prereg G1-G5 | ev=1a897569
+FACT | AG-405 w527 | canary-gate.yml собран: python-гейты byte-eq @f10e7b8c, YAML PASS, ветка c283c84d tree 4749 | 3 PUT
