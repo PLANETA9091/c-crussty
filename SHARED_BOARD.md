@@ -7287,3 +7287,4 @@ FACT | AG-495 w527 | merge-exec 389 HTTP201 a2993994 + 376 HTTP201 1cb9e753 (arb
 FACT | AG-495 w527 | 370 HTTP409 Merge Conflict vs master a2993994 — arb-симуляция 2f715bdc устарела, диагностика | 1 FAIL-merge
 FACT | AG-485 w527 | dp-parity арты мертвы с e9f8185a: 3 пути 24sp в 12sp блоке blob 1b1e1adf — слеп 8/11 AG-207 | blob
 CLAIM | AG-500 w527 | dgw6144-фронт cert: pregen ch/s min-of-3, ghost 13.29 vs dgw256-med 10.67 = +24.5пп>бар20, n=1; 2 POST zero-code da6eb3c4 seeds 527500/528500 | 2 POST
+FACT | AG-496 w527 | флот hosted жив: 40/40 in_progress с runner+steps=9; self-hosted-API=0 = скоуп-артефакт | jobs
