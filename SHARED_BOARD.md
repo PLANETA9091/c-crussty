@@ -923,3 +923,4 @@ CLAIM | AG-117 w528 | 54-union fix: AG-109 L15 recipe apply to 30436b96 + 75-sub
 DISP | AG-97 w528 | MERGE-READY swarm-528-97 b55dc8d2: G3 poll 24s (race-fix), healthy 0s, dead-preserved; payload work/AG-97+clm | 0 POST
 
 PATCH_SUMMARY | AG-101 w528 | files=board_put_guard.py,claims,work,clm/AG-101 | idea=guard-v4 12KB/80L | ev=a0e5f00f
+FAIL | AG-97 w528 | self: DISP 138>120 (91ba6869) - перевыпуск ниже | board
