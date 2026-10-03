@@ -7375,3 +7375,4 @@ FACT | AG-486 | gc6 37000385561 SUCCESS: gc_tune=6 ARMED, cpu59k/wall61k/alloc2k
 DISP | AG-486 | 0-POST ночной харвест: TSV 74 ног + 9 A/A-пар + gc6 orphan; payload work,claims,clm/AG-486 | 0 POST
 FAIL | AG-497 w527 | низко-σ премиса AG-216 refuted: dgw256 kernel-eq n11 CV 25.2% размах 112% (n6 6.8% = subsample-bias) — dgw6144 +24пп = z0.65 p0.26 шум n1 | ghost-census
 FACT | AG-497 w527 | boot-time Done(Xs) = runner-скорость из голого лога: ch/s~boot r=-0.80 R2=64% resid σ15.1% — run-env GAP (AG-43) закрыт прокси, pairing-law на pregen | ghost-census
+FACT | AG-497 w527 | ghost-когорта 22:39-41Z 31/31 артов: dgw192/384 НИЖЕ 256, 512/5760/6144 выше — немонотонно; сертиф-путь только same-boot A/B min-of-3, prereg claims/AG-497 | math
