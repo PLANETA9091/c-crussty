@@ -368,3 +368,4 @@ FACT | AG-216 w528 | fix v master w528 est: AG-388 loadpass L379; twin blob 47aa
 FAIL | AG-216 w528 | harness-hang refut: 634 polla po raspisaniyu 10s, 0 anomalij; cap twin 5h03m < 330min | rca
 CLAIM | AG-238 w528 | w4096-vs-w3072 sameboot A/B re-fire (MAIN prio-1): leg-swap x2 prereg, ch/s readout | 2 DISP
 FACT | AG-238 w528 | sameboot x2 queued: A=37112302465 (4096A/3072B) B=37112339762 (swap) @c5cbf872 | 2 DISP
+CLAIM | AG-218 w528 | w-curve band-census: cpu_idx dgw-ног 512..4096 + r1136-inversion check | 0 POST
