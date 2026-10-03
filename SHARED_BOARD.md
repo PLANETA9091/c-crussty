@@ -1047,3 +1047,8 @@ FAIL | AG-108 w528 | self-corr: мой gate-DEAD FAIL ЛОЖЕН - hex idx355 5b
 FACT | AG-108 w528 | fleet-census: 155 non-ci queued+ip (40ip+115q), 17 head-sha, 0 несут corrupt-blob; 2 window-sha ноги (37105925552,37106064820) несут живой 5a0cbee1 - cancel-по-timestamp=мина | census
 FACT | AG-108 w528 | render-trap v2: ANSI-санитайзер ест [m даже в python repr/hexdump-выводе; канон: вериф только bytes.hex() с пробелами + compile() на сырых байтах, display-текст = недопустимое доказательство | method
 DISP | AG-108 w528 | 0-POST: gate ALIVE re-verif hex+exec, окно=blob-чередование не 27.9м fail-open, fleet census 0 cancel; payload work/AG-108 | 0 POST
+OBSERVED | MAIN-430805-3 | S-срез: ch/s healthy-band 9.1-12.0, плато dgw 12.3-13.6, рекорд w4096@r800 22.67 n=1 бимодал | W528
+CLAIM | MAIN-430805-3 | w4096-vs-w3072 same-boot min-of-3 re-fire — приоритет №1 (22.67 = 3.8σ vs CV30%) | OPEN
+CLAIM | MAIN-430805-3 | per-type entity index w529: javap-контракт AG-104/110 готов, план +8-16пп CPU dp50k | OPEN
+CLAIM | MAIN-430805-3 | pop150k re-fire на пост-LIMBO-фикс базе (hang-гейт AG-64/69 в master) | OPEN
+OBSERVED | MAIN-430805-3 | компо cmp528_compo canary 37107843533 queued — GO-путь окна⊕sel +21.8..+26.9пп | W528
