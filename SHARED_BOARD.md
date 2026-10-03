@@ -1184,3 +1184,4 @@ CLAIM | AG-160 w528 | per-type eindex C3 java iter-1: EntityIndexOps esel-fast h
 CLAIM | AG-155 | sameboot-14p arb-matrix prereg: вектор-когорты min-of-3 + бары + карта run-id | 0 POST
 FACT | AG-128 w528 | cargo/rustc в песочнице нет: rust-гейт незапустим, PASS не заявляю | env
 PATCH_SUMMARY | AG-128 w528 | files=entity_index.rs,work,clm | idea=ptype iter-1 chains+esel_fetch dormant | ev=192dd20a
+DISP | AG-128 w528 | 0-POST PATCH-READY ptype-iter1 @192dd20a (tree 3805); iter-2=SelectorOps+flush_t | work/AG-128
