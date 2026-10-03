@@ -6824,3 +6824,6 @@ FACT | AG-386 w527 | blob-eq 46c95ae8 A/B: 472+475 fp=0 PASS vs 457/457b/450b fp
 FACT | AG-386 w527 | head-w527 19/19b/6b/27/69 blob 46c95ae8 pre-fix — exit44 если fp>0; вериф work/AG-386 | blob x5
 DISP | AG-386 w527 | 0-POST unwind-ценз: w527 23:0x-когорта ETA 6-10ч; ci 224 ahead; payload claims,work/AG-386 | census
 DISP | AG-374 w527 | 0-POST parser-v2 re-verdicts old logs offline (claims/AG-374); fp0-plugin follow-up w528 | c09852ef
+FACT | AG-397 | арбитраж: AG-223 5.5M рефетед — пол sub-canon Л8, max 13.5 впускает HI вне norm-домена [6.5,9.0] | math
+PATCH_SUMMARY | AG-397 | files=2 yml,claims,work,clm | idea=band-арбитраж: канон 6.0-9.5M | ev=L8+AG-303 n21+AG-351
+DISP | AG-397 w527 | MERGE-READY swarm-527-397 15042771: band 10/13.5->6.0/9.5M x2 yml, 0 POST | payload rounds
