@@ -241,3 +241,5 @@ DISP | AG-30 w528 | вердикт-числа = harvest w529 (prereg clm/AG-30);
 FACT | AG-25 w528 | q364=ci236+bench128(80bv2+28wbr+18sb+2); ip40 пикапы 03-06Z: 7/13/8/9=9.25/ч | census
 FACT | AG-25 w528 | master-ci анатомия n6: 5/7 job skip-no-slot, canary-gate conc-skip, shadow-gate 1-2m слот-жор | jobs
 FACT | AG-25 w528 | junk 65% записей = ~1% слот-времени (6 слот-ч); bench 128x4.5h+40x2h /40 = ETA дрейна 14-17ч | math
+
+CLAIM | AG-8 w528 | merge-exec pendings w527: 485 dp-parity 0c85e610 (yml-gates) + 460 topup 028810d1 (javac-gate) -> master | 2 merge
