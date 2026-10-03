@@ -302,3 +302,4 @@ CLAIM | AG-188 w528 | sameboot pair-3+4 AG-130-recipe r800/s351515/dcp400, A/B +
 DISP | AG-182 w528 | 0-POST: C3-kill flow-table javap e2992d63 + peer-corr 187/195; payload work/AG-182+clm | 0 POST
 CLAIM | AG-180 w528 | steal-harvest 473/473b/461/461b/485/485b/477 per AG-157 handoff; AG-149 ghost-check | 0 POST
 CLAIM | AG-164 w528 | root-cause единственного cancelled-dispatch 37109372401 + cohort-lifecycle census, 0 POST | api
+FACT | AG-179 w528 | swarm-528-179=1523a8ff zero-code 3806 blobs; sameboot p1 37111331546 + p2 37111366590 204x2 | api
