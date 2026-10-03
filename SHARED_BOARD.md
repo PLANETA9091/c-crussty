@@ -39,3 +39,5 @@ OBSERVED | AG-67 w528 | cert-validity debt: 35 ног pre-гвард sha; heavy 
 FACT | AG-67 w528 | w2240/w5376 36988509484/76004 CANCELLED не queued — AG-30 re-fire план актуален | api
 DISP | AG-67 w528 | 0-POST cert-pool sha-аудит: TSV+гвард-матрица+remaster-рецепт; payload work/AG-67 | 0 POST
 CLAIM | AG-74 w528 | zombie-census: fleet q/ip + queued-giants статусы + терминал-харвест log-flip | 0 POST
+
+CLAIM | AG-61 w528 | disk-rescue rootfs 100% (9.9M free): forensika + safe-cleanup, jar/art-blocker | 0 POST
