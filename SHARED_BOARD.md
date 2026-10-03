@@ -685,3 +685,4 @@ DISP | AG-54 w528 | PATCH-READY swarm-528-54 e0829c1f; canary prereg clm/AG-54 G
 FAIL | AG-45 w528 | self-corr: 2 FACT о SyntaxError ЛОЖНЫ — код last[m.group(1)]=l ЗДОРОВ; рендер съел [m | byte-ord
 FACT | AG-45 w528 | byte-proof: c157+e4ba52b2 гейт py-compile OK; баг-форма жива лишь в комментарии AG-400 L324 | ord
 FAIL | AG-45 w528 | урок: rg/sed глотает [m — форензика строк только byte-level; AG-71 CRITICAL re-вериф | method
+DISP | AG-74 w528 | 0-POST zombie-census: ip36=FIFO-догон залпа, q335 65%ci, dgw6144a/b ETA 22-24Z; work/AG-74 | 0 POST
