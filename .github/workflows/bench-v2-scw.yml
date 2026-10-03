@@ -1,0 +1,228 @@
+# BENCH-V2-SCW — sync-chunk-writes same-boot A/B (AG-390 w527). Host-IO lever:
+# AG-335 w527 (rci-норма не полна: 2x ch/s при Δrci<1% = host-IO сигнал), AG-333 w527
+# (кросс-раннер ch/s нечитаем -> ТОЛЬКО same-boot). Lever virgin: run_benchv2.sh heredoc
+# никогда не ставил sync-chunk-writes (vanilla default true = fsync per chunk write).
+# Arm A = canon (true), Arm B = false; dgw FIXED 256 обе руки (изолировать IO lever,
+# dgw-ось отдельно AG-349). Recipe = AG-349 sameboot 3 boots/job, counterbalanced 2 jobs:
+#   job-1: T@S1, F@S1, T@S2     job-2: F@S2, T@S2, F@S3  -> 3 pairs, min-of-3.
+# Pair = SAME SEED same-boot, ONLY sync-chunk-writes differs; metric = pregen ch/s (GEN phase).
+# Prereg gate: GO если dCHS >= +20пп по majority-of-3 пар; CENS если cap < +20пп.
+# Dispatch ONLY with ref=swarm-527-390 (branch law). Kernel pin e2992d63 in script default.
+name: bench-v2-scw
+
+on:
+  workflow_dispatch:
+    inputs:
+      b1_dgw:
+        description: 'Boot-1 DIM_GEN_WINDOW (pair arm)'
+        required: true
+        default: '256'
+      b1_seed:
+        description: 'Boot-1 world seed'
+        required: true
+        default: '525390'
+      b2_dgw:
+        description: 'Boot-2 DIM_GEN_WINDOW (pair arm)'
+        required: true
+        default: '256'
+      b2_seed:
+        description: 'Boot-2 world seed'
+        required: true
+        default: '525390'
+      b3_dgw:
+        description: 'Boot-3 DIM_GEN_WINDOW (pair arm)'
+        required: true
+        default: '256'
+      b3_seed:
+        description: 'Boot-3 world seed'
+        required: true
+        default: '526390'
+      b1_scw:
+        description: 'Boot-1 sync-chunk-writes (pair arm: true=canon)'
+        required: false
+        default: 'true'
+      b2_scw:
+        description: 'Boot-2 sync-chunk-writes (pair arm: false=lever)'
+        required: false
+        default: 'false'
+      b3_scw:
+        description: 'Boot-3 sync-chunk-writes (counterbalance arm)'
+        required: false
+        default: 'true'
+      radius_blocks:
+        description: 'Forceload radius in blocks per dim (canon 1136)'
+        required: false
+        default: '1136'
+      run_seconds:
+        description: 'Sustain window seconds (ch/s cert needs GEN phase; 300 = canon short)'
+        required: false
+        default: '300'
+      server_xmx:
+        description: 'Server JVM max heap (canon 10G)'
+        required: false
+        default: '10G'
+      leg_id:
+        description: 'Per-dispatch discriminator (concurrency group part)'
+        required: false
+        default: 'scw1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bench-v2-scw-${{ github.ref }}-${{ inputs.leg_id || format('sb-anon-{0}', github.run_id) }}
+  cancel-in-progress: true
+
+jobs:
+  sameboot:
+    runs-on: ubuntu-latest
+    # 3 x (setup ~3m + boot ~90s + pregen <=2400s + sustain 300s + report) ~ worst 165m << cap
+    timeout-minutes: 330
+    steps:
+      - name: Checkout (this branch)
+        uses: actions/checkout@v4
+
+      - name: Runner calibration ledger (record + proceed, warn-mode)
+        run: |
+          set -euo pipefail
+          IDX=$(python3 -c '
+          import time
+          t=time.time(); x=1
+          for _ in range(6000000):
+              x=(x*1103515245+12345)&0x7fffffff
+          print(f"{6000000/(time.time()-t):.0f}")')
+          echo "runner_cpu_index=$IDX (ledger only; same-boot pairs need NO cross-runner band)"
+          echo "runner_cpu_index=$IDX" >> "$GITHUB_STEP_SUMMARY"
+          echo "RUNNER_CPU_INDEX=$IDX" >> "$GITHUB_ENV"
+
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Boot-1 run (dgw=${{ inputs.b1_dgw }} seed=${{ inputs.b1_seed }})
+        continue-on-error: true
+        timeout-minutes: 75
+        env:
+          BENCH_WORK: ${{ github.workspace }}/run-b1
+          RADIUS_BLOCKS: ${{ inputs.radius_blocks || '1136' }}
+          RUN_SECONDS: ${{ inputs.run_seconds || '300' }}
+          BENCH_SEED: ${{ inputs.b1_seed }}
+          SERVER_XMX: ${{ inputs.server_xmx || '10G' }}
+          DIM_GEN_WINDOW: ${{ inputs.b1_dgw }}
+          SYNC_CHUNK_WRITES: ${{ inputs.b1_scw }}
+          DRAIN_CAP_POLLS: '240'
+          FAKE_PLAYERS: '0'
+          SIM_DISTANCE: '32'
+        run: |
+          set -euo pipefail
+          bash bench/worldv2/run_benchv2.sh
+
+      - name: Boot-1 collect artifacts + free disk
+        if: always()
+        run: |
+          set -uo pipefail
+          mkdir -p "${{ github.workspace }}/pair/b1"
+          for f in BENCHV2.md run-env.txt server-stdout.log; do
+            cp "${{ github.workspace }}/run-b1/server/$f" "${{ github.workspace }}/pair/b1/" 2>/dev/null || true
+          done
+          cp ${{ github.workspace }}/run-b1/server/*.sparkprofile "${{ github.workspace }}/pair/b1/" 2>/dev/null || true
+          ls -la "${{ github.workspace }}/pair/b1/" || true
+          rm -rf "${{ github.workspace }}/run-b1"
+
+      - name: Boot-2 run (dgw=${{ inputs.b2_dgw }} seed=${{ inputs.b2_seed }})
+        continue-on-error: true
+        timeout-minutes: 75
+        env:
+          BENCH_WORK: ${{ github.workspace }}/run-b2
+          RADIUS_BLOCKS: ${{ inputs.radius_blocks || '1136' }}
+          RUN_SECONDS: ${{ inputs.run_seconds || '300' }}
+          BENCH_SEED: ${{ inputs.b2_seed }}
+          SERVER_XMX: ${{ inputs.server_xmx || '10G' }}
+          DIM_GEN_WINDOW: ${{ inputs.b2_dgw }}
+          SYNC_CHUNK_WRITES: ${{ inputs.b2_scw }}
+          DRAIN_CAP_POLLS: '240'
+          FAKE_PLAYERS: '0'
+          SIM_DISTANCE: '32'
+        run: |
+          set -euo pipefail
+          bash bench/worldv2/run_benchv2.sh
+
+      - name: Boot-2 collect artifacts + free disk
+        if: always()
+        run: |
+          set -uo pipefail
+          mkdir -p "${{ github.workspace }}/pair/b2"
+          for f in BENCHV2.md run-env.txt server-stdout.log; do
+            cp "${{ github.workspace }}/run-b2/server/$f" "${{ github.workspace }}/pair/b2/" 2>/dev/null || true
+          done
+          cp ${{ github.workspace }}/run-b2/server/*.sparkprofile "${{ github.workspace }}/pair/b2/" 2>/dev/null || true
+          ls -la "${{ github.workspace }}/pair/b2/" || true
+          rm -rf "${{ github.workspace }}/run-b2"
+
+      - name: Boot-3 run (dgw=${{ inputs.b3_dgw }} seed=${{ inputs.b3_seed }})
+        continue-on-error: true
+        timeout-minutes: 75
+        env:
+          BENCH_WORK: ${{ github.workspace }}/run-b3
+          RADIUS_BLOCKS: ${{ inputs.radius_blocks || '1136' }}
+          RUN_SECONDS: ${{ inputs.run_seconds || '300' }}
+          BENCH_SEED: ${{ inputs.b3_seed }}
+          SERVER_XMX: ${{ inputs.server_xmx || '10G' }}
+          DIM_GEN_WINDOW: ${{ inputs.b3_dgw }}
+          SYNC_CHUNK_WRITES: ${{ inputs.b3_scw }}
+          DRAIN_CAP_POLLS: '240'
+          FAKE_PLAYERS: '0'
+          SIM_DISTANCE: '32'
+        run: |
+          set -euo pipefail
+          bash bench/worldv2/run_benchv2.sh
+
+      - name: Boot-3 collect artifacts + free disk
+        if: always()
+        run: |
+          set -uo pipefail
+          mkdir -p "${{ github.workspace }}/pair/b3"
+          for f in BENCHV2.md run-env.txt server-stdout.log; do
+            cp "${{ github.workspace }}/run-b3/server/$f" "${{ github.workspace }}/pair/b3/" 2>/dev/null || true
+          done
+          cp ${{ github.workspace }}/run-b3/server/*.sparkprofile "${{ github.workspace }}/pair/b3/" 2>/dev/null || true
+          ls -la "${{ github.workspace }}/pair/b3/" || true
+          rm -rf "${{ github.workspace }}/run-b3"
+
+      - name: 'Sameboot verdict gate (x519 dud-gate, no green INVALID boots) + pair table'
+        if: always()
+        run: |
+          set -uo pipefail
+          FAILANY=0
+          echo "| boot | dgw | scw | seed | ch/s | verdict |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|---|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          declare -A DGW=([1]=${{ inputs.b1_dgw }} [2]=${{ inputs.b2_dgw }} [3]=${{ inputs.b3_dgw }})
+          declare -A SCW=([1]=${{ inputs.b1_scw }} [2]=${{ inputs.b2_scw }} [3]=${{ inputs.b3_scw }})
+          declare -A SEED=([1]=${{ inputs.b1_seed }} [2]=${{ inputs.b2_seed }} [3]=${{ inputs.b3_seed }})
+          for i in 1 2 3; do
+            f="${{ github.workspace }}/pair/b$i/BENCHV2.md"
+            if [ ! -s "$f" ]; then
+              echo "::error::boot$i report missing (boot died pre-report)"
+              echo "| b$i | ${DGW[$i]} | ${SCW[$i]} | ${SEED[$i]} | ? | MISSING |" >> "$GITHUB_STEP_SUMMARY"
+              FAILANY=1; continue
+            fi
+            if grep -q "INVALID/FAIL" "$f"; then
+              echo "::error::boot$i BENCH-V2 INVALID/FAIL verdict in report"
+              FAILANY=1
+            fi
+            CHPS=$(grep -oE 'ch/s \(drain-def[^*]*\*\*[0-9.]+\*\*' "$f" | grep -oE '[0-9]+\.[0-9]+' | tail -1)
+            CHPS="${CHPS:-TIMEOUT-LB}"
+            echo "| b$i | ${DGW[$i]} | ${SCW[$i]} | ${SEED[$i]} | $CHPS | report-ok |" >> "$GITHUB_STEP_SUMMARY"
+          done
+          cat "${{ github.workspace }}"/pair/b*/BENCHV2.md 2>/dev/null || true
+          exit $FAILANY
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: ignore
+          name: scw-${{ inputs.leg_id || github.run_id }}
+          path: pair/**

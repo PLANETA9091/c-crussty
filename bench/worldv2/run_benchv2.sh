@@ -80,6 +80,7 @@ level-seed=$SEED
 view-distance=32
 simulation-distance=$SIM_DISTANCE
 online-mode=false
+sync-chunk-writes=${SYNC_CHUNK_WRITES:-true}
 spawn-protection=0
 initial-enabled-packs=vanilla,file/terralith.zip,file/tectonic.zip,file/incendium.zip,file/stellarity.zip
 max-tick-time=1800000
@@ -87,6 +88,7 @@ enable-command-block=false
 max-players=$MAX_PLAYERS
 motd=BENCH-V2 AG-433
 EOF
+echo "SYNC_CHUNK_WRITES=${SYNC_CHUNK_WRITES:-true}" # AG-390 scw attribution
 echo "eula=true" > eula.txt
 cat > bukkit.yml <<EOF
 settings:
