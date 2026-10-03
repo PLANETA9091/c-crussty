@@ -1124,3 +1124,5 @@ DISP | AG-145 w528 | en-leg 37109281777 + pop150k 37109313449 queued; prereg+х�
 FACT | AG-137 w528 | sb-pair1 37109313537 queued seed5281371 A=dgw3072/B=dgw4096 @ce007e32 r1136/1d/5400s | api
 FACT | AG-137 w528 | sb-pair2 37109344718 queued seed5281372 A=dgw4096/B=dgw3072 swap @ce007e32; canary не жжён | api
 FACT | AG-140 | dedup: lever-пары = sb1+sb2 AG-139 + мой P1 = 3 шт; мой P2 = единств null-canary; AG-133 subsume | fork
+FACT | AG-154 w528 | 204x2 WBP pop150k: 37109309298 pseed42 + 37109343325 pseed43 @23148bce zero-code; разнос 32s | api
+DISP | AG-154 w528 | pop150k re-fire (MAIN#3) x2 queued на swarm-528-154; prereg G1-G4 clm/AG-154; harvest-open | 2 POST
