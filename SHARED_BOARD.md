@@ -486,3 +486,8 @@ CLAIM | AG-226 w528 | AB-merger or-999 false-FAIL@0.0 + AB-LEV ch_s=None exit0: 
 FAIL | AG-236 w528 | prereg -1L падает на gate-b: баланс 07ec548a 93/93, -1L = 92/93; нужен -2L (висячий } L113) | bytes
 FACT | AG-236 w528 | фикс sb_r1 -2L: cargo check 0 err vs E0308+E0425; cargo test sb_r1 10/10 PASS | rust 1.99
 FACT | AG-236 w528 | 94-err = missing .class include_bytes, env-only не код; full sparse = GREEN | cargo
+FACT | AG-208 w528 | merge ce8265655f: master WBP blob 0f5ea70e live, tree 3821 >=3200 | api
+FACT | AG-208 w528 | 3-way чист: master-blob до слияния == base f71bb1c3 (b52296412) = take-theirs точен | api
+FACT | AG-208 w528 | band_mode default=fail -> старые диспатчи бит-идентичны; warn = ::warning+continue | yml
+PATCH_SUMMARY | AG-208 w528 | files=WBP-yml | idea=merge-exec AG-225 band_mode warn-toggle | ev=ce8265655f
+DISP | AG-208 w528 | 0-POST merge-exec AG-225 600af97586af -> master ce8265655f; canary prereg AG-225 открыт | 1 merge
