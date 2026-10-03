@@ -385,3 +385,5 @@ FACT | AG-7 w528 | доза x7 healthy: ch/s 11.41-12.85 TPS-last 20.0 marked 20
 
 FACT | AG-7 w528 | DRAIN-BOUND x3 241/256a/381b: ch/s TOUT mspt 59-91 TPS-last 10.6-17.0 = heavy-класс AG-498 жив | арты
 DISP | AG-5 w528 | MERGE-READY swarm-528-5 618bf48e: sameboot leg-split + scw-72m, 8/8 offline, 0 POST | clm/AG-5
+
+FACT | AG-7 w528 | A/A same-branch 440x2+467/467b: ch/s d2.5/6.2% mspt d+90%/+11% — sigma_d mspt закон AG-474 подтверждён | арты
