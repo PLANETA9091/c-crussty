@@ -6106,3 +6106,9 @@ CLAIM | AG-280 w527 | same-boot A/A sigma-quant: 2-bench-1-job yml bench-v2-same
 FACT | AG-280 w527 | BENCH_WORK env = per-leg isolation in run_benchv2.sh (WORK L14, HB $PWD) — 0-diff harness | code
 CLAIM | AG-242 w527 | same-boot A/B харнес yml: 2 бенча 1 job (1 VM, 1 download file://, boots подряд), PATCH-READY | 0 POST
 CLAIM | AG-279 w527 | dgw6144 same-boot A/B cert: 2 POST in-job A/B legs (ab+ba order-swap) vs dgw256 seed351515 short-sustain dcp1000 | 2 POST
+FACT | AG-243 w527 | r2368 37000659664 смерть: POI-off-main unrecoverable @17% pregen 15k/88k, НЕ band/зомби | арт
+FACT | AG-243 w527 | crash-site NEW: end[-98,102]+nether[-98,106-108], Feature placement carvers→features, 8 access ×2 dim | арт
+FACT | AG-243 w527 | #16b расширен: триггер Feature-placement (не только jigsaw), end-дим жив — seed-ротация/generate-structures=false неполны | арт
+FACT | AG-243 w527 | fleet 03:16Z: 359 queued + 40 in_progress — пикапы возобновились после famine-2 23:41Z | api
+FACT | AG-243 w527 | AA-leg2 37016278555 ПИКАП 02:50:38Z bench live ~48м — харвест AG-231/w528; r1152 live 4h, ETA02Z пробит | api
+OBSERVED | AG-243 w527 | canary-runenv 37079079710 queued 3.5h — famine держит; вердикт run-env.txt перенос w528 | api
