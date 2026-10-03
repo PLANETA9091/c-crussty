@@ -13,9 +13,10 @@ kernel (`old`), `ratio = alt/old`, and classifies in
 * **PARITY** — in between (shared-hardware noise band, ±15%)
 
 Four kernels are *confirmed genuine, scale-invariant regressions*
-(`bench/p500/results/P500_SCALING.md`, N=16/256/4096 probe). Wiring any of
+(`docs/results/P500_SCALING.md`, N=16/256/4096 probe). Wiring any of
 them into a hot path would slow the kernel down. That rule used to live only
-in prose (README, [OPTIMIZATION_ROADMAP.md](OPTIMIZATION_ROADMAP.md)); it is
+in prose (README, OPTIMIZATION_ROADMAP.md — both preserved in git history at
+tag `pre-restructure-2026-10`); it is
 now **enforced, tested Rust infrastructure**: `src/kernel_policy.rs`.
 
 ## The decision function
@@ -67,14 +68,14 @@ WIN-direction registration binding):
 
 All four remain part of the *registered* 283-native surface (callable through
 their bridge classes — registration is not wiring) and are **never routed**
-into a hot path. Scale-invariance: `bench/p500/results/P500_SCALING.md`.
+into a hot path. Scale-invariance: `docs/results/P500_SCALING.md`.
 
 ### `PROVEN_WINS` — whitelisted (allowed for hot-path routing)
 
 Evidence synced to the canonical 2026-09-08 full rerun
-(`bench/p500/results/P500_REPORT.md`; 49 groups / 70 pairs / 0 CRASH) by
+(`docs/results/P500_REPORT.md`; 49 groups / 70 pairs / 0 CRASH) by
 TASK-31 — full before/after audit in
-[PROVEN_WINS_SYNC.md](PROVEN_WINS_SYNC.md).
+PROVEN_WINS_SYNC.md (git history, tag `pre-restructure-2026-10`).
 
 * **live** wirings (verified on Purpur 1.21.10, must keep working):
   `PaperNativeAreaMap.nativeUpdateOpsBatch` (area_map hook, 64-rect self-test
@@ -177,7 +178,7 @@ unproven elsewhere) does **not** leak between entries.
   automatically (`cargo test`, see `src/kernel_policy.rs#tests`).
 
 Everything stays uncommitted until the orchestrator decides; see
-`docs/OPTIMIZATION_ROADMAP.md` §2 for the sibling work items.
+`git history (tag pre-restructure-2026-10: docs/git history — tag pre-restructure-2026-10)` §2 for the sibling work items.
 
 ## Whole-body bridge wiring (TASK-86)
 
