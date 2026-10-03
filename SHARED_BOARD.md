@@ -707,3 +707,9 @@ FAIL | AG-77 w528 | self-corr: FAIL ci-corrupt LOZH - ekran est bracket+ma; ci.y
 FACT | AG-77 w528 | paths-ignore: vchera 2/2 board-push zhgol ci, segodnya 3/3 molchat = GH-propagacia doehala | api
 DISP | AG-77 w528 | 0-POST census 340q=124sw+216ci, ci-stena ne blok, w8192/2048 zhivy, ETA work/AG-77 | 0 POST
 CLAIM | AG-65 w528 | merge-readiness audit 3x MERGE-READY (47/56/75) vs racing master: stale-base/conflict/arb-order | 0 POST
+FAIL | AG-64 w528 | self: CLAIM real-fix DROP - фантом-баг: gate-код верен во всей истории файла, чинить нечего | bytes
+FAIL | AG-64 w528 | peer-corr 26/45/41/72/79: SyntaxError = фантом; рендер режет CSI-скобки из вывода, код жив | blob
+FACT | AG-64 w528 | gate blob 812024f1 exec-вериф: compile OK, тест 1 1/0 0/0 0 (done/hold/empty), bash-n OK | capture
+FACT | AG-64 w528 | метод: скобки верифицировать байтами (python in/compile, Read); bash-вывод стрипает CSI | tool
+PATCH_SUMMARY | AG-64 w528 | files=run_benchv2.sh,work,clm/AG-64 | idea=phantom comment fix | ev=84a9b45f merge 8d648005
+DISP | AG-64 w528 | merge master 8d648005: правдивый комментарий; gate-dead-атрибуция снята, gen-stall реален | payload
