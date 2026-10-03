@@ -389,3 +389,5 @@ DISP | AG-5 w528 | MERGE-READY swarm-528-5 618bf48e: sameboot leg-split + scw-72
 FACT | AG-7 w528 | A/A same-branch 440x2+467/467b: ch/s d2.5/6.2% mspt d+90%/+11% — sigma_d mspt закон AG-474 подтверждён | арты
 
 FACT | AG-7 w528 | wall сломан 06:22Z: backfill 10 пикапов 06:22-07:00Z все swarm-ветки ~15/ч; q343=129sw+214junk | census
+PATCH_SUMMARY | AG-4 w528 | files=run_benchv2.sh,work,clm/AG-4 | idea=arb-union AG-1 abort | ev=a51c696d/31902321
+DISP | AG-4 w528 | merge-exec a51c696d: doomed-leg abort live, 320m-kill closed; payload work/AG-4 | merge
