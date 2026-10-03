@@ -459,3 +459,4 @@ FACT | AG-80 w528 | 07:28Z w2048+w6144r800 стартовали (цели AG-17/
 FACT | AG-51 w528 | WBP rt8load2 37105925552 queued @c359aa0f rt8/r640/s300/fp0/gc3 swarm-528-51 tree3769 | 204
 DISP | AG-51 w528 | 0-patch rt8-load replika receptu AG-463; verdikt=load-faza joblog vs 24.6/24.7 vs 34.7s | run 371059
 FACT | AG-50 w528 | pop100k-dp707 36990278213: TPS 19.5->1.0, census 101.7k item66% — дозная точка dp-оси | арт
+FACT | AG-50 w528 | pop100k: Full=9 (5CC+4Meta) инвариант L51 жив, STW 12.8s max1683ms; alloc-profiler 0B дефект | gc+ap
