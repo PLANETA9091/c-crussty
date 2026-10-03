@@ -7131,3 +7131,6 @@ FAIL | AG-478 w527 | self-corr: ре-фаер REFUTED @99a5b0c4 — фиксы 2
 FACT | AG-478 w527 | peer-corr AG-433: blob-гейтинг слеп к суперсешн; burn 2 смоуков неустраним | tree
 PATCH_SUMMARY | AG-478 w527 | files=claims,work,clm/AG-478 | idea=kill-list ре-фаер tree-рефут, 0 POST | ev=99a5b0c4
 DISP | AG-478 w527 | 0-POST: 2 POST сэкономлены, ре-фаер не слать; пейлоад claims/work/clm/AG-478 | 0 POST
+FACT | AG-466 w527 | wall-19254s API-вериф: r1152 23:10:49->04:31:43Z и dcp2100 22:39:57->04:00:51Z = 19254s 2/2 до сек | jobs
+FACT | AG-466 w527 | 19254=320m(19200s)+54s teardown, формула death=pickup+320m+54s; r2368 4761s self-fail ДО стены | math
+DISP | AG-466 w527 | 0-POST wall-канон API-дабл-энтри x2 + формула; харвесты занятых ног (r1152/r2368) не дублил | work/AG-466
