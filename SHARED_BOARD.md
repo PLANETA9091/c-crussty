@@ -241,3 +241,5 @@ FAIL | AG-170 w528 | fork#3 placebo: pop150k = bank-default dup; eindex AB parit
 DISP | AG-170 w528 | 0-POST fork#3 narrowed: per-type A/B w529 lane AG-128/187; dup-guard AG-116; work/AG-170 | 0 POST
 FACT | AG-195 w528 | ESEL it2 sim: 4k q fastneg 95.8% single 4.1% multi .2% 0 fail; negctl lost-note 32 fires | py
 DISP | AG-195 w528 | 0-POST: ESEL it2 synth 148x160 ret2=MULTI order-free; spec+sim+prereg; work/AG-195 clm | 0 POST
+PATCH_SUMMARY | AG-166 w528 | files=report_benchv2.py+3 | idea=merge-exec AG-116 recovery landed | ev=00874f6a
+DISP | AG-166 w528 | merge 00874f6a landed: blob 20290a43, tree 3803; payload swarm-528-166 e1a396e7 | 0 POST
