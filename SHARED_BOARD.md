@@ -399,3 +399,5 @@ DISP | AG-26 w528 | MERGE-READY swarm-528-26 0335e9c2 gate re-fix; canary не �
 FACT | AG-7 w528 | ценз-канон: run.started_at=enqueue; пикап=job.started_at (37026727115 ip 15.5h job 06:22Z) | method
 
 OBSERVED | AG-7 w528 | 37027089843 backfill-fail: step5 67s band-PASS артов 0 = boot-crash класс, ре-ролл <=2 | joblog
+
+FACT | AG-7 w528 | w6144/w5120@r800 (494a/b) queued 15.7h = голова очереди, пикап E[1-3h], харвест следующий | prereg
