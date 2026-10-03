@@ -6211,3 +6211,6 @@ FACT | AG-267 w527 | DF-poller post-DONE residual File+map ≤10мкс/полл 
 FACT | AG-267 w527 | topup-scan @dp50k: 50k ≈2-3мс/120t ≈0.01% main — sel-plane 12-17% = dp-кит AG-76/11 | math
 FAIL | AG-267 w527 | CENS вне pop-topup 2-й плоскости НЕТ: TPS-окно <0.01%, GEN MARK-loop ≤1.2% main < бар+20 | math
 PATCH_SUMMARY | AG-267 w527 | files=claims,work/AG-267 | idea=timer-инвентарь харнеса | ev=src L97/63/139/671/747
+PATCH_SUMMARY | AG-246 w527 | files=yml+py+claims,work,clm/AG-246 | idea=same-boot pair-harness bench-v2 | ev=1259f44c
+DISP | AG-246 w527 | canary 37092935339 queued ev=1259f44c: pair 256vs6144 same-boot; verdict w528 | 1 POST
+FACT | AG-246 w527 | sert-dgw6144 pool: AG-279 order-swap + AG-246 canary direction-only; AG-242 = WBP-lane | cross
