@@ -40,6 +40,17 @@ import org.bukkit.plugin.java.JavaPlugin;
  *        [DF] GEN-DONE  — all worlds marked, elapsed seconds
  *   4. "/dimchunks" G-DIM census unchanged.
  *
+ * v3.1 UNMARK-AT-DRAIN (AG-367, wave-527; #16g split marking vs generation):
+ *   root-cause AG-345 (dcp2100 run-37000413529): after GEN-DONE plugin tickets are
+ *   NEVER released -> 20k+ chunks stay loaded+ticking forever -> drain gate
+ *   (mspt<50 + gendone) cannot close on heavy-pop legs (mspt floor 76-81 for
+ *   8960s) -> DRAIN-TIMEOUT -> 0-report. Opt-in lever: DIM_DRAIN_UNMARK=1 arms a
+ *   stop-file trigger; when the file exists AND gen is done, all plugin tickets
+ *   are released on the main thread (removePluginChunkTicket, no sync loads) and
+ *   [DF] UNMARK telemetry is emitted. DEFAULT OFF = byte-identical v3 behavior.
+ *   Harness (run_benchv2.sh) touches the stop file AFTER the sustain window so
+ *   sustain TPS semantics are unchanged; G-DIM loaded-gate waiver is harness-side.
+ *
  * Back-compat: env DIM_MARK_MODE=legacy restores exact v2 amortized-sync behavior
  * (rollback switch for A/B isolation). Default mode = pregen.
  *
@@ -97,6 +108,16 @@ public final class DimForceloadPlugin extends JavaPlugin {
         }
     }
 
+    /** v3.1: opt-in unmark-at-drain (#16g; AG-345 root-cause). Default OFF. */
+    private boolean unmarkArmed() {
+        return "1".equals(System.getenv("DIM_DRAIN_UNMARK"));
+    }
+
+    private String stopFile() {
+        String v = System.getenv("DIM_STOP_FILE");
+        return (v == null || v.isEmpty()) ? "dimload.stop" : v.trim();
+    }
+
     private boolean pregenMode() {
         String v = System.getenv("DIM_MARK_MODE");
         return v == null || v.isEmpty() || !v.equalsIgnoreCase("legacy");
@@ -119,7 +140,8 @@ public final class DimForceloadPlugin extends JavaPlugin {
         final int total = side * side;
         final long armTs = System.currentTimeMillis();
         getLogger().info("[DF] armed mode=pregen-v3 worlds=" + worlds + " radius_chunks=" + r
-                + " cells_per_world=" + total + " gen_window=" + genWindow());
+                + " cells_per_world=" + total + " gen_window=" + genWindow()
+                + " unmark=" + (unmarkArmed() ? "armed stop=" + stopFile() : "off"));
         final int gw = genWindow();
         final java.util.Set<String> genFired = new java.util.HashSet<>();
         // per-world set of cells not yet ticket-marked (removed as they are registered)
@@ -133,12 +155,41 @@ public final class DimForceloadPlugin extends JavaPlugin {
         final java.util.Map<String, java.util.concurrent.atomic.AtomicInteger> inflight = new java.util.HashMap<>();
         final java.util.Map<String, java.util.concurrent.atomic.AtomicInteger> genOk = new java.util.HashMap<>();
         final java.util.Map<String, Integer> marked = new java.util.HashMap<>();
+        // v3.1: cells whose plugin ticket was actually added (unmark-at-drain set)
+        final java.util.Map<String, java.util.List<int[]>> markedCells = new java.util.HashMap<>();
         final java.util.Set<String> announced = new java.util.HashSet<>();
+        final java.util.concurrent.atomic.AtomicBoolean released =
+                new java.util.concurrent.atomic.AtomicBoolean(false);
+        final java.util.concurrent.atomic.AtomicBoolean genDone =
+                new java.util.concurrent.atomic.AtomicBoolean(false);
         final long[] pollCount = {0};
 
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (!new File(START_FILE).exists()) {
                 return; // harness opens the GEN window by touching dimload.start
+            }
+            // ---- v3.1 unmark-at-drain: release plugin tickets once gen done + stop file seen ----
+            if (unmarkArmed() && !released.get() && genDone.get()
+                    && new File(stopFile()).exists()) {
+                released.set(true);
+                int removed = 0;
+                for (World w : Bukkit.getWorlds()) {
+                    java.util.List<int[]> cells = markedCells.get(w.getName());
+                    if (cells == null) {
+                        continue;
+                    }
+                    for (int[] c : cells) {
+                        w.removePluginChunkTicket(c[0], c[1], (Plugin) this);
+                        removed++;
+                    }
+                    getLogger().info("[DF] UNMARK world=" + w.getName()
+                            + " released=" + cells.size() + " elapsed="
+                            + ((System.currentTimeMillis() - armTs) / 1000) + "s");
+                }
+                getLogger().info("[DF] UNMARK-DONE total=" + removed);
+            }
+            if (released.get()) {
+                return; // tickets gone: no more GEN top-up / MARK work
             }
             // ---- fire GEN futures with bounded in-flight window (main thread: scheduling, no IO) ----
             for (World w : Bukkit.getWorlds()) {
@@ -202,6 +253,7 @@ public final class DimForceloadPlugin extends JavaPlugin {
                     int[] c = q.pollFirst();
                     if (w.isChunkLoaded(c[0], c[1])) {
                         w.addPluginChunkTicket(c[0], c[1], (Plugin) this); // loaded => NO sync load
+                        markedCells.computeIfAbsent(name, k -> new java.util.ArrayList<>()).add(c);
                         m++;
                     } else {
                         q.addLast(c); // still generating — retry next poll
@@ -222,10 +274,13 @@ public final class DimForceloadPlugin extends JavaPlugin {
             }
             boolean allDone = marked.size() >= worlds.size()
                     && marked.values().stream().allMatch(v -> v >= total);
-            if (allDone && !announced.contains("__done__")) {
-                announced.add("__done__");
-                getLogger().info("[DF] GEN-DONE all_marked=" + (total * worlds.size())
-                        + " elapsed=" + ((System.currentTimeMillis() - armTs) / 1000) + "s");
+            if (allDone) {
+                genDone.set(true);
+                if (!announced.contains("__done__")) {
+                    announced.add("__done__");
+                    getLogger().info("[DF] GEN-DONE all_marked=" + (total * worlds.size())
+                            + " elapsed=" + ((System.currentTimeMillis() - armTs) / 1000) + "s");
+                }
             }
         }, 40L, 10L);
     }
