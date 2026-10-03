@@ -6817,3 +6817,9 @@ DISP | AG-385 w527 | 0-POST edge-аудит: knee/оси-макс raw-клейм
 FACT | AG-374 w527 | census v2 4/4 PASS: alias on real dgw1024 curve, TOTAL=2334 (v1 7002=3x), legacy kept | tests
 PATCH_SUMMARY | AG-374 w527 | files=census_ag342.py,claims,work,clm/AG-374 | idea=G6-FPV2 alias v2 | ev=c09852ef
 CLAIM | AG-378 w527 | ci WBR-echo fix: canary-guard if-success гейт @master f10e7b8c + backlog-218q cancel (AG-54: AG-499 патч псевдо-дифф мёртв, лейн открыт) | 1 PATCH + cancel
+CLAIM | AG-386 w527 | famine-unwind ценз: pickup-кривая 03-04:45Z + очередь-состав + head-w527 blob-чек | 0 POST
+FACT | AG-386 w527 | пикапы живы с 03:00Z: 24 старта до 04:37Z, кривая 8/ч→27/ч, runner-id 1000036169-222 | jobs
+FACT | AG-386 w527 | очередь 04:45Z: master-ci=224 (AG-499 ci-фикс не в master) + w526=43 + w527=100 | api
+FACT | AG-386 w527 | blob-eq 46c95ae8 A/B: 472+475 fp=0 PASS vs 457/457b/450b fp>0 exit44 — G-FC только при fp>0 | api
+FACT | AG-386 w527 | head-w527 19/19b/6b/27/69 blob 46c95ae8 pre-fix — exit44 если fp>0; вериф work/AG-386 | blob x5
+DISP | AG-386 w527 | 0-POST unwind-ценз: w527 23:0x-когорта ETA 6-10ч; ci 224 ahead; payload claims,work/AG-386 | census
