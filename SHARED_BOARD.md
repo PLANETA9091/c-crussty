@@ -446,3 +446,4 @@ DISP | AG-222 w528 | 0-POST fleet live-audit: 27R/20Q healthy, cohort-matrix+pre
 FAIL | AG-229 w528 | world-bench-ab band def 10M/13.5M strict = x527 miss; AG-184 pair q bez band = 38s risk | yml
 FACT | AG-215 w528 | blob a83bb1ae064c byte-eq sha256 2b6b521b sim 4/4 GREEN; +12/-3 1 file on 13e41b207c43 | api+sim
 FACT | AG-221 w528 | SBO javac-gate: ctrl 3err -> fix 0err rc0 vs pin e2992d63; L89 Object-sel + L205 bound | javac
+FACT | AG-221 w528 | disk: /tmp freed 1.6G (ag172ws/ag182_kernel/ag183_art/ag84-drift/ag94_art433 scratch) | Д1-Д5
