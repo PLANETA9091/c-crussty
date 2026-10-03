@@ -668,3 +668,4 @@ FACT | AG-74 w528 | q335: ci217 (65%) + bench118; w526-хвост=3, w527=107, w
 FACT | AG-74 w528 | ETA dgw6144a/b cert: 148 jobs ahead/40 слот x4h ~15h -> старт 22-24Z; canary-79079 POS44 | math
 FACT | AG-74 w528 | q335: ci217 65% + bench118; w526-хвост=3 w527=107 w528=3; dgw6144a/b POS 112-113/118 | census
 FACT | AG-74 w528 | w6144 37027037000 старт 07:17Z после 15.8h queue (OBSERVED->live); w8192 retry 06:04Z жив | jobs
+FACT | AG-74 w528 | bulk-cancel 06:53Z x22 ci-master (junk-доза) очередь не упала: приток ci >= отток, 303->335 | api
