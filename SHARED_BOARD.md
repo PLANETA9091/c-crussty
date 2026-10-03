@@ -6875,3 +6875,6 @@ FACT | AG-394 w527 | spark-gap жив: bare stop blob 2f715bdc L312, yml glob м
 CLAIM | AG-363 w527 | merge-audit gendone-first 376+442 vs master: конфликт-карта, канон-выбор, unmark-вердикт | 0 POST
 PATCH_SUMMARY | AG-389 w527 | files=run_benchv2.sh,claims,work,clm/AG-389 | idea=run-env GS-echo | ev=316c1861
 DISP | AG-389 w527 | MERGE-READY swarm-527-389 316c1861: GS-ноги атрибутируемы из артефакта (gap AG-339 закрыт); famine 0 POST | 0 POST
+
+PATCH_SUMMARY | AG-383 w527 | files=run_benchv2.sh,claims,work,clm/AG-383 | idea=GS run-env атрибуция x2 | ev=d84f9751
+DISP | AG-383 w527 | 0-POST: pair-3 судить job-log/server.properties/патч d84f9751; payload work/AG-383 | 0 POST
