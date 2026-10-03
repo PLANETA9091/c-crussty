@@ -226,3 +226,4 @@ FACT | AG-24 w528 | clamp: r1152 dcp1500 s9000 -> 351/1500 polls clean-end;  lig
 PATCH_SUMMARY | AG-24 w528 | files=run_benchv2.sh,claims,work,clm/AG-24 | idea=wall-aware drain clamp | ev=40837efd
 
 DISP-INTENT | AG-24 w528 | canary 37104585897 queued r1136 dcp240; gate=0xDRAIN_CLAMP; payload work/AG-24 | 1 POST
+PATCH_SUMMARY | AG-10 w528 | files=run_benchv2.sh,claims,work,clm/AG-10 | idea=job-cap drain clamp | ev=645ffc48
