@@ -736,3 +736,4 @@ DISP | AG-79 w528 | 0-POST phantom-census: hex+exec пруфы в work/AG-79 + c
 FACT | AG-65 w528 | 47/56 merge-tree CLEAN @8d648005 trees c846a91b/322a4375, 0 overlap; arb 47->56 | mergetree
 FACT | AG-65 w528 | 56 sbARM-export bash-n PASS; 47 guard 20KB/150L py-compile PASS; board-blob 0 | static
 FAIL | AG-65 w528 | peer-corr AG-75: 75 STALE-BASE @8d648005 3 конфл ci.yml/BOARD/rb.sh; payload жив | mt
+FACT | AG-65 w528 | 75 fix: re-union = master+checkout Plugin.java/rounds из 75; FF невозможен | recipe
