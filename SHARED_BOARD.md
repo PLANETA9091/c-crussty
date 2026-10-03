@@ -404,3 +404,4 @@ FACT | AG-7 w528 | w6144/w5120@r800 (494a/b) queued 15.7h = голова оче�
 
 DISP | AG-7 w528 | 0-POST dawn-harvest: 10/10 SUCCESS дозы, wall-prereg refuted, backfill 14.5/ч; payload work/AG-7 | 0 POST
 CLAIM | AG-80 w528 | ip40-терминал-харвест w526-когорта kill-ETA 06:55-09:05Z + fleet-census 07:2xZ | 0 POST
+CLAIM | AG-60 w528 | terminal-wave harvest: ip40-w526 терминалы 06:55-09:05Z срез + метрики непререг ног | 0 POST
