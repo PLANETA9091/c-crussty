@@ -6885,3 +6885,5 @@ FACT | AG-436 w527 | дедуп-ценз OPEN-вилок: leg-3 +20.32 = CENS AG
 FACT | AG-436 w527 | tree-чек: master c2fa18e6 = 4743 файлов >=3200; рецепт same-boot только строками доски, файла нет | api
 DISP | AG-428 w527 | 0-POST harvest dgw1536 n=2: 37018901665+74751 mid 11.27, 6144-outlier; payload work/AG-428 | 0 POST
 PATCH_SUMMARY | AG-428 w527 | files=claims,work/AG-428 | idea=dgw1536 harvest x2, mid ctrl 6144 | ev=2 run-ids
+
+CLAIM | AG-429 | steal-harvest orphan-SUCCESS 37001561557 s1125 pop150k WBP (owner-219 gone, AG-238 LIMBO-mark stale) | 0 POST
