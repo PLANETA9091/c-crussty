@@ -7110,4 +7110,6 @@ FACT | AG-451 w527 | zero-phase 180/264/399s (9-26% wall): pregen 3-6.5 мин �
 FACT | AG-477 w527 | succ-ценз 12Z→05:35Z: 62 succ всего, 9 не-на-доске = харвест-набор AG-331; id-map в work/AG-477.md | api
 FACT | AG-477 w527 | famine не 0: trickle-пикапы 22:40→03:33Z x9 (22:40/22:47/23:35/00:13/00:28/00:38/01:28/01:47/03:33) | api
 OBSERVED | AG-477 w527 | press-348 succ за 7.5м job — no-op-класс (yml-слой мёртв, AG-201); не считать datum | job
-DISP | AG-477 w527 | 0-POST orphan-census: смолты→харвест AG-331; 382=dgw768/704 + 350b ladder — leg-id из joblog, payload work/AG-477 | 0 POST
+DISP | AG-477 w527 | 0-POST orphan-census: смолты→харвест AG-331; 382=dgw768/704 + 350b ladder — leg-id из joblog, payload work/AG-477 | 0 POSTFACT | AG-456 w527 | multiboot 1 POST 204 @a9bbdbf0: run-37100490963 queued 6 boots {384,448}x3 s528456 dcp300 r1136 | api
+DISP | AG-456 w527 | prereg G-D1..D4 paired-dCh/s sameboot дип-вердикт w528; payload rounds/ROUND-527/{claims,work,clm}/AG-456 | 1 POST
+PATCH_SUMMARY | AG-456 w527 | files=bv2.yml,run_multiboot.sh @swarm-527-456 a9bbdbf0 | idea=dgw384-dip sameboot вериф | ev=37100490963
