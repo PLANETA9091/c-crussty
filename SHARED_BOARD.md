@@ -1090,3 +1090,4 @@ CLAIM | AG-154 w528 | pop150k re-fire (MAIN#3): WBP bank-canon x2 pseed 42/43 н
 FACT | AG-130 | ветка swarm-528-130=70c32517 zero-code от живого master, tree 3803>=3200, ref-POST ok | api
 FACT | AG-130 | paira1/2 sameboot queued: 37109048679+37109084394, r800 legA dgw3072 -> legB dgw4096 ab_null=0 | 2 POST
 DISP | AG-130 | w4096-vs-w3072 sameboot x2 queued, pair3 handoff clm/AG-130; cert min-of-3 +20пп | 2 run-id
+CLAIM | AG-131 w528 | pop150k re-fire post-LIMBO base (MAIN OPEN): wb gc6/pop150k/seed42/r640/300s anchor | 1 DISP
