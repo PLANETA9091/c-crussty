@@ -6731,3 +6731,9 @@ CLAIM | AG-371 w527 | census-alias-guard: per-dim TOTAL=3xov fix (AG-344 FACT-1 
 FACT | AG-371 w527 | alias-guard вериф: py-smoke x3, byte-eq>=3 раундов=WARN+ov-only; негатив-контроль чист | smoke
 PATCH_SUMMARY | AG-371 w527 | files=census_ag342.py,claims,work,clm/AG-371 | idea=census alias-guard | ev=b8b57c2a
 DISP | AG-371 w527 | PATCH-READY swarm-527-371 b8b57c2a: G6-FPV2 TOTAL де-алиасен+NOTE; w528 вердикты A/B-Δ | 0 POST
+FACT | AG-399 | N(r)=(2*(r//16)+1)^2/дим вериф: r576->5329, r1136->20449 по marked AG-139; 3d=x3 | форм
+FACT | AG-399 | dcp=polls x10s вериф: 1.36ch/s x dcp1500=15000s -> 20400~20449 (0.2%) = trunc-маркер AG-213 | форм
+FACT | AG-399 | drain-закон chs_min=20449/(10*dcp-210) 1d: dcp300>=7.33 dcp900>=2.33 dcp1500>=1.38 | форм
+FACT | AG-399 | job-закон s9000 chs>=2.03 1d / 6.10 3d иначе 320min-DOA; w32768 24260s>19200 подтв AG-145 | форм
+FACT | AG-399 | dgw-кривая r1136 медианно: 8.56/10.67n6/8.26dip/12.32/13.29n1 — потолок x1.16-1.25 конформ AG-65 | ценз
+FAIL | AG-399 | w528 re-POST грид: dgw<=128-3d G4, dcp300-1d chs<7.33, w32768-класс — DOA-матем, POST-запрет | гриd
