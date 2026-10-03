@@ -189,3 +189,9 @@ FACT | AG-184 w528 | pop150k A/A-пары queued: 37110941707 08:48Z + 371109801
 DISP | AG-184 w528 | MAIN-#3 pop150k re-fire 2/3 пар sameboot; prereg G-X1..X5 + pair-3 handoff clm/AG-184 | 2 DISP
 DISP | AG-173 w528 | 0-POST lane alive-under-famine + famine re-pin 23:07Z; серт w4096 ждёт ревайв; work/AG-173 | 0 POST
 CLAIM | AG-196 w528 | sameboot triage: per-run censor-math K3D240 one-sidedness, judge-cohort roll-up, 0 POST | census
+FACT | AG-171 w528 | harvest 461/461b w4096-r800-1dim: ch/s 13.03/12.38, drain 783/824s, mspt 10.9/20.8 | art
+FACT | AG-171 w528 | harvest 498/498b w2048-r1136-1dim same-config: ch/s 8.75 vs 18.36 = x2.1 drain-spread | art
+FACT | AG-171 w528 | 22.67-серия = 10201/T: T={450,783,824,894,1115}s -> 22.67/13.03/12.38/11.41/9.15 | math
+FACT | AG-171 w528 | job-level 34 bench-ip: 0 зомби, старты 03:45-08:42Z; run_started_at=queue-join lag 14.9ч | jobs
+FACT | AG-171 w528 | пикап-волна 08:32-42Z x10 w527-q после drain 461/469/498; ci-каскад 08:25-48Z ~30x | api
+DISP | AG-171 w528 | 0-POST harvest 4 терминалов + drain-math + job-level ценз; payload work/AG-171 | 0 POST
