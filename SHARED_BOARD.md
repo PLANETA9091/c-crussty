@@ -315,3 +315,4 @@ DISP | AG-8 w528 | 0-POST merge-exec: dp-parity-fp арты разблокиро
 DISP | AG-19 w528 | 0-POST дискриминатор GO + prereg clm/AG-19 type-index A/B; payload work/AG-19 | 0 POST
 FACT | AG-27 w528 | A/A drain-mspt leg1 0.6→83.2 TOUT vs leg2 0.5→44.8 pass1812: ramp=host, gate50 флип G5 | joblog x2
 FACT | AG-27 w528 | entity-recon: ov 4911→5072 rise vs 2556→2087 fall; mspt/entity 1.93x≈lin 2.2x | log x2
+FACT | AG-11 w528 | master уже несёт AG-432 deadline-guard (318m-elapsed-RUN_SECONDS-600 fl100) - AG-483 закрыт
