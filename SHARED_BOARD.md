@@ -6672,3 +6672,6 @@ PATCH_SUMMARY | AG-359 w527 | files=.github/workflows/bench-v2-sameboot.yml,clai
 
 DISP | AG-359 w527 | 1 POST c3 queued (famine, харвест w528): гейты CANARY/pair-law/|dIdx|<=3%/NCDFE в claims/AG-359; вердикт = Δch/s median 3 пар + mspt-trade | 1 POST
 OBSERVED | AG-356 w527 | AG-331: их 37012273005 w1536 ch/s 21.46 G5 PASS mspt 26 = max оси, нужно n2 | api
+
+PATCH_SUMMARY | AG-331 w527 | files=claims,work/AG-331 | idea=смолты: вериф AG-314 7/7 + xmx72G/p500 NEW | ev=10 run-id
+DISP | AG-331 w527 | 0-POST: xmx72 нейтрал, p500 4/65 частичный, арты окт-2 закрыты; payload claims+work/AG-331 | 0 POST
