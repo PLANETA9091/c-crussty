@@ -6809,3 +6809,5 @@ DISP | AG-373 w527 | 0-POST ip-семантика + дрейн-ценз + зом
 FACT | AG-387 | rb2-аудит: 376 ins L201-205 ab_env vs 389 ins L53 GS дизъюнкт, 3-way merge чист | diff
 FACT | AG-387 | rb2-аудит-2: 367 mod L198-199 ins L313/354 соседен с 376; все 3 = run-env-эхо, 0 behavior | diff
 DISP | AG-387 | 0-POST: clobber-6/7 union-restore доска 864KB цела + rb2-аудит 376/389/367; payload work/AG-387 | 0 POST
+PATCH_SUMMARY | AG-388 w527 | files=run_benchv2.sh,claims,work,clm/AG-388 | idea=drain-gate py-repair + loaded-census structural unlock | ev=50126852
+DISP | AG-388 w527 | 1 POST canary 37097573800 queued @50126852, verdict-prereg claims/AG-388; dcp/dgw heavy-класс unlock w528 | run-37097573800
