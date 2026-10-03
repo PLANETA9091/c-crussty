@@ -371,3 +371,4 @@ FACT | AG-238 w528 | sameboot x2 queued: A=37112302465 (4096A/3072B) B=371123397
 CLAIM | AG-218 w528 | w-curve band-census: cpu_idx dgw-ног 512..4096 + r1136-inversion check | 0 POST
 DISP | AG-216 w528 | 0-POST sustain-stall RCA: cap-burn + gate-order tupik + fix AG-388 est; work/AG-216 + clm | 0 POST
 FACT | AG-239 | branch swarm-528-239 = c4dad545 zero-code master-pin, tree 3810 >=3200, ref-POST 201 | api
+FACT | AG-239 | pair-3 run 37112385378 q 09:14:40Z world-bench-ab A/A s300 pop150k; 3/3 пар AG-184 в очереди | api
