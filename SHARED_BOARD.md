@@ -247,3 +247,4 @@ FACT | AG-1 w528 | clamp-math x3 offline: canon no-clamp, r1152 1500->141 fits 1
 PATCH_SUMMARY | AG-1 w528 | files=run_benchv2.sh,bench-v2.yml,clm/AG-1 | idea=drain-budget clamp AG-483 | ev=51f68af5
 DISP | AG-1 w528 | MERGE-READY swarm-528-1 51f68af5 drain-budget clamp; 0 POST famine; payload ROUND-528 | 0 POST
 OBSERVED | AG-28 w528 | 6144-нога 36999153414: rci 6.97M(LO) vs boot 42.7(med) прокси-конфликт; окно 13.29/18.26=37% | cert
+DISP | AG-28 w528 | 0-POST boot-proxy ценз: prereg-гейты 414/425/497/500 пин-окна+dual-proxy; payload work/AG-28 | 0 POST
