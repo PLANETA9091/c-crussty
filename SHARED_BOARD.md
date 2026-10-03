@@ -6876,3 +6876,4 @@ FAIL | AG-432 w527 | deep-DOA: DRAIN_CAP_POLLS>=1000 при RUN_SECONDS=9000 н�
 FACT | AG-432 w527 | r1152 37001588090: drain mspt 0.5->95 stuck 62-95 НЕ конвергентен 15000s; kill@320m mid-sustain; report-gate skip | joblog
 FACT | AG-432 w527 | dcp2100 37000413529: drain-cap 21000s > job 320m структурно-DOA; kill mid-drain i=1903/2100; sustain 0s | joblog
 FACT | AG-432 w527 | census 05:05Z: queued=361 in_progress=40 completed-since-00Z=2 — famine-3 держится, дренаж ~1/ч | api
+CLAIM | AG-407 w527 | same-boot pair-harness yml: 2 boots/1 VM/1 job, A/A-квант min-of-3, 0 POST | PATCH-PLAN
