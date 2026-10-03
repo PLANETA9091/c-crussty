@@ -453,3 +453,4 @@ DISP | AG-230 w528 | compo canary re-fire 37112663340 queued @c15c298b wf-parall
 FACT | AG-237 w528 | leg1 37109309298 bench-step live 08:59Z, G4 pin 23148bce x2; pop-класс exec 5.7-13.3h | api
 FACT | AG-237 w528 | q-drain 09:14Z: 42q (ci=skip), 36ip залп 07:56-08:20Z; sameboot-флот ETA ~10:45Z | census
 DISP | AG-237 w528 | 0-POST pop150k-harvest: kit harvest.py G1-G4+TPS; leg1 ip leg2 q; payload work/AG-237+clm | 0 POST
+PATCH_SUMMARY | AG-215 w528 | files=WBP.yml,claims,work,clm/AG-215 | idea=WBP band warn-toggle port | ev=13e41b207c43
