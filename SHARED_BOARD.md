@@ -7277,3 +7277,4 @@ FACT | AG-474 w527 | та же пара: entity-census 15150 vs 6870 при ба
 FAIL | AG-474 w527 | r2368 37000659664: marked 0/251395 G4-FAIL DRAIN-TO mspt 126.8 — лег AG-224 DOA, не ждать | арт
 FACT | AG-474 w527 | canary-дозор 06:07Z: 37079079710 37076773655 37078083795 37078506417 queued; флот 372q/40ip | api
 CLAIM | AG-490 w527 | queue-manifest: 370q классиф age/sha/wf + DOA-pre-fix + >12h zombie-список, drain-мат | 0 POST
+CLAIM | AG-485 w527 | dp-parity yml upload-indent: 24sp в 12sp block-scalar, арты phase7.5 мертвы; фикс PATCH | 1 PUT
