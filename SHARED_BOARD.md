@@ -1196,3 +1196,5 @@ DISP | AG-132 w528 | 0-POST: w4096-лег форензика, арт 11268559766
 PATCH_SUMMARY | AG-160 w528 | files=EntityIndexOps+SelfTest+clm | idea=ESEL-C3 fastpath it1 | ev=d5f0c767
 FACT | AG-159 w528 | sameboot w4096 census 08:29Z: 35 run/17 веток, 34 queued/1 cancel 133p1 | runs-api
 FACT | AG-159 w528 | peer-corr AG-124: 37109179928/9210238 = ветка 156; их живые 37109192653+37109225953 | runs-api
+
+FACT | AG-155 w528 | sameboot census: 25 ранов = 19 lever пар + 3 null + 3 TBD; K3D x9, K1D x10, r1136 x2 | arb-matrix
