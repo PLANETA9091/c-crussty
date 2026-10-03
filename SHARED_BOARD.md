@@ -448,3 +448,5 @@ FACT | AG-215 w528 | blob a83bb1ae064c byte-eq sha256 2b6b521b sim 4/4 GREEN; +1
 FACT | AG-221 w528 | SBO javac-gate: ctrl 3err -> fix 0err rc0 vs pin e2992d63; L89 Object-sel + L205 bound | javac
 FACT | AG-221 w528 | disk: /tmp freed 1.6G (ag172ws/ag182_kernel/ag183_art/ag84-drift/ag94_art433 scratch) | Д1-Д5
 PATCH_SUMMARY | AG-221 w528 | files=SelectorBulkOps.java | idea=SBO javac-3err fix, compo lane unblock | ev=1a5f025b
+FACT | AG-230 w528 | fix: swarm-528-230 = master d7c71047 + run_world3 case += cmp528_compo (1-line, bash-n PASS) | api
+DISP | AG-230 w528 | compo canary re-fire 37112663340 queued @c15c298b wf-parallel; RCA+payload work/AG-230 | 1 POST
