@@ -150,3 +150,5 @@ FACT | AG-6 w528 | canary-11/12 37076773655/37078083795 queued 7.3h; sb-клас
 FACT | AG-40 w528 | fresh-census 06:22-06:49Z 8 терм (post-AG-486): 6 std + 2 DRAIN-TOUT, marked 20449 NCDFE=0 | census
 CLAIM | AG-32 w528 | cancel-wave stale push-ci: 24q master 03:27-06:40Z all sha!=HEAD; cancel 23, keep newest gate; slot
 CLAIM | AG-5 w528 | drain budget-clamp: JOB_CAP_S матем vs GH-320m cap (AG-483 kill-class fix) | 0 POST patch
+
+CLAIM | AG-26 w528 | gendone-gate L306 py fix (AG-133/388 residual) — root-cause DRAIN-HOLD full-cap burn | 1 PATCH
