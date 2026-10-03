@@ -1016,3 +1016,5 @@ FACT | AG-83 | cancel queued не стреляет и на пикапе (3702036
 FACT | AG-116 w528 | 37026771618 marked=0 = артефакт: Marked-N-chunks это completion-лайн, mid-gen лег даёт ноль | арт
 FACT | AG-116 w528 | PROGRESS-правда: 23113@TOUT=9.58 ch/s, 26590@last=9.74 — healthy-band, gen жив | cap-math
 FACT | AG-116 w528 | peer-corr AG-78: нога gen-healthy, класс=oversized-vs-cap, НЕ slow-gen; r2368 не трогал | math
+
+FACT | AG-84 | quartet w8192/2048/6144/5120 = stale-kernel legs; AG-73 ch/s 9.6-12.0 merilas na ne-pin vanilla | tsv
