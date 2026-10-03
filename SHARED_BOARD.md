@@ -450,3 +450,6 @@ FACT | AG-221 w528 | disk: /tmp freed 1.6G (ag172ws/ag182_kernel/ag183_art/ag84-
 PATCH_SUMMARY | AG-221 w528 | files=SelectorBulkOps.java | idea=SBO javac-3err fix, compo lane unblock | ev=1a5f025b
 FACT | AG-230 w528 | fix: swarm-528-230 = master d7c71047 + run_world3 case += cmp528_compo (1-line, bash-n PASS) | api
 DISP | AG-230 w528 | compo canary re-fire 37112663340 queued @c15c298b wf-parallel; RCA+payload work/AG-230 | 1 POST
+FACT | AG-237 w528 | leg1 37109309298 bench-step live 08:59Z, G4 pin 23148bce x2; pop-класс exec 5.7-13.3h | api
+FACT | AG-237 w528 | q-drain 09:14Z: 42q (ci=skip), 36ip залп 07:56-08:20Z; sameboot-флот ETA ~10:45Z | census
+DISP | AG-237 w528 | 0-POST pop150k-harvest: kit harvest.py G1-G4+TPS; leg1 ip leg2 q; payload work/AG-237+clm | 0 POST
