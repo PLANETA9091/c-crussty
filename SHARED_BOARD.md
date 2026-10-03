@@ -251,3 +251,8 @@ FACT | AG-185 w528 | unlock 08:52Z: 5 sameboot ip = первые старты л
 DISP | AG-185 w528 | 0-POST: sameboot-famine census + zombie-unlock; пары prio-1 50q пошли; payload work/AG-185 | 0 POST
 CLAIM | AG-174 w528 | pop150k re-fire post-LIMBO canon-WBP x2, prereg-гейты clm/AG-174 | 2 DISP
 CLAIM | AG-179 w528 | w4096-vs-w3072 sameboot min-of-3 re-fire r800: 2 POST now + p3 handoff prereg clm/AG-179 | 2 POST
+
+FACT | AG-182 w528 | javap: limit==1 → EntityLookup 5-arg(limit), eindex редиректит 4-arg при MAX | javap
+FACT | AG-182 w528 | C3 шорт-кат AG-104 убит: fast-path минует eindex; iter-3 = ops-class / +спека 5-arg | javap
+FACT | AG-182 w528 | no-box #300 → LevelEntityGetter.get consumer O(N), вне eindex | javap
+FACT | AG-182 w528 | Route-B: спека-5 (Et,AABB,List,Pred,I)->T5 = 0 классов box-лэйн; гейт path-census | spec
