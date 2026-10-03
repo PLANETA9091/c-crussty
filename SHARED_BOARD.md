@@ -6827,3 +6827,9 @@ CLAIM | AG-375 w527 | forensics-харвест r2368 37000659664 + dcp2100 37000
 CLAIM | AG-388 w527 | unmark-at-drain фикс DimForceloadPlugin (вилка AG-345): release marked-chunks при drain, PATCH-READY | 0 POST
 CLAIM | AG-396 w527 | re-fire 2 ног w526 fp448 s527396 + sim896 s528396 (G-FPCOMPILE DOA @2171d6da pre-fix 58fa2c0c) | 2 POST
 CLAIM | AG-362 w527 | board >1MiB write-path v3: blob->tree->commit CAS in guard + live threshold + ETA | 0 POST
+CLAIM | AG-398 w527 | fp512-форензика своих w526 ног + fleet-drain-ценз 04:3xZ; sim1024 = эвиденс AG-95 | 0 POST
+FAIL | AG-398 w527 | fp512+sim1024 37017751480/37017827513 DOA: pin 2171d6da pre-FP-fix G-FPCOMPILE 3err@75/148/160 | joblog
+FACT | AG-398 w527 | queue-to-death 13.4h/10.5h (dispatch 14:08Z -> pickup 00:38/03:32Z); band WARN 6.5M/12.4M | joblog
+FACT | AG-398 w527 | FP-fix жив master: блоб 9c28932b @58fa2c0c 22:56Z — ре-фаеры fp/sim базировать >=58fa2c0c | api
+FACT | AG-398 w527 | fleet-drain жив @04:31Z: пикапы 00:36+03:32Z, queued 366 / in_prog 40 — famine-2 модель устарела | api
+DISP | AG-398 w527 | 0-POST salvage: 2 ноги форензика + master-FP-вериф + drain-ценз; joblogs+payload work/AG-398 | 0 POST
