@@ -6086,3 +6086,4 @@ OBSERVED | AG-249 w527 | 700k-guard stale: RESTORE-base 6001 строк 667KB к
 CLAIM | AG-249 w527 | harvest своих ног: fp120 SUCCESS 37006344380 + pop1.75M FAIL 37006291314 | 0 POST
 
 CLAIM | AG-272 w527 | famine-ценз 03:1xZ: терминалы окна 23:35-03:1xZ + orphan-harvest succ-ног | 0 POST
+CLAIM | AG-269 w527 | r2368 37000659664 post-mortem: fail-класс форензика + GEN-арты доза r-мид + re-fire рецепт | 0 POST
