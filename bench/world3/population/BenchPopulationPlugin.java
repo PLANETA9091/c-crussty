@@ -89,6 +89,7 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 public final class BenchPopulationPlugin extends JavaPlugin {
 
@@ -179,7 +180,16 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     // keeps the EXACT legacy plane (full scan every topup scan, same markers).
     private World benchWorld0 = null;          // cached world-0 for the counter handlers
     private boolean topupCountersLive = false; // event plane armed (listener registered OK)
-    private long topupCtrItems = 0, topupCtrHostiles = 0, topupCtrPassives = 0;
+    // AG-460 w527: AtomicLong (race-audit of 527-368) — Paper world events can
+    // fire off-main in this patched kernel (header documents main-thread
+    // addEntity racing worker-thread entity callbacks, fastutil AIOOBE evidence
+    // dp2 36357022841); plain longs updated by event-thread bump() racing the
+    // main-thread resync write are a JMM lost-update race. addAndGet/set have
+    // volatile semantics: counters are the O(1) plane ground truth between
+    // resyncs, so they must be JMM-safe.
+    private final AtomicLong topupCtrItems = new AtomicLong();
+    private final AtomicLong topupCtrHostiles = new AtomicLong();
+    private final AtomicLong topupCtrPassives = new AtomicLong();
     private long topupLastResyncFt = -(long) TOPUP_RESYNC_TICKS - 1; // forces resync on the first topup tick
 
     @Override
@@ -705,11 +715,11 @@ public final class BenchPopulationPlugin extends JavaPlugin {
             return;
         }
         if (e instanceof Item) {
-            topupCtrItems += delta;
+            topupCtrItems.addAndGet(delta);
         } else if (e instanceof Monster) {
-            topupCtrHostiles += delta;
+            topupCtrHostiles.addAndGet(delta);
         } else if (e instanceof Animals) {
-            topupCtrPassives += delta;
+            topupCtrPassives.addAndGet(delta);
         }
     }
 
@@ -745,9 +755,9 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                     && (ft - topupLastResyncFt) >= TOPUP_RESYNC_TICKS;
             int aliveItems, aliveHostiles, alivePassives;
             if (topupCountersLive && !resync) {
-                aliveItems = (int) Math.min(Integer.MAX_VALUE, topupCtrItems);
-                aliveHostiles = (int) Math.min(Integer.MAX_VALUE, topupCtrHostiles);
-                alivePassives = (int) Math.min(Integer.MAX_VALUE, topupCtrPassives);
+                aliveItems = (int) Math.min(Integer.MAX_VALUE, topupCtrItems.get());
+                aliveHostiles = (int) Math.min(Integer.MAX_VALUE, topupCtrHostiles.get());
+                alivePassives = (int) Math.min(Integer.MAX_VALUE, topupCtrPassives.get());
             } else {
                 aliveItems = 0;
                 aliveHostiles = 0;
@@ -763,13 +773,13 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                 }
                 if (topupCountersLive) {
                     getLogger().info(MARK + " POPULATION TOPUP-RESYNC tick=" + ft
-                            + " drift(items=" + (aliveItems - (int) Math.min(Integer.MAX_VALUE, topupCtrItems))
-                            + ",hostiles=" + (aliveHostiles - (int) Math.min(Integer.MAX_VALUE, topupCtrHostiles))
-                            + ",passives=" + (alivePassives - (int) Math.min(Integer.MAX_VALUE, topupCtrPassives))
+                            + " drift(items=" + (aliveItems - (int) Math.min(Integer.MAX_VALUE, topupCtrItems.get()))
+                            + ",hostiles=" + (aliveHostiles - (int) Math.min(Integer.MAX_VALUE, topupCtrHostiles.get()))
+                            + ",passives=" + (alivePassives - (int) Math.min(Integer.MAX_VALUE, topupCtrPassives.get()))
                             + ") — counters re-anchored (S7-147 real-count plane)");
-                    topupCtrItems = aliveItems;
-                    topupCtrHostiles = aliveHostiles;
-                    topupCtrPassives = alivePassives;
+                    topupCtrItems.set(aliveItems);
+                    topupCtrHostiles.set(aliveHostiles);
+                    topupCtrPassives.set(alivePassives);
                     topupLastResyncFt = ft;
                 }
             }
