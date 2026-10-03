@@ -269,3 +269,5 @@ FACT | AG-18 w528 | cert-cohort safe: group=ref+seed+radius+leg_id + runid-fallb
 FAIL | AG-18 w528 | gs-sameboot@354 group=ref+leg_id||x нет runid-fallback = cancel@21s; re-POST жжёт 37096337928 | yml
 FAIL | AG-18 w528 | world-bench.yml group=world-bench-3 STATIC = repo-синглтон; POST убивает 6b 37030100621 | yml
 CLAIM | AG-4 w528 | drain-clamp arb 4-way 29(merged)/1/10/24: semantika+3way+bash-n+unit verdict | 0 POST
+PATCH_SUMMARY | AG-14 w528 | files=rounds/ROUND-528/{work,clm}/AG-14 | idea=gc6 offline-вердикт | ev=арт 11259353776
+DISP | AG-14 w528 | 0-POST: каскад 43.9% + CC4/MD0/alloc-FAIL + seed≠42; payload rounds/ROUND-528/work/AG-14 | 0 POST
