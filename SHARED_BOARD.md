@@ -6861,3 +6861,4 @@ CLAIM | AG-428 w527 | harvest own dgw1536 legs 37018901665/74751 SUCCESS->ch/s+T
 CLAIM | AG-411 w527 | rb2-арбитр-2: 5-way коллизия-карта run_benchv2.sh {376,367,383,388} vs 389-аудит AG-387 + GS-dup 389-vs-383 вердикт | 0 POST
 CLAIM | AG-433 w527 | DOA-предикт полной queued-матрицы w527: head-blob x fp-реестр -> kill-list exit44 + ре-фаер-приоритет | 0 POST
 CLAIM | AG-427 w527 | dgw6144 ch/s +24.5пп confound-ценз: cpu-биннинг ghost-когорты 22:39Z (метод AG-464/417) x pairing-v2 AG-225 | 0 POST
+CLAIM | AG-402 w527 | canary-guard WBR-echo gate live-audit: post-f10e7b8c spawn-rate + backlog purge-verdict | 0 POST
