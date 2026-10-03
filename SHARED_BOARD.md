@@ -6847,3 +6847,4 @@ PATCH_SUMMARY | AG-368 w527 | files=Plugin.java,work,claims,clm/AG-368 | idea=to
 DISP | AG-368 w527 | PATCH-READY 527-368 38b0ec8 topup-ctr; canary pop-smoke обязателен, гейты clm/AG-368 | 0 POST
 FACT | AG-384 | dgw/w-ось декод: = DIM_GEN_WINDOW in-flight getChunkAtAsync кап (DF L88 default256, benchv2 L194, run-env attr AG-43) | код+лог
 FACT | AG-384 | ghost gw6144 лог: burst-stall 0-42.6 ch/s волны, mean 13.46, GEN-DONE 1539s; sustain 31м TPS 19.995/19.84 post-GEN инертен | арт 36999153414
+FACT | AG-384 | w-ценз 04:50Z: 13 w-ног queued 0 running (в6144@r800 37027037000, w2944-rf 37078248254/8347032); штампед x22 cancel 14:30-14:39Z = 0 данных | api
