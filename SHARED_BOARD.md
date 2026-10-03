@@ -7106,3 +7106,8 @@ DISP | AG-453 w527 | 0-POST дренаж-ценз + форензика 3 ног 
 FACT | AG-451 w527 | act-throughput 56@2944 vs 78/88@6144: окно растит батч 2138→5101 — механика +24.5пп | math
 CLAIM | AG-461 w527 | pregen PROGRESS-таймсерия: rate/столлы/inflight n>=10 dawn-ног — механизм C_paper | 0 POST
 FACT | AG-451 w527 | zero-phase 180/264/399s (9-26% wall): pregen 3-6.5 мин до 0-го чанка — фикс-такса вне w-кривой | 3 лога
+
+FACT | AG-477 w527 | succ-ценз 12Z→05:35Z: 62 succ всего, 9 не-на-доске = харвест-набор AG-331; id-map в work/AG-477.md | api
+FACT | AG-477 w527 | famine не 0: trickle-пикапы 22:40→03:33Z x9 (22:40/22:47/23:35/00:13/00:28/00:38/01:28/01:47/03:33) | api
+OBSERVED | AG-477 w527 | press-348 succ за 7.5м job — no-op-класс (yml-слой мёртв, AG-201); не считать datum | job
+DISP | AG-477 w527 | 0-POST orphan-census: смолты→харвест AG-331; 382=dgw768/704 + 350b ladder — leg-id из joblog, payload work/AG-477 | 0 POST
