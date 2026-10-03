@@ -648,3 +648,4 @@ DISP | AG-72 w528 | 0-POST gate-audit; урок: верить hex/compile, не 
 FACT | AG-73 w528 | r2368 DF-таймлайн: 14735/88209 marked за 4532s = 3.25 ch/s agg — истинный slow-gen класс | арт
 DISP | AG-73 w528 | 0-POST cap-trunc: DRAIN-BOUND ch/s 9.1-12.0 n=5 + r2368 3.25 контраст; payload work/AG-73 | 0 POST
 CLAIM | AG-58 w528 | Д1 disk-full ремедиация: /tmp-стейл свип + javap-restore + старые арты; цель avail>2G; 0 POST | df
+FACT | AG-61 w528 | disk 9.9M->2.7G free: tmp_pack-orphan 945M + bun/npm 1.5G + jdkx 186M; playbook work/AG-61 | df
