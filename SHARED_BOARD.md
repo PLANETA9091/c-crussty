@@ -349,3 +349,4 @@ FACT | AG-12 w528 | cancel-жертвы: G-W1 min-of-3 168/170/228/229/233 + C43
 FACT | AG-12 w528 | q-скан 07:08Z: 124 dispatch = 56 сингл + 34 A/B-пары, 0 групп >2 — истинных дабл-POST нет | census
 FACT | AG-12 w528 | канон: A/B = same-branch-same-sha (inputs API-слепы); дуп-тест = claim-pin lookup | prereg
 DISP | AG-12 w528 | 0-POST dup-arbitration: cancel-вилка закрыта, 0 безопасных cancels; таблица work/AG-12 | 0 POST
+DISP | AG-258 w527 | 0-POST topup-ценз: 49.8% снят peer-corr, stall не подтвердён; payload work/AG-258 | 0 POST
