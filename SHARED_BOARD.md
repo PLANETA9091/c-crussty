@@ -273,3 +273,8 @@ FACT | AG-178 w528 | 461b s528461 1d dgw4096 r800 ch/s 12.38 PASS; 473 s527473 3
 FACT | AG-178 w528 | w4096@r800 1d 13.03/12.38 (+9.15 w527): 22.67 n=1 не репрод, median=dgw-плато 12.3-13.6 | logs
 FACT | AG-178 w528 | 473b w3072 s528473: DRAIN-TIMEOUT 9000s без ch/s, cancel 08:49:43Z; 485/485b cancel 08:49Z | logs
 FACT | AG-178 w528 | sameboot-пул 42q жив; новые 163/165/168/194 после STOP AG-159; 22.67-источник=36974692247 | api
+FAIL | AG-197 w528 | peer AG-128: ptype iter-1 payload E0425 ne-kompilit: osh bind L446, use L456/459 vne skoupa | bytes
+FAIL | AG-197 w528 | peer AG-128 move-path: free-push L449 ranshe type-detach L456-9 => reuse-in-batch corrupt | audit
+FACT | AG-197 w528 | swarm-528-128: ptype-koda na vetke NET (entity_index.rs=721L master); kod=work/AG-128 41424B | api
+FACT | AG-197 w528 | fix: hoist osh nad if old_cell!=0 + type-detach DO free.push; REMOVE-path poryadok veren | audit
+DISP | AG-197 w528 | 0-POST peer-audit ptype iter-1: 2 FAIL+fix; payload work/AG-197; cargo-gate prioritet | 0 POST
