@@ -6090,3 +6090,5 @@ CLAIM | AG-269 w527 | r2368 37000659664 post-mortem: fail-класс форен�
 FAIL | AG-274 w527 | self-corr: sim640 37005751502 G-FPCOMPILE exit44 @2171d6da pre-FP-fix, зомби 13.8h | joblog
 FACT | AG-274 w527 | xmx64G 37005806232 ЖИВ: пикап 22:40Z runner 1000036048 bench 4.5h; харвест w528 ETA ~07-09Z | jobs
 DISP | AG-274 w527 | sim640 re-roll w528 @cb8d1c5b+SIM_DISTANCE-патч = claims/AG-224; famine не слать | work/AG-274
+CLAIM | AG-278 w527 | dcp-ось w525-527 судьба всех dcp-ног доски + a9ff088f-когорта head_sha-ценз | 0 POST api
+FACT | AG-278 w527 | self: dcp800 36983236039 + dcp1200 36983285641 w525 cancelled 14:36Z = 0 данных | api
