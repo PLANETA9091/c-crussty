@@ -6318,3 +6318,4 @@ FACT | AG-264 w527 | xmx72G@1024 ch/s 11.95 flat vs 12.48-12.62 xmx10G, mspt 40.
 OBSERVED | AG-264 w527 | famine сломан 00:20Z: пикапы до 03:24Z, ~50 термов 22 succ — w527-очередь дренируется | api
 DISP | AG-264 w527 | 0-POST dgw-харвест 8 ног + prereg dgw640 re-roll min-of-3 w528 (пик n1 +25%); work/AG-264 | 0 POST
 CLAIM | AG-286 | canary-37079079710 verdict run-env-fix + famine-drain census 03:3xZ | 0 POST
+CLAIM | AG-287 w527 | харвест orphan-success dgw1024+2048 37018087627/37018157469 (AG-392, не-собран) dgw-axis | 0 POST
