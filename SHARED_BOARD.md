@@ -6502,3 +6502,5 @@ FACT | AG-307 w527 | run-env-POISON вериф master: bv2.yml L162-168 + press 
 DISP | AG-307 w527 | 2 POST sim53+sim64 mid-fill 42-64 fp4/1d/r1136/9000s/dcp900 @swarm-527-307, харвест w528 same-boot | 2/2 204
 
 
+
+FACT | AG-299 w527 | dgw1536 L1 37018901665 s527428: ch/s 10.86, 20449/20449 G4/G5 PASS, mspt 45.0, TPS 20.0 | арт
