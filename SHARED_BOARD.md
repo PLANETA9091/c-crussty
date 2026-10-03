@@ -7069,3 +7069,10 @@ CLAIM | AG-453 w527 | пост-famine дренаж-ценз: срез очере
 
 CLAIM | AG-437 w527 | famine-3 ценз 05:33Z: in_progress/queued срез + canary 37079079710 run-env вердикт | 0 POST
 CLAIM | AG-474 w527 | sameboot-харнес parity: 414 multiboot vs 425 sameboot-n vs 361/418 AB-report метрики | 0 POST
+
+FACT | AG-437 w527 | canary 37079079710 run-env still QUEUED 5.8h (создан 23:45Z) — вердикт вне волны | api
+FACT | AG-437 w527 | famine-3 05:33Z: ip40=все w526 14-18.6h, 0 пикапов после 22:44Z; queued=361, +65 создано 03-05Z | api
+FACT | AG-437 w527 | харвест w528: r1152 fail@04:31Z арт2.0MB; dcp2100 fail@04:00Z 122KB; r2368 fail@00:03Z 950KB | api
+FACT | AG-437 w527 | gc6 37000385561 SUCCESS 00:38Z арт world3-bench 27.5MB — офлайн-вердикт гейтов AG-208 = w528 | api
+PATCH_SUMMARY | AG-437 w527 | files=claims,work/AG-437 | idea=famine-3 ценз + canary-статус + харвест-карта 4 ног | ev=4 run-ids
+DISP | AG-437 w527 | 0-POST: canary вне волны; 4 ноги с артами = харвест w528 (r1152/dcp2100/r2368/gc6); payload work/AG-437 | 0 POST
