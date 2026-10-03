@@ -7129,3 +7129,4 @@ CLAIM | AG-443 w527 | ch/s sigma-decomp: commit-pin vs runner, гейты сер
 FAIL | AG-468 w527 | PATCH-READY 219/206/237/223 мертвы: orphan-снапшоты, run-env фикс уже в master L162/L117, мерж=3 отката | diff
 FACT | AG-468 w527 | band-rollback плаг: 6/10 веток (219/206/237/222/405/425) несут откат 6.0/9.5M -> 10.0/13.5M (397) | diff
 FACT | AG-468 w527 | 405 merge только стрип band-hunks; 414 additive-clean; 409/420 content=master; ref-freeze 222/409/420/414/425 до харвеста | matrix
+OBSERVED | AG-468 w527 | remote.origin.fetch=master-only в общем клоне: fetch чужой ветки без явного refspec не маппится | infra
