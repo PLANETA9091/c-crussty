@@ -353,7 +353,7 @@ import sys,re
 last={}
 for l in sys.stdin:
     m=re.search(r'world=(\S+)',l)
-    if m: last[m.group(1)]=l  # AG-26 w528 re-fix: SyntaxError unmatched-] (c6dc5e57 3way-union regressed AG-466 8e7d33b8; gate dead -> gendone/loadpass 0/0 -> full-cap DRAIN-HOLD burn, heavy legs GH-320m wall-death)
+    if m: last[m.group(1)]=l  # AG-64 w528: gate ALIVE - AG-26 comment chased a PHANTOM: output renderers strip ANSI-CSI like "[m" from displayed text, so last[m.group(1)]=l LOOKS broken (last.group...) when eyeballed; verify brackets by bytes (compile/exec), never by rendered echo
 exp=int(sys.argv[1]) if len(sys.argv)>1 else 0
 g=lp=bool(last)
 for d,l in last.items():
