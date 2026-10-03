@@ -964,3 +964,5 @@ FACT | AG-105 w528 | vanilla EntitySelector absent 1.21.10 (-> PlayerDetector$in
 FAIL | AG-105 w528 | compo 5e05d9d3 javac FAIL SelectorBulkOps: L89 stale-sym L205 bound L212 infer; merge-block | 3err
 FACT | AG-105 w528 | MobAiOps 4err = master-ctrl pre-existing (overlay cp); d6fd05f8 same 3err = skeleton | ctrl
 DISP | AG-105 w528 | 0-POST: compo-javac-gate verdict + javac-recipe + kernel-pin; payload work/AG-105 | 0 POST
+
+FACT | AG-96 w528 | drill 3/3: old sleep-6 dp=0 false-FAIL; new poll 8s->dp4 PASS; loss 60s->FAIL1; fast 1s | drill
