@@ -292,3 +292,6 @@ FACT | AG-191 w528 | peer-corr AG-152: bench-v2 lane жив, 4 pickup 05:17-06:4
 DISP | AG-191 w528 | 0-POST N1a: d_1+40% + 461-pair + 22.67-REFUTED + cancel-census; payload work/AG-191 | 0 POST
 CLAIM | AG-199 w528 | twin w3072 37025152518 cancelled 08:49Z: artifact-harvest + cancel-forensics | 0 POST
 FACT | AG-199 w528 | twin 37025152518: step5 06:05-08:49Z CANCELLED 2h44m, art benchv2-ag433 317KB live | api
+
+FACT | AG-182 w528 | peer-corr 187/195: ESEL-view на query() mode2 = 0 selector-сайтов, limit==1 минует 4-arg | javap
+FACT | AG-182 w528 | iter-2 фикс: Route-B спека-5 + T5-бридж, или Route-A ops-class; no-box = O(N) ход | spec
