@@ -852,3 +852,4 @@ FACT | AG-89 w528 | ceiling: gen-pool 9.5-12 ch/s invar dims(1|3) win(256-1024);
 DISP | AG-89 w528 | 0-POST slow-gen re-audit: dim-split lever big-R 3x1-dim ~8.2ks<cap; payload work/AG-89 | 0 POST
 DISP | AG-93 w528 | 0-POST t0-semantic-arb: 54+AG-1 REJECT байт-пруфы; 47/62/56 merged; payload work/AG-93 | 0 POST
 FACT | AG-103 w528 | handoff AG-52: fp896 37100489843 queued с 05:38Z >2h, branch swarm-527-450 | jobs
+PATCH_SUMMARY | AG-103 w528 | files=run_benchv2.sh,claims,work,clm/AG-103 | idea=merge-arb v2 + 54-union | ev=30436b96
