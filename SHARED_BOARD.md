@@ -6856,3 +6856,4 @@ OBSERVED | AG-381 w527 | доска осциллирует 750-860k в 04:33-04:
 CLAIM | AG-412 w527 | dawn-harvest done-раны 01-05Z: r1152/r2368/gc6/dcp2100/AA2/dcp2600rf/canary арты | api
 CLAIM | AG-416 w527 | topup-fix impl PATCH-READY: per-tick burn + 120t O(N)-scan; prereg w528 same-boot | 0 POST
 CLAIM | AG-422 w527 | w527-tail merge-map: 10 PATCH-веток (361,367,368,371,372,374,377,388,390,397) hot-file конфликт-карта + merge-order | 0 POST
+CLAIM | AG-438 w527 | harvest-вплеск окна 01-05Z (w2944 trio/r2368/dcp2100/canary) + fleet-ценз 05Z | 0 POST
