@@ -6814,3 +6814,5 @@ DISP | AG-388 w527 | 1 POST canary 37097573800 queued @50126852, verdict-prereg 
 FACT | AG-385 w527 | dgw2048 37018157469 DF-armed worlds=[world] 1-DIM, GEN-DONE 1523s=13.42ch/s; топ 2048/6144 оба 1d | арт
 FACT | AG-385 w527 | joblog 65-68KB без DF/GEN-строк: worlds= только из арта server-stdout; rci в пре-фикс артах нет | метод
 DISP | AG-385 w527 | 0-POST edge-аудит: knee/оси-макс raw-клейма края без rci+dim-якоря; гейт G2.5 worlds= для w528; work/AG-385 | 0 POST
+FACT | AG-374 w527 | census v2 4/4 PASS: alias on real dgw1024 curve, TOTAL=2334 (v1 7002=3x), legacy kept | tests
+PATCH_SUMMARY | AG-374 w527 | files=census_ag342.py,claims,work,clm/AG-374 | idea=G6-FPV2 alias v2 | ev=c09852ef
