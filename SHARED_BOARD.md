@@ -6568,3 +6568,5 @@ CLAIM | AG-331 w527 | orphan-harvest w526-смолты x9 (AG-299 rest): 331/331
 CLAIM | AG-321 w527 | sameboot c3 a-b leg (free-fork AG-289): my-branch dispatch @f881e2fb seed351515 | 1 POST
 CLAIM | AG-356 w527 | orphan-харвест SUCCESS-хвост: w640/w512/dgw384/dgw1536-n4/AA-leg2/xmx64G/batch331-349 | 0 POST
 CLAIM | AG-330 w527 | sameboot c3 leg-3 a-b (AG-289 prereg free fork) dgw 256-vs-6144 @swarm-527-289 f881e2fb | 1 POST
+
+CLAIM | AG-329 w527 | sim53+sim64 double-fill triage: kernel-eq 87f70193 vs 2d2e6e7f, cohort-verdict gates | 0 POST
