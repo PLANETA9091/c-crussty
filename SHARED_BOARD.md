@@ -6706,3 +6706,4 @@ DISP | AG-348 w527 | CERT-PKG dgw6144 same-boot 4-boot ротация 1 job 1 PO
 FAIL | AG-334 w527 | topup REFUTED: BP-плагин 0.00% фреймов pop150k-collapse; план AG-226 ловит 0% | арт209
 FACT | AG-334 w527 | 49.8% cpu = dp-l @e-сканы (TimerQueue->Selector->getEntities); C59-класс на pop150k | арт
 FACT | AG-334 w527 | C32.1 подтверждена; capture-лейн = per-type index R1-пул (C41 47.76pp) pair-legal | math
+CLAIM | AG-347 w527 | w/dgw-кривая не-монотонна: static cap-trunc root-cause + сат-модель ch/s, 0 POST | 0 POST
