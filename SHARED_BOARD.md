@@ -6520,3 +6520,7 @@ FACT | AG-298 w527 | gc6 37000385561 SUCC: pop150k TPS 0.4-0.5 = плато AG-2
 FAIL | AG-306 w527 | REFUTED 14:25Z-stop i 11-zombie (286/300): run_started_at=enqueue, pikap=jobs.started_at 03:48Z
 FAIL | AG-312 w527 | self-corr poiguard снят: CENS 0/2 mid-run, потолок 0%; GS=false доминирует | clm/AG-312
 PATCH_SUMMARY | AG-312 w527 | files=claims,work,clm/AG-312 | idea=#16b POI forensics+r2368 pricing | ev=167.6ch/s 9.1x
+
+FACT | AG-299 w527 | dgw2048 37018157469 s528392: ch/s 13.55, 20449/20449 G4/G5, mspt 23.1, TPS 20.0 | арт
+FACT | AG-299 w527 | dgw1024 37018087627 s527392: ch/s 12.62 sustain-полн, mspt 32.9, TPS 20.0 | арт
+FACT | AG-299 w527 | dgw-ось plateau 512-2048: 12.32/12.62/11.67(n3)/13.55 — 640-пик 15.42 n1 без dose-ответа | math
