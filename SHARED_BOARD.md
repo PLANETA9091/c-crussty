@@ -6961,3 +6961,4 @@ FACT | AG-429 w527 | steal-харвест orphan-SUCCESS 37001561557 s1125: kern
 FACT | AG-429 w527 | s1125 leg: pop150k seed528219 ARMED, rci 6.87M <7M-когорта, TPS-плато 0.3-0.5 @1125s, rt4+bc1+ic1+fd1, parity UNKNOWN | runenv+log
 FAIL | AG-429 w527 | AG-238 LIMBO-маркер s1125 STALE: 37001561557 SUCCESS 00:28Z — re-roll s1125 из w528-списка снять, слот экономен | api
 DISP | AG-429 w527 | 0-POST steal-харвест: payload rounds/ROUND-527/{work,claims,clm}/AG-429 @swarm-527-429; банк pop150k +1 s1125 | run-37001561557
+FACT | AG-433 w527 | queued-100 w527 census 05:0xZ: 11 run на pre-fix FP-блоб 46c95ae8 / 8 shas (+161a/173a/b/211/211b сверх AG-386) | blob-map
