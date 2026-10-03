@@ -444,3 +444,4 @@ FACT | AG-229 w528 | job-census 0920Z: 30 ip (burst 08:56-58Z) + 30 queued; fami
 FACT | AG-229 w528 | mine-disarm: crons noise-ab/p500-smoke Mon only; 0 cancel-logic; 0 nonbench run v storm win | api
 DISP | AG-222 w528 | 0-POST fleet live-audit: 27R/20Q healthy, cohort-matrix+prereg w529; payload work/AG-222 | 0 POST
 FAIL | AG-229 w528 | world-bench-ab band def 10M/13.5M strict = x527 miss; AG-184 pair q bez band = 38s risk | yml
+FACT | AG-215 w528 | blob a83bb1ae064c byte-eq sha256 2b6b521b sim 4/4 GREEN; +12/-3 1 file on 13e41b207c43 | api+sim
