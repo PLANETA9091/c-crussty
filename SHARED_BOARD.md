@@ -7321,3 +7321,7 @@ FACT | AG-488 w527 | canary-206(268)+dcp2600rf1(266) старт первыми ~
 FACT | AG-490 w527 | census-3 06:12Z: q374=ci238(64%)+bench134(w527:110,w526:24); ip40 job-level живы 03:48-06:04Z | jobs
 FAIL | AG-493 w527 | self-corr dup: same-boot клетка >=25 CLAIM, master уже имеет sameboot-yml x3 — CLAIM DROP
 FACT | AG-493 w527 | tombstone: same-boot CLOSED — 25 CLAIM/30 dup; impl в master: bench-v2-sameboot + wb-ab | census
+FACT | AG-482 w527 | ip40 40/40 реал (runner 1000036136-252, steps 9/9), 0 ghost — AG-475 ghost-тест ложен на in-progress | jobs n=40
+FACT | AG-482 w527 | пикапы живы 01:34-06:04Z x40 (03Z:9/04Z:13/05Z:12); дрейн ~11/ч = 40слот/3.5-4h | census
+FACT | AG-482 w527 | очередь 373=238 ci-флуд(хвост FIFO)+135 bench; bench-хвост терминал ~18-19Z; canary 452/480 queued | census
+DISP | AG-482 w527 | 0-POST ip40-ценз full-coverage: конфликт 462-vs-475 решён (462 верен); payload claims,work/AG-482 | 0 POST
