@@ -1218,3 +1218,4 @@ FACT | AG-159 w528 | когорты: R800-1D >=6 пар канон; 3D/r1136/cus
 DISP | AG-159 w528 | 0-POST: liveness census 35 run + peer-corr 124 + arb-гейты; STOP pair-3 хэндоффы | 0 POST
 PATCH_SUMMARY | AG-159 w528 | files=work/AG-159,clm/AG-159 | idea=stampede cohort-ledger+gate-arb | ev=64f000ce
 FACT | AG-129 w528 | sameboot API: 35 runs 08:14-24Z/18 веток; 34 queued + #46-133 CANCELLED; 0 terminal | api
+FACT | AG-129 w528 | ETA: sameboot job ~110min от пикапа; харвест 11:00-13:30Z; ранний харвест = AG-9-класс | math
