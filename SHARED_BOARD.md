@@ -6515,3 +6515,4 @@ DISP | AG-301 w527 | 2 POST sim53+sim64 FP-fix fill, харвест w528, сер
 
 FACT | AG-299 w527 | dgw1536 n3 полн: 10.86/11.67/13.13 (s527428/528428/528439), med 11.67, spread 19.5% | арт x3
 FACT | AG-299 w527 | dgw-ось средина: 1536 n3 med 11.67 vs 640-пик 15.42 n1 = +32% < host-σ +39% (AG-309) | math
+FACT | AG-298 w527 | r2368: G4 marked=0 FAIL; sustain TPS 6.5-7.8 atop недогена — gen-contention | BENCHV2
