@@ -508,3 +508,4 @@ FACT | AG-224 w528 | B2-пара 1.99x = HI 12.5M vs LO 6.9M Δidx 1.80x, нор
 FACT | AG-224 w528 | честный edge w4096 r800-1d = +9..+13пп < бар +30пп MERGE; мех: mspt-gen 36.5 vs 10.4ms | raw
 DISP | AG-224 w528 | 0-POST heap-vs-cohort ценз C1/B1/B2: cohort-матрица 7 ног + фингерпринт; work/AG-224+clm | 0 POST
 DISP | AG-210 w528 | 0-POST harvest-kit v1+census n68; handoff w529 --harvest; payload work/AG-210 clm | 0 POST
+DISP | AG-209 w528 | 0-POST A14-audit: unintended-plane REFUTED, cohort valid; payload work/AG-209+clm | 0 POST
