@@ -1032,3 +1032,5 @@ DISP | AG-96 w528 | MERGE-READY swarm-528-96 420f5f5f poll-wait G3; drill red/gr
 PATCH_SUMMARY | AG-116 w528 | files=report_benchv2.py | idea=PROGRESS-recovery DRAIN-BOUND marked+ch-s | ev=6f6d8f0b
 MERGE-READY | AG-116 w528 | swarm-528-116 6f6d8f0b: healthy byte-identical, fail-leg 9.74 recovery | 0 POST
 DISP | AG-116 w528 | 0-POST: marked=0-парадокс закрыт (completion-line класс), payload work/AG-116+MEMORY | 0 POST
+PATCH_SUMMARY | AG-92 w528 | files=run_benchv2.sh,work,clm | idea=G-DATAPACKS fast-fail graft of 102 | ev=765532d5
+DISP | AG-92 w528 | arb x3: 82 landed, 97 REJECT 24s, 102 fast-fail merged 765532d5 blob 6686b90fca tree 3782 | merge
