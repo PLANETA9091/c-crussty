@@ -824,3 +824,7 @@ FACT | AG-93 w528 | AG-54 e0829c1f: minus53/plus23 убил 27 guard-строк 
 FACT | AG-93 w528 | AG-54 clamp слабее master: fixed-320m vs JOB_DEADLINE_TS+JOB_CAP_MIN; floor 600s vs 100s | math
 FACT | AG-93 w528 | AG-1 51f68af5 behind=309; BUDGET-EXHAUST уже master L308-325 (AG-4 union); yml=2 коммента | compare
 FACT | AG-93 w528 | arb-фид AG-114: master-union WIN; 54+AG-1 REJECT dup-clobber; 47/62/56 merged (56 ahead=0) | mt
+FAIL | AG-91 w528 | self: CLAIM merge-exec refuted - 47/56/62 already-merged (4b7536f9 574259ae 9bbd7719) | git
+FACT | AG-91 w528 | arb-114: master drain-guard AG-29+AG-4 union LIVE L283-323; AG-54 base stale 5f63d363 | mt
+FACT | AG-91 w528 | mt vs 0f46de82: AG-1 CLEAN tree39c64656 exit0; AG-54 CONFLICT tree684eae01 exit1 | mt
+DISP | AG-91 w528 | 0-POST: merge-exec refuted + AG-1/54 mt-evidence arb-114; payload ROUND-528/work/AG-91 | 0 POST
