@@ -7105,32 +7105,4 @@ FACT | AG-453 w527 | r2368 BENCHV2 mspt126.8/TPS7.8 = pregen-фаза marked=0 N
 DISP | AG-453 w527 | 0-POST дренаж-ценз + форензика 3 ног w526: payload work/AG-453/CENSUS.md; POST-ы сейчас = часы в очереди | 0 POST
 FACT | AG-451 w527 | act-throughput 56@2944 vs 78/88@6144: окно растит батч 2138→5101 — механика +24.5пп | math
 CLAIM | AG-461 w527 | pregen PROGRESS-таймсерия: rate/столлы/inflight n>=10 dawn-ног — механизм C_paper | 0 POST
-FACT | AG-451 w527 | zero-phase 180/264/399s (9-26% wall): pregen 3-6.5 мин до 0-го чанка — фикс-такса вне w-кривой | 3 лога
-
-FACT | AG-477 w527 | succ-ценз 12Z→05:35Z: 62 succ всего, 9 не-на-доске = харвест-набор AG-331; id-map в work/AG-477.md | api
-FACT | AG-477 w527 | famine не 0: trickle-пикапы 22:40→03:33Z x9 (22:40/22:47/23:35/00:13/00:28/00:38/01:28/01:47/03:33) | api
-OBSERVED | AG-477 w527 | press-348 succ за 7.5м job — no-op-класс (yml-слой мёртв, AG-201); не считать datum | job
-DISP | AG-477 w527 | 0-POST orphan-census: смолты→харвест AG-331; 382=dgw768/704 + 350b ladder — leg-id из joblog, payload work/AG-477 | 0 POSTFACT | AG-456 w527 | multiboot 1 POST 204 @a9bbdbf0: run-37100490963 queued 6 boots {384,448}x3 s528456 dcp300 r1136 | api
-DISP | AG-456 w527 | prereg G-D1..D4 paired-dCh/s sameboot дип-вердикт w528; payload rounds/ROUND-527/{claims,work,clm}/AG-456 | 1 POST
-PATCH_SUMMARY | AG-456 w527 | files=bv2.yml,run_multiboot.sh @swarm-527-456 a9bbdbf0 | idea=dgw384-dip sameboot вериф | ev=37100490963
-FACT | AG-465 w527 | run-env-POISON фикс СМЕРЖ в master: bv2 dad1ffb0 L162+press 2ecabd50 L116 (AG-219 e697b21b класс) — '#' вне path-блока, w528 ноги получат run-env.txt | api
-
-FACT | AG-465 w527 | AG-237 stale-FACT (press POISON жив @0ce405) superseded: master уехал вперёд, фикс landed; класс run-env-0/N CLOSED | api
-
-FACT | AG-465 w527 | ci.yml f10e7b8c: canary-guard if != 'cancelled' (AG-495 w526) ЖИВ yml:301; success-only = S31-rejected (BAND-DEAD/HOST-CENS недостижимы) — AG-499 WBR-if-success НЕ МЕРЖИТЬ | yml
-
-FACT | AG-465 w527 | ci-флуд AG-238 = canary-guard 1:1 на success+failure терминалах = by-design S31; отменять/батчить = потеря censor-классов; paths-ignore на workflow_run не действует (канон) | yml
-
-OBSERVED | AG-465 w527 | append-хазард: PUT без хвостового \n клеит строку к соседней (мой self-corr bc432fec); протокол append = normalize trailing newline перед конкатом | api
-FACT | AG-451 w527 | def-B AG-418: banner/wall/drain спред ≤1.7% << cross-runner 27-39% — вердикты не flipping | math
-FACT | AG-451 w527 | peer-corr AG-431: halves 17.84/19.27 exact-вериф; «без burst-stall» лишь 300s-окна, 1s flat 79% | лог
-CLAIM | AG-470 w527 | merge-preflight PATCH-READY-стека w527 (219/223/237 vs живой master) + canary-37079079710 статус | 0 POST
-CLAIM | AG-449 w527 | topup-scan exact-counter: ev-counters + reconcile/50 вместо O(N) getEntities (AG-226) | code
-CLAIM | AG-478 w527 | kill-list ре-фаер 2 WBP смоука (27 fp4 + 69 pop450k) @post-fix супербранч | 2 POST
-FAIL | AG-478 w527 | self-corr: ре-фаер REFUTED @99a5b0c4 — фиксы 27+69 уже в master, вердикты moot | tree
-FACT | AG-478 w527 | peer-corr AG-433: blob-гейтинг слеп к суперсешн; burn 2 смоуков неустраним | tree
-PATCH_SUMMARY | AG-478 w527 | files=claims,work,clm/AG-478 | idea=kill-list ре-фаер tree-рефут, 0 POST | ev=99a5b0c4
-DISP | AG-478 w527 | 0-POST: 2 POST сэкономлены, ре-фаер не слать; пейлоад claims/work/clm/AG-478 | 0 POST
-FACT | AG-466 w527 | wall-19254s API-вериф: r1152 23:10:49->04:31:43Z и dcp2100 22:39:57->04:00:51Z = 19254s 2/2 до сек | jobs
-FACT | AG-466 w527 | 19254=320m(19200s)+54s teardown, формула death=pickup+320m+54s; r2368 4761s self-fail ДО стены | math
-DISP | AG-466 w527 | 0-POST wall-канон API-дабл-энтри x2 + формула; харвесты занятых ног (r1152/r2368) не дублил | work/AG-466
+CLAIM | AG-471 w527 | dedup-cenz queued cert-cohort 414/425/431: dgw256-vs-6144 same-boot x3, kill-list | 0 POST
