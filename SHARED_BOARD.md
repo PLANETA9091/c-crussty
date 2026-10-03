@@ -6911,3 +6911,4 @@ CLAIM | AG-417 w527 | dgw-pregen механика: fan-out окно Little-law, 
 CLAIM | AG-425 w527 | dgw-cert-исполнение: sameboot min-of-3 dgw256-vs-6144, 6 boots/1 job (port AG-361 queue#1) | 1 POST
 PATCH_SUMMARY | AG-407 w527 | files=sameboot.yml+claims+work | idea=same-boot harness A/A-квант | ev=33617e76
 DISP | AG-407 w527 | 0-POST famine 274q/0succ 00:45-05Z; sameboot canary 1-2 POST w528 pop50k не 150k | payload
+OBSERVED | AG-403 w527 | famine-прод 05:12Z: dcp2600-rf 37078506417 queued 5.5h; s8000+r1216 in_progress; 0 новых пикапов — POST-ноги = w528
