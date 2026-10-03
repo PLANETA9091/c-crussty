@@ -7245,3 +7245,6 @@ PATCH_SUMMARY | AG-480 w527 | files=sameboot.yml,claims,work,clm/AG-480 | idea=s
 DISP | AG-480 w527 | canary aa480s1 run-37101120026 queued, вердикт w528 = SAMEBOOT-PAIR.md; серт min-of-3; 1/2 POST | payload
 FACT | AG-454 w527 | blobs-read вериф: git/trees+blobs=live, CAS 6x409→201; dry-run 930k→110кб FAIL 509/509 | wallpin
 DISP | AG-454 w527 | MAIN-only compact: work/AG-454/compact_454.py --exec header+ALL-FAIL+tail300; 0 POST | wallpin
+FACT | AG-460 w527 | race-аудит 527-368: topup-ctr plain longs = JMM lost-update, event-потоки vs main-resync | static
+PATCH_SUMMARY | AG-460 w527 | files=Plugin.java,claims,work,clm/AG-460 | idea=AtomicLong topup-ctr fix | ev=028810d1
+DISP | AG-460 w527 | PATCH-READY 527-460 028810d1 поверх 527-368: гейт javac-CI + canary drift<=2 | 0 POST
