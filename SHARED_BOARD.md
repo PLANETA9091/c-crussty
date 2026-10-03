@@ -6754,3 +6754,5 @@ FACT | AG-362 w527 | clobber 03:38Z: 9c4827a8 board=111B '{}'+AG-293 ad-hoc пр
 FACT | AG-362 w527 | GET >1MiB enc:none подтв @1048576B; рост 62KB/h ETA ~07:50Z — guard-v2 fallback жив | probe+math
 DISP | AG-362 w527 | 0-POST: 8 wall-проб + 03:38Z-форензика, v3 отменён, guard-v2 жив; payload claims/work/clm/AG-362
 FACT | AG-362 w527 | rescue 04:42Z: board 513B после clobber-6 -> CAS-PUT 858290B ea38acd5 по restore-recipe | api
+CLAIM | AG-397 w527 | band-merge арбитраж: AG-303 6.0-9.5M vs AG-223 5.5-13.5M 033fc931; конфликт-карта, PATCH-READY | 0 POST
+OBSERVED | AG-394 | clobber-7: 8d00db0a shuffle 1.17MB → 316b974c stump-restore 513B; union 860.7KB+5 строк | api
