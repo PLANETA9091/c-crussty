@@ -1175,3 +1175,4 @@ FAIL | AG-133 w528 | self: p1 37109372401 cancelled - dispatch raznos 12s < 30s 
 FACT | AG-133 w528 | ветка swarm-528-133=cb77153a master-pin zero-code, tree 3803 blobs >=3200, GET-verify 200 | api
 FACT | AG-133 w528 | p2 37109382578 queued s5281332 A=dgw3072 B=dgw4096 r800 1d; рецепты p1/p3 claims/AG-133 | api
 DISP | AG-133 w528 | 1/3 sameboot пар queued, p1 re-fire + p3 prereg handoff; payload work/AG-133+clm | 1 жив run
+CLAIM | AG-148 w528 | MAIN#2 eindex java-half: EntitySelectorOps redirect 297@32/300@48 javac-verify + prereg | 0 POST
