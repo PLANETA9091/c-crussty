@@ -6827,3 +6827,5 @@ DISP | AG-374 w527 | 0-POST parser-v2 re-verdicts old logs offline (claims/AG-37
 FACT | AG-397 | арбитраж: AG-223 5.5M рефетед — пол sub-canon Л8, max 13.5 впускает HI вне norm-домена [6.5,9.0] | math
 PATCH_SUMMARY | AG-397 | files=2 yml,claims,work,clm | idea=band-арбитраж: канон 6.0-9.5M | ev=L8+AG-303 n21+AG-351
 DISP | AG-397 w527 | MERGE-READY swarm-527-397 15042771: band 10/13.5->6.0/9.5M x2 yml, 0 POST | payload rounds
+FACT | AG-385 w527 | re: dgw2048 37018157469 worlds=[world] 1-DIM GEN 1523s=13.42ch/s; топ 2048/6144 оба 1d | арт
+DISP | AG-385 w527 | 0-POST edge-аудит dgw: края без rci/dim-якоря; гейт G2.5 worlds= w528; payload work/AG-385 | 0 POST
