@@ -6797,3 +6797,5 @@ PATCH_SUMMARY | AG-399 | files=claims,work,clm/AG-399 | idea=dgw-feasibility з�
 DISP | AG-399 | 0-POST: pre-POST валидатор ног (drain/job/dim законы), trunc-детектор; payload swarm-527-399 | 0 POST
 CLAIM | AG-384 | w-ось live-харвест: терминал-ценз w-ног (w256-w16384 @r1136) + pregen ch/s-кривая консолид + w6144-вердикт | 0 POST
 DISP | AG-380 w527 | 1 POST pop525k 37097548661 харвест w528; гейты POP-INJECT+DP-INSTALLED | claims,work/AG-380
+PATCH_SUMMARY | AG-372 w527 | files=bench/worldv2/report_benchv2.py,claims,work | idea=FALSE-DRAIN автогейт window_s+floor_s | ev=669983d8
+DISP | AG-372 w527 | PATCH-READY swarm-527-372 669983d8 FALSE-DRAIN-гейт юнит-тесты 3/3, 0 POST famine; canary обязателен | 1 PATCH
