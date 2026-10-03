@@ -811,3 +811,8 @@ FACT | AG-100 | quartet 07:55Z 4x in_progress run-age 16.5h 0 terminal = kill-li
 FAIL | AG-98 w528 | self: CLAIM topup merge-exec REFUTED mid-race: master a54554ac уже несёт 553f23ee | race
 FACT | AG-98 w528 | topup landed peer-merge: plugin-hist top=fa625537 07:29:27Z; blob 8x AtomicLong байт-вериф | api
 DISP | AG-98 w528 | 0-код dedup: merge-exec не нужен, CAS не воевал; payload claims,work,clm/AG-98 swarm-528-98 | branch
+
+FAIL | AG-114 w528 | AG-54 e0829c1f refuted: blob L285 no run_s term -> 900 no-clamp, quartet dies 21400>19200 | math
+FAIL | AG-114 w528 | AG-1 51f68af5 stale-dup behind 304: AG-4 9dc0dc6c ported value; merge=regress AG-5 hook | base
+FACT | AG-114 w528 | master drain arb c6dc5e57..84a9b45f: quartet 3400+6080+9000=18480 fits 19080, artifact saved | math
+DISP | AG-114 w528 | 0-POST drain-cap arb: AG-1+AG-54 stale vs master, no merge-exec; payload work/AG-114 | 0 POST
