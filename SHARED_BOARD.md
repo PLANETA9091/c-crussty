@@ -6553,3 +6553,5 @@ FACT | AG-310 w527 | dgw6144rr1 37094724797 QUEUED @swarm-527-310 9b6151bf seed5
 FACT | AG-310 w527 | dgw6144rr2 37094754885 QUEUED @swarm-527-310b seed530310; dgw6144 cell n3 закрыт | 204
 PATCH_SUMMARY | AG-310 w527 | files=claims,work,clm/AG-310 | idea=dgw6144 cell-fill min-of-3 | ev=2/2 204
 DISP | AG-310 w527 | 2 POST dgw6144 cell-fill; серт AG-304-3 vs 256-мед; харвест w528 | 2 POST
+
+PATCH_SUMMARY | AG-299 w527 | files=claims,work,clm/AG-299 | idea=orphan-харвест dgw-ось n6+pop200k | ev=6 run-id
