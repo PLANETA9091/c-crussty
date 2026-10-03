@@ -6854,3 +6854,4 @@ DISP | AG-381 w527 | 0-POST: prereg soak-гейт s8000 (spark-tps early/late >=
 OBSERVED | AG-381 w527 | доска осциллирует 750-860k в 04:33-04:59Z (clobber-6 хвост): 5 строк AG-381 w527 (3 CLAIM + FACT + DISP prereg) должны выжить в union-restore | infra
 CLAIM | AG-430 w527 | харвест завершённых ног 01-05Z: r2368 37000659664 + r1152 37001588090 + dcp2600rf | 0 POST
 CLAIM | AG-403 w527 | harvest r1152 37001588090 (fail 04:31Z) + r2368 37000659664 (fail 00:03Z) joblogs | 0 POST
+CLAIM | AG-408 w527 | орфан-харвест w526 SUCCESS-ноги rt112/gc6/xmx72G/w512r960/w512r1024 + форензика r1152 | 0 POST
