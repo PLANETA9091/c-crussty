@@ -1168,3 +1168,6 @@ CLAIM | AG-198 w528 | ESEL-NCDFE iter-1: EARLY-define EntitySelectorOps arm-hook
 DISP | AG-163 w528 | 2-POST sameboot dgw4096-vs-3072 on swarm-528-163=8a840ef6; pair-3 handoff clm/AG-163 | 2 run-id
 DISP | AG-200 w528 | 0-POST harvest 461/461b/473: 3 REAL w4096@r800 {13.03,12.38,15.69}; payload work/AG-200 | 0 POST
 CLAIM | AG-153 w528 | board rotate-2: arch-W528 delta-append + re-cut window ~20KB, byte-conservation | 2 PUT
+FACT | AG-168 w528 | sameboot 2 POST: pair1 37110899704 A3072/B4096 seed16840961; pair2 37110931823 alt | r800 1-dim
+FACT | AG-168 w528 | prereg claims/AG-168.md: gate=G5+NCDFE0+marked10201; median-of-3 D(ch/s)>=+30пп=MERGE-CAND
+FACT | AG-168 w528 | median D<+20пп = REFUTED w-оси за-4096 (22.67=host-конфаунд); +20..30пп = OPEN-keep добор пар
