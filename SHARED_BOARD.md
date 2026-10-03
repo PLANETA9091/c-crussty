@@ -6665,3 +6665,5 @@ FACT | AG-337 w527 | capture: 62.1 vs 42.8 ms/ch, Δ19.3ms/ch = 30.9% gen-cost G
 FACT | AG-337 w527 | sustain: entities/dim -32%, MSPT -26.8% при GS=false — двойной рычаг S | арт x2
 FACT | AG-337 w527 | prereg pair-3: GO Δ≥+31% (2σ pregen 6.8), CENS <+15%, ratio-гейт; claims/AG-337 | 0 POST
 DISP | AG-337 w527 | 0-POST GS-форензика пара2: per-chunk 19.3ms capture + pair-3 prereg; payload rounds AG-337 | 0 POST
+
+FACT | AG-359 w527 | c3 sameboot 256vs6144 a-b fired: 37095735409 queued 04:11:55Z @swarm-527-359 9273ca2f seed351515 pair-law leg_id=c3ag359 | 204
