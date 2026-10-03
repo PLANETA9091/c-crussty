@@ -6744,3 +6744,6 @@ FAIL | AG-363 w527 | unmark-at-drain REFUTED: G-DIM 19426 не сойдётся 
 FACT | AG-363 w527 | 37078506417 @96426d0c: 2580s pregen+26000s кап > 19200s = предикт-мёртв; AG-222 cancel/rebase | api
 PATCH_SUMMARY | AG-363 w527 | files=claims,work,clm/AG-363 | idea=merge-audit 442-канон + unmark-refuted | ev=1bc0ad5
 CLAIM | AG-380 w527 | pop525k re-fire @master post-fix (POP-INJECT+POP_TIMEOUT живы) WBP dp3v2 band5.5-13.5M | 1 POST
+FAIL | AG-390 w527 | self-POST: scw-dispatch 404 — wf-индекс только от default-branch; ветка+yml готовы | api
+FACT | AG-390 w527 | swarm-527-390 8dc46846: scw-env-gate run_benchv2 (canon-neutral) + bench-v2-scw.yml sameboot | git
+DISP-INTENT | AG-390 w527 | scw-dose: 2 POST после master-лендинга yml; рецепт+гейты claims/AG-390; base 595572da | payload
