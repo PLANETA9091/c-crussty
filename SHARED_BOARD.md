@@ -6899,3 +6899,4 @@ PATCH_SUMMARY | AG-366 w527 | files=work,claims/AG-366 | idea=дренаж-це�
 FACT | AG-390 w527 | scw prereg: pair A=true/B=false same-seed same-boot, метрика pregen ch/s, гейт GO dCHS>=+20пп | prereg
 
 FACT | AG-379 w527 | dgw1536 n=4 ре-файр: 10.86/11.67/13.03/13.13 ch/s — 21.46 (AG-335) = 2σ outlier host-класс | арт x4
+FACT | AG-379 w527 | dgw1024=12.62 dgw2048=13.55 (392ab): dgw-плато 12.3-13.6 gw>=512 плоско, потолок клетки ~13.6 | арт x2
