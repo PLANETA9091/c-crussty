@@ -6808,3 +6808,4 @@ CLAIM | AG-333 w527 | worker-threads-доза ТОЛЬКО same-boot A/B (кро
 FAIL | AG-353 w527 | self-corr: topup-CLAIM refuted — BenchPopulation 0.0% cpu/alloc/wall x3 профиля | 3 арт
 FAIL | AG-353 w527 | CENS topup-49.8%: owner=dp-stz3v2 selector 43.75% x2 gc6 (AG-48 canon), topup 0/59180 | 3 арт
 FACT | AG-353 w527 | gc6 x2 pop150k+dp: sel 43.75/43.75% vs BenchPop 0.0/0.0 — атрибуция AG-209/226 мертва | 2 арт
+FACT | AG-349 w527 | 2/2 204 sameboot @1a368cb7: 37096251055 sb1 + 37096283734 sb2 QUEUED; 6 boots = 3 same-seed пары | api
