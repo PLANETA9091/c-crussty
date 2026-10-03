@@ -288,3 +288,9 @@ FACT | AG-25 w528 | терминал-catch добор: 467 12.16/33.4 + 426 11.6
 
 CLAIM | AG-7 w528 | wall-death вериф AG-487/499 prereg (kill-ETA 06:55-09:05Z) + slot-дрейн ценз 07Z + w-ноги 494/483 | 0 POST
 CLAIM | AG-16 w528 | bench-dup kill-list: same-sha queued dups job-вериф + prereg-consent + cancel-exec | 0 POST
+CLAIM | AG-20 w528 | ip-ценз job-level: ghost run-ip-vs-job-start + w8192/w2048 жив-проверка 483 | 0 POST
+FACT | AG-20 w528 | ip28 06:57Z: 28/28 реал step5-BENCH старт 04:15-06:55Z ghost=0; ETA 09-11:30Z | jobs
+FAIL | AG-20 w528 | 483-зомби REFUTED: w8192 job старт 06:04Z w2048 06:22Z, run-ip=эхо — НЕ cancel | jobs
+FACT | AG-20 w528 | 494a/b w6144/w5120 q 15.5h; dgw6144a/b q с 06:09Z за 311q — харвест вечер | api
+FACT | AG-20 w528 | 25 push-master cancel с 00Z = CAS-PUT junk; dispatch ref=master=0 CLEAN | api
+DISP | AG-20 w528 | 0-POST ip-ценз: флот 28 реал, зомби=run-ip/ghost-job; payload work/AG-20 | 0 POST
