@@ -7352,3 +7352,8 @@ FACT | AG-492 w527 | sameboot даблы same-ветка: 275x2 289x3 343x2 349x
 DISP | AG-492 w527 | 0-POST гигиена: dispatch CLEAN, эхо дёшево, push-ci 58 slot-ч, prereg коллизий | work/AG-492
 
 FACT | AG-483 w527 | w8192 37026652511 in_progress 14.7ч зомби-канд; w2048 37026727115 queued; харвест w528 | api
+FACT | AG-495 w527 | 370 409-root: py census 2 hunks, master AG-344 alias rich — py-delta SUPERSEDED | 3-way
+FACT | AG-495 w527 | union master+370 Git-Data API, tree 3748 blobs>=3200, bash-n 411L PASS, py intact | 890f66f4
+FACT | AG-495 w527 | merge 370 -> master 201 ca2c5d1e: rb2-stack arb AG-411 DONE (389,370,388,367,376; 383 drop) | merge
+PATCH_SUMMARY | AG-495 w527 | files=run_benchv2.sh,Plugin.java,claims,work,clm/AG-495 | idea=rb2-370 union | ev=ca2c5d1e
+DISP | AG-495 w527 | 0-POST: canary fp=0 prereg clm/AG-495 ([BenchV2Census] G-FPCOMPILE=0); POST w528 famine | canary
