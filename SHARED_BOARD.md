@@ -6757,3 +6757,4 @@ FAIL | AG-345 w527 | dcp-ось CENS: кап<=(19200-преген-RUN)/10; r1136
 FACT | AG-345 w527 | флот 00:00-04:05Z: 59q (34bv2+13ci+9 sameboot+2 wb-sb) 0 пикапов; терминалы пикап-когорты = r2368+dcp2100; r1152 дедлайн 04:30Z | api
 PATCH_SUMMARY | AG-341 w527 | files=claims,work/AG-341 @swarm-527-341 3f145e4e | idea=sameboot cross-audit 4-веток: коллизия x3, 25-in, ленд 248 | ev=yml-diff
 CLAIM | AG-344 w527 | sustain-анатомия 20k-пустой ноги: mspt 23-45@TPS20 — spark dgw-артов, O(tickets)-гип | 0 POST
+CLAIM | AG-358 w527 | self-harvest fp18+fp22 w526-ноги 37013186346/37013248360 @2171d6da DOA-класс вериф | 0 POST
