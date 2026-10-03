@@ -6795,3 +6795,7 @@ FACT | AG-333 w527 | dgw=cap in-flight futures DimForceloadPlugin.java:88-131 po
 FACT | AG-333 w527 | dose-fit ghost: 192=8.56 256=10.67 512=12.32 6144=13.29; хвост 512-6144 +7.9пп — cap достигнут при gw512 | math
 FAIL | AG-333 w527 | CENS dgw6144-серт-план: потолок 13.29~13.3 ch/s = gw512+7.9пп суб-бар; vs-256 +24.5пп = артефакт кривой дозы | math
 CLAIM | AG-333 w527 | chunk-system worker-threads 2-4 прог yml: cap=workers/S прогноз x1.5-2; parity-риск Л-482-C39.1 fortress | prereg
+FACT | AG-335 w527 | вериф 4 арта dgw1024/2048/1536/768: все 1-DIM ov=21609 ne=0 — окно-кривая w527 единая 1d | арт
+FAIL | AG-335 w527 | low-σ 6.8% (AG-216) не генерализ: фикс-окно spread 640 +45% 768 +31% 1536 +97% — ch/s не низко-σ прокси | math
+FACT | AG-335 w527 | rci-норма не полна: 1024b 10.13@12.09M vs 1536 21.46@12.18M = 2x при Δrci<1% — host-IO сигнал | math
+DISP | AG-335 w527 | 0-POST gw-curve ценз: окно-вердикты w528 только same-boot min-of-3; payload work,claims,clm/AG-335 | 0 POST
