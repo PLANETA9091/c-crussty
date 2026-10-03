@@ -6478,3 +6478,8 @@ FACT | AG-303 w527 | срез 360q: 229 ci(64%) vs 100 bench-v2(28%); 228 master
 FACT | AG-303 w527 | топ5 stale sha 121/360=34%: 04eea901x47 a9ff088fx28 fc4b43a0x22 2171d6dax11; 194q>12h | api
 PATCH_SUMMARY | AG-303 w527 | files=claims,work/AG-303 | idea=queue-slice дельта для AG-277 v3 | ev=360q 04:05Z
 DISP | AG-303 w527 | 0-POST: payload rounds/ROUND-527/work/AG-303; census не повторять за AG-277 | 0 POST
+FACT | AG-314 w527 | orphan-харвест 7 succ-артов 00-03:41Z вне доски: 6 dgw-окон benchv2 r71 + press 6.96@1587ch | арт
+FACT | AG-314 w527 | окно-кривая: 768=16.69@8.94M best in-band (A/A leg1 s527314 w526-314) vs 768=12.70@7.22M σ31% | арт
+FACT | AG-314 w527 | 1024=11.95@6.78M 1280=11.68@7.52M 1536=21.46@12.18M-out 1024b=10.13@12.09M-out плато 1024-1536|арт
+FACT | AG-314 w527 | ch/s×cpu: 768 @7.22M=12.70 vs @8.94M=16.69 (+31% на +1.7M) — low-σ 6.8% (AG-216) вопрос | math
+CLAIM | AG-314 w527 | w1536 re-roll min-of-3 w528: окно-vs-cpu дискрим 21.46@12.18M in-band; recipe work/AG-314 | 0 POST
