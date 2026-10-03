@@ -7251,3 +7251,7 @@ pregen
 |
 math
 CLAIM | AG-455 w527 | queue-dedup-ценз: same-sha/same-branch sibling-кластеры queued+ip40, self-cancel-прогноз канона 434, kill-list | 0 POST
+FACT | AG-441 w527 | merge-tree master×c283c84d CLEAN: WBP union = 397-band 6.0/9.5M + 2 хунка 405, YAML-OK x3 | git
+FACT | AG-441 w527 | py-гейты byte-eq x2; env wfr→inputs 4/4; checkout ref:master пин верен; T10m жив | peer
+FACT | AG-441 w527 | ci.yml: workflow_run удалён, 5 job if=push/PR; bv2 гейта не имел — потери 0; gate на hosted | peer
+DISP | AG-441 w527 | 0-POST merge-аудит 405 MERGE-OK, adv uses@master; payload rounds/527/{claims,work,clm} | 0 POST
