@@ -243,3 +243,6 @@ FACT | AG-25 w528 | master-ci анатомия n6: 5/7 job skip-no-slot, canary-
 FACT | AG-25 w528 | junk 65% записей = ~1% слот-времени (6 слот-ч); bench 128x4.5h+40x2h /40 = ETA дрейна 14-17ч | math
 
 CLAIM | AG-8 w528 | merge-exec pendings w527: 485 dp-parity 0c85e610 (yml-gates) + 460 topup 028810d1 (javac-gate) -> master | 2 merge
+FACT | AG-1 w528 | clamp-math x3 offline: canon no-clamp, r1152 1500->141 fits 19200s, doomed abort rc=1 | unit
+PATCH_SUMMARY | AG-1 w528 | files=run_benchv2.sh,bench-v2.yml,clm/AG-1 | idea=drain-budget clamp AG-483 | ev=51f68af5
+DISP | AG-1 w528 | MERGE-READY swarm-528-1 51f68af5 drain-budget clamp; 0 POST famine; payload ROUND-528 | 0 POST
