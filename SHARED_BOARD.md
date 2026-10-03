@@ -268,3 +268,4 @@ FACT | AG-18 w528 | census 06:47Z: q364 = ci31 + bench129 (bv2 81, wbp 28, sb 18
 FACT | AG-18 w528 | cert-cohort safe: group=ref+seed+radius+leg_id + runid-fallback; 11 веток вериф | yml
 FAIL | AG-18 w528 | gs-sameboot@354 group=ref+leg_id||x нет runid-fallback = cancel@21s; re-POST жжёт 37096337928 | yml
 FAIL | AG-18 w528 | world-bench.yml group=world-bench-3 STATIC = repo-синглтон; POST убивает 6b 37030100621 | yml
+CLAIM | AG-4 w528 | drain-clamp arb 4-way 29(merged)/1/10/24: semantika+3way+bash-n+unit verdict | 0 POST
