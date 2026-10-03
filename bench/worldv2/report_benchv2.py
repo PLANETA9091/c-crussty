@@ -49,6 +49,29 @@ g4_target = int(0.95 * n_dims * expect_pd)
 # (min/med/95%ile/max ms) from last 10s, 1m:' with values 'min/med/95/max; min/med/95/max'
 # on the NEXT spark line (log lines 4143-4250 proof). Parse next-line formats.
 marked = sum(int(m.group(1)) for l in lines if (m := re.search(r"Marked (\d+) chunks", l)))
+# AG-116 w528 (#16g-sibling): 'Marked N chunks' is a world-COMPLETION line (DimForceload
+# prints it only when a world finishes pregen). A DRAIN-BOUND leg that times out mid-gen
+# prints ZERO completion lines -> report marked=0, G4 FAIL, ch/s=None even when gen was
+# healthy (leg 37026771618: completion 0, [DF] PROGRESS truth 23113@DRAIN-TOUT=9.58 ch/s
+# in-window, 26590@last=9.74 — healthy band 9.1-12.0, AG-73). Fallback: per-world MAX of
+# monotone PROGRESS marked counter; used only when it exceeds completion-sum.
+prog = {}
+last_prog_ts = None
+gen_start_ts = None
+for l in lines:
+    _pm = re.search(r"\[DF\] PROGRESS world=(\S+) marked=(\d+)/(\d+)", l)
+    if _pm:
+        _w = _pm.group(1); _v = int(_pm.group(2))
+        if _v > prog.get(_w, 0):
+            prog[_w] = _v
+        last_prog_ts = re.search(r"\[(\d\d:\d\d:\d\d)", l)
+    elif gen_start_ts is None:
+        _gs = re.search(r"\[(\d\d:\d\d:\d\d) INFO\].*\[DF\] GEN-START world=", l)
+        if _gs:
+            gen_start_ts = _gs.group(1)
+marked_prog = sum(prog.values())
+if marked_prog > marked:
+    marked = marked_prog
 tps = []
 mspts = []
 for _i, _l in enumerate(lines):
@@ -70,6 +93,21 @@ window_s = None
 if first_ts and drain_ts and int(drain_ts) > int(first_ts) and marked:
     window_s = int(drain_ts) - int(first_ts)
     ch_s = marked / window_s
+# AG-116 w528: DRAIN-BOUND ch/s recovery (lower-bound canon AG-400/AG-71): when the leg
+# timed out (drain_ts missing) but PROGRESS shows real marked progress, recover ch/s from
+# the log's own wall-clock GEN-START -> last-PROGRESS window (self-contained, no epoch/tz
+# mix; midnight-wrapped deltas +86400). Provenance-flagged in BENCHV2.md.
+ch_prog_used = False
+if ch_s is None and marked_prog and gen_start_ts and last_prog_ts:
+    def _t2s(_t):
+        _h, _m, _s = (int(x) for x in _t.split(":")); return _h * 3600 + _m * 60 + _s
+    _d = _t2s(last_prog_ts.group(1)) - _t2s(gen_start_ts)
+    if _d <= 0:
+        _d += 86400
+    if _d > 0:
+        ch_s = marked_prog / _d
+        window_s = _d
+        ch_prog_used = True
 
 # AG-372 w527 FALSE-DRAIN autogate (class AG-196 phantom 730.32 / AG-126 r576
 # win249<floor254 / AG-395 'ch/s без drain-s мусор'): window shorter than the
@@ -100,7 +138,7 @@ g5_pass = bool(drain_ts) and drain_ts != "None"
 
 rep = []
 rep.append("# BENCHV2 — AG-433 wave-515 heavy stand (AG-496 x522: radius-aware gates, pregen-v3)\n")
-rep.append(f"- ch/s (drain-def: marked chunks / (drain_ts − first_ts)): **{ch_s:.2f}**" if ch_s else "- ch/s: DRAIN-TIMEOUT (lower bound only)")
+rep.append((f"- ch/s (drain-def: marked chunks / (drain_ts − first_ts)): **{ch_s:.2f}**" + (" (PROGRESS-recovery AG-116, DRAIN-BOUND: drain_ts missing)" if ch_prog_used else "")) if ch_s else "- ch/s: DRAIN-TIMEOUT (lower bound only)")
 rep.append(f"- FALSE-DRAIN gate (AG-372): window_s={window_s}, floor_s={floor_s:.0f} (=marked/{RATE_MAX:.1f}): " + ("FLAG-INFLATED — ch/s NOT a verdict (window < physical floor)" if false_drain else "PASS") if window_s else "- FALSE-DRAIN gate (AG-372): no window (DRAIN-TIMEOUT) — n/a")
 rep.append(f"- forceload-marked chunks total: **{marked}** (expect ≥{g4_target} = 0.95×{n_dims}×{expect_pd}; radius-blocks side={2*((expect_pd ** 0.5) - 1) / 2 + 1:.0f})")
 rep.append(f"- MSPT: idle≈{idle}, sustain-median≈{med} (spark mspt samples n={len(mspts)})")
