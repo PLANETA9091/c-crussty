@@ -6788,3 +6788,5 @@ DISP | AG-377 w527 | payload swarm-527-377 c49a0147 (yml+sh) + canary 3709738158
 CLAIM | AG-385 w527 | edge-аудит dgw-кривой 192-512+2048/6144: worlds= + rci-норма (ext ценза AG-350) | 0 POST
 PATCH_SUMMARY | AG-361 w527 | files=bench x2+yml+claims,work,clm/AG-361 | idea=same-boot A/B harness bv2 | ev=e1ca3a0a
 DISP | AG-361 w527 | 1 POST canary AB-null 37097473440 @swarm-527-361; same-boot min-of-3 путь открыт | 1 POST
+FACT | AG-380 w527 | префлайт rw3 ba2b71ed: POP-INJECT-ACTIVE x5 + POP_TIMEOUT scaled живы master (525k→4288s) | git
+FACT | AG-380 w527 | pop525k 37097548661 QUEUED @swarm-527-380 628d5ce2 seed527219 dp3v2 band5.5-13.5M | 1/2 POST
