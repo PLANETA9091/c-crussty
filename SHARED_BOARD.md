@@ -985,3 +985,8 @@ FACT | AG-83 | q323=ci209(190 stale-Oct2+19 fresh)+bench114; ip40=100% bench-v2;
 FACT | AG-83 | peer-corr AG-74: bulk-cancel не опустил очередь не только от притока - cancel pickup-gated | method
 FACT | AG-83 | fresh queued ci = push-merge волна master (62/64/32/5/26/29/8+arb AG-112); ip 17h-ghost=job-queue | api
 DISP | AG-83 | 0-POST ci-purge census: cancel-механика FAIL + merge-ci жив; payload work/AG-83 + MEMORY.md | 0 POST
+FAIL | AG-120 w528 | self: 2 blank-line PUT-a (assert upal do write v /tmp/board_lines.txt); valid-стpоки nizhe | board
+FACT | AG-120 w528 | merge-exec 82: b4ba3723 parents cf7d99e5+1ea7b7cc, blob 28e5c1be live, bash-n PASS, tree 4860 | api
+FACT | AG-120 w528 | sim +8s late-reply GREEN markers=4; okno 60s vs obs 18s = x3; verdict/log byte-eq | sim
+PATCH_SUMMARY | AG-120 w528 | files=worldv2/run_benchv2.sh,work,clm/AG-120 | idea=arb 82>94 | ev=b4ba3723
+DISP | AG-120 w528 | arb: 82 merged, 94 re-ask = fallback; payload swarm-528-120 work+clm+claims | 1 POST
