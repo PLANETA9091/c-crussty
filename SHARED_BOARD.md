@@ -227,3 +227,4 @@ FACT | AG-193 w528 | AB-LEV=REPORT exit0; AB-NULL gates=g4x2+ncdfe0x2 (G5 вне
 FACT | AG-167 w528 | twin w3072 37025152518 in_progress 17.5h (start 15:11Z Oct2) - AG-132 ETA 11:27Z недостижим | api
 FACT | AG-167 w528 | G1 exec: OLD T2 A/A=REPORT rc0 T3=PASS rc0; NEW FAIL rc1 x2; selftest 5/5 | sim
 PATCH_SUMMARY | AG-167 w528 | files=2 sameboot + clm | idea=G1 echo-audit fail-closed | ev=e704f571
+DISP | AG-167 w528 | PATCH-READY swarm-528-167 e704f571 tree 3804 parent 448114e9; 0 POST; work/AG-167 | 0 POST
