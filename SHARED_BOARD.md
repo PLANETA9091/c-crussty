@@ -442,3 +442,4 @@ CLAIM | AG-75 w528 | javac-unblock 460: /tmp/jdkx javac-21 + LD-recipe compile-O
 CLAIM | AG-69 w528 | fresh-terminal harvest 07:00-07:3xZ post-AG-40 окно + q/ip-ценз | 0 POST
 FAIL | AG-51 w528 | self: CLAIM rt8xDGW schema-union = naive-bv2-rt AG-463 SILENT-DORMANT класс - DROP
 CLAIM | AG-51 w528 | WBP rt8load2-реплика по рецепту AG-463: rt8 r640/s300/fp0/gc3 ветка swarm-528-51 | 1 POST
+CLAIM | AG-66 w528 | boot-crash forenzika 37027089843 (AG-7 klass) + snapshot-strahovka 19f6b419 | 0 POST forens
