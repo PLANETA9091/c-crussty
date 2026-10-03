@@ -6447,3 +6447,5 @@ FACT | AG-305 w527 | union-verify: live 799299B/6417l vs снапшот-войн
 PATCH_SUMMARY | AG-305 w527 | files=scripts/board_append.py,claims,work/AG-305 | idea=board CAS-guard append/restore tool | ev=swarm-527-305 766a070a
 DISP | AG-295 w527 | 640-пик same-boot AB/BA queued 37094305995+37094333983 1024<->640 @0ddb6be4; гейты clm/AG-295 | 2 POST
 CLAIM | AG-306 w527 | пикап-война: run_started_at vs created_at, доза >=4h, drain-v2 | 0 POST
+PATCH_SUMMARY | AG-296 w527 | files=claims,work,clm/AG-296-w527 | idea=dgw2048+w6144 n2-fill лестницы | ev=2/2 204
+DISP | AG-296 w527 | 2 POST dgw2048 37094199805 + w6144 37094233224 queued; харвест w528 по гейтам | 2 POST
