@@ -1,0 +1,319 @@
+Compiled from "SelectorBulkOps.java"
+public final class net.minecraft.world.entity.selector.SelectorBulkOps {
+  public static final int SB_THRESH;
+
+  public static final java.lang.String LEVER_FLAG;
+
+  private static volatile double[] sbXs;
+
+  private static volatile double[] sbZs;
+
+  private static volatile int[] sbTypeOrd;
+
+  private static volatile int sbPlaneRows;
+
+  private static volatile long sbStructuralVersion;
+
+  private static volatile boolean sbArmed;
+
+  private static volatile long sbQueriesBulk;
+
+  private static volatile long sbQueriesVanilla;
+
+  private static volatile long sbCandidatesEmitted;
+
+  private static volatile long sbFallbackStructural;
+
+  private net.minecraft.world.entity.selector.SelectorBulkOps();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  private static native int sbProbe();
+
+  private static native int sbEnumerate(double[], double[], int[], double, double, double, double, int, int, int, int[]);
+
+  private static native int sbStats(long[]);
+
+  public static java.util.List<? extends net.minecraft.world.entity.Entity> getEntitiesGated(java.lang.Object, net.minecraft.world.level.Level, net.minecraft.world.phys.AABB);
+    Code:
+       0: getstatic     #7                  // Field sbArmed:Z
+       3: ifeq          16
+       6: getstatic     #13                 // Field sbPlaneRows:I
+       9: ifle          16
+      12: aload_2
+      13: ifnonnull     26
+      16: getstatic     #17                 // Field sbQueriesVanilla:J
+      19: lconst_1
+      20: ladd
+      21: putstatic     #17                 // Field sbQueriesVanilla:J
+      24: aconst_null
+      25: areturn
+      26: aload_2
+      27: invokestatic  #21                 // Method estimateCandidates:(Lnet/minecraft/world/phys/AABB;)I
+      30: sipush        512
+      33: if_icmpgt     46
+      36: getstatic     #17                 // Field sbQueriesVanilla:J
+      39: lconst_1
+      40: ladd
+      41: putstatic     #17                 // Field sbQueriesVanilla:J
+      44: aconst_null
+      45: areturn
+      46: getstatic     #25                 // Field sbXs:[D
+      49: astore_3
+      50: getstatic     #29                 // Field sbZs:[D
+      53: astore        4
+      55: getstatic     #32                 // Field sbTypeOrd:[I
+      58: astore        5
+      60: aload_3
+      61: ifnull        98
+      64: aload         4
+      66: ifnull        98
+      69: aload         5
+      71: ifnull        98
+      74: aload_3
+      75: arraylength
+      76: aload         4
+      78: arraylength
+      79: if_icmpne     98
+      82: aload_3
+      83: arraylength
+      84: aload         5
+      86: arraylength
+      87: if_icmpne     98
+      90: aload_3
+      91: arraylength
+      92: getstatic     #13                 // Field sbPlaneRows:I
+      95: if_icmpeq     108
+      98: getstatic     #36                 // Field sbFallbackStructural:J
+     101: lconst_1
+     102: ladd
+     103: putstatic     #36                 // Field sbFallbackStructural:J
+     106: aconst_null
+     107: areturn
+     108: iconst_1
+     109: getstatic     #13                 // Field sbPlaneRows:I
+     112: ldc           #39                 // int 65536
+     114: invokestatic  #40                 // Method java/lang/Math.min:(II)I
+     117: invokestatic  #46                 // Method java/lang/Math.max:(II)I
+     120: newarray       int
+     122: astore        6
+     124: aload_3
+     125: aload         4
+     127: aload         5
+     129: aload_2
+     130: getfield      #49                 // Field net/minecraft/world/phys/AABB.minX:D
+     133: aload_2
+     134: getfield      #55                 // Field net/minecraft/world/phys/AABB.maxX:D
+     137: aload_2
+     138: getfield      #58                 // Field net/minecraft/world/phys/AABB.minZ:D
+     141: aload_2
+     142: getfield      #61                 // Field net/minecraft/world/phys/AABB.maxZ:D
+     145: iconst_m1
+     146: iconst_0
+     147: iconst_1
+     148: aload         6
+     150: invokestatic  #64                 // Method sbEnumerate:([D[D[IDDDDIII[I)I
+     153: istore        7
+     155: iload         7
+     157: ifge          170
+     160: getstatic     #36                 // Field sbFallbackStructural:J
+     163: lconst_1
+     164: ladd
+     165: putstatic     #36                 // Field sbFallbackStructural:J
+     168: aconst_null
+     169: areturn
+     170: getstatic     #68                 // Field sbQueriesBulk:J
+     173: lconst_1
+     174: ladd
+     175: putstatic     #68                 // Field sbQueriesBulk:J
+     178: getstatic     #71                 // Field sbCandidatesEmitted:J
+     181: iload         7
+     183: i2l
+     184: ladd
+     185: putstatic     #71                 // Field sbCandidatesEmitted:J
+     188: aconst_null
+     189: areturn
+
+  private static int estimateCandidates(net.minecraft.world.phys.AABB);
+    Code:
+       0: getstatic     #13                 // Field sbPlaneRows:I
+       3: ireturn
+
+  public static boolean selfTest();
+    Code:
+       0: getstatic     #7                  // Field sbArmed:Z
+       3: ifne          8
+       6: iconst_0
+       7: ireturn
+       8: invokestatic  #74                 // Method sbProbe:()I
+      11: sipush        21314
+      14: if_icmpne     21
+      17: iconst_1
+      18: goto          22
+      21: iconst_0
+      22: ireturn
+
+  static void armPlane(double[], double[], int[], int, long);
+    Code:
+       0: aload_0
+       1: putstatic     #25                 // Field sbXs:[D
+       4: aload_1
+       5: putstatic     #29                 // Field sbZs:[D
+       8: aload_2
+       9: putstatic     #32                 // Field sbTypeOrd:[I
+      12: iload_3
+      13: putstatic     #13                 // Field sbPlaneRows:I
+      16: lload         4
+      18: putstatic     #78                 // Field sbStructuralVersion:J
+      21: iload_3
+      22: ifle          29
+      25: iconst_1
+      26: goto          30
+      29: iconst_0
+      30: putstatic     #7                  // Field sbArmed:Z
+      33: return
+
+  public static long[] stats();
+    Code:
+       0: iconst_4
+       1: newarray       long
+       3: astore_0
+       4: aload_0
+       5: invokestatic  #81                 // Method sbStats:([J)I
+       8: iconst_4
+       9: if_icmpne     14
+      12: aload_0
+      13: areturn
+      14: iconst_4
+      15: newarray       long
+      17: dup
+      18: iconst_0
+      19: getstatic     #68                 // Field sbQueriesBulk:J
+      22: lastore
+      23: dup
+      24: iconst_1
+      25: getstatic     #17                 // Field sbQueriesVanilla:J
+      28: lastore
+      29: dup
+      30: iconst_2
+      31: getstatic     #71                 // Field sbCandidatesEmitted:J
+      34: lastore
+      35: dup
+      36: iconst_3
+      37: getstatic     #36                 // Field sbFallbackStructural:J
+      40: lastore
+      41: areturn
+
+  public static long structuralVersion();
+    Code:
+       0: getstatic     #78                 // Field sbStructuralVersion:J
+       3: lreturn
+
+  public static void getEntitiesGated(net.minecraft.world.level.entity.LevelEntityGetter, net.minecraft.world.phys.AABB, java.util.function.Consumer<net.minecraft.world.entity.Entity>);
+    Code:
+       0: getstatic     #17                 // Field sbQueriesVanilla:J
+       3: lconst_1
+       4: ladd
+       5: putstatic     #17                 // Field sbQueriesVanilla:J
+       8: aload_0
+       9: ifnull        28
+      12: aload_1
+      13: ifnull        28
+      16: aload_2
+      17: ifnull        28
+      20: aload_0
+      21: aload_1
+      22: aload_2
+      23: invokeinterface #85,  3           // InterfaceMethod net/minecraft/world/level/entity/LevelEntityGetter.get:(Lnet/minecraft/world/phys/AABB;Ljava/util/function/Consumer;)V
+      28: return
+
+  public static <U> void getEntitiesGated(net.minecraft.world.level.entity.LevelEntityGetter, net.minecraft.world.level.entity.EntityTypeTest, net.minecraft.util.AbortableIterationConsumer<U>);
+    Code:
+       0: getstatic     #17                 // Field sbQueriesVanilla:J
+       3: lconst_1
+       4: ladd
+       5: putstatic     #17                 // Field sbQueriesVanilla:J
+       8: aload_0
+       9: ifnull        28
+      12: aload_1
+      13: ifnull        28
+      16: aload_2
+      17: ifnull        28
+      20: aload_0
+      21: aload_1
+      22: aload_2
+      23: invokeinterface #91,  3           // InterfaceMethod net/minecraft/world/level/entity/LevelEntityGetter.get:(Lnet/minecraft/world/level/entity/EntityTypeTest;Lnet/minecraft/util/AbortableIterationConsumer;)V
+      28: return
+
+  public static <U> void getEntitiesGated(net.minecraft.world.level.entity.LevelEntityGetter, net.minecraft.world.level.entity.EntityTypeTest, net.minecraft.world.phys.AABB, net.minecraft.util.AbortableIterationConsumer<U>);
+    Code:
+       0: getstatic     #17                 // Field sbQueriesVanilla:J
+       3: lconst_1
+       4: ladd
+       5: putstatic     #17                 // Field sbQueriesVanilla:J
+       8: aload_0
+       9: ifnull        33
+      12: aload_1
+      13: ifnull        33
+      16: aload_2
+      17: ifnull        33
+      20: aload_3
+      21: ifnull        33
+      24: aload_0
+      25: aload_1
+      26: aload_2
+      27: aload_3
+      28: invokeinterface #94,  4           // InterfaceMethod net/minecraft/world/level/entity/LevelEntityGetter.get:(Lnet/minecraft/world/level/entity/EntityTypeTest;Lnet/minecraft/world/phys/AABB;Lnet/minecraft/util/AbortableIterationConsumer;)V
+      33: return
+
+  public static <T extends net.minecraft.world.entity.Entity> void getEntitiesGated(net.minecraft.world.level.Level, net.minecraft.world.level.entity.EntityTypeTest<net.minecraft.world.entity.Entity, T>, net.minecraft.world.phys.AABB, java.util.function.Predicate<? super T>, java.util.List<? super T>, int);
+    Code:
+       0: getstatic     #17                 // Field sbQueriesVanilla:J
+       3: lconst_1
+       4: ladd
+       5: putstatic     #17                 // Field sbQueriesVanilla:J
+       8: aload_0
+       9: ifnull        40
+      12: aload_1
+      13: ifnull        40
+      16: aload_2
+      17: ifnull        40
+      20: aload_3
+      21: ifnull        40
+      24: aload         4
+      26: ifnull        40
+      29: aload_0
+      30: aload_1
+      31: aload_2
+      32: aload_3
+      33: aload         4
+      35: iload         5
+      37: invokevirtual #97                 // Method net/minecraft/world/level/Level.getEntities:(Lnet/minecraft/world/level/entity/EntityTypeTest;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;Ljava/util/List;I)V
+      40: return
+
+  static {};
+    Code:
+       0: aconst_null
+       1: putstatic     #25                 // Field sbXs:[D
+       4: aconst_null
+       5: putstatic     #29                 // Field sbZs:[D
+       8: aconst_null
+       9: putstatic     #32                 // Field sbTypeOrd:[I
+      12: iconst_0
+      13: putstatic     #13                 // Field sbPlaneRows:I
+      16: lconst_0
+      17: putstatic     #78                 // Field sbStructuralVersion:J
+      20: iconst_0
+      21: putstatic     #7                  // Field sbArmed:Z
+      24: lconst_0
+      25: putstatic     #68                 // Field sbQueriesBulk:J
+      28: lconst_0
+      29: putstatic     #17                 // Field sbQueriesVanilla:J
+      32: lconst_0
+      33: putstatic     #71                 // Field sbCandidatesEmitted:J
+      36: lconst_0
+      37: putstatic     #36                 // Field sbFallbackStructural:J
+      40: return
+}
