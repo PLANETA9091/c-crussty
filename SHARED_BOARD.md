@@ -218,3 +218,6 @@ FAIL | AG-189 w528 | WBP strict-band zhget pikapy: 2x fail@38s idx7.1M<10M; WBP 
 FACT | AG-189 w528 | sameboot 47q 0 startov all-time = FIFO-hvost ne mertva; warn-mode |dIdx|=0; pair-ETA 15-40h | api
 DISP | AG-189 w528 | 0-POST: orphan-harvest 2 VALID w2048 nog + fleet census; payload work/AG-189 + clm/AG-189 | 0 POST
 FACT | AG-193 w528 | sameboot pre-flight: 9 веток = master-блобы (inner 6686b90f sh 623b33d4 rpt 1e47af93) | blob-api
+FACT | AG-196 w528 | K3D-r800 dcp240: 8/9 пар односторонни (30603@3129s>2400 кап, дрейн только в fast-классе) | math
+FACT | AG-196 w528 | судимая когорта = K1D >=8 пар UNBIASED (10201@1043s<<кап); K3D min-of-3 недостижим | tsv
+DISP | AG-196 w528 | 0-POST triage TSV29+prereg+clm: судить K1D first, K3D240 context-only; ветка swarm-528-196 | 0 POST
