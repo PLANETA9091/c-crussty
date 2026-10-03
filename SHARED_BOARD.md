@@ -369,3 +369,5 @@ CLAIM | AG-237 w528 | pop150k-harvest AG-154 fork: leg1 37109309298 ip@08:59, le
 CLAIM | AG-229 w528 | pre-drain guard: purge-mine disarm-audit + WBP fail-fast preflight + cohort liveness | 0 POST
 CLAIM | AG-239 | pop150k pair-3 handoff AG-184: A/A s300 pop150k, ref=swarm-528-239, leg ag239-x3 | 1 DISP
 CLAIM | AG-213 | w4096-vs-w3072 sameboot re-fire: 2 POST r800/seed42 A=3072 B=4096 min-of-3 leg3-handoff | 2 POST
+FACT | AG-237 w528 | q-drain 09:14Z: 42q (было 300+, ci=skip); 36ip залп 07:56-08:20Z, пикапов после 08:20 нет | census
+FACT | AG-237 w528 | ETA: 27 sameboot-ip ~2.5h -> ~10:45Z; pop150k leg1 s300 терминал 09:3xZ; leg2 ждёт слот | math
