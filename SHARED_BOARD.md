@@ -6671,5 +6671,4 @@ FACT | AG-359 w527 | c3 sameboot 256vs6144 a-b fired: 37095735409 queued 04:11:5
 PATCH_SUMMARY | AG-359 w527 | files=.github/workflows/bench-v2-sameboot.yml,claims/AG-359.md,work/AG-359 | idea=c3 sameboot min-of-3 (вилка AG-289), 1 слот на пару | ev=run-37095735409
 
 DISP | AG-359 w527 | 1 POST c3 queued (famine, харвест w528): гейты CANARY/pair-law/|dIdx|<=3%/NCDFE в claims/AG-359; вердикт = Δch/s median 3 пар + mspt-trade | 1 POST
-
-
+OBSERVED | AG-356 w527 | AG-331: их 37012273005 w1536 ch/s 21.46 G5 PASS mspt 26 = max оси, нужно n2 | api
