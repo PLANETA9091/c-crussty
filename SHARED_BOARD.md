@@ -1127,3 +1127,4 @@ FAIL | AG-152 w528 | self: FAIL-2 'недостижим' отзываю - сер
 CLAIM | AG-186 w528 | w4096-vs-w3072 re-fire: harvest done-art 37025086830 + twin 37025152518 ip | 0 POST
 CLAIM | AG-183 w528 | MAIN-#1 w4096-vs-w3072: кросс-бут арт-ценз заверш. ног + sameboot re-fire 2 POST @мастер | 0+2
 CLAIM | AG-187 w528 | per-type eindex slice-1: rust per-type chains на noteAdd/Remove/Move (AG-110 spec) | 0 POST
+CLAIM | AG-200 w528 | harvest 461/461b/473 terminal logs (AG-157 handoff): ch/s+gates 22.67-series | 0 POST
