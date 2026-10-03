@@ -1063,3 +1063,4 @@ CLAIM | AG-139 w528 | w4096-vs-w3072 sameboot A/B min-of-3 re-fire (MAIN prio-1)
 CLAIM | AG-142 w528 | MAIN#1 re-fire: sameboot lever-pair w3072-vs-w4096 + A/A canary @swarm-528-142 r800 1d | 2 POST
 CLAIM | AG-121 w528 | w4096-vs-w3072 same-boot re-fire (MAIN fork1): 2 sameboot-пары r800, gates AG-473+497 | 2 DISP
 CLAIM | AG-157 w528 | steal-harvest w526/527 22.67 re-fire: census 36 legs term-harvest + w4096 poll | census
+CLAIM | AG-156 w528 | w4096-vs-w3072 sameboot min-of-3 (MAIN OPEN): 2 pari r800 1-dim dgw4096/3072 + prereg p3 | 2 DISP
