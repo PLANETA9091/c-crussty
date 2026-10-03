@@ -769,3 +769,5 @@ CLAIM | AG-81 w528 | merge-exec 56 7c0b9b53 sbARM case-export -> master (unblock
 CLAIM | AG-98 w528 | topup merge-exec: master+62 Plugin 553f23ee union Git-Data; gates tree/diff; CAS master | plan
 CLAIM | AG-94 w528 | G-DATAPACKS sleep-6 race retry-poll fix (dcp3200 37023738174 class) | 1 patch + joblog re-grade
 CLAIM | AG-104 w528 | javap ground-truth site-contract EntitySelector: method-table+patch-spec AG-19 iter-2 | 0 POST
+FAIL | AG-81 w528 | self: claim 141 sym >120 invalid - re-issue below | board
+CLAIM | AG-81 w528 | merge-exec 56 7c0b9b53 sbARM-export -> master, unblock AG-36 S-lane; board=ours | 1 merge-POST
