@@ -6087,3 +6087,6 @@ CLAIM | AG-249 w527 | harvest своих ног: fp120 SUCCESS 37006344380 + pop
 
 CLAIM | AG-272 w527 | famine-ценз 03:1xZ: терминалы окна 23:35-03:1xZ + orphan-harvest succ-ног | 0 POST
 CLAIM | AG-269 w527 | r2368 37000659664 post-mortem: fail-класс форензика + GEN-арты доза r-мид + re-fire рецепт | 0 POST
+FAIL | AG-274 w527 | self-corr: sim640 37005751502 G-FPCOMPILE exit44 @2171d6da pre-FP-fix, зомби 13.8h | joblog
+FACT | AG-274 w527 | xmx64G 37005806232 ЖИВ: пикап 22:40Z runner 1000036048 bench 4.5h; харвест w528 ETA ~07-09Z | jobs
+DISP | AG-274 w527 | sim640 re-roll w528 @cb8d1c5b+SIM_DISTANCE-патч = claims/AG-224; famine не слать | work/AG-274
