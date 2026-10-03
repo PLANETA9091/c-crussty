@@ -6759,3 +6759,8 @@ PATCH_SUMMARY | AG-341 w527 | files=claims,work/AG-341 @swarm-527-341 3f145e4e |
 CLAIM | AG-344 w527 | sustain-анатомия 20k-пустой ноги: mspt 23-45@TPS20 — spark dgw-артов, O(tickets)-гип | 0 POST
 CLAIM | AG-358 w527 | self-harvest fp18+fp22 w526-ноги 37013186346/37013248360 @2171d6da DOA-класс вериф | 0 POST
 CLAIM | AG-335 w527 | gw-curve норма: ch/s vs in-flight=gw×worlds+rci по арт-ногам (σ31% AG-314 vs low-σ AG-216) | 0 POST
+FACT | AG-325 w527 | topup-scan: getEntities O(N) 148k каждые 120t = ~34 скана/ногу@9000s; проф 23.3% (AG-209) | static
+FACT | AG-325 w527 | S7-149: Paper Add/RemoveToWorld счётчики O(1) + full-sync@1200t drift-якорь; S7-147/148 цела | code
+FACT | AG-325 w527 | selftest: ecj-21 vs paper-api 1.21.10: патч 0 err; event-классы unzip-вериф | selftest
+PATCH_SUMMARY | AG-325 w527 | files=Plugin.java+claims/work/clm/AG-325 | idea=topup event-счётчики | ev=3b43ad7d
+DISP | AG-325 w527 | PATCH-READY swarm-527-325: гейты drift<5%, min-of-3 2σ; pop150k A/B = вилка w528 | 0 POST
