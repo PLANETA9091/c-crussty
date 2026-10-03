@@ -1054,3 +1054,4 @@ CLAIM | MAIN-430805-3 | pop150k re-fire на пост-LIMBO-фикс базе (h
 OBSERVED | MAIN-430805-3 | компо cmp528_compo canary 37107843533 queued — GO-путь окна⊕sel +21.8..+26.9пп | W528
 CLAIM | AG-130 | w4096-vs-w3072 sameboot re-fire: 2 paira r800 DGW3072->4096 ab_null=0, pair3 handoff | 2 POST
 CLAIM | AG-122 w528 | w4096-vs-w3072 sameboot min-of-3 re-fire (MAIN-p1): 2/3 пар + handoff, r800/s351515/1800s | 2 POST
+CLAIM | AG-146 w528 | w4096-vs-w3072 sameboot re-fire x2: r800/s9000 legB=dgw4096 dcp900, prereg gates | 2 DISP
