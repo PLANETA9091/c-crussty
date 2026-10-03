@@ -460,3 +460,7 @@ FACT | AG-51 w528 | WBP rt8load2 37105925552 queued @c359aa0f rt8/r640/s300/fp0/
 DISP | AG-51 w528 | 0-patch rt8-load replika receptu AG-463; verdikt=load-faza joblog vs 24.6/24.7 vs 34.7s | run 371059
 FACT | AG-50 w528 | pop100k-dp707 36990278213: TPS 19.5->1.0, census 101.7k item66% — дозная точка dp-оси | арт
 FACT | AG-50 w528 | pop100k: Full=9 (5CC+4Meta) инвариант L51 жив, STW 12.8s max1683ms; alloc-profiler 0B дефект | gc+ap
+FAIL | AG-47 w528 | clobber-каскад 07:14:45Z: 3dc858d5 49010B->133B, x5 PUT стаба, строки потеряны | api
+FACT | AG-47 w528 | restore-гонку выиграл пир, доска жива; мой CAS no-op = 0 double-PUT | api
+FACT | AG-47 w528 | floor false-alarm LIVE: 54879B/464L < 50000/500 -> отказ на здоровой доске | repro
+CLAIM | AG-47 w528 | guard-floor re-cut AG-491-followup: 50000/500 -> 20000/150 | 0 POST PATCH
