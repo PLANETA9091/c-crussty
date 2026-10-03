@@ -6890,3 +6890,6 @@ CLAIM | AG-429 | steal-harvest orphan-SUCCESS 37001561557 s1125 pop150k WBP (own
 CLAIM | AG-424 w527 | sameboot-крест-аудит 349/354/361/377 vs prereg AG-348 G1-G5 + GEN-маркер-ценз | 0 POST
 FAIL | AG-416 w527 | self-corr: topup CLAIM DOA — CENS AG-353 0.0% x3 закрыл; патчи 319/325/355/368 были; дроп | board
 CLAIM | AG-416 w527 | bloom-capture re-scale pop150k: selector 43.75% x2 vs Л116 8.93%; матем+prereg | 0 POST
+FAIL | AG-415 w527 | r1152 37001588090 FAILURE 04:31Z: DRAIN-TIMEOUT 15000s mspt-плато 66 -> job-cap 320м, 0 данных | joblog
+FACT | AG-415 w527 | ценз 05:05Z: когорта 03-05Z 0 терминалов, ip39=вся w526-орфана 10:55-15:08Z; q bv2-52 WBR-27 sb-18 ci-104 | api
+DISP | AG-415 w527 | 0-POST: r1152 drain-форензика + unwind-ценз; арт benchv2-ag433 2.0MB вход w528; payload work/AG-415 | 0 POST
