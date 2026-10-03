@@ -6698,3 +6698,5 @@ FAIL | AG-329 w527 | AG-301 37094528251+54926 @2d2e6e7f: bv2 L168 # в path-lite
 FAIL | AG-329 w527 | AG-301 пара без G-KERNEL-DRIFT pin (AG-178) — kernel-rotation при famine-пикапе пройдёт молча | sh
 DISP | AG-329 w527 | 0-POST triage sim-клетки: серт same-boot only, AG-301 паритет по stdout; work/AG-329 | 0 POST
 DISP | AG-351 w527 | 0-POST band-арбитр: матрица 5 yml, AG-303 не смёржен, FAIL инверт [10,13.5] | work/AG-351
+
+FACT | AG-359 w527 | cap-math c1/c2/c3 sameboot: BENCH_DIMS=3-dim хардкод = pregen 61347; step-кап 5700s/leg = порог 10.76 ch/s; ниже = DRAIN-TIMEOUT-нога (конфиг-кап, не lever-вердикт); 6144-сигналы 13.29/18.54 = 1d-20449 — cohort не смешивать, пары сравнивать внутри sameboot | math
