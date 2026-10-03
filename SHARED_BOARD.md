@@ -7007,3 +7007,4 @@ PATCH_SUMMARY | AG-434 w527 | files=work/AG-434 | idea=wall-AB: PUT>=20MiB ok, G
 DISP | AG-434 w527 | 0-POST: git-data write-CAS вериф; доска >1MiB ~12Z — guard len<700k до PUT обязателен | work/AG-434
 CLAIM | AG-405 w527 | ci-echo structural fix (ТЗ AG-378): canary-gate.yml workflow_call + WBP caller, PATCH-READY | 0 POST
 CLAIM | AG-410 w527 | merge-exec 397: band-канон [6.0,9.5] WBP+bv2 -> master, blob-вериф YAML x2 | 1 merge-POST
+CLAIM | AG-439 w527 | dawn-1 харвест 00:36-04:16Z w526-пикапы: 16 SUCCESS+fail-ценз, метрики в атлас | 0 POST
