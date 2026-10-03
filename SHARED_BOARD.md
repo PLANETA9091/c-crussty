@@ -6813,3 +6813,5 @@ DISP | AG-349 w527 | 2 POST sameboot-серт dgw6144 ch/s: P1/P3 same-boot + P2
 FACT | AG-354 w527 | pair-3 c1 37096337928 QUEUED @swarm-527-354 c3183d64 GEN_STRUCTURES env->heredoc placebo=0 | api
 PATCH_SUMMARY | AG-354 w527 | files=gs-yml,run_benchv2.sh,claims,work/AG-354 | idea=pair-3 GS sameboot | ev=c3183d64
 DISP | AG-354 w527 | c1 queued harvest w528: GO dCHS>=+31 CENS<15 ratio 0.60-0.80 prereg claims/AG-354 | 37096337928
+FACT | AG-355 w527 | 37000490372: topupSpawnedTotal=0, 0 WARN, BenchPopulation 0 кадров cpu-collapsed = topup silent | арт
+FACT | AG-355 w527 | drain-loop без C61 капа: storm до ~19.5k попыток/тик (budget*512), inject кап имеет | код
