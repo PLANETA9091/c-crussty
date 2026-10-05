@@ -102,15 +102,16 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           parse_stage_profile.py в репо, сырьё на риге profile/{cold,warm}.jfr)
 [x] P0.2  Посчитать по Амдалу потолок ускорения для каждой ступени доставки
           (см. LOG #1: C ~3.4x, B после Ф4/5 ~6-15x, A = вне сервера)
-[~] P0.3  Java-дампер (golden-harness): канонизированные чанки + векторы
+[x] P0.3  Java-дампер (golden-harness): канонизированные чанки + векторы
           random/noise/density из реальных классов Paper
-          (дампер работает: 3x256 чанков, 0 провалов; векторы — TODO Ф2,
-          интерфейс VectorHook заготовлен, см. GOLDEN_HARNESS.md)
+          (дампер: 3x256 чанков, 0 провалов; ВЕКТОРЫ закрыты сессией 3:
+          /goldenvec -> 13171 строк, Rust veccheck 0 расхождений бит-в-бит,
+          CI-джоба ncf-vectors; см. LOG #3)
 [~] P0.4  Корпус: чистая ваниль (>=5 seed), world466-stress-v1
           (Terralith+Tectonic+BACAP+Structory), worldgen-stand s35-dp1 (Trek)
-          (seed 3053459: 3 дампа по 256 чанков; остальные сиды и датапаки —
-          по мере продвижения; регион 100..115 океанический — добавить
-          фичовый регион (лес) для тяжести фич)
+          (ваниль: seed 3053459 3x256 + CI-матрица 4 сидов x256; Terralith+
+          Tectonic — CI-джоба ncf-datapacks (spiral, 256/каждый, артефакты);
+          ОСТАЛОСЬ: BACAP/Structory, Trek, фичовый лесной регион)
 [x] P0.5  Тест порядка: один регион ванилью в двух разных порядках, diff.
           Если порядок влияет (подозрение: features на границах чанков),
           зафиксировать канонический порядок для всех сравнений
@@ -122,31 +123,47 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           (bench/golden/tools/ncfdiff.py: декод палитр/heightmaps, verdicts
           EQUAL/SEMANTIC_EQUAL/DIVERGED, manifest-режим, selftest)
 [~] P0.7  Заменить оценки бюджета (раздел 6) реальными цифрами
-          (vanilla-сторона замерена — раздел 6 заполнен; нативная сторона
-          замеряется по мере появления ядер Ф2)
-ГЕЙТ P0: профиль, harness и тест порядка в репо, цифры в разделе 6.
+          (vanilla-сторона замерена — раздел 6 заполнен; нативная сторона:
+          скалярный ванильный роутер 7020 eval за ~0.1-0.3 c single-core в
+          release — измерение сравнимое с Java появится на ступени C)
+ГЕЙТ P0: ЗАКРЫТ (сессия 3): профиль + harness + порядок + ВЕКТОРЫ в репо,
+         векторная половина гейтится CI-джобой ncf-vectors.
 
 
 ----------------------------------------------------------------
 ФАЗА 1. ИЗВЛЕЧЕНИЕ СПЕЦИФИКАЦИИ И IR
 ----------------------------------------------------------------
-[ ] P1.1  Источник спецификации: живой реестр или файлы датапака (выбрать, записать)
-[ ] P1.2  IR для noise_router (DAG density functions), noises
+[x] P1.1  Источник спецификации: ФАЙЛЫ ДАТАПАКА (data/<ns>/worldgen/** из
+          jar/датапака; решено и записано в chunk-factory/src/router.rs —
+          байт-стабильно, версионируемо, CI-извлекаемо)
+[x] P1.2  IR для noise_router (DAG density functions), noises (полный набор
+          типов кодеков 1.21.10; zero-dep JSON-парсер в crate, I7)
 [ ] P1.3  IR для surface_rule, источника биомов (multi_noise), карверов
 [ ] P1.4  IR для placed/configured features, structure sets, шаблонов
-[ ] P1.5  Скалярный эталонный вычислитель IR (медленный, прозрачный)
-[ ] P1.6  Round-trip тесты IR на корпусе из P0.4
-[ ] P1.7  hash спецификации мира (ключ для всех кэшей, I5)
-ГЕЙТ P1: эталонный вычислитель совпадает с golden-векторами из P0.3 бит-в-бит.
+[x] P1.5  Скалярный эталонный вычислитель IR (density::Df::compute; все 15
+          полей NoiseRouter живого мира совпали бит-в-бит, 7020/7020)
+[~] P1.6  Round-trip тесты IR на корпусе из P0.4 (ircheck: ваниль 7/7
+          noise_settings parse+wire, 35/35 density_function; Terralith/
+          Tectonic — CI ncf-datapacks; round-trip = wire+eval, без обратной
+          сериализации в JSON — сознательное упрощение)
+[x] P1.7  hash спецификации мира (FNV-1a 64 над канонической формой дерева
+          С КЛЮЧАМИ шумов, не индексами — ловушка найдена на large_biomes)
+ГЕЙТ P1: ЗАКРЫТ (сессия 3): эталонный вычислитель совпадает с golden-
+         векторами из P0.3 бит-в-бит (13171/13171, CI ncf-vectors).
 
 
 ----------------------------------------------------------------
 ФАЗА 2. TIER 1 БИТ-В-БИТ (terrain)
 ----------------------------------------------------------------
 Базовые примитивы
-[ ] P2.1  Legacy и Xoroshiro random, positional factories, MD5-сидирование
-[ ] P2.2  ImprovedNoise, PerlinNoise, NormalNoise
-[ ] P2.3  Вычислитель density DAG (скаляр-эталон)
+[x] P2.1  Legacy и Xoroshiro random, positional factories, MD5-сидирование
+          (5851/5851 векторов бит-в-бит; CI ncf-vectors)
+[x] P2.2  ImprovedNoise, PerlinNoise, NormalNoise (300/300 векторов бит-в-бит
+          вкл. rs_noise — вайринг fromHashOf; BlendedNoise покрыт rs_noise-
+          цепочкой роутера и 2x16 прямыми векторами)
+[~] P2.3  Вычислитель density DAG (скаляр-эталон ГОТОВ и точен: 7020/7020;
+          остаются: NoiseChunk-привязка ячеек/интерполяторы — путь реальной
+          генерации, и оптимизации ниже)
 [ ] P2.4  Биомы: Climate sampler + RTree (учесть стартовый лист кэша при ничьих)
 [ ] P2.5  Surface rules
 [ ] P2.6  Аквиферы
@@ -174,7 +191,10 @@ JNI-ядра в расчёте на x100, включение чего-либо �
 ----------------------------------------------------------------
 ФАЗА 3. ДОСТАВКА
 ----------------------------------------------------------------
-[ ] P3.1  Ступень A: region writer (.mca), блокировка от конфликта с сервером
+[~] P3.1  Ступень A: region writer (.mca) — zero-dep писатель+читатель с
+          selfcheck-тестами в crate (region.rs, 8 тестов: layout/roundtrip/
+          1024 чанка/multi-sector; stored-block zlib валиден против python
+          zlib); НЕ подтверждён чтением реальным сервером — следующий шаг
 [ ] P3.2  Сравнение A с ванильными регионами на корпусе (zero-diff)
 [ ] P3.3  Ступень B: найти точку хука в Moonrise chunk IO, записать класс/метод
 [ ] P3.4  Ступень B: один JNI-вызов на чанк, возврат NBT
@@ -472,3 +492,70 @@ CI-фиксы по ходу (все найдены прогонами, не по
   BACAP/Structory + Trek), векторы random/noise/density через retransform
   (P0.3-хвост) — и Фаза 0 закрыта; затем Ф1 (IR-извлечение из реестра,
   сверка с CFR).
+
+=== 2026-10-05 | сессия 3 (один тик) | пункты: P0.3-хвост, P0.4-хвост, ГЕЙТ P0, P1.1/1.2/1.5/1.7, ГЕЙТ P1, P2.1, P2.2, P2.3 (эталон), P3.1 (каркас) ===
+Контекст: владелец — «сделай всё в одном тике». Сессия от начала до зелёного CI
+  без остановок: восстановление окружения (rustup/JDK21/purpur2535/CFR в
+  download/), CFR-сверка, Rust-ядро Ф1/Ф2, Java-сторона векторов, CI.
+Сделано:
+  - VectorCapture (Java, /goldenvec): random/noise/density векторы из РЕАЛЬНЫХ
+    классов Paper на живом RandomState (ServerChunkCache.randomState()).
+    13171 строк за 192 мс: random 5851, noise 300, density 7020 (все 15 полей
+    роутера через DensityFunction.SinglePointContext; markers проходят
+    насквозь, Blender.empty = identity — ровно скалярный путь P1.5).
+  - chunk-factory crate: zero-dep модули json/mth/md5/jrandom/xoroshiro/
+    noise/density/router/vectors/region + бины veccheck/ircheck.
+    cargo test 56/56, clippy clean, release veccheck PASS.
+  - ВЕКТОРНЫЙ ГЕЙТ: Rust == живая JVM БИТ-В-БИТ: 13171/13171, 0 расхождений
+    (veccheck exit 0). ГЕЙТ P1 закрыт, P2.1/P2.2 закрыты с доказательством.
+  - ircheck: ваниль — 7/7 noise_settings parse+wire, 35/35 density_function
+    файлов, spec_hash per file (P1.7); Terralith/Tectonic — CI ncf-datapacks.
+  - CI: джобы ncf-vectors (boot -> goldenvec -> ircheck+veccheck) и
+    ncf-datapacks (Modrinth -> ircheck датапака -> spiral-корпуса 256/каждый).
+ЛОВУШКИ ТОЧНОСТИ (все найдены ВЕКТОРНЫМ гейтом или сверкой с CFR/javap,
+  каждая закрыта кодом + тестом/вектором; предложения T-нумерации):
+  T13 (NEW, критично): BitRandomSource.nextDouble и Xoroshiro.nextDouble в
+    1.21.10 умножают в f32: l2f; ldc 1.110223E-16f; fmul; f2d — (float)bits *
+    (float)2^-53 с ПОТЕРЕЙ точности до 24 бит мантиссы. f64-порт был бы
+    неправ. (javap; CFR показал верно, память — нет.)
+  T14: RandomSupport.mixStafford13 — Java `>>>` ЛОГИЧЕСКИЙ сдвиг; i64 >> в
+    Rust арифметический (поймано первым прогоном векторов на stafford13).
+  T15: Mth.getSeed — `x * 3129871` это INT-умножение с переполнением ДО
+    расширения до long (позиция 2147483000 ловится векторами).
+  T16: PerlinNoise legacy-конструктор создаёт ПЕРВЫЙ ImprovedNoise
+    БЕЗУСЛОВНО (даже когда i >= size и инстанс выбрасывается — поток
+    случайности расходуется; nether temperature/vegetation).
+  T17: CubicSpline.Multipoint.apply использует ПЕРЕГРУЗКУ Mth.lerp(float,
+    float, float) — весь эрмит f32 (double-перегрузка даёт 1 ulp f32
+    расхождения в depth/final_density; поймано векторами density).
+  T18: ShiftA/ShiftB/Shift в JSON — поле "argument" (singleArgumentCodec),
+    НЕ "noise"; blend_density — тоже "argument".
+  T19: zero.json в датапаке — ГОЛОЕ число 0.0 (файл реестра может быть
+    константой без type).
+  T20: NormalNoise valueFactor: i2-i1 при всех-нулевых амплитудах = int
+    переполнение в Java (wraps to 1) — expected_deviation(1).
+  T21: java.lang.Math.min/max: NaN->NaN (не как Rust f64::min/max) и знаки
+    нулей (+0/-0) — port через to_bits.
+  T22: Mth.floor: i-1 при i32::MIN — Java int math WRAPS (floor(-3e9) =
+    Integer.MAX_VALUE); lfloor аналогично.
+  T23: XoroshiroPositionalRandomFactory.at/fromHashOf/fromSeed — прямой
+    128-битный ctor БЕЗ stafford-микширования (микс только в ctor(long)).
+  T24 (архитектура): Markers (interpolated/flat_cache/cache_2d/cache_once)
+    на НЕпривязанном роутере — чистый pass-through; кэши привязываются
+    NoiseChunk'ом при генерации. Скалярный эталон = непривязанный путь.
+  T25: wire кэширует NormalNoise ПО КЛЮЧУ (getOrCreateNoise), но blended —
+    по равенству параметров (record equals; один draw на уникальные
+    параметры).
+Цифры: векторы 13171 (5851+300+7020) — 0 расхождений; ircheck ваниль 7+35
+  файлов 0 провалов; буты 15-36 c локально; goldenvec 192 мс.
+Провалы: 2 локальных итерации CI-скриптов не было (локальный e2e прошёл с
+  3-го прогона из-за T14/T17); первый /goldenvec упал на ключе
+  minecraft:continents (нет такого noise-параметра — правильный
+  continentalness; ошибка захвата, не ядра).
+Расхождения с файлом/ванилью: P0.3 сформулировал векторы как «TODO Ф2 через
+  retransform» — прямой вызов через публичные API оказался достаточен для
+  гейта P1 (retransform остаётся планом для Ф2-профилировки инлайн-путей);
+  CarverSkip/feature-векторы — вне скоупа P0.3 (это Ф4).
+Следующий шаг: P2.3-хвост (NoiseChunk-интерполяторы: векторы через
+  NoiseChunk.forChunk — путь реальной генерации), затем P2.4+ (климат/surface)
+  и P3.1-подтверждение (сервер читает .mca, писанный Rust'ом).

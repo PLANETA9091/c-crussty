@@ -1,9 +1,12 @@
 name: GoldenDumper
 main: dev.crussty.golden.GoldenDumperPlugin
-version: 0.1.0
+version: 0.2.0
 api-version: '1.21'
-description: canonical chunk NBT oracle dumper for the Native Chunk Factory golden harness (NCF P0.3)
+description: canonical chunk NBT oracle dumper + golden vector capture for the Native Chunk Factory golden harness (NCF P0.3)
 commands:
   goldendump:
     description: dump canonical chunk NBT oracle (NCF P0.3)
     usage: /goldendump <label> (<chunkX> <chunkZ> <radius>|manifest <file>)
+  goldenvec:
+    description: capture random/noise/density golden vectors from the real Paper classes (NCF P0.3 tail / P1 gate)
+    usage: /goldenvec <label>

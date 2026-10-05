@@ -184,6 +184,15 @@ if [ "$FRESH" = "1" ]; then
     rm -rf "$SERVER_DIR/world" "$SERVER_DIR/world_nether" "$SERVER_DIR/world_the_end"
 fi
 
+# P0.4 datapack corpora hook: inject worldgen datapacks BEFORE the first
+# boot of the FRESH world (vanilla applies them at world creation; they must
+# be in place before level.dat exists).
+if [ -n "${DATAPACKS_DIR:-}" ] && [ "$FRESH" = "1" ]; then
+    mkdir -p "$SERVER_DIR/world/datapacks"
+    cp -f "$DATAPACKS_DIR"/*.zip "$SERVER_DIR/world/datapacks/" 2>/dev/null || true
+    log "datapacks injected into world/datapacks: $(ls "$SERVER_DIR/world/datapacks/" 2>/dev/null | wc -l) zip(s)"
+fi
+
 mkdir -p "$SERVER_DIR/logs"
 [ -f "$SERVER_DIR/logs/latest.log" ] && mv "$SERVER_DIR/logs/latest.log" "$SERVER_DIR/logs/latest.prev" 2>/dev/null
 

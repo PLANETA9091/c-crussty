@@ -86,12 +86,13 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
 
     @Override
     public void onEnable() {
-        if (getCommand("goldendump") == null) {
+        if (getCommand("goldendump") == null || getCommand("goldenvec") == null) {
             // plugin.yml is malformed or not packaged — fail loudly, the harness is unusable.
-            throw new IllegalStateException("goldendump command missing (plugin.yml not packaged?)");
+            throw new IllegalStateException("goldendump/goldenvec command missing (plugin.yml not packaged?)");
         }
         getCommand("goldendump").setExecutor(this);
-        getLogger().info("GoldenDumper ready: corpus dumps are vanilla-only (no CRUSSTY agent boots)");
+        getCommand("goldenvec").setExecutor(this);
+        getLogger().info("GoldenDumper ready: corpus dumps + vector captures are vanilla-only (no CRUSSTY agent boots)");
     }
 
     // ------------------------------------------------------------------
@@ -100,6 +101,25 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        // /goldenvec has its own dispatch (synchronous, no chunk gen).
+        if (command.getName().equals("goldenvec")) {
+            getLogger().info("goldenvec invoked by " + sender.getClass().getName()
+                    + " args=" + java.util.Arrays.toString(args));
+            boolean trustedVec = sender instanceof ConsoleCommandSender
+                    || sender instanceof RemoteConsoleCommandSender
+                    || sender.getClass().getName().contains("RemoteConsole")
+                    || sender.getClass().getName().contains("CraftConsoleCommandSender");
+            if (!trustedVec) {
+                sender.sendMessage("goldenvec: refused — console/RCON senders only");
+                return true;
+            }
+            if (args.length != 1 || !args[0].matches("[A-Za-z0-9._-]{1,80}")) {
+                sender.sendMessage("usage: /goldenvec <label> (allowed [A-Za-z0-9._-])");
+                return true;
+            }
+            VectorCapture.run(this, args[0], sender);
+            return true;
+        }
         // Executor/console-only guard. RCON commands arrive as
         // RemoteConsoleCommandSender (used by dump_corpus.sh via bench/ab/rcon.py),
         // the real console as ConsoleCommandSender; everything else is refused.

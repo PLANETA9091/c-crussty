@@ -117,3 +117,77 @@ jobs:
           path: ci-server/golden/
           if-no-files-found: warn
           retention-days: 30
+
+  # NCF P0.3-tail / P1: golden-vector gate. Captures random/noise/density
+  # vectors from the REAL Paper classes (/goldenvec) and requires the Rust
+  # ports to match BIT-EXACTLY (veccheck), plus the Phase 1 IR gate over the
+  # vanilla datapack (ircheck). 13171 vector rows, zero mismatches allowed.
+  ncf-vectors:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PURPUR_BUILD: '2535'
+      SEED: '3053459'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: chunk-factory
+      - name: vectors + IR gate (boot -> goldenvec -> ircheck + veccheck)
+        run: bash bench/golden/ci_vectors.sh
+      - name: upload vector gate artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-vector-gate
+          path: |
+            bench/golden/results/veccheck_*.log
+            bench/golden/results/ircheck_*.log
+            bench/golden/results/golden_vec_boot.log
+          if-no-files-found: warn
+          retention-days: 30
+      - name: upload captured vectors
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-vectors
+          path: ci-server/golden/ci_vec/vectors/
+          if-no-files-found: warn
+          retention-days: 30
+
+  # NCF P0.4 tail: worldgen-datapack corpora (Terralith + Tectonic) for the
+  # Phase 2 GATE matrix, plus the IR gate over non-vanilla datapack routers.
+  ncf-datapacks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PURPUR_BUILD: '2535'
+      SEED: '3053459'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: chunk-factory
+      - name: datapack corpora (terralith + tectonic, spiral, fresh boots)
+        run: bash bench/golden/ci_datapacks.sh
+      - name: upload datapack corpora (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-datapack-corpora
+          path: |
+            ci-server/golden/terralith_s*/
+            ci-server/golden/tectonic_s*/
+            ci-datapacks/*.zip
+          if-no-files-found: warn
+          retention-days: 30

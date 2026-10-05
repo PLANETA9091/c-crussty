@@ -125,13 +125,38 @@ pub mod coverage;
 pub mod gate;
 pub mod ledger;
 
-// Future modules -- TODO stubs ONLY (Phase 0 bans generation code):
-// TODO(phase-1): pub mod ir;         -- worldgen IR extraction (datapack -> stage graph)
-// TODO(phase-2): pub mod random;     -- bit-exact Legacy + Xoroshiro128++ randoms
-// TODO(phase-2): pub mod noise;      -- bit-exact improved-noise / density kernels
-// TODO(phase-3): pub mod region;     -- ladder A (.mca writer) + ladder B (Moonrise chunk-IO bridge)
-// TODO(phase-4): pub mod features;   -- feature placement, light engine, compression
-// TODO(phase-5): pub mod structures; -- jigsaw, structure starts + references, spawns
+// --- Phase 1 / Phase 2 modules (opened by owner directive 2026-10-05: //
+// "do everything now; test on GH CI"). Phase 0's ban on generation code //
+// is lifted; every module below is bound by the golden-vector gate: the //
+// ground truth is the REAL JVM (bench/golden VectorCapture CSVs), and //
+// bit-exact equality is the acceptance criterion, P1/P2 style.          //
+
+/// Minimal JSON parser (zero-dep, I7) for worldgen datapack files.
+pub mod json;
+/// Java math helpers (Mth + JLS cast semantics), bit-exact.
+pub mod mth;
+/// MD5 (RandomSupport.seedFromHashOf).
+pub mod md5;
+/// LegacyRandomSource + RandomSupport + MarsagliaPolarGaussian (P2.1).
+pub mod jrandom;
+/// Xoroshiro128++ lineage + positional factories (P2.1).
+pub mod xoroshiro;
+/// ImprovedNoise / PerlinNoise / NormalNoise / BlendedNoise (P2.2).
+pub mod noise;
+/// Density-function IR + scalar reference evaluator + CubicSpline (P1.5/P2.3).
+pub mod density;
+/// Worldgen datapack loading, DF parsing, RandomState wiring, spec hash
+/// (P1.1/P1.2/P1.7).
+pub mod router;
+/// Golden-vector CSV loading + Java hex-float parsing (P0.3/P1 gate).
+pub mod vectors;
+/// Ladder A: offline .mca region writer (P3.1).
+pub mod region;
+
+// TODO(phase-2+): surface rules, aquifers, carvers, heightmaps, biomes
+// TODO(phase-3):  ladder B (Moonrise chunk-IO bridge), stage C bridges
+// TODO(phase-4):  features, light engine, palette bitpacking, compression
+// TODO(phase-5):  jigsaw, structure starts + references, spawn
 
 #[cfg(test)]
 mod tests {
