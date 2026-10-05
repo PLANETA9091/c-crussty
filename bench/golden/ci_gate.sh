@@ -82,19 +82,30 @@ if [ ! -f versions/1.21.10/purpur-1.21.10.jar ]; then
     # purpur's paperclip ignores patchOnly at the EULA wall (verified
     # 2026-10-05): remap finishes, then it tries to boot and refuses on the
     # missing eula.txt (exit 0). So: NO eula.txt yet, run unpack in the
-    # background, poll for the mapped jar, hard-kill when it appears (or let
-    # the EULA wall exit on its own).
+    # background and poll for COMPLETION. Completion = the mapped jar exists
+    # AND carries CraftWorld.class — the file path alone is NOT enough:
+    # paperclip pre-creates the output file before the remap finishes (CI
+    # run 37282960274: a 7 s path-exists poll truncated the remap and the
+    # jar came out without craftbukkit classes -> build_golden died).
+    has_craftworld() {
+        python3 -c "import zipfile,sys; sys.exit(0 if 'org/bukkit/craftbukkit/CraftWorld.class' in zipfile.ZipFile(sys.argv[1]).namelist() else 1)" "$1" 2>/dev/null
+    }
     rm -f eula.txt
-    log "unpacking mojang-mapped image (paperclip patchOnly + mapped-jar poll)"
+    log "unpacking mojang-mapped image (paperclip patchOnly + CraftWorld poll)"
     java -Dpaperclip.patchOnly=true -jar versions/purpur-1.21.10.jar \
         > "$SERVER_DIR/patchonly.log" 2>&1 &
     PC_PID=$!
     UNPACKED=0
-    for _ in $(seq 1 150); do
-        if [ -f versions/1.21.10/purpur-1.21.10.jar ]; then UNPACKED=1; break; fi
+    for _ in $(seq 1 180); do
+        if [ -f versions/1.21.10/purpur-1.21.10.jar ] \
+           && has_craftworld versions/1.21.10/purpur-1.21.10.jar; then
+            UNPACKED=1; break
+        fi
         kill -0 "$PC_PID" 2>/dev/null || break
         sleep 2
     done
+    # jar complete => the unpacker is at the EULA wall at most -> safe to kill;
+    # otherwise it already exited on its own.
     kill "$PC_PID" 2>/dev/null || true
     sleep 1
     [ "$UNPACKED" = "1" ] || die "mojang-mapped jar not materialized (see $SERVER_DIR/patchonly.log)"
