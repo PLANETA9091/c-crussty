@@ -68,7 +68,9 @@ SEED="${SEED:-3053459}"
 PLAN="${PLAN:-quadrants}"
 LABEL="${LABEL:-}"
 FRESH="${FRESH:-0}"
-BOOT_TIMEOUT=240
+# BOOT_TIMEOUT env-overridable for CI runners (slower cold JIT than the rig);
+# default raised 240 -> 300 s (was the run_paper_ab.sh style cap).
+BOOT_TIMEOUT="${BOOT_TIMEOUT:-300}"
 DUMP_TIMEOUT="${DUMP_TIMEOUT:-900}"
 RCON_PORT=25575
 RCON_PW=bench-ab-2301
