@@ -110,8 +110,11 @@ JNI-ядра в расчёте на x100, включение чего-либо �
 [~] P0.4  Корпус: чистая ваниль (>=5 seed), world466-stress-v1
           (Terralith+Tectonic+BACAP+Structory), worldgen-stand s35-dp1 (Trek)
           (ваниль: seed 3053459 3x256 + CI-матрица 4 сидов x256; Terralith+
-          Tectonic — CI-джоба ncf-datapacks (spiral, 256/каждый, артефакты);
-          ОСТАЛОСЬ: BACAP/Structory, Trek, фичовый лесной регион)
+          Tectonic — CI ncf-datapacks; Structory — CI ncf-datapacks сессия 5
+          (mod-jar с data/ деревом, тот же экстрактор; pin 1.3.17 = 1.21.10);
+          [!] BACAP — НЕТ на Modrinth (CurseForge-only, API-ключа нет), нужен
+          файл от владельца или CF-ключ; [!] Trek/worldgen-stand s35-dp1 —
+          внутренний корпус, нужна ссылка от владельца)
 [x] P0.5  Тест порядка: один регион ванилью в двух разных порядках, diff.
           Если порядок влияет (подозрение: features на границах чанков),
           зафиксировать канонический порядок для всех сравнений
@@ -171,11 +174,22 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           last-result и identity-шорткат node==leaf покрыты контрактом
           порядка строк в climate.csv)
 [ ] P2.5  Surface rules
-[ ] P2.6  Аквиферы
-[ ] P2.7  Ore veins
+[x] P2.6  Аквиферы (сессия 5: NoiseBasedAquifer дословно — сетка 16x12x16,
+          floodedness/spread/lava/barrier, similarity/pressure с at(blockY)
+          семантикой, SURFACE_SAMPLING_OFFSETS; гейт: substance+decision+sched
+          бит-в-бит 2x98304 строк против живого сервера, staged 225/225)
+[x] P2.7  Ore veins (сессия 5: OreVeinifier дословно — vein_toggle/ridged/gap
+          через bound-интерполятор, f32-константы, oreRandom = fromHashOf(
+          "minecraft:ore").forkPositional; покрыт staged-гейтом и aquacheck)
 [ ] P2.8  Карверы
-[ ] P2.9  Heightmaps
-[ ] P2.10 Сборка секций, однородные секции (палитра из одного значения)
+[~] P2.9  Heightmaps (сессия 5: WORLDGEN-пара OCEAN_FLOOR_WG/WORLD_SURFACE_WG
+          закрыта на NOISE-статусе — unprimed update-машина с точным
+          скан-семантикой, длинная упаковка 9-бит SimpleBitStorage — в staged-
+          гейте 225/225; FINAL-типы после CARVERS — не начато)
+[~] P2.10 Сборка секций (сессия 5: содержимое секций на NOISE-статусе — блоки
+          + биомы — бит-в-бит 225/225 через DECODED-схему (I1: семантическое
+          равенство); бит-упаковка палитр (PalettedContainer serial form) и
+          статусы SURFACE/CARVERS+ — не начато, см. P2.5)
 
 Оптимизации поверх эталона (каждая с zero-diff против скаляра)
 [ ] P2.11 Классификация узлов: const / XZ-only / XYZ, вынос XZ на колонку
@@ -643,3 +657,61 @@ CI-фиксы по ходу (все найдены прогонами, не по
   же коммите, что и код.
 Следующий шаг: ГЕЙТ-матрица P2 на датапаках -> P2.5 surface rules -> ступень
   B (Moonrise hook P3.3) / оптимизации P2.11+; Фазы 4/5 по плану.
+
+=== 2026-10-05 | сессия 5 (одно сообщение) | пункты: P2.6 (закрыт), P2.7 (закрыт), P2.9-хвост (WG-heightmaps), P2.10 (содержимое секций), P0.4 (Structory), гейты+CI ===
+Контекст: владелец — «так сделай именно всё». 3 параллельных подагента пали по
+  таймауту инфраструктуры → всё вручную (как s4-a в сессии 4).
+Сделано:
+  - Методика СТАДИЙНЫХ ORACLE-ДАМПОВ (новая, ключевая): /goldendump STATUS
+    (task 5-a) — содержимое чанка на промежуточных ChunkStatus (NOISE/SURFACE)
+    в DECODED-схеме (секции: Palette{Name,Properties}+Data int[4096],
+    Biomes: Palette+Data int[64], Heightmaps long[], PostProcessing) — оракул
+    для содержательного нулевого диффа. Корпуса: staged_vanilla_s3053459_
+    {noise,surface} 225/225 (radius 7, spiral, FRESH boot).
+    Индексы верифицированы CFR: блоки (y*16+z)*16+x, биомы (y*16+z)*4+x;
+    heightmap-приминг: EMPTY..SURFACE = {OCEAN_FLOOR_WG, WORLD_SURFACE_WG}.
+  - aquifer.rs (P2.6+P2.7): NoiseBasedAquifer + OreVeinifier дословно.
+  - filler.rs: doFill-реплика на бит-в-бит интерполяторе: per-block
+    blockStateRule = [aquifer(substance), OreVeinifier], default_block,
+    proto-heightmap unprimed-машина (скан вниз по ЧАСТИЧНО заполненному
+    чанку = air), markPosForPostprocessing (pack (x&15)|(y&15)<<4|(z&15)<<8),
+    биомы по квартам (fillBiomesFromNoise: x-внешний порядок, Sampler.sample
+    = QUART-координаты → compute в БЛОЧНЫХ (x*4) — ловушка).
+  - interpolator.rs: substance-кэш (CacheAllInCell = batch-fill всей ячейки в
+    selectCellYZ, forIndex y-DESC) — per-block вычисление финального дерева
+    НЕ эквивалентно (кэш-эпохи) — ловушка; compute_field для vein-полей.
+  - sections.rs: zero-dep NBT reader/writer + gzip (полный inflate + stored-
+    writer) + decoded staged-схема. stagediff (гейт 225/225 + selftest),
+    aquacheck (бисект-риг), --gen-batch (RandomState один раз).
+  - ЛОВУШКИ СЕССИИ (все пойманы гейтами, не глазами):
+    T26 (критично): calculatePressure проверяет firstFluid.at(blockY).is(...)
+    — состояние НА ВЫСОТЕ БЛОКА: для статуса уровня -32512 at(y) = AIR при
+    y > -32512 — сравнение по .kind ломает давление на каждой пещере глубже
+    поверхности (17/225 → 225/225 после фикса).
+    T27 (критично): aquiferRandom/oreRandom хешируют ПОЛНОЕ имя ресурса —
+    "minecraft:aquifer"/"minecraft:ore" (withDefaultNamespace), не "aquifer".
+    T28: CacheAllInCell substance = batch-заполнение ячейки в selectCellYZ;
+    per-block compute дерева даёт другие значения (кэш-эпохи CacheOnce).
+    T29: Sampler.sample принимает КВАРТ-координаты и вычисляет density-
+    функции в БЛОЧНЫХ (QuartPos.toBlock = *4).
+    T30: doFill скипает AIR-блоки полностью (не пишет, не трогает heightmap).
+  - БИСЕКТ-РИГ (новый процесс): VectorCapture.writeAquifer — по блоку чанка
+    (100,100; переопределяется -Dgoldendump.aquiferX/Z): substance из живого
+    cellCaches[0].values + решение computeSubstance + shouldScheduleFluidUpdate
+    + полный дамп кэшей аквифера (локации/статусы/границы сетки). aquacheck
+    сверяет substance/decision/sched бит-в-бит: 2x98304 строк, 0 расхождений.
+  - CI: ci_staged.sh + джоба ncf-staged (boot → staged dump → gen-batch →
+    stagediff); aquacheck в ci_vectors; Structory в ncf-datapacks.
+Доказательства: коммиты 18dd506d (+ worklog-коммит); локальный гейт: stagediff
+  225/225 EQUAL на NOISE-статусе; aquacheck 0 substance/decision/sched расхождений
+  на двух чанках (100,100) и (102,107); CI run — см. addendum.
+Цифры: --gen-batch: 225 чанков за 12.6с = 17.9 чанков/с/ядро (включая staged-
+  NBT запись) против Java noise-стадии 248.1 CPU-мс/чанк = 4.0 чанков/с/ядро
+  (warm) — x4.5 на скаляре; оптимизации P2.11+ впереди (цель >=30x — ГЕЙТ P2).
+Провалы: 3 подагента пали по таймауту инфраструктуры; 4 итерации stagediff
+  (T26-T29); 2 захвата acquifer (константы чанка — параметризованы).
+Расхождения с файлом/ванилью: P2.10 сформулирован как «сборка секций» —
+  содержимое секций закрыто через DECODED-схему (I1), бит-упаковка палитр
+  не нужна для гейта и отложена до ступени B (виртуальный регион).
+Следующий шаг: P2.5 surface rules (SURFACE-статус тем же staged-методом) →
+  P2.8 карверы → ГЕЙТ P2 матрица → ступень B (P3.3 Moonrise hook).
