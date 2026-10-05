@@ -195,12 +195,15 @@ nohup setsid java \
     </dev/null >"$BOOTLOG" 2>&1 &
 disown || true
 
+# NOTE: marker detection uses grep -a, NOT rg — GitHub runners have no
+# ripgrep; `rg` failing under `|| true` was an invisible blind poll (CI run
+# 37284053928: server Done( at 26 s, poll timed out at 300 s).
 waited=0; done_line=""
 while [ $waited -lt $BOOT_TIMEOUT ]; do
     sleep 2; waited=$((waited+2))
     pid=$(java_pid)
     [ -z "$pid" ] && { sleep 3; pid=$(java_pid); [ -z "$pid" ] && die "server died during boot — see $BOOTLOG"; }
-    done_line=$(rg -o 'Done \([0-9.]+s\)!?' "$SERVER_DIR/logs/latest.log" 2>/dev/null | head -1 || true)
+    done_line=$(grep -aoE 'Done \([0-9.]+s\)!?' "$SERVER_DIR/logs/latest.log" 2>/dev/null | head -1 || true)
     [ -n "$done_line" ] && break
 done
 [ -n "$done_line" ] || die "no Done( marker within ${BOOT_TIMEOUT}s — see $SERVER_DIR/logs/latest.log"
@@ -219,7 +222,7 @@ while [ $waited -lt $DUMP_TIMEOUT ]; do
     if grep -q 'Command exception: /goldendump' "$SERVER_DIR/logs/latest.log" 2>/dev/null; then
         die "goldendump command threw — see 'Command exception' in $SERVER_DIR/logs/latest.log"
     fi
-    marker=$(rg 'GOLDEN DUMP COMPLETE n=' "$SERVER_DIR/logs/latest.log" 2>/dev/null | head -1 || true)
+    marker=$(grep -a 'GOLDEN DUMP COMPLETE n=' "$SERVER_DIR/logs/latest.log" 2>/dev/null | head -1 || true)
     [ -n "$marker" ] && break
 done
 [ -n "$marker" ] || die "no GOLDEN DUMP COMPLETE marker within ${DUMP_TIMEOUT}s"
