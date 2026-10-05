@@ -110,7 +110,7 @@ impl MultiSpline {
 }
 
 /// Multipoint.findIntervalStart: binarySearch(0, len, i -> start < loc[i]) - 1.
-fn find_interval_start(locations: &[f32], start: f32) -> i32 {
+pub fn find_interval_start(locations: &[f32], start: f32) -> i32 {
     // Mth.binarySearch: first index where predicate holds (start < locations[i]).
     let mut min = 0usize;
     let max = locations.len();
@@ -129,7 +129,7 @@ fn find_interval_start(locations: &[f32], start: f32) -> i32 {
 }
 
 /// Multipoint.linearExtend.
-fn linear_extend(
+pub fn linear_extend(
     coordinate: f32,
     locations: &[f32],
     value: f32,
@@ -257,6 +257,17 @@ impl Rarity {
     }
 }
 
+/// Marker types (DensityFunctions.Marker.Type). The NoiseChunk wrap machine
+/// (interpolator.rs) dispatches on these exactly like NoiseChunk.wrapNew.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum MarkerType {
+    Interpolated,
+    FlatCache,
+    Cache2D,
+    CacheOnce,
+    CacheAllInCell,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Ap2Type {
     Add,
@@ -334,9 +345,9 @@ pub enum Df {
     ShiftB(usize),
     Shift(usize),
     BlendDensity(Box<Df>),
-    /// Marker nodes (interpolated/flat_cache/cache_2d/cache_once/
-    /// cache_all_in_cell): pass-through on the unbound scalar path.
-    Marker(Box<Df>),
+    /// Marker nodes: pass-through on the unbound scalar path; the
+    /// NoiseChunk wrap machine (interpolator.rs) replaces them by cell caches.
+    Marker { ty: MarkerType, wrapped: Box<Df> },
     WeirdScaledSampler { input: Box<Df>, noise: usize, rarity: Rarity },
     RangeChoice {
         input: Box<Df>,
@@ -395,7 +406,7 @@ impl Df {
                 
                 input.compute(bank, x, y, z)
             }
-            Df::Marker(wrapped) => wrapped.compute(bank, x, y, z),
+            Df::Marker { wrapped, .. } => wrapped.compute(bank, x, y, z),
             Df::WeirdScaledSampler { input, noise, rarity } => {
                 let value = input.compute(bank, x, y, z);
                 let d = rarity.map(value);
@@ -481,7 +492,7 @@ impl Df {
                 -bank.noises[*idx].max_value() * 4.0
             }
             Df::BlendDensity(_) => f64::NEG_INFINITY,
-            Df::Marker(w) => w.min_value_of(bank),
+            Df::Marker { wrapped: w, .. } => w.min_value_of(bank),
             Df::WeirdScaledSampler { noise, rarity, .. } => {
                 0.0f64.min(rarity.max_rarity() * bank.noises[*noise].max_value())
             }
@@ -512,7 +523,7 @@ impl Df {
                 bank.noises[*idx].max_value() * 4.0
             }
             Df::BlendDensity(_) => f64::INFINITY,
-            Df::Marker(w) => w.max_value_of(bank),
+            Df::Marker { wrapped: w, .. } => w.max_value_of(bank),
             Df::WeirdScaledSampler { noise, rarity, .. } => {
                 rarity.max_rarity() * bank.noises[*noise].max_value()
             }

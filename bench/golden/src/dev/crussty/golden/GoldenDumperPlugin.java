@@ -14,6 +14,30 @@ package dev.crussty.golden;
 //   /goldendump <label> <chunkX> <chunkZ> <radius>   — square (2r+1)^2, r<=32
 //   /goldendump <label> manifest <file>              — lines "chunkX<TAB>chunkZ",
 //                                                      '#' comments / blanks ignored, cap 20000
+//   /goldendump <label> raw <chunkX> <chunkZ> <radius> — session-4 RAW mode
+//   /goldendump raw <chunkX> <chunkZ> <radius>         — shorthand, label "raw"
+//
+// RAW mode (NCF P3.1 input): everything the default mode does (compressed
+// seed_<seed>/c_<x>_<z>.nbt + manifest.tsv row — BACKWARD COMPATIBLE, the
+// manifest keeps its v1 columns) PLUS:
+//   1. <out>/<label>/raw/chunk.<cx>.<cz>.nbt — UNCOMPRESSED NBT of the same
+//      CompoundTag: NbtIo.write(tag, DataOutput) — the DataOutput overload
+//      writes UNCOMPRESSED (javap-verified 2026-10-05; writeCompressed is the
+//      gzip path). The Rust mcaforge tool repackages these into .mca region
+//      files (1:1 container framing). DataVersion inside the tag is NOT
+//      touched — ChunkSerializer/SerializableChunkData output is used as-is.
+//   2. <out>/<label>/raw/probes.tsv — TWO deterministic probe rows per chunk
+//      (dump order): columns (minX+3, minZ+5) and (minX+10, minZ+12),
+//      minX = cx*16, minZ = cz*16; scan y from level.getMaxY()-1 DOWN to
+//      level.getMinY(); first BlockState with !isAir() ->
+//      "<x>,<y>,<z>,<block registered name>". If no non-air exists (should
+//      not happen): "<x>,<minY>,<z>,minecraft:air". Header: "# x,y,z,block".
+//      These give mcaforge a fast bit-plausibility oracle per chunk.
+//   3. <out>/<label>/raw/manifest.tsv — separate raw manifest (does not touch
+//      the v1 manifest.tsv): chunkX, chunkZ, Status, DataVersion, rawFile,
+//      rawBytes, compressedBytes.
+//   Completion adds a marker line BEFORE the standard one (drivers grep the
+//   standard "GOLDEN DUMP COMPLETE n="): "GOLDEN DUMP RAW COMPLETE ...".
 //
 // For each requested chunk (one at a time, on the MAIN server thread):
 //   1. force full generation: ServerChunkCache.getChunk(x, z, ChunkStatus.FULL, true)
@@ -36,9 +60,28 @@ package dev.crussty.golden;
 // verified by constant-pool inspection of the mojang-mapped server jar
 // /home/z/server/versions/1.21.10/purpur-1.21.10.jar (methods + descriptors).
 // Remaining runtime-only risks are marked VERIFY-1.21.10 with the reason.
+//
+// Session-4 additions (javap 2026-10-05):
+//   NbtIo.write(CompoundTag, java.io.DataOutput)                public static
+//     — UNCOMPRESSED NBT (the writeCompressed overloads are the gzip path;
+//       NbtIo.write(CompoundTag, Path) also exists but the DataOutput form is
+//       used to make the framing explicit for the Rust repackager)
+//   Level.getMinY() / Level.getMaxY()                          public
+//     (Level implements LevelHeightAccessor; getMaxY is a default method =
+//      minY + height - 1)
+//   LevelChunk.getBlockState(BlockPos)                          public
+//     (absolute world coords inside the chunk; ChunkAccess/BlockGetter shape)
+//   BlockBehaviour$BlockStateBase.isAir()                       public final
+//   BlockBehaviour$BlockStateBase.getBlock()                    public
+//   Registries.BLOCK / Registries.BIOME                         public constants
+//   RegistryAccess.lookupOrThrow(ResourceKey) -> Registry<E>    public default
+//     (registryOrThrow does NOT exist in 1.21.10 — see VectorCapture header)
+//   Registry.getKey(T) -> ResourceLocation                      public abstract
 // ============================================================================
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -53,9 +96,15 @@ import java.util.List;
 import java.util.Properties;
 
 import net.minecraft.SharedConstants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.storage.SerializableChunkData;
@@ -141,7 +190,8 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
         }
         if (args.length < 2) {
             getLogger().warning("goldendump refused: usage (args=" + args.length + ")");
-            sender.sendMessage("usage: /goldendump <label> (<chunkX> <chunkZ> <radius>|manifest <file>)");
+            sender.sendMessage("usage: /goldendump <label> (<chunkX> <chunkZ> <radius>"
+                    + "|raw <chunkX> <chunkZ> <radius>|manifest <file>)");
             return true;
         }
         final String outLabel = args[0];
@@ -157,21 +207,42 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             return true;
         }
 
+        final boolean raw;
         final long[] coords;
         try {
-            if (args.length == 4 && !args[1].equalsIgnoreCase("manifest")) {
+            if (args.length == 5 && args[1].equalsIgnoreCase("raw")) {
+                // session-4 RAW mode, labeled form: /goldendump <label> raw <cx> <cz> <r>
+                raw = true;
+                int cx = Integer.parseInt(args[2]);
+                int cz = Integer.parseInt(args[3]);
+                int r = Integer.parseInt(args[4]);
+                requireRadius(r);
+                coords = squareCoords(cx, cz, r);
+            } else if (args.length == 4 && outLabel.equalsIgnoreCase("raw")
+                    && !args[1].equalsIgnoreCase("manifest")) {
+                // session-4 RAW mode shorthand: /goldendump raw <cx> <cz> <r>
+                // (label defaults to "raw"); NOTE this repurposes the old
+                // "compressed dump with label raw" 4-arg form — nobody uses it
+                // (all corpus labels are vanilla_s*), documented in the header.
+                raw = true;
                 int cx = Integer.parseInt(args[1]);
                 int cz = Integer.parseInt(args[2]);
                 int r = Integer.parseInt(args[3]);
-                if (r < 0 || r > MAX_RADIUS) {
-                    sender.sendMessage("goldendump: radius must be 0.." + MAX_RADIUS);
-                    return true;
-                }
+                requireRadius(r);
+                coords = squareCoords(cx, cz, r);
+            } else if (args.length == 4 && !args[1].equalsIgnoreCase("manifest")) {
+                raw = false;
+                int cx = Integer.parseInt(args[1]);
+                int cz = Integer.parseInt(args[2]);
+                int r = Integer.parseInt(args[3]);
+                requireRadius(r);
                 coords = squareCoords(cx, cz, r);
             } else if (args.length == 3 && args[1].equalsIgnoreCase("manifest")) {
+                raw = false;
                 coords = readManifest(Paths.get(args[2]));
             } else {
-                sender.sendMessage("usage: /goldendump <label> (<chunkX> <chunkZ> <radius>|manifest <file>)");
+                sender.sendMessage("usage: /goldendump <label> (<chunkX> <chunkZ> <radius>"
+                        + "|raw <chunkX> <chunkZ> <radius>|manifest <file>)");
                 return true;
             }
         } catch (NumberFormatException e) {
@@ -194,11 +265,17 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
         }
 
         try {
-            startDump(outLabel, coords, sender);
+            startDump(outLabel, coords, raw, sender);
         } catch (IllegalStateException e) {
             sender.sendMessage("goldendump: " + e.getMessage());
         }
         return true;
+    }
+
+    private static void requireRadius(int r) {
+        if (r < 0 || r > MAX_RADIUS) {
+            throw new IllegalArgumentException("radius must be 0.." + MAX_RADIUS);
+        }
     }
 
     /** Square plan, row-major: x ascending outer loop, z ascending inner loop (deterministic order). */
@@ -268,21 +345,29 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
         final Path seedDir;    // <out>/<label>/seed_<seed>
         final long seed;
         final long[] coords;
+        final boolean raw;     // session-4 RAW mode flag
+        final Path rawDir;     // <out>/<label>/raw (non-null only when raw)
         int next = 0;
         int ok = 0;
         int failed = 0;
+        int probes = 0;
         BufferedWriter manifest;
+        BufferedWriter probeWriter;    // raw/probes.tsv (raw mode only)
+        BufferedWriter rawManifest;    // raw/manifest.tsv (raw mode only)
 
-        DumpJob(ServerLevel level, Path labelDir, Path seedDir, long seed, long[] coords) {
+        DumpJob(ServerLevel level, Path labelDir, Path seedDir, long seed, long[] coords,
+                boolean raw, Path rawDir) {
             this.level = level;
             this.labelDir = labelDir;
             this.seedDir = seedDir;
             this.seed = seed;
             this.coords = coords;
+            this.raw = raw;
+            this.rawDir = rawDir;
         }
     }
 
-    private void startDump(String label, long[] coords, CommandSender ack) {
+    private void startDump(String label, long[] coords, boolean raw, CommandSender ack) {
         if (job != null) throw new IllegalStateException("another dump is already running");
 
         ServerLevel level = mainServerLevel();
@@ -309,13 +394,17 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
         long seed = level.getSeed(); // verified: ServerLevel.getSeed() -> J (jar inspection 2026-10-05)
         Path labelDir = root.resolve(label);
         Path seedDir = labelDir.resolve("seed_" + seed);
+        Path rawDir = labelDir.resolve("raw");
         try {
             Files.createDirectories(seedDir);
+            if (raw) {
+                Files.createDirectories(rawDir);
+            }
         } catch (IOException e) {
             throw new IllegalStateException("cannot create output dir " + seedDir + ": " + e);
         }
 
-        DumpJob j = new DumpJob(level, labelDir, seedDir, seed, coords);
+        DumpJob j = new DumpJob(level, labelDir, seedDir, seed, coords, raw, rawDir);
         try {
             writeMeta(j);
             j.manifest = Files.newBufferedWriter(labelDir.resolve("manifest.tsv"),
@@ -324,14 +413,27 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             j.manifest.newLine();
             j.manifest.write("# columns: chunkX<TAB>chunkZ<TAB>Status<TAB>DataVersion<TAB>file<TAB>bytes");
             j.manifest.newLine();
+            if (raw) {
+                j.probeWriter = Files.newBufferedWriter(rawDir.resolve("probes.tsv"),
+                        StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                j.probeWriter.write("# x,y,z,block");
+                j.probeWriter.newLine();
+                j.rawManifest = Files.newBufferedWriter(rawDir.resolve("manifest.tsv"),
+                        StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                j.rawManifest.write("# GoldenDumper RAW manifest v1 (NCF P3.1 input — uncompressed NBT)");
+                j.rawManifest.newLine();
+                j.rawManifest.write("# columns: chunkX<TAB>chunkZ<TAB>Status<TAB>DataVersion<TAB>"
+                        + "rawFile<TAB>rawBytes<TAB>compressedBytes");
+                j.rawManifest.newLine();
+            }
         } catch (IOException e) {
             throw new IllegalStateException("cannot open manifest/meta under " + labelDir + ": " + e);
         }
         job = j;
-        ack.sendMessage("goldendump: start label=" + label + " chunks=" + coords.length
-                + " seed=" + seed + " dir=" + labelDir);
-        getLogger().info("GOLDEN DUMP start label=" + label + " chunks=" + coords.length
-                + " seed=" + seed + " dir=" + labelDir);
+        ack.sendMessage("goldendump: start label=" + label + " mode=" + (raw ? "raw" : "compressed")
+                + " chunks=" + coords.length + " seed=" + seed + " dir=" + labelDir);
+        getLogger().info("GOLDEN DUMP start label=" + label + " mode=" + (raw ? "raw" : "compressed")
+                + " chunks=" + coords.length + " seed=" + seed + " dir=" + labelDir);
         Bukkit.getScheduler().runTask(this, this::processTick);
     }
 
@@ -420,6 +522,19 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             try { j.manifest.flush(); j.manifest.close(); } catch (IOException e) {
                 getLogger().warning("GOLDEN DUMP manifest close failed: " + e);
             }
+            if (j.raw) {
+                try {
+                    j.probeWriter.flush();
+                    j.probeWriter.close();
+                    j.rawManifest.flush();
+                    j.rawManifest.close();
+                } catch (IOException e) {
+                    getLogger().warning("GOLDEN DUMP raw manifest/probes close failed: " + e);
+                }
+                // logged BEFORE the standard marker; raw drivers can grep this
+                getLogger().info("GOLDEN DUMP RAW COMPLETE chunks=" + j.ok + " probes=" + j.probes
+                        + " dir=" + j.rawDir);
+            }
             job = null;
             // Final marker line — the driver greps exactly this.
             getLogger().info("GOLDEN DUMP COMPLETE n=" + j.ok + " failed=" + j.failed + " dir=" + j.labelDir);
@@ -476,6 +591,59 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
         } catch (IOException e) {
             throw new IOException("manifest append failed: " + e, e);
         }
+
+        // (e) session-4 RAW mode extras (P3.1 input). Runs in addition to (b)-(d)
+        // so the compressed artifacts stay byte-identical to the default mode.
+        if (j.raw) {
+            // (e1) UNCOMPRESSED NBT: NbtIo.write(CompoundTag, DataOutput) — the
+            // DataOutput overload writes UNCOMPRESSED (javap-verified 2026-10-05).
+            // The tag is used EXACTLY as SerializableChunkData produced it
+            // (DataVersion untouched).
+            Path rawFile = j.rawDir.resolve("chunk." + x + "." + z + ".nbt");
+            try (DataOutputStream out = new DataOutputStream(
+                    new BufferedOutputStream(Files.newOutputStream(rawFile)))) {
+                NbtIo.write(tag, out);
+            }
+            long rawBytes = Files.size(rawFile);
+
+            // (e2) probes: two deterministic columns per chunk, top-down first non-air.
+            writeProbe(j, level, chunk, (x << 4) + 3, (z << 4) + 5);
+            writeProbe(j, level, chunk, (x << 4) + 10, (z << 4) + 12);
+
+            // (e3) raw manifest row (separate file; the v1 manifest.tsv above is
+            // backward compatible and untouched in shape).
+            j.rawManifest.write(x + "\t" + z + "\t" + status + "\t" + dataVersion + "\t"
+                    + "chunk." + x + "." + z + ".nbt\t" + rawBytes + "\t" + bytes);
+            j.rawManifest.newLine();
+        }
+    }
+
+    /** One probes.tsv row: top-down scan for the first non-air block state. */
+    private static void writeProbe(DumpJob j, ServerLevel level, LevelChunk chunk,
+                                   int px, int pz) throws IOException {
+        String found = null;
+        int foundY = level.getMinY();
+        for (int y = level.getMaxY() - 1; y >= level.getMinY(); y--) {
+            BlockState st = chunk.getBlockState(new BlockPos(px, y, pz));
+            // Skip random-tickable blocks (mushrooms/saplings/crops...): the
+            // probe is executed on a LATER boot after forceload, and a random
+            // tick between load and probe would pop them (observed: a brown
+            // mushroom vanished on boot 2 — 17/18 PASS became 17 probes with
+            // one env-flake). A non-ticking block is stable end to end.
+            if (!st.isAir() && !st.isRandomlyTicking()) {
+                foundY = y;
+                // BuiltInRegistries.BLOCK is a static DefaultedRegistry —
+                // stable linkage (the RegistryAccess.lookupOrThrow overload
+                // set failed to link at runtime, see VectorCapture header).
+                found = net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                        .getKey(st.getBlock()).toString();
+                break;
+            }
+        }
+        String row = px + "," + foundY + "," + pz + "," + (found != null ? found : "minecraft:air");
+        j.probeWriter.write(row);
+        j.probeWriter.newLine();
+        j.probes++;
     }
 
     @Override

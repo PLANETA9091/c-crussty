@@ -160,6 +160,41 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  # NCF P3.1 gate: the server READS a .mca region file written by the RUST
+  # region writer. Two boots: (1) pure-vanilla raw dump (uncompressed chunk
+  # NBT + deterministic non-random-tick probes), (2) fresh world holding ONLY
+  # the Rust-forged region file -> forceload -> /execute if block probes.
+  # PASS <=> 18/18 block probes match the real generator's output.
+  ncf-mca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PURPUR_BUILD: '2535'
+      SEED: '3053459'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: chunk-factory
+      - name: forge .mca from raw chunk NBT (Rust) + mount + probe on a live server
+        run: bash bench/golden/ci_mca.sh
+      - name: upload P3.1 gate artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mca-gate-logs
+          path: |
+            bench/golden/results/mca_*.log
+            bench/golden/results/mca_probe_*.txt
+            bench/golden/results/mcaforge_*.log
+          if-no-files-found: warn
+          retention-days: 30
+
   # NCF P0.4 tail: worldgen-datapack corpora (Terralith + Tectonic) for the
   # Phase 2 GATE matrix, plus the IR gate over non-vanilla datapack routers.
   ncf-datapacks:

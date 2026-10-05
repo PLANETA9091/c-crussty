@@ -27,7 +27,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::Path;
 
 use crate::density::{
-    ap2_create, mapped_create, multi_spline_create, Ap2Type, Df, MappedType, MultiSpline, NoiseBank,
+    ap2_create, MarkerType, mapped_create, multi_spline_create, Ap2Type, Df, MappedType, MultiSpline, NoiseBank,
     Rarity, SplineValue,
 };
 use crate::json::{self, Json};
@@ -165,7 +165,7 @@ pub enum Raw {
     ShiftB(String),
     Shift(String),
     BlendDensity(Box<Raw>),
-    Marker(Box<Raw>),
+    Marker { ty: MarkerType, wrapped: Box<Raw> },
     WeirdScaledSampler { input: Box<Raw>, key: String, rarity: Rarity },
     RangeChoice {
         input: Box<Raw>,
@@ -278,7 +278,14 @@ fn parse_df_typed(v: &Json, dir: &WorldgenDir, visited: &mut HashSet<String>) ->
         "shift" => Raw::Shift(rl_str(child(v, "argument")?)?),
         "blend_density" => Raw::BlendDensity(Box::new(r("argument")?)),
         "interpolated" | "flat_cache" | "cache_2d" | "cache_once" | "cache_all_in_cell" => {
-            Raw::Marker(Box::new(r("argument")?))
+            let ty = match ty {
+                "interpolated" => MarkerType::Interpolated,
+                "flat_cache" => MarkerType::FlatCache,
+                "cache_2d" => MarkerType::Cache2D,
+                "cache_once" => MarkerType::CacheOnce,
+                _ => MarkerType::CacheAllInCell,
+            };
+            Raw::Marker { ty, wrapped: Box::new(r("argument")?) }
         }
         "weird_scaled_sampler" => {
             let mapper = child(v, "rarity_value_mapper")?.as_str().unwrap_or("");
@@ -512,9 +519,10 @@ impl Wiring {
             Raw::BlendDensity(input) => {
                 Df::BlendDensity(Box::new(self.wire(input, factory, dir, legacy, level_seed)?))
             }
-            Raw::Marker(input) => {
-                Df::Marker(Box::new(self.wire(input, factory, dir, legacy, level_seed)?))
-            }
+            Raw::Marker { ty, wrapped } => Df::Marker {
+                ty: *ty,
+                wrapped: Box::new(self.wire(wrapped, factory, dir, legacy, level_seed)?),
+            },
             Raw::WeirdScaledSampler { input, key, rarity } => {
                 let input = Box::new(self.wire(input, factory, dir, legacy, level_seed)?);
                 let idx = self.noise(key, factory, dir, legacy, level_seed)?;
@@ -661,6 +669,10 @@ pub struct NoiseSettingsInfo {
     pub ore_veins_enabled: bool,
     pub min_y: i32,
     pub height: i32,
+    /// noise.size_horizontal / size_vertical in QUARTS (overworld: 1, 2 ->
+    /// cellWidth 4 / cellHeight 8). Defaults mirror NoiseSettings.CODEC.
+    pub noise_size_horizontal: i32,
+    pub noise_size_vertical: i32,
 }
 
 pub struct RandomState {
@@ -699,6 +711,8 @@ impl RandomState {
             ore_veins_enabled: matches!(j.get("ore_veins_enabled"), Some(Json::Bool(true))),
             min_y: noise.get("min_y").and_then(|x| x.as_i64()).unwrap_or(-64) as i32,
             height: noise.get("height").and_then(|x| x.as_i64()).unwrap_or(384) as i32,
+            noise_size_horizontal: noise.get("size_horizontal").and_then(|x| x.as_i64()).unwrap_or(1) as i32,
+            noise_size_vertical: noise.get("size_vertical").and_then(|x| x.as_i64()).unwrap_or(2) as i32,
         };
 
         let router_json = j.get("noise_router").ok_or("noise_settings missing 'noise_router'")?;
@@ -871,9 +885,18 @@ fn write_shape(df: &Df, keys: &[String], blended: &[(u64, u64, u64, u64, u64)], 
             out.push_str("blenddensity:");
             write_shape(i, keys, blended, out)
         }
-        Df::Marker(i) => {
+        Df::Marker { ty, wrapped } => {
+            let t = match ty {
+                MarkerType::Interpolated => "interpolated",
+                MarkerType::FlatCache => "flat_cache",
+                MarkerType::Cache2D => "cache2d",
+                MarkerType::CacheOnce => "cacheonce",
+                MarkerType::CacheAllInCell => "cacheallincell",
+            };
             out.push_str("marker:");
-            write_shape(i, keys, blended, out)
+            out.push_str(t);
+            out.push(':');
+            write_shape(wrapped, keys, blended, out)
         }
         Df::WeirdScaledSampler { input, noise, rarity } => {
             out.push_str(&format!(

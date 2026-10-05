@@ -110,6 +110,7 @@ groups = [
     'com/google/errorprone/**/*.jar',
     'org/jspecify/**/*.jar',
     'net/md-5/**/*.jar',                        # bungeecord-chat (sendMessage overloads)
+    'com/mojang/datafixerupper/**/*.jar',       # session-4: Pair/Either (climate_points reflection path)
 ]
 jars = []
 for g in groups:

@@ -121,6 +121,7 @@
 //! This crate is standalone: excluded from the root `crussty` workspace,
 //! zero external dependencies, std only.
 
+pub mod climate;
 pub mod coverage;
 pub mod gate;
 pub mod ledger;
@@ -132,6 +133,7 @@ pub mod ledger;
 // bit-exact equality is the acceptance criterion, P1/P2 style.          //
 
 /// Minimal JSON parser (zero-dep, I7) for worldgen datapack files.
+pub mod interpolator;
 pub mod json;
 /// Java math helpers (Mth + JLS cast semantics), bit-exact.
 pub mod mth;
@@ -149,6 +151,7 @@ pub mod density;
 /// (P1.1/P1.2/P1.7).
 pub mod router;
 /// Golden-vector CSV loading + Java hex-float parsing (P0.3/P1 gate).
+pub mod vanilla_biomes;
 pub mod vectors;
 /// Ladder A: offline .mca region writer (P3.1).
 pub mod region;

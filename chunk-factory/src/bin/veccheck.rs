@@ -84,6 +84,7 @@ fn main() {
     let mut seed: i64 = 3053459;
     let mut settings = String::from("overworld");
     let mut ns = String::from("minecraft");
+    let mut mode = String::from("all"); // all | interp | climate | climate-table
     let mut it = args.iter().skip(2);
     while let Some(a) = it.next() {
         match a.as_str() {
@@ -91,12 +92,17 @@ fn main() {
             "--seed" => seed = it.next().map(|s| s.parse().expect("seed")).expect("--seed value"),
             "--settings" => settings = it.next().expect("--settings value").clone(),
             "--ns" => ns = it.next().expect("--ns value").clone(),
+            "--mode" => mode = it.next().expect("--mode value").clone(),
             other => {
                 eprintln!("unknown arg {other}");
                 std::process::exit(2);
             }
         }
     }
+    let run_standard = mode == "all";
+    let run_interp = mode == "all" || mode == "interp";
+    let run_climate = mode == "all" || mode == "climate";
+    let run_climate_table = mode == "all" || mode == "climate-table";
 
     let mut total_checked = 0usize;
     let mut total_mismatch = 0usize;
@@ -105,7 +111,7 @@ fn main() {
     // random.csv — family,src,seed_lo,seed_hi,op,arg,index,value
     // ------------------------------------------------------------------
     let random_path = vec_dir.join("random.csv");
-    if random_path.exists() {
+    if run_standard && random_path.exists() {
         let rows = load_csv(&random_path).expect("random.csv");
         let mut mm = Mismatches::new("random", 12);
         let mut checked = 0usize;
@@ -314,7 +320,7 @@ fn main() {
     // noise.csv — family,impl,seed,seed_hi,params,x,y,z,v0,v1,v2,v3
     // ------------------------------------------------------------------
     let noise_path = vec_dir.join("noise.csv");
-    if noise_path.exists() {
+    if run_standard && noise_path.exists() {
         let rows = load_csv(&noise_path).expect("noise.csv");
         let mut mm = Mismatches::new("noise", 12);
         let mut checked = 0usize;
@@ -447,7 +453,7 @@ fn main() {
     // density.csv — field,x,y,z,value
     // ------------------------------------------------------------------
     let density_path = vec_dir.join("density.csv");
-    if density_path.exists() {
+    if run_standard && density_path.exists() {
         let rows = load_csv(&density_path).expect("density.csv");
         let dir = worldgen.as_ref().expect("density rows require --worldgen");
         let dir = WorldgenDir::load(dir).expect("worldgen dir");
@@ -479,6 +485,183 @@ fn main() {
         }
         println!("density.csv     : checked {checked}, mismatches {}", mm.count);
         println!("spec_hash       : {:016x}", rs.spec_hash);
+        total_checked += checked;
+        total_mismatch += mm.count;
+    }
+
+    // ------------------------------------------------------------------
+    // interp.csv — NoiseChunk cell interpolation rows (P2.3-tail)
+    // ------------------------------------------------------------------
+    let interp_path = vec_dir.join("interp.csv");
+    if run_interp && interp_path.exists() {
+        let dir = worldgen.as_ref().expect("interp rows require --worldgen");
+        let dir = WorldgenDir::load(dir).expect("worldgen dir");
+        let rs = RandomState::build(&dir, &ns, &settings, seed).expect("RandomState build");
+        let mut sim = chunk_factory::interpolator::NoiseChunkSim::from_random_state(&rs, 4, 1600, 1600);
+
+        let text = std::fs::read_to_string(&interp_path).expect("read interp.csv");
+        let mut header_seed: Option<i64> = None;
+        let mut header_interp_count: Option<usize> = None;
+        let mut cell_w_header: Option<i32> = None;
+        let mut cell_h_header: Option<i32> = None;
+        for line in text.lines() {
+            let t = line.trim();
+            if !t.starts_with('#') {
+                continue;
+            }
+            if let Some(v) = t.strip_prefix("# worldSeed=") {
+                header_seed = v.parse().ok();
+            }
+            if let Some(v) = t.strip_prefix("# interpCount=") {
+                header_interp_count = v.parse().ok();
+            }
+            if let Some(v) = t.strip_prefix("# cellWidth=") {
+                // "# cellWidth=4 cellHeight=8 cellCountXZ=4 cellCountY=48 cellNoiseMinY=-8"
+                let mut it = v.split_whitespace();
+                cell_w_header = it.next().and_then(|x| x.parse().ok());
+                for kv in it {
+                    if let Some(h) = kv.strip_prefix("cellHeight=") {
+                        cell_h_header = h.parse().ok();
+                    }
+                }
+            }
+        }
+        if let Some(ws) = header_seed {
+            assert_eq!(ws, seed, "interp.csv worldSeed != --seed");
+        }
+        if let Some(w) = cell_w_header {
+            assert_eq!(w, sim.cell_width, "cellWidth mismatch");
+        }
+        if let Some(h) = cell_h_header {
+            assert_eq!(h, sim.cell_height, "cellHeight mismatch");
+        }
+
+        let (interp_count, rows) = sim.drive_and_collect();
+        if let Some(want) = header_interp_count {
+            assert_eq!(want, interp_count, "interpolator count mismatch vs capture");
+        }
+        // replay the CSV rows IN ORDER against the sim rows
+        let rows = rows.into_iter().map(|(i, x, y, z, v)| (i, x, y, z, v.to_bits()));
+        let mut rows = rows.collect::<Vec<_>>().into_iter();
+        let mut mm = Mismatches::new("interp", 50);
+        let mut checked = 0usize;
+        for line in text.lines() {
+            let t = line.trim();
+            if t.is_empty() || t.starts_with('#') {
+                continue;
+            }
+            let cols: Vec<&str> = t.split(',').collect();
+            if cols.len() != 5 {
+                mm.hit(format!("bad row shape: {t}"));
+                continue;
+            }
+            let i: u32 = cols[0].parse().unwrap();
+            let x: i32 = cols[1].parse().unwrap();
+            let y: i32 = cols[2].parse().unwrap();
+            let z: i32 = cols[3].parse().unwrap();
+            let expect = chunk_factory::vectors::parse_hex_f64(cols[4]).unwrap();
+            match rows.next() {
+                Some((gi, gx, gy, gz, gbits)) => {
+                    checked += 1;
+                    let coords_ok = i == gi && x == gx && y == gy && z == gz;
+                    let value_ok = expect.is_nan() && f64::from_bits(gbits).is_nan()
+                        || expect.to_bits() == gbits;
+                    if !coords_ok || !value_ok {
+                        mm.hit(format!(
+                            "row {checked}: java ({i},{x},{y},{z},{}) rust ({gi},{gx},{gy},{gz},0x{gbits:016x})", cols[4]
+                        ));
+                    }
+                }
+                None => {
+                    mm.hit(format!("rust produced FEWER rows than java at row {checked}"));
+                    break;
+                }
+            }
+        }
+        if rows.next().is_some() {
+            mm.hit("rust produced MORE rows than java".to_string());
+        }
+        println!("interp.csv       : interp_count {interp_count}, checked {checked}, mismatches {}", mm.count);
+        total_checked += checked;
+        total_mismatch += mm.count;
+    }
+
+    // ------------------------------------------------------------------
+    // climate.csv — biome selection over captured targets (P2.4)
+    // ------------------------------------------------------------------
+    let climate_path = vec_dir.join("climate.csv");
+    if run_climate && climate_path.exists() {
+        let mut list = chunk_factory::climate::ParameterList::new(
+            chunk_factory::vanilla_biomes::overworld_points()
+                .into_iter()
+                .map(|(p, n)| (p, n.to_string()))
+                .collect(),
+        );
+        let rows = load_csv(&climate_path).expect("climate.csv");
+        let mut mm = Mismatches::new("climate", 12);
+        let mut checked = 0usize;
+        for row in &rows {
+            let target = chunk_factory::climate::TargetPoint {
+                temperature: row.i64(3).unwrap(),
+                humidity: row.i64(4).unwrap(),
+                continentalness: row.i64(5).unwrap(),
+                erosion: row.i64(6).unwrap(),
+                depth: row.i64(7).unwrap(),
+                weirdness: row.i64(8).unwrap(),
+            };
+            let got = list.find_value(&target).to_string();
+            let expect = row.c(9).to_string();
+            checked += 1;
+            if got != expect {
+                mm.hit(format!("q=({},{},{}) got {got}, java {expect}", row.c(0), row.c(1), row.c(2)));
+            }
+        }
+        println!("climate.csv      : checked {checked}, mismatches {}", mm.count);
+        total_checked += checked;
+        total_mismatch += mm.count;
+    }
+
+    // ------------------------------------------------------------------
+    // climate_points.csv — the ported table vs the LIVE server list (P2.4)
+    // ------------------------------------------------------------------
+    let points_path = vec_dir.join("climate_points.csv");
+    if run_climate_table && points_path.exists() {
+        let points = chunk_factory::vanilla_biomes::overworld_points();
+        let rows = load_csv(&points_path).expect("climate_points.csv");
+        let mut mm = Mismatches::new("climate-table", 12);
+        let mut checked = 0usize;
+        let n = rows.len().max(points.len());
+        for idx in 0..n {
+            match (rows.get(idx), points.get(idx)) {
+                (Some(row), Some((p, name))) => {
+                    checked += 1;
+                    let got = [
+                        p.temperature.min, p.temperature.max,
+                        p.humidity.min, p.humidity.max,
+                        p.continentalness.min, p.continentalness.max,
+                        p.erosion.min, p.erosion.max,
+                        p.depth.min, p.depth.max,
+                        p.weirdness.min, p.weirdness.max,
+                        p.offset,
+                    ];
+                    for (k, g) in got.iter().enumerate() {
+                        let e = row.i64(k).unwrap();
+                        if g != &e {
+                            mm.hit(format!("row {idx} col {k}: rust {g}, java {e}"));
+                            break;
+                        }
+                    }
+                    if row.c(13) != *name {
+                        mm.hit(format!("row {idx}: rust {name}, java {}", row.c(13)));
+                    }
+                }
+                _ => {
+                    mm.hit(format!("row count mismatch: rust {}, java {}", points.len(), rows.len()));
+                    break;
+                }
+            }
+        }
+        println!("climate_points   : rust {} rows, java {} rows, checked {checked}, mismatches {}", points.len(), rows.len(), mm.count);
         total_checked += checked;
         total_mismatch += mm.count;
     }

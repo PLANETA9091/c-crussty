@@ -158,15 +158,19 @@ PY
 
 cd "$CRATE"
 log "IR gate: ircheck over the vanilla worldgen datapack"
-cargo run --bin ircheck -- "$EXTRACT" 2>&1 | tee "$RESULTS/ircheck_$(date -u +%Y-%m-%d).log"
+cargo run --release --bin ircheck -- "$EXTRACT" 2>&1 | tee "$RESULTS/ircheck_$(date -u +%Y-%m-%d).log"
 log "IR gate PASS"
 
 # ---- 6. vector gate (bits, not epsilons) ------------------------------------
 
 log "vector gate: veccheck (bit-exact against the live JVM)"
-cargo run --bin veccheck -- "$VECDIR" \
+# 'all' mode = the 13171 random/noise/density vectors + the session-4 gates:
+#   interp (NoiseChunk cell interpolation, ~786k rows), climate (RTree biome
+#   search over the ported OverworldBiomeBuilder table), climate-table
+#   (the 7593-point table vs the LIVE server list) — 0 mismatches required.
+cargo run --release --bin veccheck -- "$VECDIR" \
     --worldgen "$EXTRACT" --seed "$SEED" --settings overworld \
     2>&1 | tee "$RESULTS/veccheck_$(date -u +%Y-%m-%d).log"
 log "vector gate PASS"
 
-log "ALL GREEN — ircheck + veccheck (13171 vector rows expected, 0 mismatches)"
+log "ALL GREEN — ircheck + veccheck (13171 + 786432 interp + 539 climate + 7593 climate-table rows expected, 0 mismatches)"
