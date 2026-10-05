@@ -115,9 +115,25 @@ run_pack() { # $1 = label prefix, $2 = slug
     fetch_pack "$slug" "$zip"
     du -h "$zip"
 
-    # IR gate over the datapack's own data/ tree (extract zip -> data/)
+    # IR gate over the datapack's own data/ tree (extract zip -> data/).
+    # The vanilla worldgen is extracted FIRST into the same tree: datapack
+    # routers legitimately reference vanilla registry entries
+    # (minecraft:shift_x, minecraft:overworld/continents, ...) that ship
+    # with the server jar, not with the pack.
     local extract="$DP_ROOT/${slug}-extract"
     rm -rf "$extract"
+    python3 - "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar" "$extract" <<'PY'
+import zipfile, os, sys
+z = zipfile.ZipFile(sys.argv[1])
+n = 0
+for name in z.namelist():
+    if name.startswith('data/minecraft/worldgen/') and name.endswith('.json'):
+        dest = os.path.join(sys.argv[2], *name.split('/'))
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        open(dest, 'wb').write(z.read(name))
+        n += 1
+print(f"extracted {n} vanilla worldgen json files (ref-fallback base)")
+PY
     python3 - "$zip" "$extract" <<'PY'
 import zipfile, os, sys
 z = zipfile.ZipFile(sys.argv[1])
