@@ -715,3 +715,20 @@ CI-фиксы по ходу (все найдены прогонами, не по
   не нужна для гейта и отложена до ступени B (виртуальный регион).
 Следующий шаг: P2.5 surface rules (SURFACE-статус тем же staged-методом) →
   P2.8 карверы → ГЕЙТ P2 матрица → ступень B (P3.3 Moonrise hook).
+
+=== 2026-10-05 | сессия 5 (addendum: CI) | пункты: CI-доводка сессии 5 ===
+CI-итерации (все ловушки найдены прогонами):
+  1) run 37351446550: ncf-staged FATAL — build_golden.sh требует SERVER_DIR в
+     окружении (существующие скрипты зовут SERVER_DIR="$SERVER_DIR" ./build_
+     golden.sh; мой вызов терял env); ncf-vectors FATAL — aquacheck включал в
+     exit-код информационные loc/fluid каскады (probe-depth веток давления при
+     идентичных решениях) → гейт = ТОЛЬКО content-путь (substance/decision/
+     sched), каскады = info.
+  2) run 37352842282: ncf-staged FATAL — маркер плагина содержит РЕЕСТРОВОЕ
+     имя ("COMPLETE minecraft:noise"), мой grep ждал "COMPLETE noise"; корпус-
+     дир теперь парсится из поля dir= маркера (жёсткий путь не survives).
+  3) run 37354909056 (9a7d2faa): ВСЕ 9 ДЖОБ ЗЕЛЁНЫЕ. ncf-staged на CI-железе:
+     корпус 225 chunks, gen-batch 16.2 chunks/s, stagediff pairs=225 equal=225
+     diverged=0 — БИТ-В-БИТ против живого сервера воспроизводимо ВНЕ песочницы.
+     aquacheck на CI: substance_diff=0 decision_diff=0 sched_diff=0 (98304
+     строки против ДРУГОГО бута — детерминизм подтверждён).
