@@ -559,3 +559,28 @@ CI-фиксы по ходу (все найдены прогонами, не по
 Следующий шаг: P2.3-хвост (NoiseChunk-интерполяторы: векторы через
   NoiseChunk.forChunk — путь реальной генерации), затем P2.4+ (климат/surface)
   и P3.1-подтверждение (сервер читает .mca, писанный Rust'ом).
+
+=== 2026-10-05 | сессия 3 (продолжение: CI-доводка) | пункты: P0.4 (Terralith/Tectonic корпуса) ===
+Сделано: CI-джоба ncf-datapacks доведена до зелёной за 3 итерации (все ловушки
+  найдены прогонами, не по памяти):
+  1) датапак-роутеры ссылаются на ВАНИЛЬНЫЕ записи реестра
+     (minecraft:shift_x, minecraft:overworld/continents) — extract датапака
+     мержится ПОВЕРХ ванильного worldgen-дерева;
+  2) ВЕРСИЯ ПАКА: Terralith 2.6.0 собран под 1.21.11 и валит сервер на
+     создании мира — pin по ТОЧНОМУ совпадению версии из game_versions
+     (1.21.10 -> Terralith 2.5.13; фильтр "любой 1.21.x" опасен);
+  3) ПЕРЕКРЫТИЯ ПАКОВ (pack.mcmeta overlays): 2.5.13 кладёт исправленный
+     overworld.json (с preliminary_surface_level) в '1-21-9-overlay/' —
+     экстрактор применяет overlays, чьи formats покрывают data-pack format
+     сервера (version.json pack_version.data_major = 88), файлы ложатся на
+     базовые пути (последний совпавший overlay побеждает). Tectonic:
+     overlay.datapack (34 файла) + overlay.1_21_9 (2 файла) — тот же код.
+  4) overlays бывают и на верхнем уровне mcmeta, и внутри 'pack' — читаются
+     оба места.
+Цифры: terralith ircheck PASS (9 роутеров суммарно, 158 df-файлов tectonic),
+  корпуса: terralith_s3053459 256/0, tectonic_s3053459 256/0 (PLAN=spiral,
+  артефакты golden-datapack-corpora). Финальный run 37301969113: ВСЕ 7 ДЖОБ
+  ЗЕЛЁНЫЕ (module/native/fuzz-crate/chunk-factory/golden-harness/ncf-vectors/
+  ncf-datapacks).
+Следующий шаг: без изменений (P2.3-хвост — NoiseChunk-интерполяторы, P3.1-
+  подтверждение сервером).
