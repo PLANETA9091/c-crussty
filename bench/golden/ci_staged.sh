@@ -59,7 +59,7 @@ log "mapped jar ready"
 
 # ---- 2. build the plugin from source ----------------------------------------
 
-bash "$GOLDEN_DIR/build_golden.sh" || die "build_golden failed"
+SERVER_DIR="$SERVER_DIR" bash "$GOLDEN_DIR/build_golden.sh" || die "build_golden failed"
 cp "$GOLDEN_DIR/GoldenDumper.jar" plugins/
 rm -rf plugins/.paper-remapped
 
