@@ -161,10 +161,15 @@ JNI-ядра в расчёте на x100, включение чего-либо �
 [x] P2.2  ImprovedNoise, PerlinNoise, NormalNoise (300/300 векторов бит-в-бит
           вкл. rs_noise — вайринг fromHashOf; BlendedNoise покрыт rs_noise-
           цепочкой роутера и 2x16 прямыми векторами)
-[~] P2.3  Вычислитель density DAG (скаляр-эталон ГОТОВ и точен: 7020/7020;
-          остаются: NoiseChunk-привязка ячеек/интерполяторы — путь реальной
-          генерации, и оптимизации ниже)
-[ ] P2.4  Биомы: Climate sampler + RTree (учесть стартовый лист кэша при ничьих)
+[x] P2.3  Вычислитель density DAG (скаляр-эталон 7020/7020; NoiseChunk-
+          привязка ячеек/интерполяторы закрыты сессией 4: 786432/786432
+          бит-в-бит vs живой NoiseChunk; интерн-арена + wrap-мемоизация,
+          CacheAllInCell/Cache2D/CacheOnce, FlatCache, пакетные fillArray;
+          остаются только оптимизации P2.11+ поверх эталона)
+[x] P2.4  Биомы: Climate sampler + RTree (сессия 4: climate 539/539 +
+          climate_points 7593/7593 бит-в-бит vs живой сервер; ThreadLocal
+          last-result и identity-шорткат node==leaf покрыты контрактом
+          порядка строк в climate.csv)
 [ ] P2.5  Surface rules
 [ ] P2.6  Аквиферы
 [ ] P2.7  Ore veins
@@ -191,10 +196,12 @@ JNI-ядра в расчёте на x100, включение чего-либо �
 ----------------------------------------------------------------
 ФАЗА 3. ДОСТАВКА
 ----------------------------------------------------------------
-[~] P3.1  Ступень A: region writer (.mca) — zero-dep писатель+читатель с
+[x] P3.1  Ступень A: region writer (.mca) — zero-dep писатель+читатель с
           selfcheck-тестами в crate (region.rs, 8 тестов: layout/roundtrip/
           1024 чанка/multi-sector; stored-block zlib валиден против python
-          zlib); НЕ подтверждён чтением реальным сервером — следующий шаг
+          zlib); ПОДТВЕРЖДЕНО СЕРВЕРОМ (сессия 4, ci_mca.sh): BOOT1 raw dump
+          -> mcaforge -> FRESH world только с Rust r.3.3.mca -> BOOT2 ->
+          forceload -> execute if block: 18/18 PASS + негативный контроль
 [ ] P3.2  Сравнение A с ванильными регионами на корпусе (zero-diff)
 [ ] P3.3  Ступень B: найти точку хука в Moonrise chunk IO, записать класс/метод
 [ ] P3.4  Ступень B: один JNI-вызов на чанк, возврат NBT
@@ -584,3 +591,55 @@ CI-фиксы по ходу (все найдены прогонами, не по
   ncf-datapacks).
 Следующий шаг: без изменений (P2.3-хвост — NoiseChunk-интерполяторы, P3.1-
   подтверждение сервером).
+
+=== 2026-10-05 | сессия 4 (одно сообщение) | пункты: P2.3-хвост (закрыт), P2.4 (закрыт), P3.1 (подтверждение), CI ===
+Контекст: владелец — «сделай все в одном сообщении». Чеклист этого файла не был
+  перевёрнут в прошлом коммите — исправлено этой записью (правило «[x] без
+  записи в LOG не считается»).
+Сделано:
+  - P2.3-хвост (interpolator.rs): полная реплика NoiseChunk — интерн-арена
+    (структурное равенство = Java record equality для дедупа/шаринга
+    обёрток), wrap-мемоизация, NoiseInterpolator slices+swapSlices+lerp-
+    цепочки, CacheAllInCell/Cache2D/CacheOnce (вкл. кросс-интерполяторный
+    array-cache с эпохами), FlatCache y=0 таблицы, пакетные fillArray
+    (Ap2 Add/Mul/Min/Max, Mapped, RangeChoice), doFill drive-цикл дословно
+    вкл. swapSlices после каждой колонки. MarkerType протянут Raw->Df.
+    ДВА ГЛАВНЫХ БАГА, пойманных гейтом: (1) поля bank-индексов
+    (ShiftA/B/Shift/Blended) — это ИНДЕКСЫ ШУМОВ, а не дети (wrap уходил в
+    мусор); (2) сплайны требуют собственной W-трансляции (coordinate/Multi —
+    I-индексы, не W).
+  - P2.4 (climate.rs + vanilla_biomes.rs): quantizeCoord (long)(f*10000.0f)
+    f32-truncate; Parameter fitness в wrapping i64; RTree build (стабильные
+    сортировки с вращающейся 7-ключевой цепочкой компараторов, bucketize
+    pow(6, floor(log6(n-0.01))), in-place каскад сортировок, финальный abs-
+    сорт по СПИСКУ БАКЕТОВ) + search с персистентным ThreadLocal last-result
+    и identity-шорткатом node==leaf. vanilla_biomes.rs = faithful-порт
+    OverworldBiomeBuilder (7593 точки, НЕ ~179 — две depth-строки на вызов x
+    25 пар x 13 слайсов; фикс по живой таблице: строка 261 декомпила =
+    coastContinentalness БЕЗ span — ровно 100 расхождений декомпил глазами
+    не ловит).
+  - P3.1 ПОДТВЕРЖДЕНИЕ СЕРВЕРОМ (mcaforge + ci_mca.sh): сырой несжатый NBT
+    (новый /goldendump raw + пробы «первый НЕ random-tick блок сверху» после
+    того как brown_mushroom лопнул random-тиком между forceload и пробой —
+    было 17/18) -> Rust region writer (stored-zlib, self-check) -> FRESH
+    world держит ТОЛЬКО Rust r.3.3.mca -> бут + forceload + execute if block:
+    18/18 PASS + негативный контроль (сервер ОТВЕРГАЕТ подделку).
+  - Golden-harness фиксы: RegistryAccess.lookupOrThrow (3 перегрузки) НЕ
+    ЛИНКУЕТСЯ на сервере (NoSuchMethodError) -> generatorSettings() +
+    Holder.getRegisteredName() + BuiltInRegistries.BLOCK.getKey;
+    BeardifierMarker — protected -> рефлексия; FluidPicker -> FluidStatus
+    (createLegacyBlock).
+  - CI: новая джоба ncf-mca (два бута + пробы); ci_vectors veccheck
+    -> --release (all-режим включает interp/climate/climate-table).
+Доказательства: коммит 78fa5154; CI run 37328225030 success (все джобы).
+Цифры: ГЕЙТЫ локально interp 786432/786432 + climate 539/539 + climate-table
+  7593/7593 + старые 13171 = 807735/0 бит-в-бит за один прогон veccheck;
+  cargo test 63/63, clippy clean; сервер читает Rust-.mca 18/18.
+Провалы: s4-a (subagent java capture) оборвался по таймауту инфраструктуры —
+  завершено вручную в основном агенте; 17/18 пробы на первом прогоне mca
+  (random-tick гриба) — фикс дампера.
+Расхождения с файлом/ванилью: чеклист отставал от кода на одну сессию
+  (P2.3/P2.4/P3.1) — процессная ловушка: закрывать пункты ЭТИМ файлом в том
+  же коммите, что и код.
+Следующий шаг: ГЕЙТ-матрица P2 на датапаках -> P2.5 surface rules -> ступень
+  B (Moonrise hook P3.3) / оптимизации P2.11+; Фазы 4/5 по плану.
