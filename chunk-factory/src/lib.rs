@@ -121,6 +121,11 @@
 //! This crate is standalone: excluded from the root `crussty` workspace,
 //! zero external dependencies, std only.
 
+pub mod aquifer;
+pub mod filler;
+pub mod heightmaps;
+pub mod sections;
+pub mod surface_rules;
 pub mod climate;
 pub mod coverage;
 pub mod gate;

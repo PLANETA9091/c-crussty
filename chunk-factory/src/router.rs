@@ -424,7 +424,11 @@ impl Wiring {
     /// parameters are fetched LAZILY: the legacy shift override ignores the
     /// registry parameters entirely (NoiseParameters(0, 0.0) hardcoded), so a
     /// legacy router must not require noise/offset.json to parse.
-    fn noise(&mut self, key: &str, factory: &dyn PositionalRandomFactory, dir: &WorldgenDir, legacy: bool, level_seed: i64) -> Result<usize, String> {
+    ///
+    /// Public since NCF task 5-b: `RandomState::get_or_create_noise` (the
+    /// SurfaceSystem wiring — minecraft:surface, clay_bands_offset, badlands
+    /// pillars, icebergs) reuses this exact interning path.
+    pub fn noise(&mut self, key: &str, factory: &dyn PositionalRandomFactory, dir: &WorldgenDir, legacy: bool, level_seed: i64) -> Result<usize, String> {
         if let Some(idx) = self.noise_index.get(key) {
             return Ok(*idx);
         }
@@ -673,6 +677,8 @@ pub struct NoiseSettingsInfo {
     /// cellWidth 4 / cellHeight 8). Defaults mirror NoiseSettings.CODEC.
     pub noise_size_horizontal: i32,
     pub noise_size_vertical: i32,
+    /// default_block canonical form ("minecraft:stone" or with [k=v,...]).
+    pub default_block: String,
 }
 
 pub struct RandomState {
@@ -680,6 +686,12 @@ pub struct RandomState {
     pub router: Router,
     pub settings: NoiseSettingsInfo,
     pub level_seed: i64,
+    /// `RandomState.random` — the worldgen positional factory the SurfaceSystem
+    /// ctor receives (surface depth jitter, clay bands seed) and the base of
+    /// every `getOrCreateRandomFactory` (vertical_gradient random_name). The
+    /// factory is stateless (position-derived draws), so storing it changes no
+    /// draw order (5-b).
+    pub worldgen_factory: Box<dyn PositionalRandomFactory>,
     /// noise instance index -> resource key (wiring order; for vector tools)
     pub noise_key_by_index: Vec<String>,
     /// Canonical world-spec hash (P1.7): FNV-1a over the normalized settings
@@ -704,6 +716,26 @@ impl RandomState {
             })
             .unwrap_or(false);
         let noise = j.get("noise").ok_or("noise_settings missing 'noise'")?;
+        let default_block_json = j.get("default_block").ok_or("noise_settings missing 'default_block'")?;
+        let default_block_name = default_block_json
+            .get("Name")
+            .and_then(|x| x.as_str())
+            .ok_or("default_block missing 'Name'")?
+            .to_string();
+        let mut default_block_props: Vec<(String, String)> = Vec::new();
+        if let Some(Json::Obj(props)) = default_block_json.get("Properties") {
+            for (k, v) in props {
+                if let Some(vs) = v.as_str() {
+                    default_block_props.push((k.clone(), vs.to_string()));
+                }
+            }
+        }
+        default_block_props.sort();
+        let mut default_block = default_block_name;
+        if !default_block_props.is_empty() {
+            let ps: Vec<String> = default_block_props.iter().map(|(k, v)| format!("{k}={v}")).collect();
+            default_block.push_str(&format!("[{}]", ps.join(",")));
+        }
         let settings = NoiseSettingsInfo {
             legacy_random_source,
             sea_level: j.get("sea_level").and_then(|x| x.as_i64()).unwrap_or(63) as i32,
@@ -713,6 +745,7 @@ impl RandomState {
             height: noise.get("height").and_then(|x| x.as_i64()).unwrap_or(384) as i32,
             noise_size_horizontal: noise.get("size_horizontal").and_then(|x| x.as_i64()).unwrap_or(1) as i32,
             noise_size_vertical: noise.get("size_vertical").and_then(|x| x.as_i64()).unwrap_or(2) as i32,
+            default_block,
         };
 
         let router_json = j.get("noise_router").ok_or("noise_settings missing 'noise_router'")?;
@@ -756,7 +789,45 @@ impl RandomState {
         key_by_idx.sort();
         let noise_key_by_index = key_by_idx.into_iter().map(|(_, k)| k).collect();
 
-        Ok(Self { bank: wiring.bank, router, settings, level_seed, noise_key_by_index, spec_hash })
+        Ok(Self {
+            bank: wiring.bank,
+            router,
+            settings,
+            level_seed,
+            worldgen_factory: factory,
+            noise_key_by_index,
+            spec_hash,
+        })
+    }
+
+    /// `RandomState.getOrCreateNoise(key)` (5-b): intern a NormalNoise for an
+    /// OUT-OF-ROUTER noise key (SurfaceSystem ctor noises). Mirror of the Java
+    /// method: `noiseIntances.computeIfAbsent(key, k -> Noises.instantiate(...))`
+    /// = NormalNoise.create(random.fromHashOf(key), params). NOTE the legacy
+    /// temperature/vegetation/shift overrides do NOT apply here in Java either
+    /// (they live in NoiseWiringHelper.visitNoise, router fields only).
+    pub fn get_or_create_noise(&mut self, dir: &WorldgenDir, key: &str) -> Result<usize, String> {
+        // Already interned (router field or a previous surface noise)?
+        // noise_key_by_index holds exactly one key per bank.noises index.
+        if let Some(pos) = self.noise_key_by_index.iter().position(|k| k == key) {
+            return Ok(pos);
+        }
+        let (ns, name) = split_rl(key)?;
+        let text = dir
+            .get(&ns, "noise", &name)
+            .ok_or_else(|| format!("noise parameters not found: {key}"))?;
+        let j = json::parse(text).map_err(|e| e.to_string())?;
+        let p = j.get("firstOctave").and_then(|x| x.as_i64()).ok_or("noise params missing firstOctave")? as i32;
+        let amps = j
+            .get("amplitudes")
+            .and_then(|x| x.as_arr())
+            .ok_or("noise params missing amplitudes")?;
+        let amplitudes: Vec<f64> = amps.iter().map(|a| a.as_f64().unwrap_or(0.0)).collect();
+        let mut rng = self.worldgen_factory.from_hash_of(key);
+        let instance = NormalNoise::create(rng.as_mut(), p, &amplitudes);
+        self.bank.noises.push(instance);
+        self.noise_key_by_index.push(key.to_string());
+        Ok(self.bank.noises.len() - 1)
     }
 }
 

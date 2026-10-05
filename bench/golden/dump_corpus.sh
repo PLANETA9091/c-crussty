@@ -42,6 +42,18 @@
 #   FRESH   1 = delete world* before boot (default 0, prints a loud warning
 #           if world/ exists and FRESH=0 — corpus would be disk-loaded, not
 #           generated)
+#   STAGED_STATUS  empty (default) = legacy FULL-dump behavior; "noise" or
+#                  "surface" = task 5-a STAGED mode: dump DECODED chunk NBT
+#                  generated UP TO that ChunkStatus (spiral order, (2r+1)^2
+#                  square STAGED_RADIUS around STAGED_CENTER_X/Z). Dir name:
+#                  staged_vanilla_s<SEED>_<status> (i.e. dir suffix _<status>).
+#                  Uses the plugin's 6-arg labeled form
+#                  `goldendump <label> <x> <z> <r> status <status>` and waits
+#                  on the "GOLDEN STAGED DUMP COMPLETE <status> n=..." marker.
+#   STAGED_RADIUS  staged-mode radius (default 7 -> 15x15 = 225 chunks)
+#   STAGED_CENTER_X / STAGED_CENTER_Z  staged-mode center chunk (default 107
+#                  -> chunks 100..114, the lower-left subset of the FULL
+#                  spiral region 100..115)
 #   DUMP_TIMEOUT  poll cap for the dump marker (default 900s)
 #
 # NOTE ON THE SQUARE FORM: the canon 8x8 squares are NOT expressible as the
@@ -54,6 +66,8 @@
 #   ./dump_corpus.sh                       # PLAN=quadrants SEED=3053459
 #   PLAN=spiral  FRESH=1 ./dump_corpus.sh  # P0.5 run 1
 #   PLAN=spiral_rev FRESH=1 ./dump_corpus.sh
+#   STAGED_STATUS=noise    FRESH=1 ./dump_corpus.sh   # task 5-a staged corpus
+#   STAGED_STATUS=surface  FRESH=1 ./dump_corpus.sh
 #   python3 tools/ncfdiff.py --manifest \
 #       /home/z/server/golden/vanilla_s3053459_spiral \
 #       /home/z/server/golden/vanilla_s3053459_spiral_rev
@@ -68,6 +82,14 @@ SEED="${SEED:-3053459}"
 PLAN="${PLAN:-quadrants}"
 LABEL="${LABEL:-}"
 FRESH="${FRESH:-0}"
+STAGED_STATUS="${STAGED_STATUS:-}"
+STAGED_RADIUS="${STAGED_RADIUS:-7}"
+STAGED_CENTER_X="${STAGED_CENTER_X:-107}"
+STAGED_CENTER_Z="${STAGED_CENTER_Z:-107}"
+# Mode string recorded in golden_runs.tsv (plan name in legacy mode,
+# staged_<status> in staged mode).
+MODE="$PLAN"
+[ -n "$STAGED_STATUS" ] && MODE="staged_$STAGED_STATUS"
 # BOOT_TIMEOUT env-overridable for CI runners (slower cold JIT than the rig);
 # default raised 240 -> 300 s (was the run_paper_ab.sh style cap).
 BOOT_TIMEOUT="${BOOT_TIMEOUT:-300}"
@@ -126,9 +148,19 @@ case "$PLAN" in
     quadrants|full16|spiral|spiral_rev) ;;
     *) die "unknown PLAN '$PLAN' (quadrants | full16 | spiral | spiral_rev)" ;;
 esac
+if [ -n "$STAGED_STATUS" ]; then
+    case "$STAGED_STATUS" in
+        noise|surface) ;;
+        *) die "unknown STAGED_STATUS '$STAGED_STATUS' (noise | surface, empty = legacy mode)" ;;
+    esac
+fi
 if [ -z "$LABEL" ]; then
-    LABEL="vanilla_s${SEED}"
-    case "$PLAN" in spiral|spiral_rev) LABEL="${LABEL}_${PLAN}" ;; esac
+    if [ -n "$STAGED_STATUS" ]; then
+        LABEL="staged_vanilla_s${SEED}_${STAGED_STATUS}"
+    else
+        LABEL="vanilla_s${SEED}"
+        case "$PLAN" in spiral|spiral_rev) LABEL="${LABEL}_${PLAN}" ;; esac
+    fi
 fi
 
 if [ -d "$SERVER_DIR/world" ] && [ "$FRESH" != "1" ]; then
@@ -150,8 +182,14 @@ plan_full16() {
 }
 
 plan_spiral() { # 16x16 region chunk 100..115, inward-out spiral, clockwise
-    python3 - <<'PY'
-lo, hi = 100, 115
+    plan_spiral_range 100 115
+}
+
+plan_spiral_range() { # (lo hi) inward-out clockwise spiral — byte-compatible
+                      # mirror of GoldenDumperPlugin.spiralCoords (task 5-a)
+    python3 - "$1" "$2" <<'PY'
+import sys
+lo, hi = int(sys.argv[1]), int(sys.argv[2])
 x0, x1, z0, z1 = lo, hi, lo, hi
 while x0 <= x1 and z0 <= z1:
     for x in range(x0, x1 + 1): print(f"{x}\t{z0}")
@@ -165,15 +203,26 @@ PY
 }
 
 PLAN_FILE="$PLANS/${LABEL}.tsv"
-{
-    echo "# plan=$PLAN label=$LABEL seed=$SEED generated=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-    case "$PLAN" in
-        quadrants)   plan_quadrants ;;
-        full16)      plan_full16 ;;
-        spiral)      plan_spiral ;;
-        spiral_rev)  plan_spiral | tac ;;
-    esac
-} > "$PLAN_FILE"
+if [ -n "$STAGED_STATUS" ]; then
+    # Staged mode: the plugin computes the spiral internally
+    # (spiralCoords(centerX, centerZ, r)); the plan file is written for the
+    # RECORD and as an order oracle — dump order can be checked against it
+    # via manifest.tsv (same spiral, same order).
+    {
+        echo "# plan=staged_${STAGED_STATUS} label=$LABEL seed=$SEED center=$STAGED_CENTER_X,$STAGED_CENTER_Z radius=$STAGED_RADIUS generated=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        plan_spiral_range "$((STAGED_CENTER_X - STAGED_RADIUS))" "$((STAGED_CENTER_X + STAGED_RADIUS))"
+    } > "$PLAN_FILE"
+else
+    {
+        echo "# plan=$PLAN label=$LABEL seed=$SEED generated=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        case "$PLAN" in
+            quadrants)   plan_quadrants ;;
+            full16)      plan_full16 ;;
+            spiral)      plan_spiral ;;
+            spiral_rev)  plan_spiral | tac ;;
+        esac
+    } > "$PLAN_FILE"
+fi
 N_CHUNKS="$(grep -vc '^#' "$PLAN_FILE" || true)"
 log "plan: $PLAN_FILE ($N_CHUNKS chunks)"
 
@@ -220,7 +269,14 @@ log "booted: $done_line"
 
 # ---- dump -------------------------------------------------------------------
 
-rcon "goldendump $LABEL manifest $PLAN_FILE" || die "goldendump command failed over RCON"
+if [ -n "$STAGED_STATUS" ]; then
+    rcon "goldendump $LABEL $STAGED_CENTER_X $STAGED_CENTER_Z $STAGED_RADIUS status $STAGED_STATUS" \
+        || die "goldendump staged command failed over RCON"
+    MARKER_GREP='GOLDEN STAGED DUMP COMPLETE .* n='
+else
+    rcon "goldendump $LABEL manifest $PLAN_FILE" || die "goldendump command failed over RCON"
+    MARKER_GREP='GOLDEN DUMP COMPLETE n='
+fi
 
 waited=0; marker=""
 while [ $waited -lt $DUMP_TIMEOUT ]; do
@@ -231,10 +287,10 @@ while [ $waited -lt $DUMP_TIMEOUT ]; do
     if grep -q 'Command exception: /goldendump' "$SERVER_DIR/logs/latest.log" 2>/dev/null; then
         die "goldendump command threw — see 'Command exception' in $SERVER_DIR/logs/latest.log"
     fi
-    marker=$(grep -a 'GOLDEN DUMP COMPLETE n=' "$SERVER_DIR/logs/latest.log" 2>/dev/null | head -1 || true)
+    marker=$(grep -a "$MARKER_GREP" "$SERVER_DIR/logs/latest.log" 2>/dev/null | head -1 || true)
     [ -n "$marker" ] && break
 done
-[ -n "$marker" ] || die "no GOLDEN DUMP COMPLETE marker within ${DUMP_TIMEOUT}s"
+[ -n "$marker" ] || die "no '$MARKER_GREP' marker within ${DUMP_TIMEOUT}s"
 N="$(printf '%s' "$marker" | sed -n 's/.*n=\([0-9]*\).*/\1/p')"
 FAILED="$(printf '%s' "$marker" | sed -n 's/.*failed=\([0-9]*\).*/\1/p')"
 DUMPDIR="$(printf '%s' "$marker" | sed -n 's/.*dir=\(.*\)$/\1/p')"
@@ -248,10 +304,21 @@ sleep 2
 pgrep -f 'purpur-1.21.10.jar' >/dev/null && die "server did not stop"
 
 printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-    "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$SEED" "$LABEL" "$PLAN" "${N:-?}" "${FAILED:-?}" "$DUMPDIR" \
+    "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$SEED" "$LABEL" "$MODE" "${N:-?}" "${FAILED:-?}" "$DUMPDIR" \
     | tee -a "$RESULTS/golden_runs.tsv"
 log "corpus at $DUMPDIR ; diff hint:"
-log "  python3 $GOLDEN_DIR/tools/ncfdiff.py --manifest $DUMPDIR <other-label-dir>"
+if [ -n "$STAGED_STATUS" ]; then
+    log "  python3 $GOLDEN_DIR/tools/stagedump_inspect.py $DUMPDIR/seed_$SEED/c_${STAGED_CENTER_X}_${STAGED_CENTER_Z}.nbt"
+    # Dump-order oracle: the plugin's internal spiral must match the plan file
+    # (manifest.tsv carries two '#' comment lines — strip them first).
+    if ! diff <(tail -n +2 "$PLAN_FILE") <(grep -v '^#' "$DUMPDIR/manifest.tsv" | cut -f1,2) >/dev/null 2>&1; then
+        log "WARN: staged manifest order does NOT match the spiral plan file — investigate before comparing corpora"
+    else
+        log "dump-order check: manifest.tsv matches spiral plan ($N_CHUNKS chunks)"
+    fi
+else
+    log "  python3 $GOLDEN_DIR/tools/ncfdiff.py --manifest $DUMPDIR <other-label-dir>"
+fi
 if [ "${FAILED:-0}" != "0" ]; then
     log "WARN: $FAILED chunks failed to dump — inspect latest.log 'GOLDEN DUMP FAILED' lines"
 fi

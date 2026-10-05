@@ -234,6 +234,11 @@ PY
 
 run_pack "terralith_s$SEED" "terralith"
 run_pack "tectonic_s$SEED" "tectonic"
+# task 5 (P0.4 tail): Structory ships as a mod jar whose data/ tree is a
+# worldgen datapack — same extraction path. Exact-version pin picks 1.3.17
+# (the 1.21.10 build). BACAP is NOT on Modrinth (CurseForge-only) — kept as
+# a known gap in docs/NCF_WORKLOG.txt P0.4.
+run_pack "structory_s$SEED" "structory"
 
 pkill -f 'purpur-1.21.10.jar' 2>/dev/null || true
-log "ALL GREEN — datapack corpora complete (terralith + tectonic)"
+log "ALL GREEN — datapack corpora complete (terralith + tectonic + structory)"

@@ -161,6 +161,23 @@ pub fn clamped_map(input: f64, input_min: f64, input_max: f64, output_min: f64, 
     clamped_lerp(output_min, output_max, inverse_lerp(input, input_min, input_max))
 }
 
+/// Mth#map: `lerp(inverseLerp(input, inputMin, inputMax), outputMin, outputMax)`
+/// — the UNCLAMPED variant (5-b: vertical_gradient, stone_depth secondary).
+#[inline]
+pub fn map(input: f64, input_min: f64, input_max: f64, output_min: f64, output_max: f64) -> f64 {
+    lerp(inverse_lerp(input, input_min, input_max), output_min, output_max)
+}
+
+/// Mth#ceillog2: `32 - Integer.numberOfLeadingZeros(value - 1)` for value >= 2,
+/// 0 for value == 1 (5-b: heightmap bit count).
+#[inline]
+pub fn ceillog2(value: i32) -> u32 {
+    if value <= 1 {
+        return 0;
+    }
+    32 - ((value - 1) as u32).leading_zeros()
+}
+
 /// Mth#square(double)
 #[inline]
 pub fn square(v: f64) -> f64 {

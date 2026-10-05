@@ -119,6 +119,69 @@ Console/RCON markers (grepped by the driver):
 - per-chunk failure: `GOLDEN DUMP FAILED chunk <x> <z>: <throwable>` (never aborts)
 - final: `GOLDEN DUMP COMPLETE n=<N> failed=<M> dir=<dir>`
 
+## 5b. STAGED mode (task 5-a — oracle for the Rust stagediff gate 5-b/5-c)
+
+Command forms (all legacy forms keep working):
+- `/goldendump <x> <z> <radius> status <noise|surface>` — label derived
+  (`staged_<status>`)
+- `/goldendump <label> <x> <z> <radius> status <noise|surface>` — explicit
+  label (used by `dump_corpus.sh STAGED_STATUS=<noise|surface>`)
+
+For each chunk, obtained in the SAME inward-out clockwise spiral order as
+PLAN=spiral (`spiralCoords`, byte-compatible with `plan_spiral_range`):
+`ServerChunkCache.getChunkFuture(x, z, ChunkStatus, load=true).join()` on the
+main thread, up to 8 chunks per tick (same budget as the FULL path). The dump
+is a DECODED contract (NOT vanilla bit-packing) written gzipped to
+`<out>/<label>/seed_<seed>/c_<x>_<z>.nbt`:
+
+```
+root { ChunkX:Int, ChunkZ:Int, Status:String("minecraft:noise"|...),
+       DataVersion:Int, MinY:Int, Height:Int,
+       Sections: List of 24 (DENSE, minSectionY..maxSectionY) {
+         Y: Byte, Palette: List of {Name, Properties}  == NbtUtils.writeBlockState,
+         Data: IntArray(4096), index i = sy*256 + sz*16 + sx },
+       Biomes: List matching Sections 1:1 {
+         Y: Byte, Palette: List of String, Data: IntArray(64),
+         index q = by*16 + bz*4 + bx },
+       Heightmaps: compound of raw long[] AS-IS (getRawData().clone()),
+       block_ticks / fluid_ticks: only if non-empty ({i,t,p} SavedTick codec),
+       PostProcessing: List of 24 lists of Short (packOffsets shape) }
+```
+
+Index orders VERIFIED against CFR 0.152 decompile of Purpur 1.21.10:
+`Strategy.getIndex(x,y,z) = (y << bitsPerAxis | z) << bitsPerAxis | x`
+(blocks bitsPerAxis=4, biomes bitsPerAxis=2) and
+`PalettedContainer.get(x,y,z) = get(strategy.getIndex(x,y,z))`;
+`LevelChunkSection.getBlockState/getNoiseBiome(x,y,z)` delegate with (x,y,z)
+in that order.
+
+Heightmap priming (ChunkStatus decompile + live corpus):
+- statuses EMPTY..SURFACE prime `WORLDGEN_HEIGHTMAPS = {OCEAN_FLOOR_WG,
+  WORLD_SURFACE_WG}` (`ChunkStatus.heightmapsAfter` ctor arg)
+- CARVERS..FULL switch to `FINAL_HEIGHTMAPS = {OCEAN_FLOOR, WORLD_SURFACE,
+  MOTION_BLOCKING, MOTION_BLOCKING_NO_LEAVES}`
+- the staged dump copies exactly the types of `chunk.getPersistedStatus()
+  .heightmapsAfter()` — the same filter as `SerializableChunkData.copyOf`
+  (line-verified). CAUTION: if the chunk was ALREADY generated past the
+  requested status in the same boot, the returned chunk is an
+  ImposterProtoChunk and the heightmap set reflects the HIGHER status —
+  request staged statuses before any FULL request.
+
+Staged manifest.tsv: `chunkX<TAB>chunkZ<TAB>file<TAB>status`; meta.properties
+gains `status`, `worldMinY`, `worldHeight`. Markers:
+- start: `GOLDEN STAGED DUMP start label=... status=... chunks=... dir=...`
+- per-chunk failure: `GOLDEN STAGED DUMP FAILED chunk <x> <z> status=...: ...`
+- final: `GOLDEN STAGED DUMP COMPLETE <status> n=<N> failed=<M> dir=<dir>`
+
+Inspector: `tools/stagedump_inspect.py` (summary, `--block X Y Z`, `--biome`,
+`--scan N`, `--verify-index`, `--heightmaps`, `--selftest`).
+
+Corpora (rig, vanilla seed 3053459, radius 7 -> 15x15 = 225 chunks, center
+107,107 -> chunks 100..114, one FRESH boot each):
+- `/home/z/server/golden/staged_vanilla_s3053459_noise/`
+- `/home/z/server/golden/staged_vanilla_s3053459_surface/`
+Receipts: `results/STAGED_DUMP_2026-10-05.txt`.
+
 ## 6. Corpus plan (P0.4)
 
 1. First corpus: vanilla seed **3053459** (the repo canon seed), PLAN=quadrants

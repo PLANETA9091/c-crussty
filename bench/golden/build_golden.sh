@@ -161,12 +161,20 @@ if command -v jar >/dev/null 2>&1; then
     printf 'paperweight-mappings-namespace: mojang\n' > "$BUILD/MANIFEST.MF"
     jar cfm "$OUT_JAR" "$BUILD/MANIFEST.MF" -C "$BUILD/classes" .
 elif [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/jar" ]; then
-    "$JAVA_HOME/bin/jar" cf "$OUT_JAR" -C "$BUILD/classes" .
+    "$JAVA_HOME/bin/jar" cfm "$OUT_JAR" "$BUILD/MANIFEST.MF" -C "$BUILD/classes" .
 else
+    # python3 zipfile fallback — task 5-a TRAP (found live): the previous
+    # fallback wrote NO manifest at all, silently dropping the
+    # paperweight-mappings-namespace header. Paper then treats the jar as
+    # spigot-mapped and rewrites the NMS refs -> NoSuchMethodError at runtime
+    # (the exact session-1 failure, reintroduced by a rebuild on a PATH
+    # without jar(1)). The fallback MUST write META-INF/MANIFEST.MF.
     python3 - "$BUILD/classes" "$OUT_JAR" <<'PY'
 import os, sys, zipfile
 src, dst = sys.argv[1], sys.argv[2]
 with zipfile.ZipFile(dst, 'w', zipfile.ZIP_DEFLATED) as z:
+    manifest = 'Manifest-Version: 1.0\r\npaperweight-mappings-namespace: mojang\r\n\r\n'
+    z.writestr('META-INF/MANIFEST.MF', manifest)
     if os.path.exists(os.path.join(src, 'plugin.yml')):
         z.write(os.path.join(src, 'plugin.yml'), 'plugin.yml')
     for base, _dirs, files in os.walk(src):
@@ -178,6 +186,11 @@ with zipfile.ZipFile(dst, 'w', zipfile.ZIP_DEFLATED) as z:
             z.write(p, arc)
 print('wrote', dst)
 PY
+fi
+
+# Guard: the jar MUST carry the namespace header (fail loudly, not silently).
+if ! python3 -c "import zipfile,sys; sys.exit(0 if 'paperweight-mappings-namespace: mojang' in zipfile.ZipFile(sys.argv[1]).read('META-INF/MANIFEST.MF').decode() else 1)" "$OUT_JAR"; then
+    die "plugin jar is missing the paperweight-mappings-namespace: mojang manifest header — Paper remapping would corrupt it"
 fi
 
 log "plugin jar : $OUT_JAR ($(du -h "$OUT_JAR" | cut -f1))"

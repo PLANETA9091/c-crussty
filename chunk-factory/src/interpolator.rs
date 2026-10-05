@@ -563,6 +563,11 @@ pub struct NoiseChunkSim<'a> {
     interpolation_counter: u64,
     array_interpolation_counter: u64,
     bank: &'a NoiseBank,
+    /// task 5: NoiseChunk's blockStateRule substance = cacheAllInCell(add(
+    /// finalDensity, BeardifierMarker)) — a synthetic cell cache over the
+    /// wrapped final_density root, filled in selectCellYZ like Java's
+    /// cellCaches list (empty beardifier: values = final per index).
+    substance_cache: Vec<f64>,
 }
 
 
@@ -628,6 +633,7 @@ impl<'a> NoiseChunkSim<'a> {
             interpolation_counter: 0,
             array_interpolation_counter: 0,
             bank,
+            substance_cache: Vec::new(),
         };
         // NoiseRouter.mapAll field order + ONE shared dedup map
         let mut dedup: HashMap<(MarkerType, usize), WKind> = HashMap::new();
@@ -635,6 +641,7 @@ impl<'a> NoiseChunkSim<'a> {
             let w = sim.wrap(f, &mut dedup);
             sim.root_fields.push(w);
         }
+        sim.substance_cache = vec![0.0; (sim.cell_width * sim.cell_width * sim.cell_height) as usize];
         sim
     }
 
@@ -1341,8 +1348,26 @@ impl<'a> NoiseChunkSim<'a> {
             self.fill_array(filler, &mut values, Provider::Cell);
             self.cell_caches[cid].values = values;
         }
+        // substance cache (task 5): Java fills EVERY CacheAllInCell in
+        // cellCaches here; our substance wrapper sits over the final_density
+        // root (empty beardifier -> values = final per forIndex index).
+        {
+            let mut arr = std::mem::take(&mut self.substance_cache);
+            self.fill_array(self.root_fields[11], &mut arr, Provider::Cell);
+            self.substance_cache = arr;
+        }
         self.array_interpolation_counter += 1;
         self.filling_cell = false;
+    }
+
+    /// CacheAllInCell.compute: read the substance value for the CURRENT
+    /// in-cell position (slot formula = Java's values[...] index).
+    pub fn substance_value(&self) -> f64 {
+        let cw = self.cell_width;
+        let ch = self.cell_height;
+        let (i, i1, i2) = (self.in_cell_x, self.in_cell_y, self.in_cell_z);
+        let slot = (((ch - 1 - i1) * cw + i) * cw + i2) as usize;
+        self.substance_cache[slot]
     }
 
     fn update_for_y(&mut self, cell_end_block_y: i32, y: f64) {
@@ -1457,6 +1482,59 @@ impl<'a> NoiseChunkSim<'a> {
         }
         self.interpolating = false;
         (self.interpolators.len(), out)
+    }
+
+    /// doFill driving with a PER-BLOCK callback (task 5, filler.rs): identical
+    /// loop to `drive_and_collect`, but instead of collecting values it calls
+    /// `f(bx, by, bz, values)` at every block with the per-block interpolated
+    /// value of EVERY wrapped root field (root_fields order: barrier,
+    /// floodedness, spread, lava, temperature, vegetation, continents,
+    /// erosion, depth, ridges, preliminary_surface_level, final_density,
+    /// vein_toggle, vein_ridged, vein_gap). swapSlices after each cellX
+    /// column, stopInterpolation at the end — verbatim.
+    /// Compute the wrapped root field `root` (index into `root_fields`) at the
+    /// CURRENT interpolation position — the per-block value the Java
+    /// blockStateRule density functions see at this block (task 5 filler).
+    pub fn compute_field(&mut self, root: usize) -> f64 {
+        let ctx = self.pos_now();
+        self.compute(self.root_fields[root], ctx)
+    }
+
+    #[allow(clippy::type_complexity)]
+    pub fn drive_blocks(&mut self, f: &mut dyn FnMut(i32, i32, i32, &mut Self)) {
+        assert!(!self.interpolating, "Starting interpolation twice");
+        self.interpolating = true;
+        self.interpolation_counter = 0;
+        // initializeForFirstCellX
+        self.fill_slice(true, self.first_cell_x);
+        for cx in 0..self.cell_count_xz {
+            // advanceCellX(cx)
+            self.fill_slice(false, self.first_cell_x + cx + 1);
+            self.cell_start_block_x = (self.first_cell_x + cx) * self.cell_width;
+            for cz in 0..self.cell_count_xz {
+                for cy in (0..self.cell_count_y).rev() {
+                    self.select_cell_yz(cy, cz);
+                    for in_y in (0..self.cell_height).rev() {
+                        let by = (self.cell_noise_min_y + cy) * self.cell_height + in_y;
+                        let frac_y = in_y as f64 / self.cell_height as f64;
+                        self.update_for_y(by, frac_y);
+                        for in_x in 0..self.cell_width {
+                            let bx = self.cell_start_block_x + in_x;
+                            let frac_x = in_x as f64 / self.cell_width as f64;
+                            self.update_for_x(bx, frac_x);
+                            for in_z in 0..self.cell_width {
+                                let bz = self.cell_start_block_z + in_z;
+                                let frac_z = in_z as f64 / self.cell_width as f64;
+                                self.update_for_z(bz, frac_z);
+                                f(bx, by, bz, self);
+                            }
+                        }
+                    }
+                }
+            }
+            self.swap_slices();
+        }
+        self.interpolating = false;
     }
 }
 

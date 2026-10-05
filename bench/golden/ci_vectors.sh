@@ -173,4 +173,16 @@ cargo run --release --bin veccheck -- "$VECDIR" \
     2>&1 | tee "$RESULTS/veccheck_$(date -u +%Y-%m-%d).log"
 log "vector gate PASS"
 
-log "ALL GREEN — ircheck + veccheck (13171 + 786432 interp + 539 climate + 7593 climate-table rows expected, 0 mismatches)"
+# ---- 7. aquifer gate (task 5: P2.6 aquifer + P2.7 ore veins) -----------------
+# The goldenvec capture (writeAquifer) dumps, for chunk (100,100), per-block:
+# substance (the CacheAllInCell composite), the aquifer rule decision and
+# shouldScheduleFluidUpdate, plus the full aquifer location/fluid caches.
+# aquacheck rebuilds the Rust aquifer and requires EVERY row bit-exact.
+
+log "aquifer gate: aquacheck (substance + decisions + caches, bit-exact)"
+cargo run --release --bin aquacheck -- "$VECDIR/aquifer.csv" "$VECDIR/aquifer_meta.txt" \
+    --worldgen "$EXTRACT" --seed "$SEED" \
+    2>&1 | tee "$RESULTS/aquacheck_$(date -u +%Y-%m-%d).log"
+log "aquifer gate PASS"
+
+log "ALL GREEN — ircheck + veccheck + aquacheck (13171 + 786432 interp + 539 climate + 7593 climate-table + 98304 aquifer rows expected, 0 mismatches)"

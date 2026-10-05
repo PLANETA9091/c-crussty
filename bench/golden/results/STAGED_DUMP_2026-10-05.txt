@@ -1,0 +1,105 @@
+STAGED CHUNK DUMP VERIFICATION — task 5-a (NCF)
+Date: 2026-10-05 (rig: /home/z/server, Purpur 1.21.10-2535, mojang-mapped jar,
+seed 3053459, DataVersion 4556, sync-chunk-writes=true, rcon 25575)
+
+ENVIRONMENT / PURITY
+- Plain Purpur boot, NO CRUSSTY agent (purity law). java -Xms512M -Xmx1536m.
+- GoldenDumper.jar rebuilt from bench/golden/src (javac --release 21,
+  /home/z/jdk21), paperweight-mappings-namespace: mojang header VERIFIED in jar.
+- .paper-remapped cache cleared before install (session-1 trap).
+
+DECOMPILE VERIFICATION (CFR 0.152 vs mojang-mapped jar, /tmp/cfr5a-out)
+- Strategy.getIndex(int x, int y, int z) = "(y << this.bitsPerAxis | z) << this.bitsPerAxis | x"
+  blocks bitsPerAxis=4  -> i = sy*256 + sz*16 + sx  (4096)
+  biomes bitsPerAxis=2  -> q = by*16  + bz*4  + bx  (  64)
+- PalettedContainer.get(x,y,z) -> get(strategy.getIndex(x,y,z)) (line 252-253);
+  set/getAndSet use the same strategy.getIndex.
+- LevelChunkSection.getBlockState(x,y,z)/getNoiseBiome(x,y,z) delegate with
+  (x,y,z) argument order as named.
+- ChunkStatus: EMPTY/STRUCTURE_STARTS/STRUCTURE_REFERENCES/BIOMES/NOISE/SURFACE
+  registered with WORLDGEN_HEIGHTMAPS = {OCEAN_FLOOR_WG, WORLD_SURFACE_WG};
+  CARVERS..FULL with FINAL_HEIGHTMAPS = {OCEAN_FLOOR, WORLD_SURFACE,
+  MOTION_BLOCKING, MOTION_BLOCKING_NO_LEAVES}. heightmapsAfter() = ctor set.
+- SerializableChunkData.copyOf heightmap filter (line 461-465) is IDENTICAL to
+  the staged dumper's (getPersistedStatus().heightmapsAfter() + getRawData().clone()).
+- javap: ServerChunkCache.getChunkFuture(int,int,ChunkStatus,boolean)
+  -> CompletableFuture<ChunkResult<ChunkAccess>>; ChunkResult.isSuccess/orElse/getError.
+- CompoundTag.store(String,Codec,T) + SavedTick.codec(Codec) exist (linkage OK).
+
+SINGLE-CHUNK LIVE RUN (one boot, FRESH world, chunk 107,107; staged first,
+FULL last to avoid ImposterProtoChunk contamination)
+- /goldendump 107 107 0 status noise  -> staged_noise/seed_3053459/c_107_107.nbt (2419 B)
+- /goldendump 107 107 0 status surface-> staged_surface/.../c_107_107.nbt (3761 B)
+- /goldendump sanity_full 107 107 0   -> sanity_full/.../c_107_107.nbt (9562 B)
+- All markers green; failed=0; no ticks-serialization warnings.
+- staged dump structure: 24 sections (Y -4..19), MinY=-64, Height=384,
+  DataVersion=4556, Status strings "minecraft:noise"/"minecraft:surface".
+- Heightmaps at BOTH staged statuses: exactly {OCEAN_FLOOR_WG, WORLD_SURFACE_WG},
+  long[37] each (9-bit x 256, no crossing). Values OCEAN_FLOOR min=149 max=166.
+- PostProcessing: present, 0 entries for THIS chunk (land chunk; aquifer marks
+  are chunk-dependent — field kept in schema, may be empty).
+- block_ticks/fluid_ticks: absent (empty at these statuses).
+- NOISE vs SURFACE content (same chunk, one boot, stages advanced sequentially):
+    air 58457 -> 58457; stone 39758 -> 21399; deepslate[axis=y] 0 -> 16645;
+    bedrock 0 -> 791; dirt 0 -> 646; grass_block[snowy=false] 0 -> 135
+  => deepslate band + bedrock floor + surface rules land exactly at SURFACE.
+- Sanity vs FULL of the same chunk (distributions, decoded):
+    air 58457/58457/61029 (noise/surface/full), stone 39758/21399/15102,
+    deepslate 0/16645/14533, bedrock 0/791/791, dirt 0/646/1003,
+    grass_block 0/135/129. Similar, NOT equal (carvers/features) — as expected.
+- FULL .mca-format note: vanilla sections list holds 25 entries (Y=-5..19);
+  Y=-5 is an extra VOID section without block_states (1.21.9+ format). The
+  staged DECODED contract dumps exactly the 24 world sections (-4..19).
+
+CORPUS RUNS (one FRESH boot each, radius 7 -> 15x15 = 225 chunks, center
+107,107 = chunks 100..114, spiral order == PLAN=spiral order)
+- STAGED_STATUS=noise   FRESH=1: boot 27.6s, dump 225/0 failed=0 (~15s),
+  dir /home/z/server/golden/staged_vanilla_s3053459_noise/ (505 KB nbt)
+- STAGED_STATUS=surface FRESH=1: boot 25.0s, dump 225/0 failed=0 (~15s),
+  dir /home/z/server/golden/staged_vanilla_s3053459_surface/ (774 KB nbt)
+- Layout: <dir>/seed_3053459/c_<x>_<z>.nbt + manifest.tsv + meta.properties
+  (status=minecraft:<status>, worldMinY=-64, worldHeight=384).
+- Dump-order check: manifest.tsv (comments stripped) == spiral plan file,
+  225/225 rows, both corpora ("dump-order check: manifest.tsv matches spiral
+  plan (225 chunks)").
+- Spot chunks verified (check_structure clean, 24 sections):
+    NOISE   c_107_107: top air/stone/tuff; biomes old_growth_pine_taiga
+    NOISE   c_100_100: air/stone/water[level=0]; biomes pine+spruce taiga+river
+    SURFACE c_107_107: air/stone/deepslate; heightmaps {OF_WG, WS_WG}
+    SURFACE c_100_100: air/deepslate/stone
+- DETERMINISM: staged_noise (single-chunk boot) chunk 107,107 vs the corpus
+  noise chunk 107,107 — decoded blocks AND biomes IDENTICAL across boots =>
+  noise-stage content is order/boot independent here and the dump pipeline
+  reproduces bit-comparable decoded output.
+
+TOOLS
+- stagedump_inspect.py --selftest PASS (synthetic NBT round-trip; index orders
+  sy*256+sz*16+sx / by*16+bz*4+bx verified incl. x/z transposition probe).
+- ncfdiff.py --selftest PASS (regression check after edits to nothing in it).
+
+TRAPS (task 5-a, all found live)
+1. build_golden.sh python3-zipfile fallback wrote NO manifest -> plugin remap
+   corruption (NoSuchMethodError class of failures). FIXED: fallback writes
+   META-INF/MANIFEST.MF with the namespace header + build-time guard.
+2. `busy` flag was checked in onCommand but never SET (concurrent dumps could
+   interleave manifest writes). FIXED: set/clear around job lifecycle.
+3. stagedump_inspect selftest: ncfdiff WRITER requires (tag_id, value) tuples
+   inside TComp; a bare TComp value raised "TypeError: cannot unpack
+   non-iterable TComp object". FIXED in selftest synthetic tree.
+4. Selftest geometry: Height must equal sectionCount*16 (check_structure);
+   biome quart y = (wy>>2)&3 is section-LOCAL — world Y -62 gives by=0, not 2
+   (quart (1,2,3) == world (5,-54,13) for section Y=-4).
+5. First corpus run TSV: "${STAGED_STATUS:+staged_$STAGED_STATUS}${STAGED_STATUS:-$PLAN}"
+   concatenated both expansions -> "staged_noisenoise". FIXED with a MODE var.
+6. Dump-order diff must strip manifest.tsv '#'-comment lines (first check
+   false-ALARMed on them; plan itself was identical).
+
+Rust-side contract notes (tasks 5-b/5-c)
+- Reproduce DECODED content per chunk/status: Sections palette+IntArray(4096)
+  in encounter-order palette, index i = sy*256+sz*16+sx; Biomes index
+  q = by*16+bz*4+bx; heightmaps compared via the raw long[] (9-bit packing,
+  256 entries, index x+16z, value = height - minY) or decoded on both sides.
+- Status string in NBT is the registry key ("minecraft:noise").
+- NOISE dumps contain NO surface rules (no deepslate band/bedrock/surface);
+  SURFACE adds deepslate band + bedrock + surface rules. No ticks. Light is
+  NOT part of the staged contract.

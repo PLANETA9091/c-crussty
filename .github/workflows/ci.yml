@@ -160,6 +160,41 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  # NCF task 5 gate: STAGED chunk content zero-diff. The server dumps 225
+  # chunks at the NOISE ChunkStatus (raw noise+aquifer+vein content, pre-
+  # surface); the Rust filler (chunk-factory::filler) regenerates the same
+  # chunks and stagediff compares block-by-block + biome-by-biome +
+  # heightmaps. PASS <=> 225/225 EQUAL (P2.6/P2.7/biome-fill evidence).
+  ncf-staged:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PURPUR_BUILD: '2535'
+      SEED: '3053459'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: chunk-factory
+      - name: staged zero-diff gate (boot -> staged dump -> gen-batch -> stagediff)
+        run: bash bench/golden/ci_staged.sh
+      - name: upload staged gate artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ncf-staged-gate
+          path: |
+            bench/golden/results/staged_boot.log
+            bench/golden/results/staged_gen_*.log
+            bench/golden/results/stagediff_*.log
+          if-no-files-found: warn
+          retention-days: 30
+
   # NCF P3.1 gate: the server READS a .mca region file written by the RUST
   # region writer. Two boots: (1) pure-vanilla raw dump (uncompressed chunk
   # NBT + deterministic non-random-tick probes), (2) fresh world holding ONLY

@@ -178,6 +178,7 @@ import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -254,6 +255,7 @@ public final class VectorCapture {
         InterpStats interpStats;
         int climateRows;
         int climatePointRows;
+        int aquiferRows;
         try {
             rows = writeRandom(vecDir.resolve("random.csv"))
                     + writeNoise(vecDir.resolve("noise.csv"), level, seed)
@@ -264,6 +266,9 @@ public final class VectorCapture {
             rows += climateRows;
             climatePointRows = writeClimatePoints(vecDir.resolve("climate_points.csv"), level);
             rows += climatePointRows;
+            aquiferRows = writeAquifer(vecDir.resolve("aquifer.csv"),
+                    vecDir.resolve("aquifer_meta.txt"), level, seed);
+            rows += aquiferRows;
         } catch (Throwable t) {
             plugin.getLogger().warning("GOLDEN VECTOR FAILED: " + t);
             t.printStackTrace();
@@ -278,6 +283,7 @@ public final class VectorCapture {
                 + " cellCountY=" + interpStats.cellCountY() + " cellNoiseMinY=" + interpStats.minCellY());
         plugin.getLogger().info("GOLDEN VECTOR climate: sampled=" + climateRows
                 + " parameterPoints=" + climatePointRows);
+        plugin.getLogger().info("GOLDEN VECTOR aquifer: rows=" + aquiferRows);
         ack.sendMessage("goldenvec: complete rows=" + rows + " dir=" + vecDir);
     }
 
@@ -622,8 +628,10 @@ public final class VectorCapture {
     // ------------------------------------------------------------------
 
     /** Chunk 100 min block coords — TASK-63 canon region, matches density.csv grid. */
-    static final int FIRST_BLOCK_X = 1600;
-    static final int FIRST_BLOCK_Z = 1600;
+    /** Canon: chunk (100,100). Override for targeted captures:
+     *  -Dgoldendump.aquiferX=1632 -Dgoldendump.aquiferZ=1712 (task 5 bisect). */
+    static final int FIRST_BLOCK_X = (int) java.util.Objects.requireNonNull(Long.getLong("goldendump.aquiferX", 1600L)).longValue();
+    static final int FIRST_BLOCK_Z = (int) java.util.Objects.requireNonNull(Long.getLong("goldendump.aquiferZ", 1600L)).longValue();
     /** 16 / cellWidth(4) — one chunk column of cells. */
     static final int CELLS_XZ = 4;
 
@@ -905,5 +913,220 @@ public final class VectorCapture {
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("cannot read MultiNoiseBiomeSource.parameters", e);
         }
+    }
+
+    // ------------------------------------------------------------------
+    // aquifer.csv + aquifer_meta.txt (task 5 bisect rig)
+    // ------------------------------------------------------------------
+
+    /**
+     * Drives the REAL NoiseChunk doFill loop for chunk (1600>>4, 1600>>4) with
+     * the REAL global fluid picker and captures, per block:
+     *   block_x,block_y,block_z,substance(hex),decision,sched
+     * where substance = the CacheAllInCell values slot the blockStateRule's
+     * aquifer rule consumes (NoiseChunk.cellCaches[0].values at the forIndex
+     * slot), decision = the aquifer rule result (BlockState registry name or
+     * "null"), sched = shouldScheduleFluidUpdate after the call.
+     * aquifer_meta.txt: grid bounds + aquiferLocationCache + aquiferCache
+     * (fluid level/type per slot) + skipSamplingAboveY.
+     */
+    private static int writeAquifer(Path csv, Path meta, ServerLevel level, long seed) throws Exception {
+        RandomState randomState = level.getChunkSource().randomState();
+        NoiseGeneratorSettings settings =
+                ((net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator)
+                        level.getChunkSource().getGenerator())
+                .generatorSettings().value();
+        NoiseSettings noiseSettings = settings.noiseSettings().clampToHeightAccessor(level);
+
+        // NoiseBasedChunkGenerator.createFluidPicker replica (lines 92-101):
+        // y < min(-54, seaLevel) -> FluidStatus(-54, LAVA) else FluidStatus(seaLevel, defaultFluid).
+        net.minecraft.world.level.block.state.BlockState lavaState =
+                Fluids.LAVA.defaultFluidState().createLegacyBlock();
+        net.minecraft.world.level.block.state.BlockState waterState =
+                Fluids.WATER.defaultFluidState().createLegacyBlock();
+        int seaLevel = settings.seaLevel();
+        java.util.function.IntFunction<Aquifer.FluidStatus> picker = (y) -> y < Math.min(-54, seaLevel)
+                ? new Aquifer.FluidStatus(-54, lavaState)
+                : new Aquifer.FluidStatus(seaLevel, waterState);
+        Aquifer.FluidPicker realPicker = (x, y, z) -> picker.apply(y);
+
+        NoiseChunk nc = new NoiseChunk(CELLS_XZ, randomState, FIRST_BLOCK_X, FIRST_BLOCK_Z,
+                noiseSettings, beardifierMarker(), settings, realPicker, Blender.empty());
+
+        // the aquifer (public accessor, NoiseChunk line 324)
+        Aquifer aquifer = nc.aquifer();
+        if (!(aquifer instanceof Aquifer.NoiseBasedAquifer)) {
+            throw new IllegalStateException("aquifers disabled on the live settings?");
+        }
+        java.lang.reflect.Method computeSubstance;
+        java.lang.reflect.Method schedFlag;
+        try {
+            computeSubstance = aquifer.getClass().getDeclaredMethod("computeSubstance",
+                    DensityFunction.FunctionContext.class, double.class);
+            computeSubstance.setAccessible(true);
+            schedFlag = aquifer.getClass().getDeclaredMethod("shouldScheduleFluidUpdate");
+            schedFlag.setAccessible(true);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("aquifer computeSubstance/shouldScheduleFluidUpdate not found", e);
+        }
+
+        // cellCaches[0].values — the substance composite (cacheAllInCell(add(final, beardifier)))
+        java.lang.reflect.Field cellCachesF;
+        java.lang.reflect.Field valuesF;
+        java.lang.reflect.Field inCellXF;
+        java.lang.reflect.Field inCellYF;
+        java.lang.reflect.Field inCellZF;
+        try {
+            cellCachesF = NoiseChunk.class.getDeclaredField("cellCaches");
+            cellCachesF.setAccessible(true);
+            Class<?> cac = Class.forName("net.minecraft.world.level.levelgen.NoiseChunk$CacheAllInCell");
+            valuesF = cac.getDeclaredField("values");
+            valuesF.setAccessible(true);
+            inCellXF = NoiseChunk.class.getDeclaredField("inCellX");
+            inCellXF.setAccessible(true);
+            inCellYF = NoiseChunk.class.getDeclaredField("inCellY");
+            inCellYF.setAccessible(true);
+            inCellZF = NoiseChunk.class.getDeclaredField("inCellZ");
+            inCellZF.setAccessible(true);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("cellCaches/inCell reflection failed", e);
+        }
+        java.util.List<?> cellCaches;
+        try {
+            cellCaches = (java.util.List<?>) cellCachesF.get(nc);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("cellCaches read failed", e);
+        }
+        if (cellCaches.isEmpty()) {
+            throw new IllegalStateException("no CacheAllInCell in the live NoiseChunk");
+        }
+        Object substanceCache;
+        try {
+            substanceCache = cellCaches.get(0);
+        } catch (Exception e) {
+            throw new IllegalStateException("cellCaches[0] read failed", e);
+        }
+        double[] substanceValues;
+        try {
+            substanceValues = (double[]) valuesF.get(substanceCache);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("CacheAllInCell.values read failed", e);
+        }
+
+        int cellW = noiseSettings.getCellWidth();
+        int cellH = noiseSettings.getCellHeight();
+        int cellCountY = Mth.floorDiv(noiseSettings.height(), cellH);
+        int minCellY = Mth.floorDiv(noiseSettings.minY(), cellH);
+
+        int rows = 0;
+        try (BufferedWriter w = newWriter(csv)) {
+            w.write("# NCF aquifer vectors v1 / worldSeed=" + seed
+                    + " / chunk=" + (FIRST_BLOCK_X >> 4) + "," + (FIRST_BLOCK_Z >> 4));
+            w.newLine();
+            w.write("# block_x,block_y,block_z,substance(hex),decision,sched");
+            w.newLine();
+            nc.initializeForFirstCellX();
+            for (int cx = 0; cx < CELLS_XZ; cx++) {
+                nc.advanceCellX(cx);
+                for (int cz = 0; cz < CELLS_XZ; cz++) {
+                    for (int cy = cellCountY - 1; cy >= 0; cy--) {
+                        nc.selectCellYZ(cy, cz);
+                        for (int inY = cellH - 1; inY >= 0; inY--) {
+                            int by = (minCellY + cy) * cellH + inY;
+                            nc.updateForY(by, (double) inY / (double) cellH);
+                            for (int inX = 0; inX < cellW; inX++) {
+                                int bx = FIRST_BLOCK_X + cx * cellW + inX;
+                                nc.updateForX(bx, (double) inX / (double) cellW);
+                                for (int inZ = 0; inZ < cellW; inZ++) {
+                                    int bz = FIRST_BLOCK_Z + cz * cellW + inZ;
+                                    nc.updateForZ(bz, (double) inZ / (double) cellW);
+                                    int icx = inCellXF.getInt(nc);
+                                    int icy = inCellYF.getInt(nc);
+                                    int icz = inCellZF.getInt(nc);
+                                    int slot = ((cellH - 1 - icy) * cellW + icx) * cellW + icz;
+                                    double substance = substanceValues[slot];
+                                    Object res;
+                                    try {
+                                        res = computeSubstance.invoke(aquifer, nc, substance);
+                                    } catch (ReflectiveOperationException e) {
+                                        throw new IllegalStateException("computeSubstance failed at "
+                                                + bx + "," + by + "," + bz, e);
+                                    }
+                                    boolean sched = (Boolean) schedFlag.invoke(aquifer);
+                                    String decision;
+                                    if (res == null) {
+                                        decision = "null";
+                                    } else {
+                                        net.minecraft.world.level.block.state.BlockState bs =
+                                                (net.minecraft.world.level.block.state.BlockState) res;
+                                        decision = BuiltInRegistries.BLOCK.getKey(bs.getBlock()).toString();
+                                        if (!bs.getProperties().isEmpty()) {
+                                            StringBuilder sb = new StringBuilder();
+                                            for (net.minecraft.world.level.block.state.properties.Property<?> pr : bs.getProperties()) {
+                                                if (sb.length() > 0) sb.append(',');
+                                                sb.append(pr.getName()).append('=').append(bs.getValue(pr));
+                                            }
+                                            decision += "[" + sb + "]";
+                                        }
+                                    }
+                                    w.write(bx + "," + by + "," + bz + "," + hx(substance) + ","
+                                            + decision + "," + (sched ? "1" : "0"));
+                                    w.newLine();
+                                    rows++;
+                                }
+                            }
+                        }
+                    }
+                }
+                nc.swapSlices();
+            }
+            nc.stopInterpolation();
+        }
+
+        // aquifer_meta.txt — caches after the full drive
+        try (BufferedWriter w = newWriter(meta)) {
+            w.write("# aquifer meta / seed=" + seed);
+            w.newLine();
+            for (String fname : new String[]{"skipSamplingAboveY", "minGridX", "minGridY", "minGridZ",
+                    "gridSizeX", "gridSizeZ"}) {
+                java.lang.reflect.Field f = aquifer.getClass().getDeclaredField(fname);
+                f.setAccessible(true);
+                w.write(fname + "=" + f.getInt(aquifer));
+                w.newLine();
+            }
+            java.lang.reflect.Field locF = aquifer.getClass().getDeclaredField("aquiferLocationCache");
+            locF.setAccessible(true);
+            long[] locs = (long[]) locF.get(aquifer);
+            w.write("locations.len=" + locs.length);
+            w.newLine();
+            for (int i = 0; i < locs.length; i++) {
+                w.write("loc " + i + " " + locs[i]);
+                w.newLine();
+            }
+            java.lang.reflect.Field statusF = aquifer.getClass().getDeclaredField("aquiferCache");
+            statusF.setAccessible(true);
+            Object[] statuses = (Object[]) statusF.get(aquifer);
+            java.lang.reflect.Field levelF = statuses.getClass().getComponentType()
+                    .getDeclaredField("fluidLevel");
+            levelF.setAccessible(true);
+            java.lang.reflect.Field typeF = statuses.getClass().getComponentType()
+                    .getDeclaredField("fluidType");
+            typeF.setAccessible(true);
+            for (int i = 0; i < statuses.length; i++) {
+                Object st = statuses[i];
+                if (st == null) {
+                    w.write("fluid " + i + " -");
+                    w.newLine();
+                } else {
+                    int fl = levelF.getInt(st);
+                    net.minecraft.world.level.block.state.BlockState ft =
+                            (net.minecraft.world.level.block.state.BlockState) typeF.get(st);
+                    String name = BuiltInRegistries.BLOCK.getKey(ft.getBlock()).toString();
+                    w.write("fluid " + i + " " + fl + " " + name);
+                    w.newLine();
+                }
+            }
+        }
+        return rows;
     }
 }

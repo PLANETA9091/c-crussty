@@ -5,8 +5,8 @@ api-version: '1.21'
 description: canonical chunk NBT oracle dumper + golden vector capture for the Native Chunk Factory golden harness (NCF P0.3)
 commands:
   goldendump:
-    description: dump canonical chunk NBT oracle (NCF P0.3); raw mode adds uncompressed NBT + probes (NCF P3.1)
-    usage: /goldendump <label> (<chunkX> <chunkZ> <radius>|raw <chunkX> <chunkZ> <radius>|manifest <file>)
+    description: dump canonical chunk NBT oracle (NCF P0.3); raw mode adds uncompressed NBT + probes (NCF P3.1); staged mode dumps DECODED NBT at intermediate ChunkStatus (task 5-a)
+    usage: /goldendump <label> (<chunkX> <chunkZ> <radius>|raw <chunkX> <chunkZ> <radius>|manifest <file>)|<chunkX> <chunkZ> <radius> status <noise|surface>|<label> <chunkX> <chunkZ> <radius> status <noise|surface>
   goldenvec:
     description: capture random/noise/density/interp/climate golden vectors from the real Paper classes (NCF P0.3 tail / P1 gate / P2.3-tail / P2.4)
     usage: /goldenvec <label>
