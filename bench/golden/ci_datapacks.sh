@@ -142,21 +142,68 @@ for name in z.namelist():
         n += 1
 print(f"extracted {n} vanilla worldgen json files (ref-fallback base)")
 PY
-    python3 - "$zip" "$extract" <<'PY'
-import zipfile, os, sys
-z = zipfile.ZipFile(sys.argv[1])
-n = 0
-for name in z.namelist():
-    if name.endswith('.json'):
-        rest = name[len('data/'):] if name.startswith('data/') else name
-        parts = rest.split('/')
+    python3 - "$zip" "$extract" "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar" <<'PY'
+import json, os, sys, zipfile
+
+zip_path, dest_root, server_jar = sys.argv[1], sys.argv[2], sys.argv[3]
+z = zipfile.ZipFile(zip_path)
+
+# The data-pack format the SERVER speaks (version.json in the mapped jar).
+data_format = json.loads(zipfile.ZipFile(server_jar).read('version.json'))[
+    'pack_version']['data_major']
+
+def fmt_range(f):
+    # formats: int | [min,max] | {min_inclusive,max_inclusive}
+    if isinstance(f, dict):
+        return int(f.get('min_inclusive', 0)), int(f.get('max_inclusive', 1 << 30))
+    if isinstance(f, (list, tuple)):
+        return int(f[0]), int(f[-1])
+    return int(f), int(f)
+
+# Overlay entries (in pack.mcmeta order) that match our format; LAST match
+# wins — vanilla applies overlays on top of the base in list order.
+mcmeta = None
+if 'pack.mcmeta' in z.namelist():
+    try:
+        mcmeta = json.loads(z.read('pack.mcmeta'))
+    except Exception:
+        mcmeta = None
+matching_overlays = []
+overlay_section = {}
+if mcmeta:
+    # overlays can sit at the TOP level or inside 'pack' (both seen in the
+    # wild); vanilla reads the top-level 'overlays'.
+    overlay_section = mcmeta.get('overlays') or (
+        mcmeta.get('pack', {}).get('overlays') if isinstance(mcmeta.get('pack'), dict) else None
+    ) or {}
+for entry in overlay_section.get('entries', []):
+        lo, hi = fmt_range(entry.get('formats', entry.get('min_format')))
+        if lo <= data_format <= hi:
+            matching_overlays.append(entry['directory'].strip('/'))
+
+def extract_worldgen(prefix):
+    # prefix: '' for base data/, or '<overlay>/' — overlay files land on the
+    # SAME relative paths as the base (that is what an overlay means).
+    n = 0
+    for name in z.namelist():
+        if not name.endswith('.json') or not name.startswith(prefix + 'data/'):
+            continue
+        parts = name[len(prefix + 'data/'):].split('/')
         if len(parts) < 4 or parts[1] != 'worldgen':
             continue
-        dest = os.path.join(sys.argv[2], *name.split('/'))
+        dest = os.path.join(dest_root, "data", *parts)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         open(dest, 'wb').write(z.read(name))
         n += 1
-print(f"extracted {n} datapack worldgen json files")
+    return n
+
+n = extract_worldgen('')
+print(f"extracted {n} base worldgen json files")
+for d in matching_overlays:
+    n = extract_worldgen(d + '/')
+    print(f"applied overlay '{d}': {n} worldgen json files (format {data_format})")
+if not matching_overlays:
+    print("WARNING: no overlay matched the server data format")
 PY
     if [ -d "$extract/data" ]; then
         log "IR gate: ircheck over $slug datapack worldgen"
