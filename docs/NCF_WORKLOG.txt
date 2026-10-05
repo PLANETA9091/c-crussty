@@ -427,3 +427,48 @@ cold 537.8 CPU-мс/чанк, 1.86 чанков/с/ядро; noise-класте�
 Следующий шаг: добить P0.4 (>=5 сидов: +4 сидa spiral-планом; лесной регион
   для фичевого веса), затем векторы random/noise/density (P0.3-хвост) через
   retransform — и Фаза 0 закрыта; после неё Ф1 (IR из реестра, сверка с CFR).
+
+=== 2026-10-05 | сессия 2 (CI) | пункты: P0.4 (добивка), P0-гейт на GH CI ===
+Контекст: сендбокс reset стёр /home/z/{server,c-crussty,.cargo}; клон восстановлен
+  из GitHub (master a913a91c). Владелец: «сделать всё сейчас, тестировать на GH CI».
+Сделано:
+  - CI-гейт Фазы 0 (e5aa3596 + фиксы 7a2feb91, 84fa0e24): .github/workflows/ci.yml
+    + bench/golden/ci_gate.sh. Джобы: module/native/fuzz-crate (были),
+    chunk-factory (cargo build+test — crate раньше не был покрыт: он исключён
+    из root workspace), golden-harness:
+      1) провижин ci-server: Purpur 1.21.10 build 2535 (pin), paperclip
+         patchOnly + poll CraftWorld.class ВНУТРИ mapped jar;
+      2) сборка GoldenDumper из исходников javac --release 21 (Temurin);
+      3) GATE: 2 FRESH бута, seed 3053459, PLAN=spiral, ncfdiff --manifest
+         ci_gate_A ci_gate_B -> 256/256 SEMANTIC_EQUAL, diverged=0 (реплика
+         контрольной строки ORDER_TEST на CI-железе);
+      4) P0.4 матрица: seeds 90210/424242/8675309/133700, по 1 спиральному
+         буту, 4x256/0 -> корпуса артефактами (golden-dump-corpora).
+  - dump_corpus.sh: BOOT_TIMEOUT теперь env (240->300 по умолчанию); маркеры
+    Done(/GOLDEN DUMP COMPLETE ищутся grep -a, НЕ rg.
+  - ncfdiff --selftest отдельным шагом CI (быстрый фейл до бутов).
+CI-фиксы по ходу (все найдены прогонами, не по памяти):
+  1) paperclip ПРЕ-СОЗДАЁТ versions/1.21.10/purpur-1.21.10.jar до конца ремапа:
+     poll по существованию файла обрывал ремап (run 37282960274) -> jar без
+     CraftBukkit. Фикс: poll = файл есть И CraftWorld.class внутри (7a2feb91).
+  2) на GH-раннере нет ripgrep: `rg` под `|| true` = слепой poll — сервер
+     Done( за 26 c, скрипт ждал 300 c и умер (run 37284053928). Фикс: grep -a
+     (84fa0e24). Мелочь, но именно она стоила второго красного прогона.
+Результат CI (run 37285235686, ubuntu-latest, 4 ядра): ВСЕ ДЖОБЫ ЗЕЛЁНЫЕ.
+  Буты: 27.9 / 20.6 c (vs 30-40 c на риге); дамп 256 чанков ~45-55 c;
+  ncfdiff 256 пар ~8 c; матрица сидов 46/47/47/55 c. Вердикт гейта:
+  pairs=256 equal=0 semantic_equal=256 diverged=0 missing=0.
+Доказательства: run 37285235686 (github.com/PLANETA9091/c-crussty/actions/
+  runs/37285235686), артефакты golden-gate-logs + golden-dump-corpora
+  (6x256 дампов: ci_gate_{A,B}, vanilla_ci_s{90210,424242,8675309,133700}),
+  results/CI_GATE_2026-10-05.txt, results/CI_GATE_budget.tsv (CI-копии).
+Провалы: 2 красных прогона CI (обе причины выше); локальный
+  /home/z/my-project/purpur jar снова оказался битым (428KB — тот же симптом,
+  что в LOG #1); в CI не используется.
+Расхождения с файлом/ванилью: новых нет; GATE повторил контрольную строку
+  ORDER_TEST на другом железе (SEMANTIC_EQUAL 256/256) — детерминизм рига
+  воспроизводим вне песочницы.
+Следующий шаг: P0.4-хвост по спеке (корпуса датапаков: Terralith/Tectonic/
+  BACAP/Structory + Trek), векторы random/noise/density через retransform
+  (P0.3-хвост) — и Фаза 0 закрыта; затем Ф1 (IR-извлечение из реестра,
+  сверка с CFR).
