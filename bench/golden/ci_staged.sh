@@ -104,10 +104,12 @@ python3 "$GOLDEN_DIR/../ab/rcon.py" "$RCON_PORT" "$RCON_PW" \
 waited=0; marker=""
 while [ $waited -lt $DUMP_TIMEOUT ]; do
     sleep 3; waited=$((waited+3))
-    marker=$(grep -a "GOLDEN STAGED DUMP COMPLETE $STAGED_STATUS" logs/latest.log 2>/dev/null | head -1 || true)
+    # the plugin's stagedName is the REGISTRY KEY ("minecraft:noise") — grep
+    # loosely like dump_corpus.sh does (trap from the first CI run)
+    marker=$(grep -a 'GOLDEN STAGED DUMP COMPLETE .* n=' logs/latest.log 2>/dev/null | head -1 || true)
     [ -n "$marker" ] && break
 done
-[ -n "$marker" ] || die "no GOLDEN STAGED DUMP COMPLETE marker within ${DUMP_TIMEOUT}s"
+[ -n "$marker" ] || { log "--- server log tail ---"; tail -30 logs/latest.log >&2 || true; die "no GOLDEN STAGED DUMP COMPLETE marker within ${DUMP_TIMEOUT}s"; }
 log "$marker"
 
 python3 "$GOLDEN_DIR/../ab/rcon.py" "$RCON_PORT" "$RCON_PW" "stop" >/dev/null 2>&1 || true
@@ -117,7 +119,10 @@ for _ in $(seq 1 60); do
 done
 pkill -f 'purpur-1.21.10.jar' 2>/dev/null || true
 
-JAVA_DIR="$SERVER_DIR/golden/staged_vanilla_s${SEED}_${STAGED_STATUS}"
+# the corpus dir comes from the marker itself (dir=... field)
+JAVA_DIR=$(printf '%s' "$marker" | sed -n 's/.* dir=//p' | tr -d '\r')
+[ -n "$JAVA_DIR" ] && [ -d "$JAVA_DIR" ] || { JAVA_DIR=$(ls -dt "$SERVER_DIR"/golden/staged_* 2>/dev/null | head -1); }
+[ -n "$JAVA_DIR" ] && [ -d "$JAVA_DIR" ] || die "staged corpus dir not found"
 N_FILES=$(find "$JAVA_DIR" -name 'c_*.nbt' | wc -l)
 [ "$N_FILES" -ge 225 ] || die "expected >=225 staged dumps, got $N_FILES"
 log "java staged corpus: $N_FILES chunks under $JAVA_DIR"
