@@ -85,6 +85,9 @@ import json, sys, urllib.request
 
 slug, dest = sys.argv[1], sys.argv[2]
 
+import os
+MC_VERSION = os.environ.get("MC_VERSION", "1.21.10")
+
 def get(url):
     req = urllib.request.Request(url, headers={"User-Agent": "crussty-ncf-ci/1.0"})
     with urllib.request.urlopen(req, timeout=60) as r:
@@ -94,9 +97,14 @@ versions = get(f"https://api.modrinth.com/v2/project/{slug}/version")
 datapack_versions = [v for v in versions if "datapack" in v.get("loaders", [])]
 if not datapack_versions:
     datapack_versions = versions
-preferred = [v for v in datapack_versions
-             if any(g.startswith("1.21") for g in v.get("game_versions", []))]
-pick = (preferred or datapack_versions)[0]
+# exact target version first (a pack built for a NEWER Minecraft can crash
+# the server on world creation — seen with Terralith 2.6.0/1.21.11 on
+# 1.21.10), then any 1.21.x, then any.
+exact = [v for v in datapack_versions
+         if MC_VERSION in v.get("game_versions", [])]
+family = [v for v in datapack_versions
+          if any(g.startswith("1.21") for g in v.get("game_versions", []))]
+pick = (exact or family or datapack_versions)[0]
 files = pick.get("files") or []
 if not files:
     raise SystemExit(f"no files for {slug} {pick.get('version_number')}")
@@ -163,7 +171,12 @@ PY
     log "corpus boot: $slug (seed $SEED, spiral, fresh world)"
     SEED="$SEED" LABEL="${label}" PLAN=spiral FRESH=1 SERVER_DIR="$SERVER_DIR" \
         DATAPACKS_DIR="$DP_ROOT/${slug}-datapacks" \
-        bash "$GOLDEN_DIR/dump_corpus.sh" || die "dump failed for $slug"
+        bash "$GOLDEN_DIR/dump_corpus.sh" || {
+            log "--- boot/dump log tail ($label) ---"
+            tail -40 "$RESULTS/golden_${label}_boot.log" >&2 || true
+            tail -40 "$SERVER_DIR/logs/latest.log" >&2 || true
+            die "dump failed for $slug"
+        }
 
     row=$(awk -F'\t' -v l="$label" '$3==l {last=$0} END {print last}' "$RESULTS/golden_runs.tsv")
     n=$(printf '%s' "$row" | awk -F'\t' '{print $5}')
