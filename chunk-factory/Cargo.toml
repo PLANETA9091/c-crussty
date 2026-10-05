@@ -1,0 +1,13 @@
+[package]
+name = "chunk_factory"
+version = "0.1.0"
+edition = "2021"
+description = "Native Chunk Factory: vanilla-identical chunk generation in Rust, chunk = pure function f(seed, datapack, version, x, z) -> NBT (Phase 0 skeleton: policy gate + coverage + promotion ledger only)"
+
+# Standalone crate: deliberately EXCLUDED from the root `crussty` workspace
+# (see ../Cargo.toml [workspace] exclude). No external dependencies -- std
+# only, on purpose: this crate must stay buildable in isolation and must never
+# drag the JVMTI agent's dependency tree into the factory (and vice versa:
+# the shipped closed .so cannot gain kernels, all new worldgen code lives
+# here).
+[dependencies]
