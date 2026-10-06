@@ -1155,3 +1155,18 @@ CI на 580e40f: ncf-staged(surface) pairs=225 equal=188 diverged=37 — НО н
   (100..104): 24 равны, c_100_101 изменён (coarse_dirt -> grass_block на
   (12,62,0)); ab_seedfix != ab_post (фикс семени ДЕЙСТВИТЕЛЬНО меняет
   выход, не дубль клампа). Матч с сервером — решает гейт ncf-staged в CI.
+
+=== 2026-10-07 | сессия 7 (аддендум 6: T35 ЗАКРЫТ CI — surface/carvers ЗЕЛЁНЫЕ впервый раз) ===
+CI run 37525009608 (HEAD 61d0562):
+  ncf-staged (surface)  = SUCCESS  (впервые с создания гейта)
+  ncf-staged (carvers)  = SUCCESS  (впервые)
+  ncf-staged (noise)    = SUCCESS
+Итог T35-бисекта (полная цепочка декомпил-доказательств, все три корня):
+  1) biomeGetter = biomeManager::getBiome — ГОЛОСОВАНИЕ (аддендум 4;
+     аддендум 2 «прямой лукап» был ошибочен), 2) угловые кварты резолвятся
+     как ХРАНИМЫЕ с секционным Y-клампом ChunkAccess.getNoiseBiome
+     (stored_quart_y + get_biome_voted_region), 3) biomeZoomSeed =
+     obfuscateSeed = sha256(LE(seed))[:8] LE-read (аддендум 5; Guava
+     33.3.1-jre, байт-уровень). Незакрытых гипотез не осталось.
+ГЕЙТ P2 (10^4 x 5 seeds x 3 пака) и метрика >=30x в этой же гонке — статус
+  отдельно; данные гейта не зависят от zoom-seed (климат/RTree без голоса).
