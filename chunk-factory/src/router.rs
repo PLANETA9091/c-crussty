@@ -702,6 +702,15 @@ pub struct RandomState {
     /// Canonical world-spec hash (P1.7): FNV-1a over the normalized settings
     /// text + router tree shape (values in hex-bit form).
     pub spec_hash: u64,
+    /// P2.12 tiles by region: cross-chunk memo of y-free subtrees. Lives on
+    /// the RandomState => keyed implicitly by (seed, world spec) per I5;
+    /// entries additionally mix spec_hash+seed into the key (tile::tile_key).
+    pub tile_cache: crate::tile::TileCache,
+    /// The (spec, seed) epoch mixed into every tile key.
+    pub tile_epoch: u64,
+    /// P2.12: the chunk-independent wrapped-tree template (built once; the
+    /// per-chunk machine state is instantiated from it in from_random_state).
+    pub sim_template: crate::interpolator::SimTemplate,
 }
 
 impl RandomState {
@@ -789,10 +798,97 @@ impl RandomState {
         }
         let spec_hash = fnv1a64(hash_text.as_bytes());
 
+        // P2.14 interval cutoff: sound build-time rewrites (bit-identical
+        // values, see optimize.rs soundness contract). Runs AFTER the spec
+        // hash so the canonical shape text stays the UNOPTIMIZED tree.
+        let router = {
+            let r = router;
+            let (
+                barrier,
+                fluid_level_floodedness,
+                fluid_level_spread,
+                lava,
+                temperature,
+                vegetation,
+                continents,
+                erosion,
+                depth,
+                ridges,
+                preliminary_surface_level,
+                final_density,
+                vein_toggle,
+                vein_ridged,
+                vein_gap,
+            ) = crate::optimize::optimize_router_fields(
+                r.barrier,
+                r.fluid_level_floodedness,
+                r.fluid_level_spread,
+                r.lava,
+                r.temperature,
+                r.vegetation,
+                r.continents,
+                r.erosion,
+                r.depth,
+                r.ridges,
+                r.preliminary_surface_level,
+                r.final_density,
+                r.vein_toggle,
+                r.vein_ridged,
+                r.vein_gap,
+                &wiring.bank,
+            );
+            Router {
+                barrier,
+                fluid_level_floodedness,
+                fluid_level_spread,
+                lava,
+                temperature,
+                vegetation,
+                continents,
+                erosion,
+                depth,
+                ridges,
+                preliminary_surface_level,
+                final_density,
+                vein_toggle,
+                vein_ridged,
+                vein_gap,
+            }
+        };
+
         let mut key_by_idx: Vec<(usize, String)> =
             wiring.noise_index.iter().map(|(k, &i)| (i, k.clone())).collect();
         key_by_idx.sort();
         let noise_key_by_index = key_by_idx.into_iter().map(|(_, k)| k).collect();
+
+        // P2.12: intern + wrap the 15 wired fields ONCE per RandomState,
+        // BEFORE the moves into Self (the template borrows nothing).
+        let sim_template = {
+            use crate::interpolator::{intern_df, Arena, SimTemplate};
+            let fields: [&Df; 15] = [
+                &router.barrier,
+                &router.fluid_level_floodedness,
+                &router.fluid_level_spread,
+                &router.lava,
+                &router.temperature,
+                &router.vegetation,
+                &router.continents,
+                &router.erosion,
+                &router.depth,
+                &router.ridges,
+                &router.preliminary_surface_level,
+                &router.final_density,
+                &router.vein_toggle,
+                &router.vein_ridged,
+                &router.vein_gap,
+            ];
+            let mut arena = Arena::default();
+            let mut ifields = [0usize; 15];
+            for (i, f) in fields.iter().enumerate() {
+                ifields[i] = intern_df(f, &mut arena, &wiring.bank);
+            }
+            SimTemplate::build(&wiring.bank, ifields, arena)
+        };
 
         Ok(Self {
             bank: wiring.bank,
@@ -804,6 +900,9 @@ impl RandomState {
             worldgen_factory: factory,
             noise_key_by_index,
             spec_hash,
+            tile_cache: crate::tile::TileCache::new(),
+            tile_epoch: crate::tile::tile_epoch(spec_hash, level_seed),
+            sim_template,
         })
     }
 

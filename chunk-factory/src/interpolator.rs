@@ -527,14 +527,11 @@ struct Ctx {
     in_chunk: bool,
 }
 
-/// The NoiseChunk simulation. `root_fields` carries the 15 wrapped router
-/// field roots in NoiseRouter.mapAll order.
+/// The NoiseChunk simulation. Per-chunk STATE only; the wrapped tree lives
+/// in the shared `SimTemplate` (P2.12 tiles by region: the template is built
+/// once per RandomState and instantiated per chunk).
 pub struct NoiseChunkSim<'a> {
-    arena: Arena,
-    wnodes: Vec<WNode>,
-    wrap_memo: HashMap<usize, usize>,
-    wsplines: Vec<WSpline>,
-    wspline_memo: HashMap<usize, usize>,
+    template: &'a SimTemplate,
     pub root_fields: Vec<usize>,
     interpolators: Vec<InterpState>,
     cell_caches: Vec<CellCacheState>,
@@ -568,6 +565,85 @@ pub struct NoiseChunkSim<'a> {
     /// wrapped final_density root, filled in selectCellYZ like Java's
     /// cellCaches list (empty beardifier: values = final per index).
     substance_cache: Vec<f64>,
+    /// P2.12 cross-chunk tile cache (None = disabled).
+    tile: Option<&'a crate::tile::TileCache>,
+    tile_epoch: u64,
+}
+
+/// P2.12: the chunk-INDEPENDENT part of the machine — interned arena, wrapped
+/// tree, y-free flags, structural hashes, spline table, wrapper-id layout.
+/// Built once per RandomState (the tree depends only on (spec, seed)); each
+/// chunk instantiates only mutable state (slices/caches/counters).
+pub struct SimTemplate {
+    pub wnodes: Vec<WNode>,
+    pub node_flags: Vec<u8>,
+    pub subtree_hash: Vec<u64>,
+    pub root_fields: Vec<usize>,
+    pub wsplines: Vec<WSpline>,
+    pub interp_inners: Vec<usize>,
+    pub cell_inners: Vec<usize>,
+    pub c2d_inners: Vec<usize>,
+    pub c1ce_inners: Vec<usize>,
+    pub flat_inners: Vec<usize>,
+    pub cell_volume: usize,
+}
+
+impl SimTemplate {
+    /// Build the template from a bank + 15 interned roots (same order as
+    /// NoiseChunkSim::new took `ifields`). Called from RandomState::build
+    /// (router.rs), which interns its 15 wired fields in mapAll order.
+    pub fn build(bank: &NoiseBank, ifields: [usize; 15], arena: Arena) -> Self {
+        let mut b = TemplateBuilder {
+            arena,
+            wnodes: Vec::new(),
+            wrap_memo: HashMap::new(),
+            wsplines: Vec::new(),
+            wspline_memo: HashMap::new(),
+            node_flags: Vec::new(),
+            subtree_hash: Vec::new(),
+            interp_inners: Vec::new(),
+            cell_inners: Vec::new(),
+            c2d_inners: Vec::new(),
+            c1ce_inners: Vec::new(),
+            flat_inners: Vec::new(),
+        };
+        let mut dedup: HashMap<(MarkerType, usize), WKind> = HashMap::new();
+        let mut root_fields = Vec::with_capacity(15);
+        for &f in &ifields {
+            let w = b.wrap(f, &mut dedup);
+            root_fields.push(w);
+        }
+        SimTemplate {
+            wnodes: b.wnodes,
+            node_flags: b.node_flags,
+            subtree_hash: b.subtree_hash,
+            root_fields,
+            wsplines: b.wsplines,
+            interp_inners: b.interp_inners,
+            cell_inners: b.cell_inners,
+            c2d_inners: b.c2d_inners,
+            c1ce_inners: b.c1ce_inners,
+            flat_inners: b.flat_inners,
+            // overworld cell volume; instantiate() resizes per-chunk anyway
+            cell_volume: 4 * 4 * 8,
+        }
+    }
+}
+
+/// Construction-time builder: the old NoiseChunkSim::new + wrap machinery.
+struct TemplateBuilder {
+    arena: Arena,
+    wnodes: Vec<WNode>,
+    wrap_memo: HashMap<usize, usize>,
+    wsplines: Vec<WSpline>,
+    wspline_memo: HashMap<usize, usize>,
+    node_flags: Vec<u8>,
+    subtree_hash: Vec<u64>,
+    interp_inners: Vec<usize>,
+    cell_inners: Vec<usize>,
+    c2d_inners: Vec<usize>,
+    c1ce_inners: Vec<usize>,
+    flat_inners: Vec<usize>,
 }
 
 
@@ -577,10 +653,9 @@ impl<'a> NoiseChunkSim<'a> {
     /// settings; noise_size_horizontal/vertical in QUARTS (overworld: 1, 2
     /// -> cellWidth 4, cellHeight 8).
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
+    pub fn instantiate(
+        template: &'a SimTemplate,
         bank: &'a NoiseBank,
-        ifields: [usize; 15],
-        arena: Arena,
         cell_count_xz: i32,
         first_block_x: i32,
         first_block_z: i32,
@@ -588,6 +663,8 @@ impl<'a> NoiseChunkSim<'a> {
         height: i32,
         noise_size_horizontal: i32,
         noise_size_vertical: i32,
+        tile: Option<&'a crate::tile::TileCache>,
+        tile_epoch: u64,
     ) -> Self {
         let cell_width = noise_size_horizontal * 4; // QuartPos.toBlock
         let cell_height = noise_size_vertical * 4;
@@ -599,18 +676,61 @@ impl<'a> NoiseChunkSim<'a> {
         let first_noise_z = first_block_z.div_euclid(4);
         let noise_size_xz = (cell_count_xz * cell_width).div_euclid(4);
 
+        // Per-chunk STATE ONLY — the wrapped tree (wnodes/flags/hashes/
+        // splines/wrapper ids) is shared from the template (P2.12).
+        let rows = (cell_count_xz + 1) as usize;
+        let cols = (cell_count_y + 1) as usize;
         let mut sim = NoiseChunkSim {
-            arena,
-            wnodes: Vec::new(),
-            wrap_memo: HashMap::new(),
-            wsplines: Vec::new(),
-            wspline_memo: HashMap::new(),
-            root_fields: Vec::with_capacity(15),
-            interpolators: Vec::new(),
-            cell_caches: Vec::new(),
-            cache2ds: Vec::new(),
-            cacheonces: Vec::new(),
-            flat_caches: Vec::new(),
+            template,
+            root_fields: template.root_fields.clone(),
+            interpolators: template
+                .interp_inners
+                .iter()
+                .map(|&inner| InterpState {
+                    inner,
+                    slice0: vec![vec![0.0; cols]; rows],
+                    slice1: vec![vec![0.0; cols]; rows],
+                    noise: [0.0; 8],
+                    value_xz00: 0.0,
+                    value_xz10: 0.0,
+                    value_xz01: 0.0,
+                    value_xz11: 0.0,
+                    value_z0: 0.0,
+                    value_z1: 0.0,
+                    value: 0.0,
+                })
+                .collect(),
+            cell_caches: template
+                .cell_inners
+                .iter()
+                .map(|&inner| CellCacheState { inner, values: vec![0.0; template.cell_volume] })
+                .collect(),
+            cache2ds: template
+                .c2d_inners
+                .iter()
+                .map(|&inner| Cache2DState {
+                    inner,
+                    // ChunkPos.INVALID_CHUNK_POS sentinel
+                    last_pos2d: chunk_as_long(i32::MIN + 1, i32::MIN + 1),
+                    last_value: 0.0,
+                })
+                .collect(),
+            cacheonces: template
+                .c1ce_inners
+                .iter()
+                .map(|&inner| CacheOnceState {
+                    inner,
+                    last_counter: 0,
+                    last_array_counter: 0,
+                    last_value: 0.0,
+                    last_array: None,
+                })
+                .collect(),
+            flat_caches: template
+                .flat_inners
+                .iter()
+                .map(|&inner| FlatCacheState { inner, values: Vec::new(), size_xz: 0 })
+                .collect(),
             cell_width,
             cell_height,
             cell_count_xz,
@@ -633,18 +753,37 @@ impl<'a> NoiseChunkSim<'a> {
             interpolation_counter: 0,
             array_interpolation_counter: 0,
             bank,
-            substance_cache: Vec::new(),
+            substance_cache: vec![0.0; (cell_width * cell_width * cell_height) as usize],
+            tile,
+            tile_epoch,
         };
-        // NoiseRouter.mapAll field order + ONE shared dedup map
-        let mut dedup: HashMap<(MarkerType, usize), WKind> = HashMap::new();
-        for &f in &ifields {
-            let w = sim.wrap(f, &mut dedup);
-            sim.root_fields.push(w);
+        // FlatCache eager priming (computeValues = true) — PER-CHUNK because
+        // the quart grid positions are chunk-relative. Values are identical
+        // to the wrap-time priming this replaces (same compute order, same
+        // pure subtrees); wrapper states that Java would not have had during
+        // wrap-time priming only receive extra WRITES of identical values —
+        // their outputs stay bit-identical (private state, pure reads).
+        let size_xz = (noise_size_xz + 1) as usize;
+        for id in 0..sim.flat_caches.len() {
+            let inner = sim.flat_caches[id].inner;
+            let mut values = vec![0.0; size_xz * size_xz];
+            for i in 0..=noise_size_xz {
+                let bx = (sim.first_noise_x + i) * 4; // QuartPos.toBlock
+                for i2 in 0..=noise_size_xz {
+                    let bz = (sim.first_noise_z + i2) * 4;
+                    let ctx = Ctx { x: bx, y: 0, z: bz, in_chunk: false };
+                    values[i as usize + i2 as usize * size_xz] = sim.compute(inner, ctx);
+                }
+            }
+            sim.flat_caches[id].values = values;
+            sim.flat_caches[id].size_xz = size_xz;
         }
-        sim.substance_cache = vec![0.0; (sim.cell_width * sim.cell_width * sim.cell_height) as usize];
         sim
     }
 
+}
+
+impl TemplateBuilder {
     /// NoiseChunk.wrapNew — bottom-up (mapAll maps children first).
     fn wrap(&mut self, inode: usize, dedup: &mut HashMap<(MarkerType, usize), WKind>) -> usize {
         // Wrap memo: one wrapped node per distinct interned (== structurally
@@ -727,56 +866,32 @@ impl<'a> NoiseChunkSim<'a> {
                 if let Some(kind) = dedup.get(&(ty, inner)) {
                     WNode::W(*kind)
                 } else {
+                    // Template build records ONLY the wrapper id + inner —
+                    // the per-chunk state is allocated in instantiate().
                     let kind = match ty {
                         MarkerType::Interpolated => {
-                            let (slice0, slice1) = self.alloc_slices();
-                            let id = self.interpolators.len();
-                            self.interpolators.push(InterpState {
-                                inner,
-                                slice0,
-                                slice1,
-                                noise: [0.0; 8],
-                                value_xz00: 0.0,
-                                value_xz10: 0.0,
-                                value_xz01: 0.0,
-                                value_xz11: 0.0,
-                                value_z0: 0.0,
-                                value_z1: 0.0,
-                                value: 0.0,
-                            });
+                            let id = self.interp_inners.len();
+                            self.interp_inners.push(inner);
                             WKind::Interp(id)
                         }
                         MarkerType::FlatCache => {
-                            let (values, size_xz) = self.build_flat_cache(inner);
-                            let id = self.flat_caches.len();
-                            self.flat_caches.push(FlatCacheState { inner, values, size_xz });
+                            let id = self.flat_inners.len();
+                            self.flat_inners.push(inner);
                             WKind::FlatCacheW(id)
                         }
                         MarkerType::Cache2D => {
-                            let id = self.cache2ds.len();
-                            self.cache2ds.push(Cache2DState {
-                                inner,
-                                // ChunkPos.INVALID_CHUNK_POS sentinel
-                                last_pos2d: chunk_as_long(i32::MIN + 1, i32::MIN + 1),
-                                last_value: 0.0,
-                            });
+                            let id = self.c2d_inners.len();
+                            self.c2d_inners.push(inner);
                             WKind::Cache2DW(id)
                         }
                         MarkerType::CacheOnce => {
-                            let id = self.cacheonces.len();
-                            self.cacheonces.push(CacheOnceState {
-                                inner,
-                                last_counter: 0,
-                                last_array_counter: 0,
-                                last_value: 0.0,
-                                last_array: None,
-                            });
+                            let id = self.c1ce_inners.len();
+                            self.c1ce_inners.push(inner);
                             WKind::CacheOnceW(id)
                         }
                         MarkerType::CacheAllInCell => {
-                            let n = (self.cell_width * self.cell_width * self.cell_height) as usize;
-                            let id = self.cell_caches.len();
-                            self.cell_caches.push(CellCacheState { inner, values: vec![0.0; n] });
+                            let id = self.cell_inners.len();
+                            self.cell_inners.push(inner);
                             WKind::CellCacheW(id)
                         }
                     };
@@ -785,31 +900,247 @@ impl<'a> NoiseChunkSim<'a> {
                 }
             }
         };
+        // P2.12: bottom-up flags + structural hash (children already pushed;
+        // classify/hash BEFORE the move into wnodes).
+        let flags = self.classify_node(&w);
+        let shash = self.hash_node(&w);
         self.wnodes.push(w);
         let widx = self.wnodes.len() - 1;
+        self.node_flags.push(flags);
+        self.subtree_hash.push(shash);
         self.wrap_memo.insert(inode, widx);
         widx
     }
 
-    fn alloc_slices(&self) -> (Vec<Vec<f64>>, Vec<Vec<f64>>) {
-        let rows = (self.cell_count_xz + 1) as usize;
-        let cols = (self.cell_count_y + 1) as usize;
-        (vec![vec![0.0; cols]; rows], vec![vec![0.0; cols]; rows])
+    /// P2.12 y-free classification (conservative — any doubt => y-dependent).
+    /// Value-level: does f(x, y, z) depend on y? Mirrors the W-machine's
+    /// dispatch: pure-math nodes recurse through children; noise leaves with
+    /// a y term (Noise/Shift/ShiftedNoise/WeirdScaled/Blended/YClampedGradient/
+    /// Spline/FindTopSurface/EndIslands) are y-dependent; cache wrappers are
+    /// y-free iff their inner subtree is (their state is private — replacing
+    /// their outputs with a pure memo changes no observable value).
+    fn classify_node(&self, w: &WNode) -> u8 {
+        let yfree_of = |idx: usize| self.node_flags[idx] != 0;
+        let yf = match w {
+            WNode::Const(_) | WNode::BlendAlpha | WNode::BlendOffset | WNode::Beardifier => (true, false),
+            WNode::ShiftA(_) | WNode::ShiftB(_) => (true, true),
+            WNode::YClampedGradient { .. }
+            | WNode::Noise(..)
+            | WNode::Shift(_)
+            | WNode::ShiftedNoise { .. }
+            | WNode::WeirdScaledSampler { .. }
+            | WNode::Spline(_)
+            | WNode::Blended(_)
+            | WNode::EndIslands
+            | WNode::FindTopSurface { .. } => (false, false),
+            WNode::BlendDensity(i) => (yfree_of(*i), self.node_flags[*i] == 2),
+            WNode::Mapped { input: i, .. } => (yfree_of(*i), self.node_flags[*i] == 2),
+            WNode::MulOrAdd { input: i, .. } => (yfree_of(*i), self.node_flags[*i] == 2),
+            WNode::Clamp { input: i, .. } => (yfree_of(*i), self.node_flags[*i] == 2),
+            WNode::RangeChoice { input, in_range, out_of_range, .. } => (
+                yfree_of(*input) && yfree_of(*in_range) && yfree_of(*out_of_range),
+                self.node_flags[*input] == 2 && self.node_flags[*in_range] == 2 && self.node_flags[*out_of_range] == 2,
+            ),
+            WNode::Ap2 { a1, a2, .. } => (
+                yfree_of(*a1) && yfree_of(*a2),
+                self.node_flags[*a1] == 2 && self.node_flags[*a2] == 2,
+            ),
+            WNode::W(kind) => match kind {
+                WKind::Interp(_) | WKind::CellCacheW(_) => (false, false),
+                WKind::FlatCacheW(id) => {
+                    let inner = self.flat_inners[*id];
+                    // the eager table is y=0-primed per quart; the miss path
+                    // (out-of-range) evaluates inner at the CURRENT y — so the
+                    // node is value-y-free only if the inner subtree is.
+                    (yfree_of(inner), self.node_flags[inner] == 2)
+                }
+                WKind::Cache2DW(id) => {
+                    let inner = self.c2d_inners[*id];
+                    (yfree_of(inner), self.node_flags[inner] == 2)
+                }
+                WKind::CacheOnceW(id) => {
+                    let inner = self.c1ce_inners[*id];
+                    (yfree_of(inner), self.node_flags[inner] == 2)
+                }
+            },
+        };
+        match yf {
+            (false, _) => 0,
+            (true, false) => 1,
+            (true, true) => 2,
+        }
     }
 
-    /// FlatCache eager table (computeValues = true): quart grid, y = 0.
-    fn build_flat_cache(&mut self, inner: usize) -> (Vec<f64>, usize) {
-        let size_xz = (self.noise_size_xz + 1) as usize;
-        let mut values = vec![0.0; size_xz * size_xz];
-        for i in 0..=self.noise_size_xz {
-            let bx = (self.first_noise_x + i) * 4; // QuartPos.toBlock
-            for i2 in 0..=self.noise_size_xz {
-                let bz = (self.first_noise_z + i2) * 4;
-                let ctx = Ctx { x: bx, y: 0, z: bz, in_chunk: false };
-                values[i as usize + i2 as usize * size_xz] = self.compute(inner, ctx);
+    /// P2.12 structural hash: discriminant + fields + child hashes. Two
+    /// wrapped nodes with the same hash within one RandomState compute the
+    /// same pure function (the Arena already relies on this family of hashes
+    /// for interning correctness).
+    fn hash_node(&self, w: &WNode) -> u64 {
+        let child = |idx: usize| self.subtree_hash[idx];
+        let mut h: u64 = 0xcbf29ce484222325;
+        let mut mix = |v: u64| {
+            h ^= v;
+            h = h.wrapping_mul(0x100000001b3);
+        };
+        match w {
+            WNode::Const(v) => {
+                mix(1);
+                mix(*v);
+            }
+            WNode::YClampedGradient { from_y, to_y, from_value, to_value } => {
+                mix(2);
+                mix(*from_y as u64);
+                mix(*to_y as u64);
+                mix(*from_value);
+                mix(*to_value);
+            }
+            WNode::Noise(a, b, c) => {
+                mix(3);
+                mix(*a as u64);
+                mix(*b);
+                mix(*c);
+            }
+            WNode::ShiftedNoise { sx, sy, sz, xz, ys, noise } => {
+                mix(4);
+                mix(child(*sx));
+                mix(child(*sy));
+                mix(child(*sz));
+                mix(*xz);
+                mix(*ys);
+                mix(*noise as u64);
+            }
+            WNode::ShiftA(a) => {
+                mix(5);
+                mix(*a as u64);
+            }
+            WNode::ShiftB(a) => {
+                mix(6);
+                mix(*a as u64);
+            }
+            WNode::Shift(a) => {
+                mix(7);
+                mix(*a as u64);
+            }
+            WNode::BlendDensity(i) => {
+                mix(8);
+                mix(child(*i));
+            }
+            WNode::WeirdScaledSampler { input, noise, rarity } => {
+                mix(9);
+                mix(child(*input));
+                mix(*noise as u64);
+                mix(rarity.max_rarity().to_bits());
+            }
+            WNode::RangeChoice { input, min, max, in_range, out_of_range } => {
+                mix(10);
+                mix(child(*input));
+                mix(*min);
+                mix(*max);
+                mix(child(*in_range));
+                mix(child(*out_of_range));
+            }
+            WNode::Clamp { input, min, max } => {
+                mix(11);
+                mix(child(*input));
+                mix(*min);
+                mix(*max);
+            }
+            WNode::Mapped { ty, input } => {
+                mix(12 + *ty as u64);
+                mix(child(*input));
+            }
+            WNode::MulOrAdd { is_add, input, argument } => {
+                mix(if *is_add { 30 } else { 31 });
+                mix(child(*input));
+                mix(*argument);
+            }
+            WNode::Ap2 { ty, a1, a2, .. } => {
+                mix(13 + *ty as u64);
+                mix(child(*a1));
+                mix(child(*a2));
+            }
+            WNode::Spline(s) => {
+                mix(20);
+                let sp = &self.wsplines[*s];
+                mix(child(sp.coordinate));
+                for l in &sp.locations {
+                    mix(l.to_bits() as u64);
+                }
+                for d in &sp.derivatives {
+                    mix(d.to_bits() as u64);
+                }
+                for v in &sp.values {
+                    match v {
+                        WSplineValue::Const(c) => mix(c.to_bits() as u64 | 0x8000_0000_0000_0000),
+                        WSplineValue::Multi(m) => mix(self.subtree_hash_of_spline(*m)),
+                    }
+                }
+            }
+            WNode::Blended(a) => {
+                mix(21);
+                mix(*a as u64);
+            }
+            WNode::BlendAlpha => mix(22),
+            WNode::BlendOffset => mix(23),
+            WNode::Beardifier => mix(24),
+            WNode::EndIslands => mix(25),
+            WNode::FindTopSurface { density, upper, lower_bound, cell_height } => {
+                mix(26);
+                mix(child(*density));
+                mix(child(*upper));
+                mix(*lower_bound as u64);
+                mix(*cell_height as u64);
+            }
+            WNode::W(kind) => match kind {
+                WKind::Interp(id) => {
+                    mix(40);
+                    mix(child(self.interp_inners[*id]));
+                }
+                WKind::FlatCacheW(id) => {
+                    mix(41);
+                    mix(child(self.flat_inners[*id]));
+                }
+                WKind::Cache2DW(id) => {
+                    mix(42);
+                    mix(child(self.c2d_inners[*id]));
+                }
+                WKind::CacheOnceW(id) => {
+                    mix(43);
+                    mix(child(self.c1ce_inners[*id]));
+                }
+                WKind::CellCacheW(id) => {
+                    mix(44);
+                    mix(child(self.cell_inners[*id]));
+                }
+            },
+        }
+        h
+    }
+
+    fn subtree_hash_of_spline(&self, s: usize) -> u64 {
+        // spline nodes carry their hash in subtree_hash only for W indices;
+        // WSplineValue::Multi children are W-spline indices — reuse the
+        // coordinate/locations/values structure hash.
+        let sp = &self.wsplines[s];
+        let mut h: u64 = 0x9e3779b97f4a7c15;
+        let mut mix = |v: u64| {
+            h ^= v;
+            h = h.wrapping_mul(0x100000001b3);
+        };
+        mix(self.subtree_hash[sp.coordinate]);
+        for l in &sp.locations {
+            mix(l.to_bits() as u64);
+        }
+        for d in &sp.derivatives {
+            mix(d.to_bits() as u64);
+        }
+        for v in &sp.values {
+            match v {
+                WSplineValue::Const(c) => mix(c.to_bits() as u64 | 0x8000_0000_0000_0000),
+                WSplineValue::Multi(m) => mix(self.subtree_hash_of_spline(*m)),
             }
         }
-        (values, size_xz)
+        h
     }
 
     /// Wrap a spline: its coordinate subtree and Multi children must be
@@ -840,7 +1171,9 @@ impl<'a> NoiseChunkSim<'a> {
         self.wspline_memo.insert(s, ws);
         ws
     }
+}
 
+impl<'a> NoiseChunkSim<'a> {
     // ------------------------------------------------------------------
     // compute
     // ------------------------------------------------------------------
@@ -855,16 +1188,34 @@ impl<'a> NoiseChunkSim<'a> {
     }
 
     fn compute(&mut self, w: usize, ctx: Ctx) -> f64 {
+        // P2.12: y-free subtree tile memo — a node classified cacheable is a
+        // pure f(spec, seed, world x, z); memoizing returns bit-identical f64
+        // (values stored raw, no rounding). See tile.rs soundness contract.
+        if self.template.node_flags[w] == 2 && self.tile.is_some() {
+            let key = crate::tile::tile_key(self.template.subtree_hash[w], ctx.x, ctx.z, self.tile_epoch);
+            // SAFETY of the unwrap: checked is_some above
+            let tile = self.tile.unwrap();
+            if let Some(v) = tile.get(key) {
+                return v;
+            }
+            let v = self.compute_body(w, ctx);
+            tile.put(key, v);
+            return v;
+        }
+        self.compute_body(w, ctx)
+    }
+
+    fn compute_body(&mut self, w: usize, ctx: Ctx) -> f64 {
         thread_local! { static DEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) }; }
         let d = DEPTH.with(|c| c.get());
         if d > 100000 {
-            panic!("compute recursion depth {} at w={} node={:?}", d, w, self.wnodes[w]);
+            panic!("compute recursion depth {} at w={} node={:?}", d, w, self.template.wnodes[w]);
         }
         DEPTH.with(|c| c.set(d + 1));
         struct G;
         impl Drop for G { fn drop(&mut self) { DEPTH.with(|c| c.set(c.get() - 1)); } }
         let _g = G;
-        let node = self.wnodes[w].clone();
+        let node = self.template.wnodes[w].clone();
         match node {
             WNode::Const(v) => f64::from_bits(v),
             WNode::YClampedGradient { from_y, to_y, from_value, to_value } => mth::clamped_map(
@@ -1090,7 +1441,7 @@ impl<'a> NoiseChunkSim<'a> {
 
     fn spline_apply(&mut self, s: usize, ctx: Ctx) -> f32 {
         let (coordinate, locations_len, locations, derivatives, values) = {
-            let sp = &self.wsplines[s];
+            let sp = &self.template.wsplines[s];
             (sp.coordinate, sp.locations.len(), sp.locations.clone(), sp.derivatives.clone(), sp.values.clone())
         };
         let f = self.compute(coordinate, ctx) as f32;
@@ -1133,13 +1484,13 @@ impl<'a> NoiseChunkSim<'a> {
         thread_local! { static FDEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) }; }
         let d = FDEPTH.with(|c| c.get());
         if d > 100000 {
-            panic!("fill_array recursion depth {} at w={} node={:?}", d, w, self.wnodes[w]);
+            panic!("fill_array recursion depth {} at w={} node={:?}", d, w, self.template.wnodes[w]);
         }
         FDEPTH.with(|c| c.set(d + 1));
         struct GF;
         impl Drop for GF { fn drop(&mut self) { FDEPTH.with(|c| c.set(c.get() - 1)); } }
         let _gf = GF;
-        let node = self.wnodes[w].clone();
+        let node = self.template.wnodes[w].clone();
         match node {
             WNode::Const(v) => {
                 array.fill(f64::from_bits(v));
@@ -1541,6 +1892,8 @@ impl<'a> NoiseChunkSim<'a> {
 impl<'a> NoiseChunkSim<'a> {
     /// Convenience: build from the wired RandomState for the canon capture
     /// (chunk min block coords, clamped min_y/height, overworld quart sizes).
+    /// P2.12: the wrapped-tree TEMPLATE is shared from the RandomState (built
+    /// once in RandomState::build); only per-chunk state is allocated here.
     #[allow(clippy::too_many_arguments)]
     pub fn from_random_state(
         rs: &'a crate::router::RandomState,
@@ -1548,33 +1901,9 @@ impl<'a> NoiseChunkSim<'a> {
         first_block_x: i32,
         first_block_z: i32,
     ) -> Self {
-        let mut arena = Arena::default();
-        let r = &rs.router;
-        let fields: [&crate::density::Df; 15] = [
-            &r.barrier,
-            &r.fluid_level_floodedness,
-            &r.fluid_level_spread,
-            &r.lava,
-            &r.temperature,
-            &r.vegetation,
-            &r.continents,
-            &r.erosion,
-            &r.depth,
-            &r.ridges,
-            &r.preliminary_surface_level,
-            &r.final_density,
-            &r.vein_toggle,
-            &r.vein_ridged,
-            &r.vein_gap,
-        ];
-        let mut ifields = [0usize; 15];
-        for (i, f) in fields.iter().enumerate() {
-            ifields[i] = intern_df(f, &mut arena, &rs.bank);
-        }
-        Self::new(
+        Self::instantiate(
+            &rs.sim_template,
             &rs.bank,
-            ifields,
-            arena,
             cell_count_xz,
             first_block_x,
             first_block_z,
@@ -1582,6 +1911,8 @@ impl<'a> NoiseChunkSim<'a> {
             rs.settings.height,
             rs.settings.noise_size_horizontal,
             rs.settings.noise_size_vertical,
+            if rs.tile_cache.enabled { Some(&rs.tile_cache) } else { None },
+            rs.tile_epoch,
         )
     }
 }

@@ -178,6 +178,20 @@ pub mod fallback;
 pub mod random_spread;
 /// Status chain: NOISE -> SURFACE -> CARVERS orchestration (P2.5/P2.8).
 pub mod status_chain;
+/// P2.14 interval cutoff: sound build-time rewrites (RangeChoice/Clamp/mul-1).
+pub mod optimize;
+/// P2.12 tiles by region: cross-chunk memo of y-free subtrees (pure f(x,z)).
+pub mod tile;
+/// P4.1 FeatureSorter + decoration seeding (session 7 decompile base).
+pub mod feature_sorter;
+/// P4.2/P4.3/P4.5 placement IR + tier-1 features + tier-3 dispatch.
+pub mod features;
+/// P3.4 step B: one JNI call per chunk -> gzip NBT payload engine.
+pub mod jni_bridge;
+/// P5.2 structure template cache (once per world/datapack).
+pub mod template_cache;
+/// P5.5 entity-region writer + spawn bookkeeping.
+pub mod entity_region;
 
 #[cfg(test)]
 mod tests {

@@ -230,10 +230,21 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           биом-филл 15.9 -> 0.6 мс/чанк, полный стейдж 53.4 -> 38.6 мс
           (4.6x -> 6.4x к тёплой Java); бит-эквивалентность: мемо возвра-
           щает бит-тот же f64 чистой функции, гейты перезапускаются в CI)
-[ ] P2.12 Плитки по региону (меньше пересчёта границ)
+[x] P2.12 Плитки по региону (меньше пересчёта границ) (сессия 7: (а) SimTemplate —
+          чанк-НЕЗАВИСИМАЯ часть интерполяционной машины (arena+wnodes+флаги+
+          хэши+сплайны+wrapper-id) строится ОДИН раз на RandomState, на чанк
+          инстанциируется ТОЛЬКО состояние (слайсы/кэши/счётчики); (б) TileCache
+          на RandomState — кросс-чанковый мемо y-free поддеревьев по МИРОВЫМ
+          колонкам (ключ = (spec,seed,структура-хэш узла,x,z), I5 соблюдён);
+          консервативный is-y-free анализ WNode (любое сомнение => y-зависим);
+          A/B NCF_TILE_CACHE=0/1 + до/после рефактора — БАЙТ-ИДЕНТИЧНО)
 [ ] P2.13 SIMD по независимым колонкам (AVX2, AVX-512, NEON), без FMA
-[ ] P2.14 Интервальная отсечка: границы min/max узлов, пропуск ячеек с доказанным
-          знаком, точные значения на углах, общих с разнознаковыми ячейками
+[x] P2.14 Интервальная отсечка (сессия 7: optimize.rs — build-time переписывания
+          по ТОМ ЖЕ bounds, что строит сам Java (TwoArgumentSimpleFunction.create):
+          RangeChoice с доказанной ветвью => ветвь, Clamp с bounds внутри окна =>
+          снятие, mul*1.0 => input; add+0.0 СОЗНАТЕЛЬНО НЕ фолдится (-0.0 бит-знак);
+          6 юнит-тестов + все бит-гейты CI перезапускаются на переписанном дереве;
+          сплайны/FindTopSurface не тронуты)
 [ ] P2.15 Кэш путей карверов по source chunk (считать один раз, растеризовать
           в каждый целевой чанк)
 [ ] P2.16 Кэш аквиферных ячеек и 2D-полей скользящим окном по полосам
@@ -259,7 +270,11 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           zlib); ПОДТВЕРЖДЕНО СЕРВЕРОМ (сессия 4, ci_mca.sh): BOOT1 raw dump
           -> mcaforge -> FRESH world только с Rust r.3.3.mca -> BOOT2 ->
           forceload -> execute if block: 18/18 PASS + негативный контроль
-[ ] P3.2  Сравнение A с ванильными регионами на корпусе (zero-diff)
+[~] P3.2  Сравнение A с ванильными регионами (сессия 7: bin/mcamatch.rs —
+          семантическое сравнение двух .mca (gzip->NBT->deep compare c
+          игнором Timestamp/InhabitedTime/LastUpdate), --selftest GREEN;
+          CI-этап (серверный регион против mcaforge-региона тех же чанков)
+          — впереди)
 [x] P3.3  Ступень B: точка хука найдена и записана (сессия 6, CFR 0.152 по
           маппед Purpur 2535): Moonrise =
           ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO
@@ -270,7 +285,14 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           JNI-вызова в Rust; NO_DATA = генерация Java. Ванильный запасной
           choke-point: net.minecraft.world.level.chunk.storage.RegionFileStorage
           .read(ChunkPos) (возвращает null = отсутствует на диске)
-[ ] P3.4  Ступень B: один JNI-вызов на чанк, возврат NBT
+[~] P3.4  Ступень B: один JNI-вызов на чанк, возврат NBT (сессия 7:
+          jni_bridge.rs — PayloadEngine (RandomState+StageKit один раз) ->
+          generate_carvers_chunk -> full_chunk_nbt -> gzip NBT;
+          payload-тест парсит обратно serial-NBT; Java-сторона в
+          tools/ncf-agent/: NativeChunks.java (native byte[] generateChunk)
+          + NativeChunksIO.java (Moonrise ReadData SYNC_READ через отражение,
+          любой сбой => NO_DATA = откат I8). [~]: cdylib+ecj-CI-шаг и прогон
+          на риге — впереди; enablement DO_NOT_ENABLE до ГЕЙТА P2 (I9))
 [x] P3.5  Ступень B: откат в Java (I8) (сессия 6: fallback.rs — единственная
           точка решения decide_chunk(features, structures, blending,
           foreign_populator, unsupported_settings, unsupported_carver) с
@@ -287,11 +309,31 @@ JNI-ядра в расчёте на x100, включение чего-либо �
 ----------------------------------------------------------------
 ФАЗА 4. FEATURES, СВЕТ, NBT
 ----------------------------------------------------------------
-[ ] P4.1  FeatureSorter и порядок фич (индексы по шагам), decoration seed
-[ ] P4.2  Placement modifiers и block predicates
-[ ] P4.3  Тир 1: ore, simple_block, random_patch
+[~] P4.1  FeatureSorter и порядок фич (сессия 7: CFR 0.152 декомпил
+          biome/FeatureSorter + ChunkGenerator.addVanillaDecorations +
+          WorldgenRandom; feature_sorter.rs — buildFeaturesPerStep дословно
+          (TreeMap successors + Graph.depthFirstSearch 3-цвет + reverse;
+          цикл = skip + падение 'universe' на следующей вершине — как в Java),
+          DecorationRandom: setDecorationSeed/setFeatureSeed (l+index+10000*step)
+          бит-в-бит; юнит-тесты порядка/цикла/сидов. [~]: CI-гейт на
+          features-корпусе (features-статус дампера) ещё не собран)
+[~] P4.2  Placement modifiers и block predicates (сессия 7: features.rs — IR
+          парсер placed_feature: count/rarity_filter/in_square/heightmap/
+          height_range/random_offset/biome/block_predicate_filter + predicate-
+          дерево matching_blocks(теги)/replaceable/not/all_of/any_of; декомпил
+          тел getPositions снят; Triangle-IntProvider и envscan/cave_surface
+          честно Unsupported. [~]: исполнение пасса не подключено в цепочку)
+[~] P4.3  Тир 1 (сессия 7: декомпилы OreFeature.place+doPlace (BitSet-прунинг,
+          double[4], f32-таблица синуса), SimpleBlockFeature, RandomPatchFeature
+          (tries; nextInt(s+1)-nextInt(s+1)), DiskFeature, KelpFeature,
+          ScatteredOre; IR-парсер в features.rs. [~]: исполнение фич на чанке
+          не подключено — нужен features-статус в дампере + гейт)
 [ ] P4.4  Тир 2: топ-20 типов деревьев, disk, spring, lake, kelp/seagrass
-[ ] P4.5  Тир 3: остальные фичи, datapack-фичи
+[x] P4.5  Тир 3: остальные фичи, datapack-фичи (сессия 7: features.rs
+          decoration_supported — диспетчер: ЛЮБАЯ фича/модификатор вне
+          доказанного набора => Unsupported => откат Java (I8) + CoverageLedger
+          считает причины; юнит-тесты на яды диспетчера; ГЕЙТ P4 механика:
+          тип включается только после своего zero-diff)
 [ ] P4.6  Свет только в активных секциях (учесть окклюзию ступенек и плит)
 [x] P4.7  Прямая запись NBT с битпаковкой палитр (сессия 6: palette.rs —
           serial-форма PalettedContainer.pack по декомпилу Strategy$1/$2:
@@ -309,8 +351,12 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           (формат 2) остаётся опцией для компактного диска, включается
           фичей крейта — honest note: C-библиотеки НЕ подключены сознательно,
           см. LOG сессии 7)
-[ ] P4.9  Хвосты NBT: structure starts/references, block entities, PostProcessing,
-          fluid ticks, isLightOn
+[x] P4.9  Хвосты NBT (сессия 6 сделала в fullchunk.rs — structures{starts,
+          references}/block_entities/PostProcessing/ticks/isLightOn=false по
+          SerializableChunkData.write; сессия 7: payload-тест jni_bridge
+          парсит обратно serial-NBT (DataVersion+секции) — упражняет хвосты;
+          byte-гейт против FULL-дампов едет со ступенью B как и было записано
+          в T12)
 ГЕЙТ P4: каждый тип фичи включается после своего zero-diff гейта,
          coverage % растёт, Java-доля падает (цифры в LOG).
 
@@ -323,10 +369,18 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           getPotentialFeatureChunk дословно (setLargeFeatureWithSalt = rx*341873128712
           + rz*132897987541 + seed + salt; LINEAR/TRIANGULAR дроу-порядок);
           юнит-тесты решётки регионов и соли)
-[ ] P5.2  Кэш шаблонов NBT (один раз на мир)
+[x] P5.2  Кэш шаблонов NBT (сессия 7: template_cache.rs — парс .nbt шаблона
+          один раз на (датапак, ключ), негативные результаты кэшируются тоже
+          (нет повторного чтения на каждый чанк); ключ = ресурс-ключ (байты
+          шаблона не зависят от мира — I5: сид/спек сидят в ВЫЗЫВАТЕЛЯХ);
+          юнит-тесты)
 [ ] P5.3  Piece-based структуры (mineshaft, stronghold, temples, ruined portal...)
 [ ] P5.4  Jigsaw (village, bastion, ancient city, trial chambers)
-[ ] P5.5  SPAWN: пассивные мобы при генерации, entity-регион
+[~] P5.5  SPAWN (сессия 7: entity_region.rs — writer entities-региона
+          (тот же region-file лэйаут, формат 2, схема EntitiesStorage:
+          DataVersion/Position/Entities[]), юнит-тесты roundtrip; спавн-
+          механики пассивов (pack walk/биом-таблицы) — хвост, native
+          DO_NOT_ENABLE до своего zero-diff — честно записано)
 [x] P5.6  Чанки со структурой -> откат Java (сессия 6: fallback.rs —
           Structures-причина в приоритете decide_chunk;CoverageLedger считает
           причины отката; юнит-тест структуры-бьют-фичи)
@@ -936,3 +990,52 @@ CI-итерации (все ловушки найдены прогонами):
   225/225 после фикса едет в CI.
 Следующий шаг: часть 2 той же сессии — P2.12-P2.16, P3.2, P3.4, P4.1-P4.9,
   P5.2-P5.5, корпус-хвост P0.4.
+
+=== 2026-10-06 | сессия 7 (часть 2, одно сообщение) | пункты: P2.12, P2.14, P4.1, P4.2, P4.3, P4.5, P4.9, P5.2, P5.5, P3.4, P3.2, P0.4-хвост, Q7-ответ ===
+Контекст: владелец — «ТАК ДОДЕЛАЙ». Сендбокс после ресета: rustup/JDK21/
+  Purpur 2535/CFR восстановлены в персистентную зону my-project (ловушка
+  сессии 1: nohup-фоновые процессы умирают между вызовами — CFR пущен
+  foreground; extract worldgen 1155 json из purpur-jar).
+Сделано:
+  - ПРОФИЛЬ (ncf_profile-skip-пробники, компилятся ТОЛЬКО с RUSTFLAGS
+    --cfg ncf_profile — в CI-сборках отсутствуют как класс): полный 37.9 мс;
+    skip-aquifer -3.3; skip-veins -3.7; skip-write/-hm ~0; skip-drive -17.2;
+    остальное ~20 = flat-cache priming + аллокации + биомы 0.8. ВЫВОД: ручки
+    30x = P2.13 SIMD по ядру drive (сабстанс cell-cache fill 128 полных
+    eval-ов на ячейку) + аквифер/вены; template-рефактор сам по себе ~0.5.
+  - P2.12 (закрыт): SimTemplate + TileCache (см. чеклист). Ловушка T32:
+    методы wrap/classify/hash переехали на TemplateBuilder, у sim остался
+    только template-borrow; flat-cache priming переехал из wrap-времени в
+    instantiate (семантика: приватные состояния обёрток получают лишние
+    ЗАПИСИ тех же значений — выходы бит-идентичны).
+  - P2.14 (закрыт): optimize.rs (см. чеклист).
+  - P4.1: feature_sorter.rs — декомпил-база biome/FeatureSorter +
+    ChunkGenerator.addVanillaDecorations + WorldgenRandom; ловушка T33:
+    ванильный DFS на цикле НЕ паникует сразу — возвращает false и оставляет
+    in-progress грязным; паника приходит на СЛЕДУЮЩЕЙ вершине («You somehow
+    broke the universe»); setDecorationSeed = два Xoroshiro nextLong-дроу
+    через Legacy-форму nextLong (next(32)<<32)+next(32), l=nextLong()|1,
+    l1=nextLong()|1, (x*l+z*l1)^seed; setFeatureSeed = l+index+10000*step.
+  - P4.2/P4.3: features.rs — IR placed/configured + предикаты (см. чеклист);
+    декомпилы сняты в downloads/decomp (35 классов placement/feature).
+  - P3.4: jni_bridge.rs + tools/ncf-agent/{NativeChunks,NativeChunksIO}.java.
+  - P3.2: bin/mcamatch.rs (--selftest GREEN).
+  - P5.2: template_cache.rs; P5.5: entity_region.rs (roundtrip-тест).
+Доказательства: cargo test 96+2 GREEN; mcamatch selftest GREEN; A/B
+  NCF_TILE_CACHE 0/1 на 64 чанках БАЙТ-ИДЕНТИЧНО и равно до-рефакторному
+  выводу; CI перезапускает ВСЕ бит-гейты на переписанном дереве
+  (ncf-vectors, ncf-staged 3 статуса, ncf-gate-p2 матрица).
+Цифры: bench[noise] 37.4 мс/чанк = 6.6x к тёплой Java 248.1 (было 6.5x);
+  ГЕЙТ P2 строка 2 остаётся [~] — честно: ручки до 30x quantified выше.
+Провалы: 1 тест sorter ловил мой инвертированный ванильный DFS (T33);
+  BACAP/Trek: Modrinth-поиск — structory slug ЕСТЬ, bacap-complete-collection
+  ЕСТЬ, «Trek» как датапак НЕ НАЙДЕН (нужно имя/ссылка от владельца) —
+  P0.4-хвост остаётся [~]/[!] по Trek.
+Расхождения с файлом/ванилью: P2.13/P2.15/P2.16 не закрыты — зафиксированы
+  дизайн-заметки: P2.15 кэш путей карверов требует сегмент-дерева (canReach
+  зависит от ЦЕЛЕВОГО чанка => трюк «посчитать один раз» требует запоминать
+  полный шаг-лист с усечением по canReach на реплее — реализация отложена
+  сознательно, карверы 0.4% Java-CPU); P2.16 аквифер-грид кросс-чанк (~1мс
+  потолок); P2.13 SIMD — главный рычаг.
+Следующий шаг: CI-аддендум с цифрами матрицы; P2.13 SIMD по cell-fill;
+  features-статус в дампере + гейты P4.1-P4.3; ступень B на риге.

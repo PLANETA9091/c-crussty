@@ -352,12 +352,25 @@ pub fn generate_noise_chunk(rs: &RandomState, seed: i64, cx: i32, cz: i32) -> Re
     let mut sim = NoiseChunkSim::from_random_state(rs, 4, min_block_x, min_block_z);
     let aquifer_ref = &mut aquifer;
     let ore_ref = &ore_rule;
+    // NCF profiling only: compiled OUT of normal builds (never in CI); set
+    // stage skip flags via RUSTFLAGS="--cfg ncf_profile" cargo build --release.
+    let skip_aquifer = cfg!(ncf_profile) && std::env::var("NCF_SKIP_AQUIFER").is_ok();
+    let skip_veins = cfg!(ncf_profile) && std::env::var("NCF_SKIP_VEINS").is_ok();
+    let skip_write = cfg!(ncf_profile) && std::env::var("NCF_SKIP_WRITE").is_ok();
+    let skip_hm = cfg!(ncf_profile) && std::env::var("NCF_SKIP_HM").is_ok();
+    let skip_drive = cfg!(ncf_profile) && std::env::var("NCF_SKIP_DRIVE").is_ok();
+    let skip_biome = cfg!(ncf_profile) && std::env::var("NCF_SKIP_BIOME").is_ok();
+    if !skip_drive {
     sim.drive_blocks(&mut |bx: i32, by: i32, bz: i32, sim: &mut NoiseChunkSim| {
         // substance = cacheAllInCell(finalDensity + BeardifierMarker) — the
         // per-cell batch-filled cache (selectCellYZ), read at this block.
         let substance = sim.substance_value();
-        let mut state: Option<u32> = aquifer_ref.compute_substance(bx, by, bz, substance, air, water, lava);
-        if state.is_none() && ore_veins_enabled {
+        let mut state: Option<u32> = if skip_aquifer {
+            if substance < 0.0 { Some(default_block) } else { None }
+        } else {
+            aquifer_ref.compute_substance(bx, by, bz, substance, air, water, lava)
+        };
+        if state.is_none() && ore_veins_enabled && !skip_veins {
             // OreVeinifier order: toggle, ridged, gap — bound (interpolated
             // containing) values from the sim, never scalar.
             let toggle = sim.compute_field(12);
@@ -371,12 +384,15 @@ pub fn generate_noise_chunk(rs: &RandomState, seed: i64, cx: i32, cz: i32) -> Re
         };
         // doFill: `if (interpolatedState == AIR ...) continue;` — AIR blocks
         // are NOT written to the section and do NOT update the heightmaps.
-        if is_air_name(table.get(state).name.as_str()) {
+        if is_air_name(table.get(state).name.as_str()) || skip_write {
             return;
         }
         let sec_idx = ((by - min_y) / 16) as usize;
         sections[sec_idx].states[SectionData::block_index(bx & 15, by & 15, bz & 15)] = state;
         // heightmaps (doFill order: OCEAN_FLOOR_WG then WORLD_SURFACE_WG)
+        if skip_hm {
+            return;
+        }
         let op_ocean = HeightmapKind::OceanFloorWg.is_opaque_state(state, &table);
         let op_surface = HeightmapKind::WorldSurfaceWg.is_opaque_state(state, &table);
         // Heightmap.update receives SECTION-LOCAL x/z and WORLD y
@@ -390,6 +406,7 @@ pub fn generate_noise_chunk(rs: &RandomState, seed: i64, cx: i32, cz: i32) -> Re
             post_processing[sec_idx].push(packed);
         }
     });
+    } // end skip_drive
 
     // Biome quarts (fillBiomesFromNoise): per section, 4x4x4 quarts, order
     // i1=x, i2=y, i3=z (LevelChunkSection.fillBiomesFromNoise).
@@ -423,6 +440,7 @@ pub fn generate_noise_chunk(rs: &RandomState, seed: i64, cx: i32, cz: i32) -> Re
         f
     };
     let mut memo: crate::density::ColumnMemo = HashMap::new();
+    if skip_biome { return Ok(FillerChunk { min_y, height, chunk_min_x: min_block_x, chunk_min_z: min_block_z, sections, state_table: table, biome_table: biomes_tbl, heightmaps: vec![hm_ocean, hm_surface], post_processing }); }
     for sy in 0..sections_count as i32 {
         let section_y = (min_y / 16) + sy;
         let q_y0 = section_y * 4; // QuartPos.fromSection
