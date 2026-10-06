@@ -1125,3 +1125,33 @@ Uncached-fallback в сурфейс-пайплайне не стреляет: у
   дивергенций CI); trace-surface (100,101): биом-колонка голосует по y
   (river<->old_growth_pine_taiga). Матч с сервером — гейты
   ncf-staged(surface)/(carvers) в CI.
+
+=== 2026-10-07 | сессия 7 (аддендум 5: T35 ГЛУБЖЕ — obfuscateSeed был BE/BE, а Guava LE/LE) ===
+CI на 580e40f: ncf-staged(surface) pairs=225 equal=188 diverged=37 — НО набор
+  СДВИНУЛСЯ (первые дивергенции в других блоках: c_100_101 (12,62,0) ->
+  (8,62,3), c_109_102 (11,59,0) -> (15,57,4) и т.д.) => фикс живой, но не
+  закрывает. Ключевая дедукция: гейт noise ЗЕЛЁНЫЙ => наши ХРАНИМЫЕ биомы
+  (климат-резолвер) байт-точны у сервера на каждом кварте => остаток — в
+  самом голосовании. Единственный вход голоса, не закрытый вектор-гейтом —
+  biomeZoomSeed = obfuscateSeed(worldSeed).
+БАЙТ-УРОВЕНЬ Guava 33.3.1-jre (именно она в комплекте сервера, распакована
+  из bundler-cache; javap нет — констант-пул и байткод парсились питоном,
+  scripts/cpool_dump.py):
+  Hashing.sha256() => MessageDigestHashFunction; hashLong(J) (AbstractHash-
+  Function): newHasher(8).putLong(seed).hash(); MessageDigestHasher extends
+  AbstractByteHasher: scratch = ByteBuffer.allocate(8).order(LITTLE_ENDIAN)
+  (ctor offset 10-13!) => sha256 считается по 8 МЛАДШЕ-БАЙТНЫМ (LE) байтам
+  seed; asLong => BytesHashCode.padToLong: longValue |= (bytes[i]&0xFF)
+  << (i*8) (offset 28-45) => первые 8 байт дайджеста читаются LE.
+  ИТОГ: obfuscateSeed = LE(sha256(LE(seed))[0..8]).
+  Наш код был sha256(seed.to_be_bytes()) + from_be_bytes — НЕВЕРНО с обоих
+  концов (комментарий в sha256.rs ссылался на «Guava BIG-ENDIAN» — это
+  относится к Longs.toByteArray, который в ЭТОМ пути не вызывается).
+Значения: seed 0 -> 0x7a0b81a1f57055af; seed 3053459 -> 6241266214822437719
+  (0x569d6e8e03236357); старый (баг) для 3053459 -> 2879608200182920751.
+ФИКС (этот коммит): sha256.rs obfuscate_seed -> to_le_bytes/from_le_bytes +
+  known-answer тест (python hashlib как независимый оракул: 0/1/-1/3053459).
+Доказательства: cargo test 99; A/B: pre(58abb4f) vs seedfix на 5x5
+  (100..104): 24 равны, c_100_101 изменён (coarse_dirt -> grass_block на
+  (12,62,0)); ab_seedfix != ab_post (фикс семени ДЕЙСТВИТЕЛЬНО меняет
+  выход, не дубль клампа). Матч с сервером — решает гейт ncf-staged в CI.

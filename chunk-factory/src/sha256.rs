@@ -1,8 +1,13 @@
 //! NCF P2.5 — SHA-256 (zero-dep), needed ONLY for
 //! BiomeManager.obfuscateSeed = Hashing.sha256().hashLong(seed).asLong()
-//! (Guava: the 8 BIG-ENDIAN bytes of the long, digest's first 8 bytes read
-//! big-endian). Surface-rule biome conditions and carver biome checks sample
-//! through the BiomeManager 8-neighbour fiddled vote keyed by this seed.
+//! (Guava 33.3.1-jre, BYTE-LEVEL verified in the shipped jar:
+//! hashLong -> newHasher(8).putLong(seed) -> AbstractByteHasher scratch
+//! ByteBuffer.allocate(8).order(LITTLE_ENDIAN) => the digest message is the
+//! 8 LITTLE-ENDIAN bytes of the long; asLong -> padToLong
+//! longValue |= (bytes[i] & 0xFF) << (i*8) => the digest's first 8 bytes are
+//! read LITTLE-ENDIAN. T35 addendum 5: our BE/BE variant was the root of the
+//! surface/carver stagediff divergences — a wrong zoom seed moved every vote
+//! corner while all non-vote gates stayed green).
 
 const K: [u32; 64] = [
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -78,13 +83,14 @@ pub fn sha256(data: &[u8]) -> [u8; 32] {
 }
 
 /// BiomeManager.obfuscateSeed(long) = Hashing.sha256().hashLong(seed).asLong().
-/// Guava hashLong writes the long BIG-ENDIAN; asLong reads the first 8 bytes
-/// of the digest big-endian.
+/// Guava 33.3.1-jre (byte-level, shipped jar): the hasher scratch buffer is
+/// LITTLE_ENDIAN, so the digest runs over seed.to_le_bytes(); padToLong reads
+/// the digest's first 8 bytes little-endian.
 pub fn obfuscate_seed(seed: i64) -> i64 {
-    let digest = sha256(&seed.to_be_bytes());
+    let digest = sha256(&seed.to_le_bytes());
     let mut b = [0u8; 8];
     b.copy_from_slice(&digest[..8]);
-    i64::from_be_bytes(b)
+    i64::from_le_bytes(b)
 }
 
 #[cfg(test)]
@@ -109,6 +115,17 @@ mod tests {
             hex(&long),
             "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1"
         );
+    }
+
+    /// obfuscateSeed = sha256(LE bytes of the long), first 8 digest bytes
+    /// read LE. Known answers computed with python hashlib as the
+    /// independent oracle (T35 addendum 5).
+    #[test]
+    fn obfuscate_seed_le_known_answers() {
+        assert_eq!(obfuscate_seed(0), 8794265229978523055);
+        assert_eq!(obfuscate_seed(1), -6467378160175308932);
+        assert_eq!(obfuscate_seed(-1), 6759447113877070610);
+        assert_eq!(obfuscate_seed(3053459), 6241266214822437719);
     }
 
     fn hex(b: &[u8]) -> String {
