@@ -145,6 +145,14 @@ rcon.password=$RCON_PW
 online-mode=false
 spawn-protection=0
 sync-chunk-writes=true
+# T37 (run 37537274105): the 2401-chunk staged dump runs as main-thread
+# managedBlock batches (getChunkFuture().join(), ~29 chunks/s, failed=0) —
+# Paper's watchdog read the >15s parked batches as "server has not responded"
+# and STOPPED the healthy dump at 60s (processed=1771/2401). max-tick-time=-1
+# disables the watchdog kill; it cannot change any dumped chunk's bytes (it
+# only decides whether the process gets killed), so the corpus stays honest.
+# A real chunk-system deadlock is still caught by the DUMP_TIMEOUT FATAL.
+max-tick-time=-1
 EOF
 
 log "booting (pack=$PACK seed=$SEED status=$STATUS radius=$RADIUS)"

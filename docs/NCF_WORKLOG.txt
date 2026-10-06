@@ -1231,3 +1231,30 @@ CI run 37525009608 (HEAD 61d0562):
 Доказательства: лог ячейки 3053459/vanilla (FATAL + unknown command, job
   112493782226), job-уровень ранна 37528979115 (staged-гейты SUCCESS),
   bash -n; повторный прогон полной матрицы — CI-ран этого пуша.
+
+=== 2026-10-07 | сессия 7 (аддендум 9: T37 — вотчдог убивал ЗДОРОВЫЙ дамп ГЕЙТ P2) ===
+Прогон с фиксом T36 (run 37537274105, HEAD bdb2605): ncf-staged
+  surface/carvers/noise = SUCCESS (третий зелёный прогон подряд — T35-фикс
+  стабилен), всё ядро зелёное. ГЕЙТ P2: плагин СТАВИТСЯ, dump СТАРТУЕТ
+  («GOLDEN STAGED DUMP start ... chunks=2401»), но сервер был ОСТАНОВЛЕН
+  вотчдогом на 61й секунде дампа: «The server has not responded for 15
+  seconds» с +10с (тред-дамп каждые 5с), stop на +60с при
+  processed=1771/2401 failed=0 (~29 chunks/s — дамп БЫСТРЫЙ и ЗДОРОВЫЙ).
+Ловушка T37: stagedTick блокирует main-thread в managedBlock
+  (getChunkFuture().join() батчами по 8) — Paper-вотчдог (max-tick-time=60000)
+  считает длинные запаркованные батчи «no response» и УБИВАЕТ процесс,
+  хотя это документированный Purpur-паттерн («THIS IS NOT A BUG OR A
+  CRASH»). Стек в тред-дампе (артефакт p2-gate-vanilla-3053459,
+  p2_vanilla_3053459_boot.log): dumpStagedOne -> getChunkFuture ->
+  managedBlock -> park (TIMED_WAITING) — ровно проектный путь.
+ФИКС (этот коммит): server.properties ячейки gate-p2 + max-tick-time=-1.
+  ЭТО НЕ JVM-ФЛАГ (ограничение владельца про JVM-флаги не задето) и он НЕ
+  меняет ни байта корпуса — вотчдог решает только «убить процесс или нет»;
+  честный отказ при реальном дедлоке остаётся (DUMP_TIMEOUT=3600s FATAL).
+  bash -n OK; veccheck/stagediff контракты не тронуты.
+Цифры дампа: 200/2401 на +13с, 1771/2401 на +63с, failed=0 => полный дамп
+  ~85-90с; ячейка целиком ~8-10мин (provision+build_golden+boot+dump+
+  gen-batch 92с+stagediff) — в лимите 90мин/джобу.
+Доказательства: артефакт-лог ранна 37537274105 (джоба 112521359538), job-
+  уровень того же ранна (staged-гейты SUCCESS), bash -n; повторный прогон —
+  CI-ран этого пуша.
