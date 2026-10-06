@@ -160,11 +160,24 @@ pub mod vanilla_biomes;
 pub mod vectors;
 /// Ladder A: offline .mca region writer (P3.1).
 pub mod region;
-
-// TODO(phase-2+): surface rules, aquifers, carvers, heightmaps, biomes
-// TODO(phase-3):  ladder B (Moonrise chunk-IO bridge), stage C bridges
-// TODO(phase-4):  features, light engine, palette bitpacking, compression
-// TODO(phase-5):  jigsaw, structure starts + references, spawn
+/// SimplexNoise + PerlinSimplexNoise (P2.5 temperature conditions).
+pub mod simplex;
+/// SHA-256 (BiomeManager.obfuscateSeed) (P2.5).
+pub mod sha256;
+/// Biome climate facts + BiomeManager fiddled vote (P2.5/P2.8).
+pub mod biomes;
+/// Carvers: cave/canyon worlds + carving masks + applyCarvers driver (P2.8).
+pub mod carvers;
+/// PalettedContainer serial-form bit-packing (P2.10-tail/P4.7/T12).
+pub mod palette;
+/// FULL-chunk NBT assembly + NBT tails (P3.4/P4.9).
+pub mod fullchunk;
+/// Java fallback policy + coverage accounting (P3.5/P5.6, I8).
+pub mod fallback;
+/// RandomSpread structure placement prescreen (P5.1).
+pub mod random_spread;
+/// Status chain: NOISE -> SURFACE -> CARVERS orchestration (P2.5/P2.8).
+pub mod status_chain;
 
 #[cfg(test)]
 mod tests {

@@ -13,6 +13,7 @@
 
 use chunk_factory::filler::generate_noise_chunk;
 use chunk_factory::router::{RandomState, WorldgenDir};
+use chunk_factory::status_chain::{generate_carvers_chunk, generate_surface_chunk, StageKit};
 use chunk_factory::sections::{filler_to_staged, parse_staged_file, state_table_from_staged, write_staged_file, StagedChunk};
 use std::path::Path;
 use std::process::ExitCode;
@@ -125,16 +126,36 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         let z1: i32 = args.get(5).ok_or("z1")?.parse().map_err(|_| "z1")?;
         let wg = args.get(6).ok_or("worldgen dir")?;
         let out = args.get(7).ok_or("out dir")?;
+        let status = args
+            .iter()
+            .position(|a| a == "--status")
+            .and_then(|i| args.get(i + 1))
+            .cloned()
+            .unwrap_or_else(|| "noise".to_string());
+        // tags (carver replaceable) resolve against the same extract
+        std::env::set_var("NCF_DATA_ROOT", wg);
         let dir = WorldgenDir::load(Path::new(wg)).map_err(|e| e.to_string())?;
-        let rs = RandomState::build(&dir, "minecraft", "overworld", seed).map_err(|e| e.to_string())?;
+        let mut rs = RandomState::build(&dir, "minecraft", "overworld", seed).map_err(|e| e.to_string())?;
+        let mut kit = if status == "noise" {
+            None
+        } else {
+            Some(StageKit::build(&mut rs, &dir).map_err(|e| e.to_string())?)
+        };
         let seed_dir = Path::new(out).join(format!("seed_{seed}"));
         std::fs::create_dir_all(&seed_dir).map_err(|e| e.to_string())?;
+        let status_key = format!("minecraft:{status}");
         let t0 = std::time::Instant::now();
         let mut n = 0usize;
         for cx in x0..=x1 {
             for cz in z0..=z1 {
-                let fc = generate_noise_chunk(&rs, seed, cx, cz).map_err(|e| e.to_string())?;
-                let mut st = filler_to_staged(&fc, "minecraft:noise", 4556);
+                let fc = match (status.as_str(), kit.as_mut()) {
+                    ("noise", _) => generate_noise_chunk(&rs, seed, cx, cz),
+                    ("surface", Some(k)) => generate_surface_chunk(&mut rs, k, &dir, seed, cx, cz),
+                    ("carvers", Some(k)) => generate_carvers_chunk(&mut rs, k, &dir, seed, cx, cz),
+                    (s, _) => return Err(format!("gen-batch: unsupported status {s}")),
+                }
+                .map_err(|e| e.to_string())?;
+                let mut st = filler_to_staged(&fc, &status_key, 4556);
                 st.x = cx;
                 st.z = cz;
                 std::fs::write(seed_dir.join(format!("c_{cx}_{cz}.nbt")), write_staged_file(&st))
@@ -143,7 +164,7 @@ fn real_main(args: &[String]) -> Result<i32, String> {
             }
         }
         let elapsed = t0.elapsed().as_secs_f64();
-        println!("gen-batch: {n} chunks in {elapsed:.2}s ({:.1} chunks/s single-core, incl. staged NBT write)", n as f64 / elapsed);
+        println!("gen-batch[{status}]: {n} chunks in {elapsed:.2}s ({:.1} chunks/s single-core, incl. staged NBT write)", n as f64 / elapsed);
         return Ok(0);
     }
     if args.first().map(|s| s == "--gen").unwrap_or(false) {
@@ -153,10 +174,28 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         let cz: i32 = args.get(3).ok_or("--gen: cz")?.parse().map_err(|_| "cz")?;
         let wg = args.get(4).ok_or("--gen: worldgen dir")?;
         let out = args.get(5).ok_or("--gen: out file")?;
+        let status = args
+            .get(6)
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "noise".to_string());
+        std::env::set_var("NCF_DATA_ROOT", wg);
         let dir = WorldgenDir::load(Path::new(wg)).map_err(|e| e.to_string())?;
-        let rs = RandomState::build(&dir, "minecraft", "overworld", seed).map_err(|e| e.to_string())?;
-        let fc = generate_noise_chunk(&rs, seed, cx, cz).map_err(|e| e.to_string())?;
-        let mut st = filler_to_staged(&fc, "minecraft:noise", 4556);
+        let mut rs = RandomState::build(&dir, "minecraft", "overworld", seed).map_err(|e| e.to_string())?;
+        let status_key = format!("minecraft:{status}");
+        let fc = match status.as_str() {
+            "noise" => generate_noise_chunk(&rs, seed, cx, cz),
+            "surface" | "carvers" => {
+                let mut kit = StageKit::build(&mut rs, &dir).map_err(|e| e.to_string())?;
+                if status == "surface" {
+                    generate_surface_chunk(&mut rs, &mut kit, &dir, seed, cx, cz)
+                } else {
+                    generate_carvers_chunk(&mut rs, &mut kit, &dir, seed, cx, cz)
+                }
+            }
+            s => return Err(format!("--gen: unsupported status {s}")),
+        }
+        .map_err(|e| e.to_string())?;
+        let mut st = filler_to_staged(&fc, &status_key, 4556);
         st.x = cx;
         st.z = cz;
         std::fs::write(out, write_staged_file(&st)).map_err(|e| e.to_string())?;
@@ -236,10 +275,12 @@ fn selftest() -> Result<(), String> {
     let fc = FillerChunk {
         min_y: -64,
         height: 384,
+        chunk_min_x: 112,
+        chunk_min_z: 144,
         sections,
         state_table: table,
         biome_table: biomes,
-        heightmaps: [
+        heightmaps: vec![
             chunk_factory::filler::HeightmapData {
                 kind: chunk_factory::filler::HeightmapKind::OceanFloorWg,
                 first_available: [-64; 256],

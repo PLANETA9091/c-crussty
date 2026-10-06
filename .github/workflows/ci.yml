@@ -81,6 +81,42 @@ jobs:
         run: |
           cargo build
           cargo test
+      # C3/T7: no FMA contraction anywhere in the factory. The crate never
+      # writes mul_add and this build pins -C target-cpu to the baseline, so
+      # ANY vfmadd/vfmsub/vfnmadd in the disassembly is a regression.
+      - name: C3/T7 FMA-free check (release disassembly)
+        working-directory: chunk-factory
+        run: |
+          cargo build --release
+          if objdump -d target/release/bench target/release/stagediff 2>/dev/null | grep -E "vfmadd|vfmsub|vfnmadd|fnmadd|fnmsub"; then
+            echo "FMA instruction found in release build — I2/T7 violated"
+            exit 1
+          else
+            echo "no FMA instructions — OK"
+          fi
+      # P0.7 / ГЕЙТ P2 line 2 honest measurement (single-core, no NBT write)
+      - name: noise-stage bench (honest P2 gate numbers)
+        working-directory: chunk-factory
+        run: |
+          python3 - <<'PY'
+          import zipfile, os
+          import subprocess
+          # extract the vanilla worldgen tree from CI's provisioned jar if present
+          jar = os.path.join('..', 'ci-server', 'versions', '1.21.10', 'purpur-1.21.10.jar')
+          if not os.path.exists(jar):
+              subprocess.run(['curl', '-fsSL', '--retry', '3', '-o', '/tmp/purpur.jar',
+                              'https://api.purpurmc.org/v2/purpur/1.21.10/2535/download'], check=True)
+              jar = '/tmp/purpur.jar'
+          root = '/tmp/wg-extract'
+          z = zipfile.ZipFile(jar)
+          for name in z.namelist():
+              if name.endswith('.json') and (name.startswith('data/minecraft/worldgen/') or name.startswith('data/minecraft/tags/block/')):
+                  dest = os.path.join(root, *name.split('/'))
+                  os.makedirs(os.path.dirname(dest), exist_ok=True)
+                  open(dest, 'wb').write(z.read(name))
+          print('extracted worldgen for bench')
+          PY
+          NCF_WG=/tmp/wg-extract ./target/release/bench 3053459 64 noise | tee ../bench/golden/results/bench_noise_$(date -u +%Y-%m-%d).log
 
   golden-harness:
     runs-on: ubuntu-latest
@@ -168,9 +204,16 @@ jobs:
   ncf-staged:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        # session 6: SURFACE (P2.5 surface rules) and CARVERS (P2.8 carvers)
+        # joined the NOISE oracle as staged zero-diff gates
+        status: [noise, surface, carvers]
     env:
       PURPUR_BUILD: '2535'
       SEED: '3053459'
+      STAGED_STATUS: '${{ matrix.status }}'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -259,5 +302,44 @@ jobs:
             ci-server/golden/terralith_s*/
             ci-server/golden/tectonic_s*/
             ci-datapacks/*.zip
+          if-no-files-found: warn
+          retention-days: 30
+
+  # ГЕЙТ P2 line 1: >=10^4 chunks x >=5 seeds x {vanilla, Terralith, Tectonic}
+  # zero-diff at the NOISE status. 15 CI cells = 5 seeds x 3 packs, 2401
+  # chunks (49x49 spiral) each -> 36015 chunks of bit-exact evidence per run.
+  ncf-gate-p2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: ['3053459', '90210', '424242', '8675309', '133700']
+        pack: [vanilla, terralith, tectonic]
+    env:
+      PURPUR_BUILD: '2535'
+      SEED: '${{ matrix.seed }}'
+      PACK: '${{ matrix.pack }}'
+      STATUS: 'noise'
+      RADIUS: '24'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: chunk-factory
+      - name: gate cell ${{ matrix.pack }} seed ${{ matrix.seed }} (2401 chunks, stagediff)
+        run: bash bench/golden/ci_gate_p2.sh
+      - name: upload gate-cell artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-gate-${{ matrix.pack }}-${{ matrix.seed }}
+          path: |
+            bench/golden/results/p2_*.log
           if-no-files-found: warn
           retention-days: 30

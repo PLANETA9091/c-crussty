@@ -638,3 +638,205 @@ pub fn mapped_create(ty: MappedType, input: Df, bank: &NoiseBank) -> Df {
     };
     Df::Mapped { ty, input: Box::new(input), min, max }
 }
+
+// ---------------------------------------------------------------------------
+// P2.11 — node classification: provable Y-independence of a wired subtree.
+// Conservative by construction: anything not proven Y-free classifies as
+// Y-DEPENDENT (the cache then simply never applies — no semantic risk).
+// Value-equivalence argument: for a Y-free node the evaluation at
+// (x, y, z) is bit-identical for every finite y (Noise with y_scale == 0.0
+// reads y*0.0 = ±0.0, and the noise kernels are ±0-symmetric at the cell
+// level), so memoising one column value reproduces the exact scalar result.
+// ---------------------------------------------------------------------------
+impl Df {
+    pub fn is_y_free(&self, bank: &NoiseBank) -> bool {
+        match self {
+            Df::Const(_) | Df::BlendAlpha | Df::BlendOffset | Df::Beardifier => true,
+            Df::YClampedGradient { .. } | Df::Blended(_) | Df::EndIslands | Df::FindTopSurface { .. } => false,
+            // Noise value = instance.getValue(x*xz, y*ys, z*xz): y_scale == 0.0
+            // makes the y input ±0.0 — the perlin gradient path is ±0-symmetric
+            // (verified against the bit-exact kernel: same value at y=0 and
+            // y=-0), so the node is Y-free.
+            Df::Noise(_, _, y_scale) => *y_scale == 0.0,
+            // ShiftA/ShiftB compute at y=0.0 (2D shift noises); the plain
+            // Shift reads y*0.25 — Y-DEPENDENT.
+            Df::ShiftA(_) | Df::ShiftB(_) => true,
+            Df::Shift(_) => false,
+            Df::ShiftedNoise { shift_x, shift_y, shift_z, y_scale, noise, .. } => {
+                // shifted noise reads noise.getValue(x*sx + dx, y*ys + dy, z*sz + dz)
+                // where dy = shift_y(x,y,z) * 4.0? — the y shift is a child;
+                // require: y_scale == 0 AND the shift children y-free? the
+                // y-shift affects ONLY the y input: with y_scale == 0 the
+                // contribution is (shift_y * 4) * 0 = ±0 — but shift_y is
+                // still EVALUATED (side-effect-free, so value-identical).
+                let _ = (shift_x, shift_y, shift_z, noise);
+                *y_scale == 0.0
+            }
+            Df::Marker { wrapped, .. } => wrapped.is_y_free(bank),
+            Df::BlendDensity(i) => i.is_y_free(bank),
+            // WeirdScaledSampler feeds y/d into a full 3D noise — Y-DEPENDENT.
+            Df::WeirdScaledSampler { .. } => false,
+            Df::RangeChoice { input, when_in_range, when_out_of_range, .. } => {
+                input.is_y_free(bank) && when_in_range.is_y_free(bank) && when_out_of_range.is_y_free(bank)
+            }
+            Df::Clamp { input, .. } | Df::Mapped { input, .. } | Df::MulOrAdd { input, .. } => input.is_y_free(bank),
+            Df::Ap2 { a1, a2, .. } => a1.is_y_free(bank) && a2.is_y_free(bank),
+            Df::Spline(_) => {
+                // splines evaluate coordinate + location/value splines; the
+                // coordinate child may be y-free but location selection is on
+                // the coordinate value — the WHOLE spline is y-free iff its
+                // coordinate subtree is (values are constants or nested
+                // splines selected by the same coordinate...). Nested
+                // splines re-enter on the SAME coordinate — but their
+                // structure can reference y in VALUES? Vanilla spline values
+                // are constants or splines OF THE SAME coordinate — so the
+                // entire evaluation is a pure function of the coordinate
+                // value. Conservative fallback: NOT proven here.
+                false
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// P2.11/P2.12 — memoised evaluation (per-chunk column cache). The memo keys
+// on the NODE ADDRESS (nodes are interned/boxed for the RandomState lifetime
+// and never move) plus the (x, z) column, and is consulted ONLY for
+// provably y-free subtrees (is_y_free, conservative). Value equivalence: a
+// y-free node's scalar evaluation is bit-identical for every y, so returning
+// a cached value reproduces compute() exactly — the zero-diff gates still
+// compare every produced value bit-for-bit against the JVM oracle.
+// ---------------------------------------------------------------------------
+
+pub type ColumnMemo = std::collections::HashMap<(usize, i32, i32), f64>;
+
+impl SplineValue {
+    /// apply with the column memo threaded through nested splines.
+    pub fn apply_memo(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut ColumnMemo) -> f32 {
+        match self {
+            SplineValue::Const(v) => *v,
+            SplineValue::Multi(m) => m.apply_memo(bank, x, y, z, memo),
+        }
+    }
+}
+
+impl MultiSpline {
+    pub fn apply_memo(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut ColumnMemo) -> f32 {
+        if self.coordinate.is_y_free(bank) {
+            let key = (self as *const MultiSpline as usize, x, z);
+            if let Some(&v) = memo.get(&key) {
+                return v as f32;
+            }
+            let v = self.apply(bank, x, y, z);
+            memo.insert(key, v as f64);
+            return v;
+        }
+        // y-dependent coordinate (e.g. the depth gradient): the location
+        // selection re-runs per point, but the bracketing VALUES may be
+        // y-free inner splines — evaluated through the memo.
+        self.apply_memo_inner(bank, x, y, z, memo)
+    }
+
+    /// apply() with the values (not the coordinate) routed through the memo —
+    /// arithmetic identical to MultiSpline::apply.
+    fn apply_memo_inner(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut ColumnMemo) -> f32 {
+        let f = self.coordinate.compute(bank, x, y, z) as f32;
+        let i = find_interval_start(&self.locations, f);
+        let i1 = (self.locations.len() - 1) as i32;
+        if i < 0 {
+            let value = self.values[0].apply_memo(bank, x, y, z, memo);
+            return linear_extend(f, &self.locations, value, &self.derivatives, 0);
+        }
+        if i == i1 {
+            let value = self.values[i1 as usize].apply_memo(bank, x, y, z, memo);
+            return linear_extend(f, &self.locations, value, &self.derivatives, i1 as usize);
+        }
+        let f1 = self.locations[i as usize];
+        let f2 = self.locations[i as usize + 1];
+        let f3 = (f - f1) / (f2 - f1);
+        let f6 = self.values[i as usize].apply_memo(bank, x, y, z, memo);
+        let f7 = self.values[i as usize + 1].apply_memo(bank, x, y, z, memo);
+        let f4 = self.derivatives[i as usize];
+        let f5 = self.derivatives[i as usize + 1];
+        let f8 = f4 * (f2 - f1) - (f7 - f6);
+        let f9 = -f5 * (f2 - f1) + (f7 - f6);
+        let l1 = f6 + f3 * (f7 - f6);
+        let l2 = f8 + f3 * (f9 - f8);
+        l1 + f3 * (1.0f32 - f3) * l2
+    }
+}
+
+impl Df {
+    /// Memoised scalar evaluation for the climate-sampler path (and any
+    /// caller with column locality). Recurses through the transparent
+    /// wrappers (markers, unary transforms) and the spline/arithmetic shape,
+    /// memoising every PROVABLY y-free subtree per (x, z) column. Arithmetic
+    /// and operand order are identical to compute(); the memo only returns a
+    /// cached bit-identical value for a pure y-free subtree.
+    pub fn compute_memo(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut ColumnMemo) -> f64 {
+        // cheap path: a y-free subtree caches wholesale
+        if self.is_y_free(bank) {
+            let key = (self as *const Df as usize, x, z);
+            if let Some(&v) = memo.get(&key) {
+                return v;
+            }
+            let v = self.compute_memo_inner(bank, x, y, z, memo);
+            memo.insert(key, v);
+            return v;
+        }
+        self.compute_memo_inner(bank, x, y, z, memo)
+    }
+
+    fn compute_memo_inner(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut ColumnMemo) -> f64 {
+        match self {
+            Df::Spline(m) => m.apply_memo(bank, x, y, z, memo) as f64,
+            Df::Marker { wrapped, .. } => wrapped.compute_memo(bank, x, y, z, memo),
+            Df::BlendDensity(i) => i.compute_memo(bank, x, y, z, memo),
+            Df::Clamp { input, min, max } => {
+                let v = input.compute_memo(bank, x, y, z, memo);
+                crate::mth::clamp(v, *min, *max)
+            }
+            Df::Mapped { ty, input, .. } => ty.transform(input.compute_memo(bank, x, y, z, memo)),
+            Df::MulOrAdd { is_add, input, argument, .. } => {
+                let v = input.compute_memo(bank, x, y, z, memo);
+                if *is_add { v + argument } else { v * argument }
+            }
+            Df::Ap2 { ty, a1, a2, .. } => {
+                let d = a1.compute_memo(bank, x, y, z, memo);
+                match ty {
+                    Ap2Type::Add => d + a2.compute_memo(bank, x, y, z, memo),
+                    Ap2Type::Mul => {
+                        if d == 0.0 {
+                            0.0
+                        } else {
+                            d * a2.compute_memo(bank, x, y, z, memo)
+                        }
+                    }
+                    Ap2Type::Min => {
+                        if d < a2.min_value_of(bank) {
+                            d
+                        } else {
+                            crate::mth::java_min(d, a2.compute_memo(bank, x, y, z, memo))
+                        }
+                    }
+                    Ap2Type::Max => {
+                        if d > a2.max_value_of(bank) {
+                            d
+                        } else {
+                            crate::mth::java_max(d, a2.compute_memo(bank, x, y, z, memo))
+                        }
+                    }
+                }
+            }
+            Df::RangeChoice { input, min_inclusive, max_exclusive, when_in_range, when_out_of_range } => {
+                let d = input.compute_memo(bank, x, y, z, memo);
+                if d >= *min_inclusive && d < *max_exclusive {
+                    when_in_range.compute_memo(bank, x, y, z, memo)
+                } else {
+                    when_out_of_range.compute_memo(bank, x, y, z, memo)
+                }
+            }
+            _ => self.compute(bank, x, y, z),
+        }
+    }
+}

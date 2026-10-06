@@ -366,3 +366,28 @@ mod tests {
         assert_eq!(FLOAT_UNIT.to_bits(), (103u32) << 23); // 2^(103-127) = 2^-24
     }
 }
+
+impl LegacyRandomSource {
+    /// WorldgenRandom.setLargeFeatureSeed — region-grid structure seeding
+    /// (P5.1 prescreen / P2.8 carver reseeding equivalent on the Legacy line).
+    pub fn set_large_feature_seed(&mut self, base_seed: i64, chunk_x: i32, chunk_z: i32) {
+        self.set_seed(base_seed);
+        let random_long = self.next_long();
+        let random_long1 = self.next_long();
+        let l = (chunk_x as i64)
+            .wrapping_mul(random_long)
+            ^ (chunk_z as i64).wrapping_mul(random_long1)
+            ^ base_seed;
+        self.set_seed(l);
+    }
+
+    /// WorldgenRandom.setLargeFeatureWithSalt — verbatim.
+    pub fn set_large_feature_with_salt(&mut self, level_seed: i64, region_x: i32, region_z: i32, salt: i32) {
+        let l = (region_x as i64)
+            .wrapping_mul(341873128712)
+            .wrapping_add((region_z as i64).wrapping_mul(132897987541))
+            .wrapping_add(level_seed)
+            .wrapping_add(salt as i64);
+        self.set_seed(l);
+    }
+}

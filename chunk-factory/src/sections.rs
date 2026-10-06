@@ -714,7 +714,7 @@ pub fn filler_to_staged(fc: &FillerChunk, seed_status: &str, data_version: i32) 
         sections.push(StagedSection { y, palette: states, data, biome_palette: biomes, biome_data: bdata });
     }
     let mut heightmaps = Vec::new();
-    for hm in &fc.heightmaps {
+    for (slot, hm) in fc.heightmaps.iter().enumerate() {
         // Heightmap.data = SimpleBitStorage(9, 256): value = stored (absolute -
         // minY); 7 entries per long, least significant first.
         let mut longs = vec![0i64; 37];
@@ -722,9 +722,16 @@ pub fn filler_to_staged(fc: &FillerChunk, seed_status: &str, data_version: i32) 
             let stored = (fa - fc.min_y).max(0) as i64;
             longs[col / 7] |= stored << ((col % 7 * 9) as i32);
         }
-        let name = match hm.kind {
-            HeightmapKind::OceanFloorWg => "OCEAN_FLOOR_WG",
-            HeightmapKind::WorldSurfaceWg => "WORLD_SURFACE_WG",
+        // slot order (carvers.rs): 0/1 = the WORLDGEN pair; 2..6 = the four
+        // FINAL heightmaps primed at CARVERS
+        let name = match slot {
+            0 => "OCEAN_FLOOR_WG",
+            1 => "WORLD_SURFACE_WG",
+            2 => "OCEAN_FLOOR",
+            3 => "WORLD_SURFACE",
+            4 => "MOTION_BLOCKING",
+            5 => "MOTION_BLOCKING_NO_LEAVES",
+            _ => continue,
         };
         heightmaps.push((name.to_string(), longs));
     }

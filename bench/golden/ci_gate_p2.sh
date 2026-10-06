@@ -1,0 +1,195 @@
+#!/usr/bin/env bash
+# bench/golden/ci_gate_p2.sh — ГЕЙТ P2 line 1: staged zero-diff gate matrix
+# cell (owner directive 2026-10-05: "сделай всё, что не закрыто на борде").
+#
+# One CI job = one (PACK, SEED) cell. The matrix (ci.yml) spans
+#   seeds  {3053459, 90210, 424242, 8675309, 133700}
+#   packs  {vanilla, terralith, tectonic}
+#   radius 24 -> 49x49 = 2401 chunks per cell; 15 cells = 36015 chunks
+# (>= 10^4 chunks x >=5 seeds x the 3 packs, at NOISE status).
+#
+# Protocol per cell:
+#   1. provision pinned Purpur 2535 + mojang-mapped jar (same as ci_gate.sh);
+#   2. worldgen extract: vanilla data/minecraft/worldgen (+ tags for carver
+#      gates); for packs: vanilla base + pack overlay merge (the ci_datapacks
+#      protocol: overlays last-match-wins);
+#   3. FRESH boot (canonical seed, sync-chunk-writes), staged dump at STATUS
+#      via /goldendump ... status <status> (spiral, radius R);
+#   4. cargo run --release stagediff --gen-batch --status <status> (RandomState
+#      built once, NCF_DATA_ROOT = the extract for tag expansion);
+#   5. stagediff <java> <rust> — exit 0 <=> every chunk EQUAL.
+set -euo pipefail
+
+GOLDEN_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(cd "$GOLDEN_DIR/../.." && pwd)"
+CRATE="$REPO/chunk-factory"
+SERVER_DIR="${SERVER_DIR:-$REPO/ci-server}"
+SEED="${SEED:-3053459}"
+PACK="${PACK:-vanilla}"
+STATUS="${STATUS:-noise}"
+RADIUS="${RADIUS:-24}"
+PURPUR_BUILD="${PURPUR_BUILD:-2535}"
+PURPUR_URL="${PURPUR_URL:-https://api.purpurmc.org/v2/purpur/1.21.10/${PURPUR_BUILD}/download}"
+RCON_PORT=25575
+RCON_PW=bench-ab-2301
+BOOT_TIMEOUT="${BOOT_TIMEOUT:-300}"
+DUMP_TIMEOUT="${DUMP_TIMEOUT:-3600}"
+DP_ROOT="${DP_ROOT:-$REPO/ci-datapacks}"
+RESULTS="$GOLDEN_DIR/results"
+
+log() { printf '[ci_gate_p2 %s/%s] %s %s\n' "$PACK" "$SEED" "$(date -u +%H:%M:%S)" "$*" >&2; }
+die() { log "FATAL: $*"; exit 1; }
+
+mkdir -p "$RESULTS" "$SERVER_DIR/versions" "$SERVER_DIR/plugins" "$DP_ROOT"
+
+# ---- 1. provision ------------------------------------------------------------
+
+if [ ! -f "$SERVER_DIR/versions/purpur-1.21.10.jar" ]; then
+    log "downloading Purpur 1.21.10 build $PURPUR_BUILD"
+    curl -fsSL --retry 3 -o "$SERVER_DIR/versions/purpur-1.21.10.jar" "$PURPUR_URL"
+fi
+cd "$SERVER_DIR"
+if [ ! -f versions/1.21.10/purpur-1.21.10.jar ]; then
+    has_craftworld() {
+        python3 -c "import zipfile,sys; sys.exit(0 if 'org/bukkit/craftbukkit/CraftWorld.class' in zipfile.ZipFile(sys.argv[1]).namelist() else 1)" "$1" 2>/dev/null
+    }
+    rm -f eula.txt
+    log "unpacking mojang-mapped image"
+    java -Dpaperclip.patchOnly=true -jar versions/purpur-1.21.10.jar > "$SERVER_DIR/patchonly.log" 2>&1 &
+    PC_PID=$!
+    UNPACKED=0
+    for _ in $(seq 1 180); do
+        if [ -f versions/1.21.10/purpur-1.21.10.jar ] && has_craftworld versions/1.21.10/purpur-1.21.10.jar; then
+            UNPACKED=1; break
+        fi
+        kill -0 "$PC_PID" 2>/dev/null || break
+        sleep 2
+    done
+    kill "$PC_PID" 2>/dev/null || true
+    sleep 1
+    { [ "$UNPACKED" = 1 ] && has_craftworld versions/1.21.10/purpur-1.21.10.jar; } || die "remap failed"
+fi
+log "mapped jar ready"
+
+# ---- 2. worldgen extract -----------------------------------------------------
+
+if [ "$PACK" = vanilla ]; then
+    EXTRACT="$SERVER_DIR/worldgen-extract"
+    if [ ! -d "$EXTRACT/data" ]; then
+        log "extracting vanilla worldgen + block tags"
+        python3 - "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar" "$EXTRACT" <<'PY'
+import zipfile, os, sys
+z = zipfile.ZipFile(sys.argv[1])
+n = 0
+for name in z.namelist():
+    if name.endswith('.json') and (
+        name.startswith('data/minecraft/worldgen/') or name.startswith('data/minecraft/tags/block/')
+    ):
+        dest = os.path.join(sys.argv[2], *name.split('/'))
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        open(dest, 'wb').write(z.read(name))
+        n += 1
+print(f"extracted {n} json files")
+PY
+    fi
+else
+    # pack cell: reuse the merged extract produced by ci_datapacks.sh if
+    # present; otherwise build it here (vanilla base + pack overlay merge).
+    case "$PACK" in
+        terralith) SLUG="terralith" ;;
+        tectonic)  SLUG="tectonic" ;;
+        *) die "unknown pack $PACK" ;;
+    esac
+    EXTRACT="$DP_ROOT/${SLUG}-extract"
+    if [ ! -d "$EXTRACT/data" ]; then
+        log "building merged extract for $SLUG"
+        bash "$GOLDEN_DIR/ci_datapacks.sh" --extract-only "$SLUG" 2>/dev/null \
+            || die "pack extract failed (run ci_datapacks.sh protocol)"
+    fi
+fi
+
+# ---- 3. boot + staged dump ---------------------------------------------------
+
+rm -rf world world_nether world_the_end
+mkdir -p logs
+
+if [ "$PACK" != vanilla ]; then
+    # inject the pack into the world datapacks dir (same as ci_datapacks.sh)
+    mkdir -p world/datapacks
+    cp "$DP_ROOT/$SLUG.zip" world/datapacks/
+fi
+
+cat > eula.txt <<'EOF'
+eula=true
+EOF
+cat > server.properties <<EOF
+level-seed=$SEED
+enable-rcon=true
+rcon.port=$RCON_PORT
+rcon.password=$RCON_PW
+online-mode=false
+spawn-protection=0
+sync-chunk-writes=true
+EOF
+
+log "booting (pack=$PACK seed=$SEED status=$STATUS radius=$RADIUS)"
+nohup setsid java -Xms512M -Xmx1536m -jar versions/purpur-1.21.10.jar --nogui \
+    </dev/null > "$RESULTS/p2_${PACK}_${SEED}_boot.log" 2>&1 &
+disown || true
+
+waited=0; done_line=""
+while [ $waited -lt $BOOT_TIMEOUT ]; do
+    sleep 2; waited=$((waited+2))
+    pgrep -f 'purpur-1.21.10.jar' >/dev/null || { sleep 2; pgrep -f 'purpur-1.21.10.jar' >/dev/null || die "server died during boot"; }
+    done_line=$(grep -aoE 'Done \([0-9.]+s\)!?' logs/latest.log 2>/dev/null | head -1 || true)
+    [ -n "$done_line" ] && break
+done
+[ -n "$done_line" ] || { tail -30 logs/latest.log >&2 || true; die "no Done( marker"; }
+log "booted: $done_line"
+
+CX=0; CZ=0
+python3 "$GOLDEN_DIR/../ab/rcon.py" "$RCON_PORT" "$RCON_PW" \
+    "goldendump $CX $CZ $RADIUS status $STATUS" || die "dump command failed"
+
+waited=0; marker=""
+while [ $waited -lt $DUMP_TIMEOUT ]; do
+    sleep 5; waited=$((waited+5))
+    marker=$(grep -a 'GOLDEN STAGED DUMP COMPLETE .* n=' logs/latest.log 2>/dev/null | tail -1 || true)
+    [ -n "$marker" ] && break
+done
+[ -n "$marker" ] || { tail -40 logs/latest.log >&2 || true; die "no staged dump marker in ${DUMP_TIMEOUT}s"; }
+log "$marker"
+
+python3 "$GOLDEN_DIR/../ab/rcon.py" "$RCON_PORT" "$RCON_PW" "stop" >/dev/null 2>&1 || true
+for _ in $(seq 1 60); do
+    pgrep -f 'purpur-1.21.10.jar' >/dev/null || break
+    sleep 1
+done
+pkill -f 'purpur-1.21.10.jar' 2>/dev/null || true
+
+JAVA_DIR=$(printf '%s' "$marker" | sed -n 's/.* dir=//p' | tr -d '\r')
+[ -n "$JAVA_DIR" ] && [ -d "$JAVA_DIR" ] || die "staged corpus dir not found"
+N_FILES=$(find "$JAVA_DIR" -name 'c_*.nbt' | wc -l)
+EXPECTED=$(( (2*RADIUS+1) * (2*RADIUS+1) ))
+[ "$N_FILES" -eq "$EXPECTED" ] || die "expected $EXPECTED dumps, got $N_FILES"
+log "java corpus: $N_FILES chunks"
+
+# ---- 4. Rust gen-batch --------------------------------------------------------
+
+cd "$CRATE"
+RUST_DIR="$SERVER_DIR/rust_p2_${PACK}_${SEED}_${STATUS}"
+rm -rf "$RUST_DIR"
+mkdir -p "$RUST_DIR"
+X0=$((CX - RADIUS)); X1=$((CX + RADIUS))
+Z0=$((CZ - RADIUS)); Z1=$((CZ + RADIUS))
+
+log "rust gen-batch $X0..$X1 x $Z0..$Z1"
+cargo run --release --bin stagediff -- --gen-batch "$SEED" "$X0" "$X1" "$Z0" "$Z1" \
+    "$EXTRACT" "$RUST_DIR" --status "$STATUS" 2>&1 | tee "$RESULTS/p2_${PACK}_${SEED}_${STATUS}_gen.log"
+
+# ---- 5. the gate --------------------------------------------------------------
+
+log "stagediff gate"
+cargo run --release --bin stagediff -- "$JAVA_DIR" "$RUST_DIR" \
+    2>&1 | tee "$RESULTS/p2_${PACK}_${SEED}_${STATUS}_diff.log"
+log "GATE CELL PASS: $PACK seed=$SEED status=$STATUS $N_FILES/$N_FILES"

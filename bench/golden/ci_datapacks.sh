@@ -232,6 +232,93 @@ PY
     log "$slug corpus done (256/0)"
 }
 
+# ci_gate_p2.sh helper: `ci_datapacks.sh --extract-only <slug>` provisions the
+# mapped jar and builds the merged (vanilla-base + pack-overlay) worldgen
+# extract WITHOUT booting or dumping.
+if [ "${1:-}" = "--extract-only" ]; then
+    SLUG_X="${2:?--extract-only needs a slug}"
+    ZIP_X="$DP_ROOT/${SLUG_X}.zip"
+    if [ ! -f "$ZIP_X" ]; then
+        log "fetching $SLUG_X (extract-only)"
+        fetch_pack "$SLUG_X" "$ZIP_X"
+    fi
+    EXTRACT_X="$DP_ROOT/${SLUG_X}-extract"
+    rm -rf "$EXTRACT_X"
+    python3 - "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar" "$EXTRACT_X" <<'PY'
+import zipfile, os, sys
+z = zipfile.ZipFile(sys.argv[1])
+n = 0
+for name in z.namelist():
+    if name.endswith('.json') and (
+        name.startswith('data/minecraft/worldgen/') or name.startswith('data/minecraft/tags/block/')
+    ):
+        dest = os.path.join(sys.argv[2], *name.split('/'))
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        open(dest, 'wb').write(z.read(name))
+        n += 1
+print(f"extracted {n} base json files")
+PY
+    python3 - "$ZIP_X" "$EXTRACT_X" "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar" <<'PY'
+import json, os, sys, zipfile
+
+zip_path, dest_root, server_jar = sys.argv[1], sys.argv[2], sys.argv[3]
+z = zipfile.ZipFile(zip_path)
+
+data_format = json.loads(zipfile.ZipFile(server_jar).read('version.json'))[
+    'pack_version']['data_major']
+
+def fmt_range(f):
+    if isinstance(f, dict):
+        return int(f.get('min_inclusive', 0)), int(f.get('max_inclusive', 1 << 30))
+    if isinstance(f, (list, tuple)):
+        return int(f[0]), int(f[-1])
+    return int(f), int(f)
+
+mcmeta = None
+if 'pack.mcmeta' in z.namelist():
+    try:
+        mcmeta = json.loads(z.read('pack.mcmeta'))
+    except Exception:
+        mcmeta = None
+matching_overlays = []
+overlay_section = {}
+if mcmeta:
+    overlay_section = mcmeta.get('overlays') or (
+        mcmeta.get('pack', {}).get('overlays') if isinstance(mcmeta.get('pack'), dict) else None
+    ) or {}
+for entry in overlay_section.get('entries', []):
+        lo, hi = fmt_range(entry.get('formats', entry.get('min_format')))
+        if lo <= data_format <= hi:
+            matching_overlays.append(entry)
+        elif entry.get('formats') is None and entry.get('min_format') is not None:
+            lo2, hi2 = fmt_range(entry.get('min_format'))
+            if lo2 <= data_format <= hi2:
+                matching_overlays.append(entry)
+
+def extract_worldgen(prefix):
+    n = 0
+    for name in z.namelist():
+        if name.startswith(prefix + 'data/') and name.endswith('.json'):
+            rel = name[len(prefix) + len('data/'):]
+            if not rel.startswith('minecraft/worldgen/') and not rel.startswith('minecraft/tags/block/'):
+                continue
+            dest = os.path.join(dest_root, *rel.split('/'))
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            open(dest, 'wb').write(z.read(name))
+            n += 1
+    return n
+
+n = extract_worldgen('')
+print(f"extracted {n} base worldgen json files")
+for oi, entry in enumerate(matching_overlays):
+    prefix = entry.get('directory', '').strip('/') + '/'
+    n = extract_worldgen(prefix)
+    print(f"overlay[{oi}] '{prefix}': {n} json files (last match wins)")
+PY
+    log "extract-only complete: $EXTRACT_X"
+    exit 0
+fi
+
 run_pack "terralith_s$SEED" "terralith"
 run_pack "tectonic_s$SEED" "tectonic"
 # task 5 (P0.4 tail): Structory ships as a mod jar whose data/ tree is a

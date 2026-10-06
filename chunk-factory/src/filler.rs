@@ -15,6 +15,7 @@
 //! they fall under I8 Java-fallback territory until Phase 5. Documented.
 
 use crate::aquifer::{GlobalFluidPicker, NoiseBasedAquifer, OreStateIds, OreVeinifierRule};
+use crate::density::Df;
 use crate::interpolator::NoiseChunkSim;
 use crate::router::RandomState;
 use crate::xoroshiro::XoroshiroRandomSource;
@@ -201,7 +202,7 @@ pub struct HeightmapData {
 }
 
 impl HeightmapData {
-    fn new(kind: HeightmapKind, min_y: i32) -> Self {
+    pub fn new(kind: HeightmapKind, min_y: i32) -> Self {
         HeightmapData { kind, first_available: [min_y; 256] }
     }
 
@@ -246,13 +247,19 @@ impl HeightmapData {
 pub struct FillerChunk {
     pub min_y: i32,
     pub height: i32,
+    /// world-space min block X/Z (pos.getMinBlockX/Z) — needed by the
+    /// surface/carver passes (session 6).
+    pub chunk_min_x: i32,
+    pub chunk_min_z: i32,
     /// height/16 sections, section index = (y - min_y) / 16.
     pub sections: Vec<SectionData>,
     pub state_table: StateTable,
     pub biome_table: BiomeTable,
     /// [0] = OCEAN_FLOOR_WG, [1] = WORLD_SURFACE_WG (the two WORLDGEN
     /// heightmaps primed at NOISE/SURFACE statuses — task 5-a fact).
-    pub heightmaps: [HeightmapData; 2],
+    /// Session 6: slots 2..6 are the four FINAL heightmaps, primed at the
+    /// first CARVERS-stage write (carvers.rs).
+    pub heightmaps: Vec<HeightmapData>,
     /// Per section: packed shorts from markPosForPostprocessing
     /// (packOffsetCoordinates = (x&15) | (y&15)<<4 | (z&15)<<8).
     pub post_processing: Vec<Vec<u16>>,
@@ -394,6 +401,28 @@ pub fn generate_noise_chunk(rs: &RandomState, seed: i64, cx: i32, cz: i32) -> Re
     );
     let q_min_x = min_block_x.div_euclid(4);
     let q_min_z = min_block_z.div_euclid(4);
+
+    // P2.11 — the six climate fields classified once; y-free fields are
+    // memoised per quart COLUMN (x,z): the scalar tree is a pure function,
+    // and a y-free tree returns bit-identical values for every y, so the
+    // cache reproduces the exact per-quart scalar result (see density.rs
+    // is_y_free for the equivalence argument).
+    let climate_fields: [&Df; 6] = [
+        &rs.router.temperature,
+        &rs.router.vegetation,
+        &rs.router.continents,
+        &rs.router.erosion,
+        &rs.router.depth,
+        &rs.router.ridges,
+    ];
+    let field_y_free: [bool; 6] = {
+        let mut f = [false; 6];
+        for (i, field) in climate_fields.iter().enumerate() {
+            f[i] = field.is_y_free(&rs.bank);
+        }
+        f
+    };
+    let mut memo: crate::density::ColumnMemo = HashMap::new();
     for sy in 0..sections_count as i32 {
         let section_y = (min_y / 16) + sy;
         let q_y0 = section_y * 4; // QuartPos.fromSection
@@ -412,12 +441,26 @@ pub fn generate_noise_chunk(rs: &RandomState, seed: i64, cx: i32, cz: i32) -> Re
                     let by = qy * 4;
                     let bz = qz * 4;
                     // quantizeCoord takes FLOAT (Climate.java line 62).
-                    let t = rs.router.temperature.compute(&rs.bank, bx, by, bz) as f32;
-                    let hu = rs.router.vegetation.compute(&rs.bank, bx, by, bz) as f32;
-                    let co = rs.router.continents.compute(&rs.bank, bx, by, bz) as f32;
-                    let er = rs.router.erosion.compute(&rs.bank, bx, by, bz) as f32;
-                    let de = rs.router.depth.compute(&rs.bank, bx, by, bz) as f32;
-                    let wi = rs.router.ridges.compute(&rs.bank, bx, by, bz) as f32;
+                    let fields = [
+                        (&rs.router.temperature, 0usize),
+                        (&rs.router.vegetation, 1),
+                        (&rs.router.continents, 2),
+                        (&rs.router.erosion, 3),
+                        (&rs.router.depth, 4),
+                        (&rs.router.ridges, 5),
+                    ];
+                    let mut vals = [0.0f64; 6];
+                    for (fi, (field, _)) in fields.iter().enumerate() {
+                        let _ = field_y_free[fi];
+                        vals[fi] = field.compute_memo(&rs.bank, bx, by, bz, &mut memo);
+                    }
+                    let [t, hu, co, er, de, wi] = vals;
+                    let t = t as f32;
+                    let hu = hu as f32;
+                    let co = co as f32;
+                    let er = er as f32;
+                    let de = de as f32;
+                    let wi = wi as f32;
                     let target = crate::climate::TargetPoint {
                         temperature: crate::climate::quantize_coord(t),
                         humidity: crate::climate::quantize_coord(hu),
@@ -437,10 +480,12 @@ pub fn generate_noise_chunk(rs: &RandomState, seed: i64, cx: i32, cz: i32) -> Re
     Ok(FillerChunk {
         min_y,
         height,
+        chunk_min_x: min_block_x,
+        chunk_min_z: min_block_z,
         sections,
         state_table: table,
         biome_table: biomes_tbl,
-        heightmaps: [hm_ocean, hm_surface],
+        heightmaps: vec![hm_ocean, hm_surface],
         post_processing,
     })
 }

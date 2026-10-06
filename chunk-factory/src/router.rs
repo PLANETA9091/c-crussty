@@ -114,7 +114,8 @@ impl WorldgenDir {
         self.files.get(ns).and_then(|k| k.get(kind)).map(|m| m.len()).unwrap_or(0)
     }
 
-    fn get(&self, ns: &str, kind: &str, name: &str) -> Option<&String> {
+    /// Public since session 6 (status_chain reads the surface_rule JSON).
+    pub fn get(&self, ns: &str, kind: &str, name: &str) -> Option<&String> {
         self.files.get(ns)?.get(kind)?.get(name)
     }
 }
@@ -686,6 +687,10 @@ pub struct RandomState {
     pub router: Router,
     pub settings: NoiseSettingsInfo,
     pub level_seed: i64,
+    /// settings registry coordinates (session 6: surface_rule IR lives in the
+    /// same noise_settings JSON).
+    pub settings_ns: String,
+    pub settings_name: String,
     /// `RandomState.random` — the worldgen positional factory the SurfaceSystem
     /// ctor receives (surface depth jitter, clay bands seed) and the base of
     /// every `getOrCreateRandomFactory` (vertical_gradient random_name). The
@@ -794,6 +799,8 @@ impl RandomState {
             router,
             settings,
             level_seed,
+            settings_ns: settings_ns.to_string(),
+            settings_name: settings_name.to_string(),
             worldgen_factory: factory,
             noise_key_by_index,
             spec_hash,

@@ -272,3 +272,65 @@ mod tests {
         });
     }
 }
+
+// ---------------------------------------------------------------------------
+// Mth additions for P2.8 (carvers) — sin/cos are TABLE functions in Java
+// (65536 entries, block-step precision); random_between family is f32.
+// ---------------------------------------------------------------------------
+
+use std::sync::OnceLock;
+
+/// Mth.SIN[i] = (float)Math.sin((double)i * Math.PI * 2.0 / 65536.0)
+fn sin_table() -> &'static [f32; 65536] {
+    static TABLE: OnceLock<[f32; 65536]> = OnceLock::new();
+    TABLE.get_or_init(|| {
+        let mut t = [0.0f32; 65536];
+        let mut i = 0usize;
+        while i < 65536 {
+            t[i] = ((i as f64) * std::f64::consts::PI * 2.0 / 65536.0).sin() as f32;
+            i += 1;
+        }
+        t
+    })
+}
+
+/// Mth.sin(float): SIN[(int)(value * 10430.378f) & 0xFFFF]
+#[inline]
+pub fn sin_f32(value: f32) -> f32 {
+    let idx = (value * 10430.378f32) as i32 & 0xFFFF;
+    sin_table()[idx as usize]
+}
+
+/// Mth.cos(float): SIN[(int)(value * 10430.378f + 16384.0f) & 0xFFFF]
+#[inline]
+pub fn cos_f32(value: f32) -> f32 {
+    let idx = (value * 10430.378f32 + 16384.0f32) as i32 & 0xFFFF;
+    sin_table()[idx as usize]
+}
+
+/// Mth.abs(float)
+#[inline]
+pub fn abs_f32(v: f32) -> f32 {
+    f32::from_bits(f32::to_bits(v) & 0x7FFF_FFFF)
+}
+
+/// Mth.randomBetween(RandomSource, float low, float high):
+/// low + random.nextFloat() * (high - low)
+pub fn random_between<R: crate::jrandom::RandomSource + ?Sized>(random: &mut R, low: f32, high: f32) -> f32 {
+    low + random.next_f32() * (high - low)
+}
+
+/// Mth.randomBetweenInclusive(RandomSource, int min, int max):
+/// min + random.nextInt(max - min + 1)
+pub fn random_between_inclusive<R: crate::jrandom::RandomSource + ?Sized>(random: &mut R, min: i32, max: i32) -> i32 {
+    min + random.next_int_bound(max - min + 1)
+}
+
+/// TrapezoidFloat.sample: f = max - min; g = (f - plateau) / 2; h = f - g;
+/// min + nextFloat() * h + nextFloat() * g
+pub fn trapezoid_float<R: crate::jrandom::RandomSource + ?Sized>(random: &mut R, min: f32, max: f32, plateau: f32) -> f32 {
+    let f = max - min;
+    let g = (f - plateau) / 2.0f32;
+    let h = f - g;
+    min + random.next_f32() * h + random.next_f32() * g
+}

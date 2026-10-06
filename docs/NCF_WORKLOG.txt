@@ -125,7 +125,8 @@ JNI-ядра в расчёте на x100, включение чего-либо �
 [x] P0.6  Скрипт diff чанков (семантика NBT) и отчёт расхождений по блокам
           (bench/golden/tools/ncfdiff.py: декод палитр/heightmaps, verdicts
           EQUAL/SEMANTIC_EQUAL/DIVERGED, manifest-режим, selftest)
-[~] P0.7  Заменить оценки бюджета (раздел 6) реальными цифрами
+[x] P0.7  Раздел 6 заполнен реальными цифрами обеих сторон (ваниль P0.1
+          JFR-профиль; натив — bench.rs single-core без NBT-записи, CI-джоба)
           (vanilla-сторона замерена — раздел 6 заполнен; нативная сторона:
           скалярный ванильный роутер 7020 eval за ~0.1-0.3 c single-core в
           release — измерение сравнимое с Java появится на ступени C)
@@ -141,7 +142,13 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           байт-стабильно, версионируемо, CI-извлекаемо)
 [x] P1.2  IR для noise_router (DAG density functions), noises (полный набор
           типов кодеков 1.21.10; zero-dep JSON-парсер в crate, I7)
-[ ] P1.3  IR для surface_rule, источника биомов (multi_noise), карверов
+[x] P1.3  IR для surface_rule, источника биомов (multi_noise), карверов
+          (сессия 6: surface_rules.rs парсит surface_rule-дерево noise_settings
+          (все 12 vanilla-условий + bandlands/block/sequence/condition + PAPER
+          optionally_flat_bedrock = вертикальный градиент при дефолтном
+          конфиге); carvers.rs парсит configured_carver (float/height
+          providers, vertical anchors, expandable replaceable-теги); biomes.rs
+          грузит факты биомов (temperature/modifier/carvers) из worldgen/biome)
 [ ] P1.4  IR для placed/configured features, structure sets, шаблонов
 [x] P1.5  Скалярный эталонный вычислитель IR (density::Df::compute; все 15
           полей NoiseRouter живого мира совпали бит-в-бит, 7020/7020)
@@ -173,7 +180,14 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           climate_points 7593/7593 бит-в-бит vs живой сервер; ThreadLocal
           last-result и identity-шорткат node==leaf покрыты контрактом
           порядка строк в climate.csv)
-[ ] P2.5  Surface rules
+[x] P2.5  Surface rules (сессия 6: дословный SurfaceRules + SurfaceSystem —
+          buildSurface-проход по колонкам, lazy-кэши условий на эпохах
+          lastUpdateXZ/lastUpdateY, getSurfaceDepth (jitter worldgen.at(x,0,z)),
+          clay-полосы (generateBands/makeBands, порядок дроу сохранён),
+          erodedBadlandsExtension, frozenOceanExtension с f32-температурой
+          (TEMPERATURE_NOISE/FROZEN/BIOME_INFO = PerlinSimplexNoise 1234/3456/2345),
+          topMaterial для carver dirt-фикса; гейт = stagediff SURFACE 225/225,
+          CI ncf-staged (matrix noise|surface|carvers))
 [x] P2.6  Аквиферы (сессия 5: NoiseBasedAquifer дословно — сетка 16x12x16,
           floodedness/spread/lava/barrier, similarity/pressure с at(blockY)
           семантикой, SURFACE_SAMPLING_OFFSETS; гейт: substance+decision+sched
@@ -181,18 +195,41 @@ JNI-ядра в расчёте на x100, включение чего-либо �
 [x] P2.7  Ore veins (сессия 5: OreVeinifier дословно — vein_toggle/ridged/gap
           через bound-интерполятор, f32-константы, oreRandom = fromHashOf(
           "minecraft:ore").forkPositional; покрыт staged-гейтом и aquacheck)
-[ ] P2.8  Карверы
-[~] P2.9  Heightmaps (сессия 5: WORLDGEN-пара OCEAN_FLOOR_WG/WORLD_SURFACE_WG
+[x] P2.8  Карверы (сессия 6: дословные WorldCarver/CaveWorldCarver/
+          CanyonWorldCarver + CarvingMask (BitSet, (x&15)|(z&15)<<4|(y-minY)<<8)
+          + applyCarvers 17x17: seed+i3 per carver НЕIGHBOR-биома (прямой
+          climate-сэмпл без BiomeManager-голосования), setLargeFeatureSeed,
+          ОДИН аквифер центрального чанка на всех карверов; ProtoChunk-
+          семантика setBlockState на CARVERS (hasOnlyAir-счётчики, prime
+          FINAL-heightmaps на первой записи); carve-флюид = aquifer.
+          computeSubstance(ctx, 0.0) = AIR/WATER/LAVA/отказ; гейт = stagediff
+          CARVERS, CI ncf-staged)
+[x] P2.9  Heightmaps (сессия 5: WG-пара OCEAN_FLOOR_WG/WORLD_SURFACE_WG —
+          225/225 staged; сессия 6: четыре FINAL (OCEAN_FLOOR, WORLD_SURFACE,
+          MOTION_BLOCKING, MOTION_BLOCKING_NO_LEAVES) — primeHeightmaps-скан
+          сверху + update-машина по предикатам типов, замороженная WG-пара,
+          Heightmap.Types лествица предикатов по декомпилу) (сессия 5: WORLDGEN-пара OCEAN_FLOOR_WG/WORLD_SURFACE_WG
           закрыта на NOISE-статусе — unprimed update-машина с точным
           скан-семантикой, длинная упаковка 9-бит SimpleBitStorage — в staged-
           гейте 225/225; FINAL-типы после CARVERS — не начато)
-[~] P2.10 Сборка секций (сессия 5: содержимое секций на NOISE-статусе — блоки
+[x] P2.10 Сборка секций (сессия 5: содержимое NOISE 225/225 DECODED-схема;
+          сессия 6: SURFACE + CARVERS тем же гейтом; бит-упаковка палитр —
+          palette.rs (P4.7) соserial-формой Strategy$1/$2) (сессия 5: содержимое секций на NOISE-статусе — блоки
           + биомы — бит-в-бит 225/225 через DECODED-схему (I1: семантическое
           равенство); бит-упаковка палитр (PalettedContainer serial form) и
           статусы SURFACE/CARVERS+ — не начато, см. P2.5)
 
 Оптимизации поверх эталона (каждая с zero-diff против скаляра)
-[ ] P2.11 Классификация узлов: const / XZ-only / XYZ, вынос XZ на колонку
+[x] P2.11 Классификация узлов (сессия 6: is_y_free — консервативный
+          доказательный анализатор Y-независимости поддерева (Noise с
+          y_scale==0, ShiftA/B, маркеры-проходы, арифметика и составные);
+          вынос Y-free на колонку: ColumnMemo (compute_memo / apply_memo —
+          мемоизация по адресу узла + (x,z) через маркеры/арифметику/сплайны;
+          сплайны: y-free координата кэшируется целиком, y-dependent координата
+          (depth-градиент) — кэширует СКОВОЗНЫЕ y-free value-ветви);
+          биом-филл 15.9 -> 0.6 мс/чанк, полный стейдж 53.4 -> 38.6 мс
+          (4.6x -> 6.4x к тёплой Java); бит-эквивалентность: мемо возвра-
+          щает бит-тот же f64 чистой функции, гейты перезапускаются в CI)
 [ ] P2.12 Плитки по региону (меньше пересчёта границ)
 [ ] P2.13 SIMD по независимым колонкам (AVX2, AVX-512, NEON), без FMA
 [ ] P2.14 Интервальная отсечка: границы min/max узлов, пропуск ячеек с доказанным
@@ -202,8 +239,14 @@ JNI-ядра в расчёте на x100, включение чего-либо �
 [ ] P2.16 Кэш аквиферных ячеек и 2D-полей скользящим окном по полосам
 
 ГЕЙТ P2:
-[ ] 0 расхождений на >=10^4 чанков x >=5 seed x {ваниль, Terralith, Tectonic}
-[ ] стадия шума >=30x к тёплой Java на ядро
+[~] 0 расхождений на >=10^4 чанков x >=5 seed x {ваниль, Terralith, Tectonic}
+    (сессия 6: инструмент ГЕЙТА готов — ci_gate_p2.sh, 15 CI-ячеек
+    (5 сидов x 3 пака) x 2401 чанков (49x49 spiral) = 36015 чанков бит-в-бит;
+    первый прогон матрицы — см. addendum сессии 6)
+[~] стадия шума >=30x к тёплой Java на ядро
+    (сессия 6: 6.4x после P2.11 (53.4 -> 38.6 мс/чанк; цель <=8.27 мс);
+    дальнейшие рычаги: мемоизация y-free ветвей ВНУТРИ interpolated-машины
+    (drive_blocks 9.4 мс), P2.13 SIMD, P2.14 интервальная отсечка)
 Иначе фаза не закрыта.
 
 
@@ -217,11 +260,26 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           -> mcaforge -> FRESH world только с Rust r.3.3.mca -> BOOT2 ->
           forceload -> execute if block: 18/18 PASS + негативный контроль
 [ ] P3.2  Сравнение A с ванильными регионами на корпусе (zero-diff)
-[ ] P3.3  Ступень B: найти точку хука в Moonrise chunk IO, записать класс/метод
+[x] P3.3  Ступень B: точка хука найдена и записана (сессия 6, CFR 0.152 по
+          маппед Purpur 2535): Moonrise =
+          ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO
+          $RegionDataController.readData(int chunkX, int chunkZ) ->
+          ReadData(ReadResult result, DataInputStream input, CompoundTag
+          syncRead, int recalculateCount), ReadResult = {NO_DATA, HAS_DATA,
+          SYNC_READ}. Ступень B = вернуть SYNC_READ с CompoundTag из ОДНОГО
+          JNI-вызова в Rust; NO_DATA = генерация Java. Ванильный запасной
+          choke-point: net.minecraft.world.level.chunk.storage.RegionFileStorage
+          .read(ChunkPos) (возвращает null = отсутствует на диске)
 [ ] P3.4  Ступень B: один JNI-вызов на чанк, возврат NBT
-[ ] P3.5  Ступень B: откат в Java (I8), метрика coverage %
-[ ] P3.6  Замер pregen на >=8 ядрах: чанков/с/ядро и масштабирование по ядрам
-[ ] P3.7  Холодный старт vs тёплый (отдельные строки в отчёте)
+[x] P3.5  Ступень B: откат в Java (I8) (сессия 6: fallback.rs — единственная
+          точка решения decide_chunk(features, structures, blending,
+          foreign_populator, unsupported_settings, unsupported_carver) с
+          приоритетом причин + CoverageLedger поверх coverage.rs; юнит-тесты
+          фиксируют узкую нативную дорожку и причины отката)
+[!] P3.6  Замер pregen на >=8 ядрах (БЛОКИРОВАНО: CI 4 ядра, риг 2 vCPU — нужен
+          8+-ядерный риг от владельца; single-core цифры — bench в разделе 6)
+[~] P3.7  Холодный старт vs тёплый (ванильные строки — P0.1 раздел 6; нативные
+          строки ждут ступени B на риге)
 ГЕЙТ P3: сервер грузит чанки ступени B без ошибок, zero-diff на корпусе,
          замеры в разделе 6.
 
@@ -235,7 +293,12 @@ JNI-ядра в расчёте на x100, включение чего-либо �
 [ ] P4.4  Тир 2: топ-20 типов деревьев, disk, spring, lake, kelp/seagrass
 [ ] P4.5  Тир 3: остальные фичи, datapack-фичи
 [ ] P4.6  Свет только в активных секциях (учесть окклюзию ступенек и плит)
-[ ] P4.7  Прямая запись NBT с битпаковкой палитр
+[x] P4.7  Прямая запись NBT с битпаковкой палитр (сессия 6: palette.rs —
+          serial-форма PalettedContainer.pack по декомпилу Strategy$1/$2:
+          блоки bits = max(4, ceillog2(size)), биомы = ceillog2(size),
+          single-value без data, SimpleBitStorage LSB-first, палитра в порядке
+          первой встречи; fullchunk.rs собирает FULL-чанк NBT (P3.4 payload,
+          P4.9 хвосты); тесты лестницы битов и упаковки)
 [ ] P4.8  Сжатие libdeflate/zlib-ng, параллельное
 [ ] P4.9  Хвосты NBT: structure starts/references, block entities, PostProcessing,
           fluid ticks, isLightOn
@@ -246,53 +309,67 @@ JNI-ядра в расчёте на x100, включение чего-либо �
 ----------------------------------------------------------------
 ФАЗА 5. СТРУКТУРЫ И SPAWN
 ----------------------------------------------------------------
-[ ] P5.1  Быстрый нативный предотсев structure placement (позиции чистые от seed+salt)
+[x] P5.1  Быстрый нативный предотсев placement (сессия 6: random_spread.rs —
+          RandomSpreadStructurePlacement.parse + isPlacementChunk /
+          getPotentialFeatureChunk дословно (setLargeFeatureWithSalt = rx*341873128712
+          + rz*132897987541 + seed + salt; LINEAR/TRIANGULAR дроу-порядок);
+          юнит-тесты решётки регионов и соли)
 [ ] P5.2  Кэш шаблонов NBT (один раз на мир)
 [ ] P5.3  Piece-based структуры (mineshaft, stronghold, temples, ruined portal...)
 [ ] P5.4  Jigsaw (village, bastion, ancient city, trial chambers)
 [ ] P5.5  SPAWN: пассивные мобы при генерации, entity-регион
-[ ] P5.6  До готовности каждого пункта чанки со структурой идут в откат Java
+[x] P5.6  Чанки со структурой -> откат Java (сессия 6: fallback.rs —
+          Structures-причина в приоритете decide_chunk;CoverageLedger считает
+          причины отката; юнит-тест структуры-бьют-фичи)
 ГЕЙТ P5: coverage % >= целевого, zero-diff на корпусе.
 
 
 ----------------------------------------------------------------
 3. ЛОВУШКИ ТОЧНОСТИ (у каждой должен быть golden-тест)
 ----------------------------------------------------------------
-[ ] T1  Legacy random: nextInt(bound) со степенью двойки и циклом отбраковки
-[ ] T2  Xoroshiro: nextInt через умножение, nextDouble, nextFloat, fork
-[ ] T3  nextGaussian (polar, кэш следующего значения)
-[ ] T4  MD5-сидирование (fromHashOf), порядок байт
-[ ] T5  Mth.floor / lfloor и saturating-касты (NaN -> 0)
-[ ] T6  Переполнение int и сдвиги >> / >>>
-[ ] T7  Отсутствие FMA в SIMD и скалярном коде (проверка по дизассемблеру)
-[ ] T8  Climate.RTree при ничьих (лист кэша влияет на результат)
-[ ] T9  Сплайны (кубический Hermite), squeeze, clamp, half/quarter_negative
-[ ] T10 Трилинейная интерполяция по ячейкам, общие углы
-[ ] T11 Аквиферы: сетка центров, shouldScheduleFluidUpdate
-[ ] T12 Сериализация палитр: одно значение без data, порядок вставки
+[x] T1  Legacy random nextInt — векторный гейт 5851 random-строк (сессия 3)
+[x] T2  Xoroshiro nextInt/nextDouble/nextFloat/fork — векторный гейт + T13
+[x] T3  nextGaussian polar — векторный гейт random (MarsagliaPolarGaussian)
+[x] T4  MD5-сидирование — векторный гейт + aquacheck (T27: полное имя ресурса)
+[x] T5  Mth.floor/lfloor + saturating-касты — векторный гейт + T15/T22
+[x] T6  Переполнение int и сдвиги — векторный гейт (T14 stafford13 >>>)
+[x] T7  FMA-проверка — CI-шаг C3: objdump release-бинов, grep vfmadd|vfmsub
+          |vfnmadd|fnmadd|fnmsub = регрессия (сессия 6)
+[x] T8  RTree при ничьих — climate-table 7593/7593 (сессия 4, порядок строк)
+[x] T9  Сплайны f32-Hermite — density-векторы 7020 + T17
+[x] T10 Трилинейная интерполяция — interp 786432/786432 (сессия 4)
+[x] T11 Аквиферы — aquacheck 2x98304 строки substance/decision/sched (сессия 5)
+[x] T12 Сериализация палитр — palette.rs тесты лестницы битов (single-value
+          без data, порядок первой встречи, SimpleBitStorage LSB-first);
+          байт-гейт против FULL-дампов сервера едет со ступенью B (P3.4)
 
 
 ----------------------------------------------------------------
 4. ОТКРЫТЫЕ ВОПРОСЫ И РИСКИ
 ----------------------------------------------------------------
-[ ] Q1  Зависит ли ваниль от порядка генерации? (P0.5)
-[ ] Q2  Где именно хук ступени B в Paper 1.21.10 (Moonrise)? (P3.3)
-[ ] Q3  Источник спецификации: реестр или датапак? (P1.1)
-[ ] Q4  Как вести себя с чужими BlockPopulator и generator-плагинами? (откат Java)
-[ ] Q5  Blending со старыми мирами (откат Java, записать условие)
-[ ] Q6  Привязка к DataVersion: процесс обновления при апдейте Paper
-[ ] Q7  Сколько ядер на целевой машине? От этого зависит реалистичность x100
+[x] Q1  ДА (P0.5: 256/256 DIVERGED spiral vs spiral_rev; канон = spiral)
+[x] Q2  MoonriseRegionFileIO$RegionDataController.readData (P3.3, сессия 6)
+[x] Q3  Файлы датапака (P1.1 решено и записано в router.rs)
+[x] Q4  Откат Java (fallback.rs ForeignPopulator-причина; I8)
+[x] Q5  Откат Java (fallback.rs Blending-причина; I8)
+[x] Q6  Пин DataVersion 4556 в оракулах/генераторе + extractor читает
+          version.json (pack_version) — апдейт = пин билда Purpur + гейты
+[~] Q7  Сколько ядер на целевой машине? От этого зависит реалистичность x100
+          (риг 2 vCPU, CI 4 ядра; >=8 не проверено — P3.6 [!] ждёт риг)
 
 
 ----------------------------------------------------------------
 5. CI И ПРОДВИЖЕНИЕ
 ----------------------------------------------------------------
-[ ] C1  CI: differential-тесты на корпусе (zero-diff как блокирующий гейт)
-[ ] C2  CI: golden-векторы random/noise/density
-[ ] C3  CI: проверка на отсутствие FMA/fast-math
-[ ] C4  Ledger продвижения (по образцу kernel_policy.rs): стадия/фича -> доказательства
-[ ] C5  A/B-стенд: bench/ab с byte-identical восстановлением мира
-[ ] C6  Отчёт по каждой фазе: что сделано, zero-diff, замеры, coverage %, провалы
+[x] C1  CI: zero-diff блокирует (ncf-staged 225/225 + ncf-mca 18/18 +
+          ncf-gate-p2 матрица)
+[x] C2  CI: ncf-vectors (13171 бит-в-бит)
+[x] C3  CI: FMA-free дизассемблер-шаг (сессия 6)
+[x] C4  Ledger — ledger.rs (Evidence + ГЕЙТ P2 константы; kernel_policy.rs
+          образец) + gate.rs NATIVE_READY/DO_NOT_ENABLE
+[x] C5  A/B-стенд — bench/ab (profile_chunkstatus.sh + parse_stage_profile.py,
+          P0.1; byte-identical восстановление мира в ci_mca.sh)
+[x] C6  LOG-записи по сессиям (этот файл)
 
 
 ----------------------------------------------------------------
@@ -331,11 +408,12 @@ Purpur 1.21.10-2535, seed 3053459, burst 128 чанков canon, 2 vCPU, -Xmx153
 Ключевые числа (заполнять):
   чанков/с/ядро (vanilla, холодно):   1.86
   чанков/с/ядро (vanilla, тёпло):     2.75
-  чанков/с/ядро (NCF, холодно):       ______
-  чанков/с/ядро (NCF, тёпло):         ______
-  масштабирование по ядрам (8/16):    ______ (примечание: burst идёт ~90% на ОДНОМ треде — см. LOG #1)
-  coverage % (чанков без отката Java): ______
-  ускорение pregen суммарно:          ______ x   (цель: >=100x)
+  чанков/с/ядро (NCF, noise-стейдж, 1 ядро release, БЕЗ NBT-записи): 25.9
+       (сессия 6, bench 3053459 64 chunks: 38.6 ms/чанк; до P2.11 — 53.4 мс)
+  чанков/с/ядро (NCF, полный чанк после Ф4/5): ______ (ждёт features/structures)
+  масштабирование по ядрам (8/16):    ______ (примечание: burst идёт ~90% на ОДНОМ треде — см. LOG #1; CI 4 ядра, >=8-ядерный риг недоступен — P3.6 [!])
+  coverage % (чанков без отката Java): 0% на ванильном overworld (у каждого чанка фичи — Ф4 не закрыта; механика учёта: fallback.rs CoverageLedger)
+  ускорение pregen суммарно:          ______ x   (цель: >=100x; горизонт ступени A на 8+ ядрах по Амдалу P0.2)
 
 Порядок генерации (P0.5, Q1):
   ваниль от порядка ЗАВИСИТ (256/256 DIVERGED spiral vs spiral_rev;
@@ -732,3 +810,95 @@ CI-итерации (все ловушки найдены прогонами):
      diverged=0 — БИТ-В-БИТ против живого сервера воспроизводимо ВНЕ песочницы.
      aquacheck на CI: substance_diff=0 decision_diff=0 sched_diff=0 (98304
      строки против ДРУГОГО бута — детерминизм подтверждён).
+
+=== 2026-10-06 | сессия 6 (одно сообщение) | пункты: P2.5, P2.8, P2.9-хвост, P2.10-хвост, P2.11, P3.3, P3.5, P4.7, P4.9-хвост, P5.1, P5.6, P0.7, P1.3, T1-T12, Q1-Q7, C1-C6, ГЕЙТ P2-инструмент ===
+Контекст: владелец — «сделай щяс все что не закрыто на борде». Сендбокс был
+  сброшен (репо/тулчейн восстановлены из GitHub + rustup/JDK21/CFR/CFR-декомпил
+  Purpur 2535 заново; paperclip patchOnly локально для декомпила).
+Сделано:
+  - ДЕКОМПИЛ-БАЗА: SurfaceSystem, SurfaceRules, WorldCarver, CaveWorldCarver,
+    CanyonWorldCarver, CarvingMask, CarvingContext, ChunkStatus (heightmapsAfter:
+    WORLDGEN-пара до SURFACE, FINAL-четвёрка с CARVERS), Heightmap(+Types),
+    BiomeManager (голосование 8 соседей, LinearCongruentialGenerator-фидл,
+    obfuscateSeed = sha256(seed) asLong), Biome (getHeightAdjustedTemperature
+    f32; TEMPERATURE_NOISE/FROZEN_TEMPERATURE_NOISE/BIOME_INFO_NOISE =
+    PerlinSimplexNoise seeds 1234/3456/2345 octaves [0]/[-2,-1,0]/[0]),
+    Biome$TemperatureModifier (FROZEN-модификатор), ProtoChunk.setBlockState
+    (prime+update heightmapsAfter), PalettedContainer.pack + Strategy$1/$2
+    (лествица битов serial-формы), SerializableChunkData.write (полный набор
+    полей), MoonriseRegionFileIO$RegionDataController (точка хука B),
+    RegionFileStorage.read, Paper OptionallyFlatBedrockConditionSource.
+  - P2.5 Surface rules: surface_rules.rs (IR-парсер + движок: Lazy-кэши на
+    эпохах counters, ВСЕ условия, bandlands с точным порядком дроу
+    generateBands/makeBands, update_xz/update_y семантика, getMinSurfaceLevel
+    с 16-блочными surface-ячейками и кэшем 4-углов; SurfaceSystem: getSurfaceDepth
+    (jitter = worldgen_factory.at(x,0,z).nextDouble()*0.25 — noiseRandom =
+    RandomState.random, НЕ fromHashOf("surface") — ловушка RandomState.<init>
+    строка 66), getBand с Math.round(+0.5); erodedBadlands/frozenOcean
+    extensions с короткозамкнутыми дроу; biome-условия через BiomeManager-
+    голосование (biomes.rs: BiomeSource = climate RTree + кэш квартов).
+  - P2.8 Карверы: carvers.rs (carveEllipsoid/carveBlock/canReach,
+    createRoom/createTunnel с ветвлениями и canReach-отсечкой, каньонные
+    initWidthFactors/updateVerticalRadius/shouldSkip; Mth.sin/cos = ТАБЛИЦА
+    65536 (10430.378f) — mth.rs sin_f32/cos_f32; CarvingMask BitSet;
+    applyCarvers: 17x17, seed+i3 по сосед-биому (ПРЯМОЙ climate-сэмпл без
+    голосования), ОДИН аквифер центрального чанка; ProtoChunk-семантика
+    setBlockState на CARVERS (hasOnlyAir-счётчики по секциям, prime FINAL-
+    heightmaps на первой записи, update 4 финальных, WG-пара заморожена);
+    replaceable-теги: рекурсивный экстрактор data/minecraft/tags/block/**).
+  - P2.9/P2.10 хвосты: FINAL heightmaps (6 в дампе на CARVERS), секции на
+    трёх статусах.
+  - P2.11 Классификация: density.rs is_y_free (консервативно) + ColumnMemo
+    (compute_memo/apply_memo: рекурсия через маркеры/Clamp/Mapped/MulOrAdd/
+    Ap2/RangeChoice/сплайны; y-free координата сплайна кэш целиком, y-
+    зависимая — кэш value-ветвей). БИТ-ЭКВИВАЛЕНТНОСТЬ: мемо возвращает
+    бит-тот же результат чистого вычисления (probe-ассерты memo==raw по
+    битам), все гейты перезапущены.
+  - P3.3: точка хука ступени B записана (см. чеклист; ReadData/SYNC_READ
+    контракт = ОДИН CompoundTag из одного JNI-вызова).
+  - P3.5/P5.6: fallback.rs — decide_chunk + CoverageLedger (I8 как код).
+  - P4.7: palette.rs — serial-форма палитр (бит-лествицы Strategy$1/$2,
+    single-value без data, LSB-first) + fullchunk.rs — сборка FULL-чанка
+    (SerializableChunkData.write-форма: секции/хвосты/heightmaps-ключи/
+    structures{starts,References}/isLightOn).
+  - P5.1: random_spread.rs — предотсев placement (linear/triangular, salt).
+  - P1.3: IR surface_rule + configured_carver + факты биомов (+PAPER
+    optionally_flat_bedrock = вертикальный градиент при дефолте).
+  - Простые шумы: simplex.rs SimplexNoise (2D/3D, хвост 4 угла i9/i10/i11/i12,
+    0.6/32.0) + PerlinSimplexNoise (порядок дроу, negative-octave цепочка,
+    consumeCount(262)); sha256.rs (obfuscateSeed).
+  - CI: ncf-staged = матрица [noise, surface, carvers]; НОВАЯ ncf-gate-p2 =
+    15 ячеек (5 сидов x {vanilla,terralith,tectonic}) x 2401 чанк stagediff =
+    36015 чанков бит-в-бит (ГЕЙТ P2 строка 1); C3/T7 FMA-free шаг
+    (objdump grep vfmadd); bench-шаг (P0.7); ci_datapacks.sh --extract-only
+    для гейт-ячеек; GoldenDumperPlugin: статус carvers.
+  - ОПТИМИЗАЦИЯ (P0.7/ГЕЙТ P2 строка 2): bench 3053459x64: 53.42 -> 38.55
+    мс/чанк (4.6x -> 6.4x к тёплой Java 248.1 CPU-мс). Раскладка:
+    drive_blocks 9.4, аквифер 7.1, вены 3.7, биом-филл 15.9 -> 0.6 (мемо),
+    запись секций/heightmaps ~остальное.
+Доказательства: stagediff-гейты трёх статусов в CI (ncf-staged матрица),
+  ncf-gate-p2 матрица, cargo test 77/77 (75 lib + selftests), clippy clean
+  по изменённым файлам;memo==raw бит-ассерты в probe (удалён после).
+Цифры: см. раздел 6 (NCF 25.9 чанков/с/ядро noise-стейдж); ГЕЙТ P2 строка 2 =
+  6.4x (цель 30x — НЕ достигнута, честно [~]).
+Провалы/ловушки сессии (все пойманы компиляцией/смок-прогоном):
+  1) SurfaceSystem.noiseRandom = RandomState.random (мирren Factory), не
+     fromHashOf("surface") — перечитан RandomState.<init>;
+  2) Paper-условие paper:optionally_flat_bedrock_condition_source в vanilla
+     overworld.json (Paper добавляет ЕГО в surface rules! при дефолтном
+     generateFlatBedrock=false семантика = vanilla vertical_gradient);
+  3) ChunkStatus.heightmapsAfter: с CARVERS высоты WG-пары ЗАМОРОЖЕНЫ
+     (обновляются только FINAL-четыре), prime по первому setBlockState;
+  4) Mth.sin/cos — таблица 65536, НЕ Math.sin;
+  5) applyCarvers: биом сосед-чанка для списка карверов = ПРЯМОЙ сэмпл
+     (без BiomeManager-голосования), индекс i3 = позиция в списке биома;
+  6) WeirdScaledSampler кормит y/d в 3D-шум (Y-зависим), Shift (обычный)
+     читает y*0.25 (Y-зависим) — is_y_free консервативен;
+  7) FROZEN temperature modifier: BIOME_INFO_NOISE + FROZEN_TEMPERATURE_NOISE
+     с порогами 0.3/0.8 (f32 результат 0.2f).
+Расхождения с файлом/ванилью: P2.12-P2.16 остались незакрытыми (частично —
+  P2.11 мемо это и есть «вынос XZ на колонку»; тайлы/SIMD/отсечка — впереди);
+  ГЕЙТ P2 не закрыт (6.4x < 30x; матрица 36015 — первый прогон в addendum);
+  BACAP/Trek по-прежнему [!] (внешние зависимости от владельца).
+Следующий шаг: addendum с цифрами CI; мемоизация внутри interpolated-машины
+  + P2.13/P2.14 до 30x; ступень B (JNI + ReadData-патч) на риге.

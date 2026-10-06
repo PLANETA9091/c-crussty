@@ -290,7 +290,7 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             getLogger().warning("goldendump refused: usage (args=" + args.length + ")");
             sender.sendMessage("usage: /goldendump <label> (<chunkX> <chunkZ> <radius>"
                     + "|raw <chunkX> <chunkZ> <radius>|manifest <file>)"
-                    + "|<chunkX> <chunkZ> <radius> status <noise|surface>"
+                    + "|<chunkX> <chunkZ> <radius> status <noise|surface|carvers>"
                     + "|<label> <chunkX> <chunkZ> <radius> status <noise|surface>)");
             return true;
         }
@@ -376,7 +376,7 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             } else {
                 sender.sendMessage("usage: /goldendump <label> (<chunkX> <chunkZ> <radius>"
                         + "|raw <chunkX> <chunkZ> <radius>|manifest <file>)"
-                        + "|<chunkX> <chunkZ> <radius> status <noise|surface>"
+                        + "|<chunkX> <chunkZ> <radius> status <noise|surface|carvers>"
                         + "|<label> <chunkX> <chunkZ> <radius> status <noise|surface>)");
                 return true;
             }
@@ -433,8 +433,12 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
         if (want.equals("surface")) {
             return ChunkStatus.SURFACE;
         }
+        // session 6 (P2.8): CARVERS-status oracle dumps for the carver gate
+        if (want.equals("carvers")) {
+            return ChunkStatus.CARVERS;
+        }
         throw new IllegalArgumentException("unknown staged status '" + arg
-                + "' — supported: noise | surface");
+                + "' — supported: noise | surface | carvers");
     }
 
     /**

@@ -144,19 +144,21 @@ import zipfile, os, sys
 z = zipfile.ZipFile(sys.argv[1])
 n = 0
 for name in z.namelist():
-    if name.startswith('data/minecraft/worldgen/') and name.endswith('.json'):
+    if name.endswith('.json') and (
+        name.startswith('data/minecraft/worldgen/') or name.startswith('data/minecraft/tags/block/')
+    ):
         dest = os.path.join(sys.argv[2], *name.split('/'))
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         with open(dest, 'wb') as f:
             f.write(z.read(name))
         n += 1
-print(f'extracted {n} worldgen json files')
+print(f'extracted {n} worldgen+tags json files')
 PY
 fi
 
 log "generating the Rust side: $X0..$X1 x $Z0..$Z1"
 cargo run --release --bin stagediff -- --gen-batch "$SEED" "$X0" "$X1" "$Z0" "$Z1" \
-    "$SERVER_DIR/worldgen-extract" "$RUST_DIR" 2>&1 | tee "$RESULTS/staged_gen_$(date -u +%Y-%m-%d).log"
+    "$SERVER_DIR/worldgen-extract" "$RUST_DIR" --status "$STAGED_STATUS" 2>&1 | tee "$RESULTS/staged_gen_$(date -u +%Y-%m-%d).log"
 
 # ---- 5. the gate ---------------------------------------------------------------
 
