@@ -28,7 +28,86 @@
 //! Gates that pin bit-exactness: veccheck all modes (13171+786432+...),
 //! stagediff 225x3 statuses, ncf-gate-p2 matrix 36015 chunks.
 
-use crate::density::{Df, NoiseBank};
+use crate::density::{Ap2Type, Df, NoiseBank};
+
+/// Trusted bounds: ONLY the node classes whose min/max Java itself computes
+/// identically (TwoArgumentSimpleFunction.create, Clamp/Mapped/MulOrAdd
+/// constructors, YClampedGradient, ±noise.maxValue). Spline/WeirdScaled/
+/// Blended bounds come from OUR port — a slightly-too-narrow bound would
+/// make a fold UNSOUND (CI surface gate caught exactly that: podzol/grass
+/// biome flips). Unknown => refuse to fold anything upstream.
+fn trusted_bounds(df: &Df, bank: &NoiseBank) -> Option<(f64, f64)> {
+    let r = match df {
+        // TRUSTED LEAVES (bounds are structural facts, not ported math)
+        Df::Const(v) => (*v, *v),
+        Df::YClampedGradient { from_value, to_value, .. } => {
+            (from_value.min(*to_value), from_value.max(*to_value))
+        }
+        Df::Noise(idx, ..) => {
+            let m = bank.noises[*idx].max_value();
+            (-m, m)
+        }
+        Df::ShiftA(idx) | Df::ShiftB(idx) | Df::Shift(idx) => {
+            let m = bank.noises[*idx].max_value() * 4.0;
+            (-m, m)
+        }
+        Df::Clamp { min, max, .. } => (*min, *max), // JSON-given constants
+        Df::BlendAlpha => (1.0, 1.0),
+        Df::BlendOffset => (0.0, 0.0),
+        Df::Beardifier => (0.0, 0.0),
+        // COMPOSITION over trusted children (formulas = Java constructors
+        // applied to OUR child bounds — sound iff children are sound)
+        Df::Marker { wrapped: w, .. } => return trusted_bounds(w, bank),
+        Df::Mapped { ty, input, .. } => {
+            let (lo, hi) = trusted_bounds(input, bank)?;
+            // transform may be non-monotone over a straddling box (abs/square):
+            // box = min/max over endpoints + the 0 critical point if inside
+            let mut cands: Vec<f64> = vec![ty.transform(lo), ty.transform(hi)];
+            if lo < 0.0 && hi > 0.0 {
+                cands.push(ty.transform(0.0));
+            }
+            let mut blo = f64::INFINITY;
+            let mut bhi = f64::NEG_INFINITY;
+            for c in cands {
+                blo = blo.min(c);
+                bhi = bhi.max(c);
+            }
+            (blo, bhi)
+        }
+        Df::MulOrAdd { is_add, input, argument, .. } => {
+            let (lo, hi) = trusted_bounds(input, bank)?;
+            if *is_add {
+                (lo + argument, hi + argument)
+            } else {
+                (lo * argument, hi * argument)
+            }
+        }
+        Df::Ap2 { ty, a1, a2, .. } => {
+            let (x1, x2) = trusted_bounds(a1, bank)?;
+            let (y1, y2) = trusted_bounds(a2, bank)?;
+            match ty {
+                Ap2Type::Add => (x1 + y1, x2 + y2),
+                Ap2Type::Mul => {
+                    let cands = [x1 * y1, x1 * y2, x2 * y1, x2 * y2];
+                    (cands.iter().cloned().fold(f64::INFINITY, f64::min),
+                     cands.iter().cloned().fold(f64::NEG_INFINITY, f64::max))
+                }
+                Ap2Type::Min => (x1.min(y1), x2.min(y2)),
+                Ap2Type::Max => (x1.min(y1).max(x2.min(y2)), x2.max(y2)),
+            }
+        }
+        Df::RangeChoice { when_in_range, when_out_of_range, .. } => {
+            let (a_lo, a_hi) = trusted_bounds(when_in_range, bank)?;
+            let (b_lo, b_hi) = trusted_bounds(when_out_of_range, bank)?;
+            (a_lo.min(b_lo), a_hi.max(b_hi))
+        }
+        // UNTRUSTED: any node whose range depends on OUR ported bounds math
+        // (spline min/max, weird-scaled rarity, blended max, end islands,
+        // find-top-surface, blend density)
+        _ => return None,
+    };
+    Some(r)
+}
 
 pub fn optimize_tree(df: Df, bank: &NoiseBank) -> Df {
     match df {
@@ -36,17 +115,17 @@ pub fn optimize_tree(df: Df, bank: &NoiseBank) -> Df {
             let input = optimize_tree(*input, bank);
             let in_range = optimize_tree(*when_in_range, bank);
             let out_of_range = optimize_tree(*when_out_of_range, bank);
-            let lo = input.min_value_of(bank);
-            let hi = input.max_value_of(bank);
-            if hi < min_inclusive || lo >= max_exclusive {
-                // guard false for every input -> the out branch is the only
-                // observable value (Java short-circuit order preserved: the
-                // guard input is still evaluated first in Java, but it is
-                // pure — dropping it changes no observable state).
-                return out_of_range;
-            }
-            if lo >= min_inclusive && hi < max_exclusive {
-                return in_range;
+            if let Some((lo, hi)) = trusted_bounds(&input, bank) {
+                if hi < min_inclusive || lo >= max_exclusive {
+                    // guard false for every input -> the out branch is the only
+                    // observable value (Java short-circuit order preserved: the
+                    // guard input is still evaluated first in Java, but it is
+                    // pure — dropping it changes no observable state).
+                    return out_of_range;
+                }
+                if lo >= min_inclusive && hi < max_exclusive {
+                    return in_range;
+                }
             }
             Df::RangeChoice {
                 input: Box::new(input),
@@ -58,10 +137,10 @@ pub fn optimize_tree(df: Df, bank: &NoiseBank) -> Df {
         }
         Df::Clamp { input, min, max } => {
             let input = optimize_tree(*input, bank);
-            let lo = input.min_value_of(bank);
-            let hi = input.max_value_of(bank);
-            if lo >= min && hi <= max {
-                return input;
+            if let Some((lo, hi)) = trusted_bounds(&input, bank) {
+                if lo >= min && hi <= max {
+                    return input;
+                }
             }
             Df::Clamp { input: Box::new(input), min, max }
         }

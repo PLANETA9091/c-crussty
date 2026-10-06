@@ -289,7 +289,7 @@ pub enum MappedType {
 
 impl MappedType {
     /// Mapped.transform — the pure per-value transform.
-    fn transform(&self, value: f64) -> f64 {
+    pub fn transform(&self, value: f64) -> f64 {
         match self {
             MappedType::Abs => value.abs(),
             MappedType::Square => value * value,
