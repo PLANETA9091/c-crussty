@@ -1022,8 +1022,14 @@ pub fn build_surface(
             // int i4 = chunk.getHeight(WORLD_SURFACE_WG, i, i1) + 1;
             let i4 = chunk.height_wg(i, i1) + 1;
             // biome probe at (x, useLegacy ? 0 : i4, z) — overworld: i4
-            // (direct quart lookup — T35, same as Context.updateY above)
-            let probe = ctx.source.borrow_mut().get_noise_biome(x >> 2, i4 >> 2, z >> 2);
+            // (vote path — T35 addendum 3: decompile-faithful)
+            let probe = get_biome_voted(
+                &mut ctx.source.borrow_mut(),
+                ctx.zoom_seed,
+                x,
+                i4,
+                z,
+            );
             let probe_frozen = matches!(probe.as_str(), "minecraft:frozen_ocean" | "minecraft:deep_frozen_ocean");
             let probe_badlands = probe == "minecraft:eroded_badlands";
             if probe_badlands {

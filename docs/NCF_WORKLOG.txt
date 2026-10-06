@@ -1072,3 +1072,15 @@ CI-итерации (все ловушки найдены прогонами):
   (для пробников/спавна, где голосование реально есть).
 Доказательства: декомпил SurfaceRules$Context (biomeGetter + Suppliers
   .memoize), cargo test 96+2, push 821c87e+fix, CI перезапуск.
+
+=== 2026-10-06 | сессия 7 (аддендум 3: T35 бисект — голосование верное, остаток в резолвере) ===
+Бисект (37 vote / 35 direct, координаты разъехались): декомпил BiomeManager
+  .getBiome подтверждает — Context.biome = ГОЛОСОВАНИЕ (LevelReader.getBiome ->
+  biomeManager.getBiome), наша get_fiddled_distance дословна (LCG x,y,z,x,y,z;
+  fiddle x3 с re-mix seed; сумма z+y+x — ВАНИЛЬНЫЙ порядок, совпадает).
+  Значит остаток дивергенций — в РЕЗОЛВЕРЕ: что WorldGenRegion.getNoiseBiome
+  отдаёт для квартов ВНЕ центрального чанка (кламп к центру? stored соседа?
+  uncached-сэмпл?) — 3 гипотезы, следующий шаг = декомпил WorldGenRegion
+  .getNoiseBiome + goldensurface-риг (первая дивергенция по полям контекста).
+  Голосование восстановлено как decompile-faithful путь; surface/carvers
+  stagediff-гейты остаются красными ЧЕСТНО до закрытия бисекта.
