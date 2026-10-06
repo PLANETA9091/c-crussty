@@ -1084,3 +1084,44 @@ CI-итерации (все ловушки найдены прогонами):
   .getNoiseBiome + goldensurface-риг (первая дивергенция по полям контекста).
   Голосование восстановлено как decompile-faithful путь; surface/carvers
   stagediff-гейты остаются красными ЧЕСТНО до закрытия бисекта.
+
+=== 2026-10-07 | сессия 7 (аддендум 4: T35 ЗАКРЫТ — резолвер декомпилирован, кламп секций) ===
+Бисект доведён до корня декомпилом всей цепочки резолвера (CFR 0.152 на
+  classes/ из purpur-unpack; javap недоступен — констант-пул парсился
+  питоном, скрипт scripts/cpool_dump.py):
+1. БАЙТ-УРОВЕНЬ BiomeManager (purpur 1.21.10, класс из предыдущих сессий):
+   getFiddle = ((l >> 24 & 1023) - 512) * 0.00087890625 — LDC2_W ровно
+   0.9/1024 (амплитуда ±0.45, НЕ «(v-512)/1024» из ванильного сорса!);
+   LCG 6 next x,y,z,x,y,z, затем next(seed) x2; сумма квадратов z+y+x;
+   наша biomes.rs дословна, вкл. константу 8.789_062_5e-4.
+2. SurfaceSystem ctor (строка 124): biomeGetter = biomeManager::getBiome —
+   ГОЛОСОВАНИЕ. Аддендум 2 был НЕВЕРЕН (прямой лукап — это было LevelReader
+   .getBiome, но сурфейс его не зовёт). buildSurface (строка 133) — probe
+   biomeManager.getBiome(pos.set(x, legacy?0:height+1, z)) — тоже голос.
+3. РЕЗОЛВЕР: WorldGenRegion ctor (181): biomeManager = new
+   BiomeManager((NoiseBiomeSource)this, obfuscateSeed(seed)); у региона НЕТ
+   своего getNoiseBiome — работает default LevelReader.getNoiseBiome:
+   getChunk(QuartPos.toSection(x), ..., BIOMES, false) != null ?
+   chunk.getNoiseBiome(x,y,z) : getUncachedNoiseBiome(x,y,z).
+   ChunkAccess.getNoiseBiome (534-546) — Y-КЛАМП НА СЕКЦИЮ:
+   sectionY = (y>>2) - minSection; if <0 => (0, rel 0); if >= len =>
+   (len-1, rel 3). Т.е. угловой кварт y=80 (колонны с верхом 316..319)
+   отдаёт ХРАНИМЫЙ биом кварта 79; свежий сэмпл на y=80 считает климат на
+   блоке 320 — вне высот => флип биома => grass<->podzol/coarse_dirt на
+   высоких секциях. ЭТО И БЫЛ корень 35-37/225 (и surface, и carvers —
+   carvers видят уже разъехавшиеся блоки сурфейса).
+Uncached-fallback в сурфейс-пайплайне не стреляет: углы голоса в
+  шахматной дистанции 1, SURFACE-степ держит соседей >= BIOMES.
+ФИКС (этот коммит): biomes.rs — stored_quart_y (кламп на секцию) +
+  get_biome_voted_region (голос с резолвером региона; get_biome_voted
+  сохранён для структур/спавна); surface_rules.rs — update_y ПЕРЕВЕДЁН
+  на голосование (де-фикс аддендума 2), probe — на region-вариант;
+  min_section/section_count из ctx.min_y/height (-64>>4=-4, 384>>4=24).
+Доказательства: cargo test 98 (два новых t35: таблица клампа -17/-16,
+  80/79/320; region==свежий сэмпл на ЗАКЛАМПИРОВАННОМ угле, NCF_WG);
+  A/B NCF_TILE_CACHE=0/1 --gen-batch surface 5x5 (100..104): БАЙТ-
+  ИДЕНТИЧНО; pre-fix(58abb4f) vs fix на тех же чанках: 24 равны, 1 изменён
+  — c_100_101 sec7 @ блок класса grass_block<->coarse_dirt (семейство
+  дивергенций CI); trace-surface (100,101): биом-колонка голосует по y
+  (river<->old_growth_pine_taiga). Матч с сервером — гейты
+  ncf-staged(surface)/(carvers) в CI.

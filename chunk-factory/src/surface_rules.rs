@@ -18,7 +18,8 @@
 //! identical recompute behaviour (epoch never collides with a live counter).
 
 use crate::biomes::{
-    cold_enough_to_snow, get_biome_voted, should_melt_frozen_ocean_iceberg_slightly, BiomeFacts,
+    cold_enough_to_snow, get_biome_voted_region, should_melt_frozen_ocean_iceberg_slightly,
+    BiomeFacts,
     BiomeNoise, BiomeSource,
 };
 use crate::filler::{HeightmapKind, StateTable};
@@ -752,16 +753,22 @@ impl<'a> SurfaceContext<'a> {
     /// Context.updateY
     pub fn update_y(&mut self, stone_depth_above: i32, stone_depth_below: i32, water_height: i32, block_x: i32, block_y: i32, block_z: i32) {
         self.last_update_y = self.last_update_y.wrapping_add(1);
-        // biome = Suppliers.memoize(() -> biomeGetter.apply(pos.set(...)))
-        // biomeGetter = WorldGenRegion.getBiome = getNoiseBiome at QUART — the
-        // STORED (fillBiomesFromNoise) biome, NOT the BiomeManager 8-neighbour
-        // vote (T35, session 7: the vote path diverged on 37/225 surface
-        // chunks — grass<->podzol/coarse_dirt biome flips on CI; Java's
-        // LevelReader.getBiome is a direct quart lookup).
-        let biome = self.source.borrow_mut().get_noise_biome(
-            block_x >> 2,
-            block_y >> 2,
-            block_z >> 2,
+        // biome = Suppliers.memoize(() -> biomeGetter.apply(pos.set(...)));
+        // biomeGetter = biomeManager::getBiome (SurfaceSystem ctor decompile),
+        // biomeManager = new BiomeManager((NoiseBiomeSource)worldGenRegion,
+        // obfuscateSeed(seed)) — the 8-neighbour VOTE over the region's
+        // STORED quarts (LevelReader.getNoiseBiome -> ChunkAccess.getNoiseBiome
+        // with the section y-clamp). T35 bisect, session 7 addendum 4.
+        let min_section = self.min_y >> 4;
+        let section_count = self.height >> 4;
+        let biome = get_biome_voted_region(
+            &mut self.source.borrow_mut(),
+            self.zoom_seed,
+            block_x,
+            block_y,
+            block_z,
+            min_section,
+            section_count,
         );
         self.biome = Some(biome);
         self.block_y = block_y;
@@ -1021,14 +1028,17 @@ pub fn build_surface(
             let z = chunk.chunk.chunk_min_z + i1;
             // int i4 = chunk.getHeight(WORLD_SURFACE_WG, i, i1) + 1;
             let i4 = chunk.height_wg(i, i1) + 1;
-            // biome probe at (x, useLegacy ? 0 : i4, z) — overworld: i4
-            // (vote path — T35 addendum 3: decompile-faithful)
-            let probe = get_biome_voted(
+            // biome probe at (x, useLegacy ? 0 : i4, z) — overworld: i4.
+            // biomeManager here is the WorldGenRegion's — vote over STORED
+            // quarts with the section y-clamp (T35 addendum 4).
+            let probe = get_biome_voted_region(
                 &mut ctx.source.borrow_mut(),
                 ctx.zoom_seed,
                 x,
                 i4,
                 z,
+                ctx.min_y >> 4,
+                ctx.height >> 4,
             );
             let probe_frozen = matches!(probe.as_str(), "minecraft:frozen_ocean" | "minecraft:deep_frozen_ocean");
             let probe_badlands = probe == "minecraft:eroded_badlands";

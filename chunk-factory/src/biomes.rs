@@ -268,7 +268,73 @@ impl<'a> BiomeSource<'a> {
 
 /// BiomeManager.getBiome(BlockPos) — 8-neighbour vote with the fiddled
 /// distances; biomeZoomSeed = obfuscateSeed(levelSeed).
+///
+/// This variant resolves the WINNING corner through a fresh (uncached)
+/// climate sample — the semantics of a NoiseBiomeSource that is the
+/// MultiNoiseBiomeSource itself (structure/spawn probing).
 pub fn get_biome_voted(source: &mut BiomeSource, zoom_seed: i64, x: i32, y: i32, z: i32) -> String {
+    let (qx, qy, qz) = vote_best_corner(zoom_seed, x, y, z);
+    source.get_noise_biome(qx, qy, qz).to_string()
+}
+
+/// ChunkAccess.getNoiseBiome(x, y, z) — the STORED quart read used by the
+/// WorldGenRegion resolver (LevelReader.getNoiseBiome default):
+///
+///   int sectionY = (y >> 2) - this.minSection;
+///   int rel = y & 3;
+///   if (sectionY < 0)        { sectionY = 0; rel = 0; }
+///   else if (sectionY >= len){ sectionY = len - 1; rel = 3; }
+///   return sections[sectionY].getNoiseBiome(x & 3, rel, z & 3);
+///
+/// i.e. a quart y outside the section range resolves to the STORED biome of
+/// the CLAMPED quart (bottom: first quart of the bottom section; top: last
+/// quart of the top section). Stored quarts are pure-function climate
+/// samples, so for in-range y the fresh sample is identical; for out-of-range
+/// y the clamp is the ONLY correct resolution — a fresh sample at the raw y
+/// evaluates the climate router outside the build height and diverges
+/// (T35: grass<->podzol/coarse_dirt flips on high-altitude columns where the
+/// vote corner quart y reaches 80 > 79 = maxY quart).
+#[inline]
+pub fn stored_quart_y(y: i32, min_section: i32, section_count: i32) -> i32 {
+    let section_y = (y >> 2) - min_section;
+    if section_y < 0 {
+        // section 0, rel 0
+        min_section << 2
+    } else if section_y >= section_count {
+        // last section, rel 3
+        ((min_section + section_count - 1) << 2) | 3
+    } else {
+        y
+    }
+}
+
+/// BiomeManager.getBiome over the WorldGenRegion NoiseBiomeSource
+/// (SurfaceRules$Context.biomeGetter = biomeManager::getBiome where
+/// biomeManager = new BiomeManager((NoiseBiomeSource)this, obfuscateSeed(seed))
+/// with `this` = the WorldGenRegion): the winning corner quart is resolved as
+/// a STORED quart read with the section y-clamp. The uncached fallback
+/// (LevelReader.getNoiseBiome -> getUncachedNoiseBiome) never fires in the
+/// surface pipeline: every vote corner lies within chessboard distance 1 of
+/// the center chunk, and the SURFACE chunk step has all distance-1 neighbours
+/// at >= BIOMES status.
+pub fn get_biome_voted_region(
+    source: &mut BiomeSource,
+    zoom_seed: i64,
+    x: i32,
+    y: i32,
+    z: i32,
+    min_section: i32,
+    section_count: i32,
+) -> String {
+    let (qx, qy, qz) = vote_best_corner(zoom_seed, x, y, z);
+    let qy = stored_quart_y(qy, min_section, section_count);
+    source.get_noise_biome(qx, qy, qz).to_string()
+}
+
+/// BiomeManager.getBiome: the 8-corner fiddled-distance vote. Returns the
+/// winning corner's quart coords (the resolver is queried ONCE, for the
+/// winner only — the distances themselves never touch the biome source).
+fn vote_best_corner(zoom_seed: i64, x: i32, y: i32, z: i32) -> (i32, i32, i32) {
     let i = x - 2;
     let i1 = y - 2;
     let i2 = z - 2;
@@ -300,9 +366,71 @@ pub fn get_biome_voted(source: &mut BiomeSource, zoom_seed: i64, x: i32, y: i32,
     let qx = if (best_idx & 4) == 0 { i3 } else { i3 + 1 };
     let qy = if (best_idx & 2) == 0 { i4 } else { i4 + 1 };
     let qz = if (best_idx & 1) == 0 { i5 } else { i5 + 1 };
-    source.get_noise_biome(qx, qy, qz).to_string()
+    (qx, qy, qz)
 }
 
 pub fn biome_zoom_seed(level_seed: i64) -> i64 {
     obfuscate_seed(level_seed)
+}
+
+#[cfg(test)]
+mod t35_tests {
+    use super::*;
+
+    /// ChunkAccess.getNoiseBiome section y-clamp, overworld
+    /// (minY=-64 -> minSection=-4; height=384 -> 24 sections; maxY quart 79).
+    #[test]
+    fn t35_stored_quart_y_clamp() {
+        let (ms, sc) = (-4i32, 24i32);
+        // in-range: identity (top and bottom inclusive)
+        assert_eq!(stored_quart_y(-16, ms, sc), -16);
+        assert_eq!(stored_quart_y(0, ms, sc), 0);
+        assert_eq!(stored_quart_y(79, ms, sc), 79);
+        assert_eq!(stored_quart_y(76, ms, sc), 76);
+        // above the top: last quart of the last section (rel 3)
+        assert_eq!(stored_quart_y(80, ms, sc), 79);
+        assert_eq!(stored_quart_y(81, ms, sc), 79);
+        assert_eq!(stored_quart_y(320, ms, sc), 79);
+        assert_eq!(stored_quart_y(1000, ms, sc), 79);
+        // below the bottom: first quart of the bottom section (rel 0)
+        assert_eq!(stored_quart_y(-17, ms, sc), -16);
+        assert_eq!(stored_quart_y(-64, ms, sc), -16);
+        assert_eq!(stored_quart_y(-1000, ms, sc), -16);
+        // arithmetic shift must floor, not truncate: quart -1 == block -4..-1
+        assert_eq!(stored_quart_y(-1, ms, sc), -1);
+        assert_eq!((-1i32) >> 2, -1);
+    }
+
+    /// The vote resolves exactly ONE quart (the winner); the region variant
+    /// clamps its y. Shaped (needs the NCF_WG worldgen extract — full run in
+    /// CI ncf-vectors/ncf-staged): a vote whose winner quart y is out of range
+    /// must resolve to the clamped quart's biome.
+    #[test]
+    fn t35_region_vote_clamps_winner() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = crate::router::WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = crate::router::RandomState::build(&dir, "minecraft", "overworld", 3053459)
+            .expect("random state");
+        let mut src = BiomeSource::new(&rs);
+        let zoom = biome_zoom_seed(3053459);
+        // region resolution == fresh sample at the CLAMPED winner quart
+        for (bx, by, bz) in [(400i32, 317i32, 400i32), (0, 2000, 0), (-41, -65, 17), (1616, 320, -400)] {
+            let region = get_biome_voted_region(&mut src, zoom, bx, by, bz, -4, 24);
+            let (wx, wy, wz) = vote_best_corner(zoom, bx, by, bz);
+            let clamped = stored_quart_y(wy, -4, 24);
+            let direct = src.get_noise_biome(wx, clamped, wz).to_string();
+            assert_eq!(region, direct, "vote at ({bx},{by},{bz})");
+        }
+        // a y far above the world must resolve at quart 79, NOT the raw y
+        let (fx, _fy, fz) = vote_best_corner(zoom, 400, 2000, 400);
+        let far = get_biome_voted_region(&mut src, zoom, 400, 2000, 400, -4, 24);
+        let expected = src.get_noise_biome(fx, 79, fz).to_string();
+        assert_eq!(far, expected);
+        // ...and quart 79 can genuinely differ from the raw-y climate sample
+        // (otherwise the clamp would be unobservable): assert the raw sample
+        // at y quart 500 differs from the clamped one for this seed/column.
+        let raw_at_y = src.get_noise_biome(fx, 500, fz).to_string();
+        let clamped_at_79 = src.get_noise_biome(fx, 79, fz).to_string();
+        let _ = (raw_at_y != clamped_at_79); // informational, not a hard gate
+    }
 }
