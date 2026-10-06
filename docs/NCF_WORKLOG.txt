@@ -1206,3 +1206,28 @@ CI run 37525009608 (HEAD 61d0562):
    БАЙТ-ИДЕНТИЧНО; clippy чисто по biomes.rs.
 Доказательства: cpool-дамп двух классов (сырые биты в логе выше), декомпил
   SurfaceRules$Context.updateY, CI API (run/job-уровень), локальные тесты/A-B.
+
+=== 2026-10-07 | сессия 7 (аддендум 8: T36 — ГЕЙТ P2 матрица: инфра-провал, плагин не ставился) ===
+Провал (run 37528979115, HEAD cb6d95c): ВСЕ 15 ячеек ncf-gate-p2 FATAL «no
+  staged dump marker in 3600s» при ЗЕЛЁНЫХ ncf-staged (surface/carvers/noise)
+  и всём ядре (native/chunk-factory/module/vectors/datapacks/mca/golden-harness).
+  Это НЕ дивергенция: в логе ячейки (3053459/vanilla) за 20:48:49 стоит
+  Brigadier «Unknown or incomplete command … goldendump 0 0 24 status
+  noise<--[HERE]» — dump вообще не стартовал.
+Ловушка T36: ci_gate_p2.sh оказался ЕДИНСТВЕННЫМ сервер-скриптом, который не
+  собирал/не ставил GoldenDumper.jar (ci_staged/ci_gate/ci_vectors/ci_mca все
+  делают build_golden.sh + cp в plugins/). Сервер грузился БЕЗ плагина ->
+  команда goldendump не зарегистрирована. Второй слой ловушки: rcon.py
+  выходит 0 даже при ОТКЛОНЕНИИ команды сервером (текст ошибки Brigadier
+  едет как payload RCON) -> скрипт честно ждал маркер весь DUMP_TIMEOUT.
+  Это был ПЕРВЫЙ прогон матрицы до конца (раньше все гонки гасились пушами).
+ФИКС (этот коммит, ci_gate_p2.sh): (1) блок 2b — build_golden.sh + cp
+  GoldenDumper.jar в plugins/ + rm plugins/.paper-remapped (паттерн
+  ci_staged); (2) архивация logs/latest.log -> latest.prev перед бутом
+  (маркер/Done-грепы видят только ЭТОТ бут); (3) fail-fast: после rcon-команды
+  плагин обязан оставить «GOLDEN STAGED DUMP start» в логе за 30с — иначе die
+  немедленно с хвостом лога (вместо 3600с тишины). bash -n OK; контракты
+  veccheck/stagediff НЕ тронуты (правка только CI-раннера гейта).
+Доказательства: лог ячейки 3053459/vanilla (FATAL + unknown command, job
+  112493782226), job-уровень ранна 37528979115 (staged-гейты SUCCESS),
+  bash -n; повторный прогон полной матрицы — CI-ран этого пуша.

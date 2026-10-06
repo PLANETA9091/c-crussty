@@ -108,10 +108,25 @@ else
     fi
 fi
 
+# ---- 2b. build + install the dumper plugin (the ci_staged pattern) -----------
+# TRAP T36 (run 37528979115, ALL 15 cells FATAL 'no staged dump marker in
+# 3600s'): the cell booted a BARE server — GoldenDumper.jar was never copied
+# into plugins/, so 'goldendump' was an unknown Brigadier command
+# ("Unknown or incomplete command ... goldendump 0 0 24 status noise<--[HERE]")
+# and the marker poll burned the whole DUMP_TIMEOUT on a server that would
+# never dump. ci_staged.sh/ci_gate.sh/ci_vectors.sh/ci_mca.sh all build the
+# plugin first; this script was the only one that forgot.
+SERVER_DIR="$SERVER_DIR" bash "$GOLDEN_DIR/build_golden.sh" || die "build_golden failed"
+cp "$GOLDEN_DIR/GoldenDumper.jar" plugins/
+rm -rf plugins/.paper-remapped
+
 # ---- 3. boot + staged dump ---------------------------------------------------
 
 rm -rf world world_nether world_the_end
 mkdir -p logs
+# archive a stale log so the Done( and COMPLETE-marker greps can only match
+# THIS boot (parity with ci_staged.sh)
+[ -f logs/latest.log ] && mv logs/latest.log logs/latest.prev 2>/dev/null || true
 
 if [ "$PACK" != vanilla ]; then
     # inject the pack into the world datapacks dir (same as ci_datapacks.sh)
@@ -150,6 +165,19 @@ log "booted: $done_line"
 CX=0; CZ=0
 python3 "$GOLDEN_DIR/../ab/rcon.py" "$RCON_PORT" "$RCON_PW" \
     "goldendump $CX $CZ $RADIUS status $STATUS" || die "dump command failed"
+
+# T36 fail-fast: rcon.py exits 0 even when Brigadier REJECTS the command (the
+# error text rides back as the response payload — run 37528979115 burned
+# DUMP_TIMEOUT this way). The plugin logs 'GOLDEN STAGED DUMP start' the
+# moment a dump actually begins: require it within 30s or die NOW.
+waited=0; started=""
+while [ $waited -lt 30 ]; do
+    sleep 3; waited=$((waited+3))
+    started=$(grep -a 'GOLDEN STAGED DUMP start' logs/latest.log 2>/dev/null | tail -1 || true)
+    [ -n "$started" ] && break
+done
+[ -n "$started" ] || { tail -40 logs/latest.log >&2 || true; die "dump never started (command rejected?)"; }
+log "$started"
 
 waited=0; marker=""
 while [ $waited -lt $DUMP_TIMEOUT ]; do
