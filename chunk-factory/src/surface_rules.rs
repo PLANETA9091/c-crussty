@@ -753,12 +753,15 @@ impl<'a> SurfaceContext<'a> {
     pub fn update_y(&mut self, stone_depth_above: i32, stone_depth_below: i32, water_height: i32, block_x: i32, block_y: i32, block_z: i32) {
         self.last_update_y = self.last_update_y.wrapping_add(1);
         // biome = Suppliers.memoize(() -> biomeGetter.apply(pos.set(...)))
-        let biome = get_biome_voted(
-            &mut self.source.borrow_mut(),
-            self.zoom_seed,
-            block_x,
-            block_y,
-            block_z,
+        // biomeGetter = WorldGenRegion.getBiome = getNoiseBiome at QUART — the
+        // STORED (fillBiomesFromNoise) biome, NOT the BiomeManager 8-neighbour
+        // vote (T35, session 7: the vote path diverged on 37/225 surface
+        // chunks — grass<->podzol/coarse_dirt biome flips on CI; Java's
+        // LevelReader.getBiome is a direct quart lookup).
+        let biome = self.source.borrow_mut().get_noise_biome(
+            block_x >> 2,
+            block_y >> 2,
+            block_z >> 2,
         );
         self.biome = Some(biome);
         self.block_y = block_y;
@@ -1019,13 +1022,8 @@ pub fn build_surface(
             // int i4 = chunk.getHeight(WORLD_SURFACE_WG, i, i1) + 1;
             let i4 = chunk.height_wg(i, i1) + 1;
             // biome probe at (x, useLegacy ? 0 : i4, z) — overworld: i4
-            let probe = get_biome_voted(
-                &mut ctx.source.borrow_mut(),
-                ctx.zoom_seed,
-                x,
-                i4,
-                z,
-            );
+            // (direct quart lookup — T35, same as Context.updateY above)
+            let probe = ctx.source.borrow_mut().get_noise_biome(x >> 2, i4 >> 2, z >> 2);
             let probe_frozen = matches!(probe.as_str(), "minecraft:frozen_ocean" | "minecraft:deep_frozen_ocean");
             let probe_badlands = probe == "minecraft:eroded_badlands";
             if probe_badlands {

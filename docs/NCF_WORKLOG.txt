@@ -1055,3 +1055,20 @@ CI-итерации (все ловушки найдены прогонами):
   пайплайну (/tmp/gb_off, код ДО optimize); 96+2 тестов; CI перезапущен.
 Расхождения с файлом/ванилью: это и есть цена «декомпил-глазами» — границ-
   матчасть сплайнов в декомпиле не выписана, верить ей нельзя до вектора.
+
+=== 2026-10-06 | сессия 7 (аддендум 2: T35 — КОРЕНЬ surface/carvers дивергенций) ===
+Провалы (гейты ncf-staged surface/carvers, 37 и 36 дивергенций):
+  БОЛЬШАЯ НАХОДКА ПРОЦЕССА: ран 48a9371 (сессия 6) = failure — матрица
+  [surface, carvers] НИКОГДА не была зелёной; сессия 6 закрылась до прогона.
+  Дивергенции ИДЕНТИЧНЫ между ранами (код T34 не менял картину) и совпадают
+  между surface и carvers джобами (те же блоки) => ОДИН корень.
+Ловушка T35: Context.updateY берёт biome через biomeGetter = WorldGenRegion
+  .getBiome = getNoiseBiome на КВАРТЕ (STORED-биом из fillBiomesFromNoise,
+  LevelReader.getBiome — прямой лукап), а НЕ BiomeManager.getBiome 8-соседей
+  (голосование). Наш сурфейс использовал голосование => на горных колоннах
+  голос расходился с хранимым кварти => флипы grass<->podzol/coarse_dirt.
+ФИКС: surface_rules.rs update_y + build_surface probe — прямой
+  get_noise_biome(x>>2, y>>2, z>>2); get_biome_voted остаётся в biomes.rs
+  (для пробников/спавна, где голосование реально есть).
+Доказательства: декомпил SurfaceRules$Context (biomeGetter + Suppliers
+  .memoize), cargo test 96+2, push 821c87e+fix, CI перезапуск.
