@@ -1170,3 +1170,39 @@ CI run 37525009608 (HEAD 61d0562):
      33.3.1-jre, байт-уровень). Незакрытых гипотез не осталось.
 ГЕЙТ P2 (10^4 x 5 seeds x 3 пака) и метрика >=30x в этой же гонке — статус
   отдельно; данные гейта не зависят от zoom-seed (климат/RTree без голоса).
+
+=== 2026-10-07 | сессия 7 (аддендум 7: T35 БАЙТ-АУДИТ закрытия — cpool-биты, updateY-аргументы; правка доказательств аддендума 6) ===
+Мандат: доказать, что закрытие T35 байт-ВЕРНО, а не случайно зелёно.
+1) БАЙТ-УРОВЕНЬ constant pool (скрипт scripts/cpool_dump.py — парсер classfile,
+   raw-биты; CFR-печать десятичных литералов сама по себе доказательством не
+   является): BiomeManager.class (purpur 2535) getFiddle-множитель = биты
+   3f4ccccccccccccd = СВЁРНУТАЯ константа 0.9/1024.0 (у 0.9 = 3feccccccccccccd
+   та же мантисса, экспонента -10; javac сворачивает деление в compile-time).
+   Операнды (l>>24 & 1023) - 512 — long'ы 0x3ff/512 в пуле. Амплитуда фидла
+   = 512*8.7890625e-4 = 0.45 (диапазон -0.45..+0.44921875); гипотеза мандата
+   «амплитуда 10.0/400» пулом ОПРОВЕРГНУТА. LinearCongruentialGenerator.class:
+   MULTIPLIER 0x5851f42d4c957f2d = 6364136223846793005, INCREMENT
+   0x14057b7ef767814f = 1442695040888963407, next(l,r) = l*(l*M+I)+r.
+   Наш biomes.rs lcg_next/get_fiddle/get_fiddled_distance/vote_best_corner —
+   дословно: 6 next x,y,z,x,y,z; два re-mix seed; сумма квадратов z+y+x;
+   строго-меньший выигрывает (первый при равенстве); резолвится ОДИН кварт.
+2) SurfaceRules$Context.updateY (decompX): biome = Suppliers.memoize(() ->
+   biomeGetter.apply(pos.set(blockX, blockY, blockZ))) — сапплаер получает
+   РОВНО аргументы updateY (блочные координаты; голос->кварт внутри
+   BiomeManager.getBiome). Наш update_y передаёт те же block_x/y/z в
+   get_biome_voted_region; memoize vs наш eager — value-идентично (чистая
+   функция тех же аргументов). min_section/section_count = min_y>>4 / height>>4.
+3) Риг (VectorCapture.captureSurface) НЕ ПОТРЕБОВАЛСЯ: живой сервер уже
+   подтвердил фикс. ПРАВКА доказательств аддендума 6: run 37525009608 имеет
+   conclusion=cancelled (cancel-in-progress: пуши cb6d95c) — но джоба-уровень:
+   ncf-staged surface/carvers/noise = SUCCESS успели завершиться до отмены.
+   Актуальный run 37528979115 (HEAD cb6d95c): ncf-staged surface/carvers/noise
+   = SUCCESS повторно, все ядро-джобы зелёные; ncf-gate-p2 матрица в полёте.
+4) Регрессионный заслон (этот коммит, код не менялся — только тест+worklog):
+   biomes.rs t35_fiddle_constant_bits — биты литерала == битам classfile
+   (3f4ccccccccccccd), крайние фидлы, алгебра LCG. cargo test 100+2 GREEN
+   (в т.ч. shaped t35_region_vote_clamps_winner GREEN с NCF_WG-экстрактом);
+   A/B NCF_TILE_CACHE=0/1 --gen-batch surface 5x5 (100..104): 25/25
+   БАЙТ-ИДЕНТИЧНО; clippy чисто по biomes.rs.
+Доказательства: cpool-дамп двух классов (сырые биты в логе выше), декомпил
+  SurfaceRules$Context.updateY, CI API (run/job-уровень), локальные тесты/A-B.

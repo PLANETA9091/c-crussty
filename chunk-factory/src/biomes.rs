@@ -377,6 +377,34 @@ pub fn biome_zoom_seed(level_seed: i64) -> i64 {
 mod t35_tests {
     use super::*;
 
+    /// BYTE-LEVEL guard (cpool_dump.py on purpur 1.21.10 BiomeManager.class):
+    /// the getFiddle multiplier is the folded constant 0.9/1024.0 — classfile
+    /// bits 3f4ccccccccccccd (same significand as 0.9 = 3feccccccccccccd,
+    /// exponent -10; javac folds the division at compile time). Amplitude
+    /// semantics = ±512 * 8.7890625e-4 ≈ ±0.45 — NOT "10.0/400" (refuted by
+    /// the constant pool). LCG constants live in LinearCongruentialGenerator
+    /// .class: 0x5851f42d4c957f2d / 0x14057b7ef767814f.
+    #[test]
+    fn t35_fiddle_constant_bits() {
+        assert_eq!(
+            8.789_062_5e-4_f64.to_bits(),
+            0x3f4c_cccc_cccc_cccd,
+            "fiddle multiplier must be the exact classfile double"
+        );
+        assert_eq!(get_fiddle(0), -512.0 * 8.789_062_5e-4);
+        // extreme lanes: (1023-512)*C and (0-512)*C — amplitude ±0.45
+        assert_eq!(get_fiddle(1023 << 24), 511.0 * 8.789_062_5e-4);
+        assert_eq!(get_fiddle(511 << 24), -1.0 * 8.789_062_5e-4);
+        // LCG: next(0, 0) = 0*(0*M+I)+0 = 0; next(1,0) = M+I; wrapping i64
+        assert_eq!(lcg_next(1, 0), 6364136223846793005i64.wrapping_add(1442695040888963407));
+        // decompile form: left *= left*M + I; return left + right
+        let (l, r) = (123456789i64, 987654321i64);
+        let expect = l
+            .wrapping_mul(l.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407))
+            .wrapping_add(r);
+        assert_eq!(lcg_next(l, r), expect);
+    }
+
     /// ChunkAccess.getNoiseBiome section y-clamp, overworld
     /// (minY=-64 -> minSection=-4; height=384 -> 24 sections; maxY quart 79).
     #[test]
