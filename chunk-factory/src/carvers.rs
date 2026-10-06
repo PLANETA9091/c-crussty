@@ -472,7 +472,10 @@ fn final_kind(idx: usize) -> crate::filler::HeightmapKind {
 }
 
 /// Heightmap.update for one of the four FINAL types (predicate inline).
+/// x/z arrive as WORLD coords; Heightmap.update wants SECTION-LOCAL — mask.
 fn update_final_heightmap(chunk: &mut FillerChunk, hm: usize, x: i32, y: i32, z: i32, state: u32) {
+    let x = x & 15;
+    let z = z & 15;
     let name = chunk.state_table.get(state).name.as_str();
     let is_opaque: bool = match hm {
         2 => blocks_motion(name),                            // OCEAN_FLOOR

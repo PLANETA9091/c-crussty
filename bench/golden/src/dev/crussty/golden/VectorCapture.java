@@ -1129,4 +1129,177 @@ public final class VectorCapture {
         }
         return rows;
     }
+
+    // ------------------------------------------------------------------
+    // Session 6 bisect rig: capture the SurfaceRules.Context walk
+    // ------------------------------------------------------------------
+
+    /** Replicates SurfaceSystem.buildSurface's column walk on the REAL
+     * generated chunk and records per visited block the exact Context state
+     * the surface rule sees (reflection into package-private members). */
+    public static void captureSurface(JavaPlugin plugin, int cx, int cz, CommandSender ack) throws Exception {
+        ServerLevel level = ((CraftWorld) plugin.getServer().getWorlds().get(0)).getHandle();
+        Path root;
+        String prop = System.getProperty("goldendump.out");
+        if (prop != null && !prop.isBlank()) {
+            root = Paths.get(prop);
+        } else {
+            Path pluginsDir = plugin.getDataFolder().getAbsoluteFile().toPath().getParent();
+            Path serverDir = pluginsDir == null ? null : pluginsDir.getParent();
+            if (serverDir == null) throw new IllegalStateException("cannot resolve server dir");
+            root = serverDir.resolve("golden");
+        }
+        Files.createDirectories(root);
+        Path out = root.resolve("surface_trace_c" + cx + "_" + cz + ".tsv");
+
+        var chunkAccess = level.getChunk(cx, cz);
+        RandomState randomState = level.getChunkSource().randomState();
+        var generator = (net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator)
+            level.getChunkSource().getGenerator();
+        java.lang.reflect.Method mCreateNoise = net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator.class
+            .getDeclaredMethod("createNoiseChunk", net.minecraft.world.level.chunk.ChunkAccess.class,
+                net.minecraft.world.level.StructureManager.class, Blender.class,
+                net.minecraft.world.level.levelgen.RandomState.class);
+        mCreateNoise.setAccessible(true);
+        var noiseChunk = chunkAccess.getOrCreateNoiseChunk(
+            c -> {
+                try {
+                    return (net.minecraft.world.level.levelgen.NoiseChunk) mCreateNoise.invoke(generator, c,
+                        level.structureManager(), Blender.empty(), randomState);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+        var surfaceSystem = randomState.surfaceSystem();
+        var settingsField = net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator.class.getDeclaredField("settings");
+        settingsField.setAccessible(true);
+        Object settingsRaw = settingsField.get(generator);
+        net.minecraft.world.level.levelgen.NoiseGeneratorSettings settings;
+        if (settingsRaw instanceof java.util.function.Supplier<?> sup) {
+            settings = (net.minecraft.world.level.levelgen.NoiseGeneratorSettings) sup.get();
+        } else if (settingsRaw instanceof net.minecraft.core.Holder<?> holder) {
+            settings = (net.minecraft.world.level.levelgen.NoiseGeneratorSettings) holder.value();
+        } else {
+            settings = (net.minecraft.world.level.levelgen.NoiseGeneratorSettings) settingsRaw;
+        }
+        net.minecraft.world.level.levelgen.SurfaceRules.RuleSource ruleSource = settings.surfaceRule();
+        var defaultBlock = settings.defaultBlock();
+
+        var biomeRegistry = level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BIOME);
+        var biomeManager = level.getBiomeManager();
+        var genCtx = new net.minecraft.world.level.levelgen.WorldGenerationContext(generator, level, level);
+
+        Class<?> ctxClass = Class.forName("net.minecraft.world.level.levelgen.SurfaceRules$Context");
+        java.lang.reflect.Constructor<?> ctxCtor = ctxClass.getDeclaredConstructor(
+            net.minecraft.world.level.levelgen.SurfaceSystem.class,
+            net.minecraft.world.level.levelgen.RandomState.class,
+            net.minecraft.world.level.chunk.ChunkAccess.class,
+            net.minecraft.world.level.levelgen.NoiseChunk.class,
+            java.util.function.Function.class,
+            net.minecraft.core.Registry.class,
+            net.minecraft.world.level.levelgen.WorldGenerationContext.class);
+        ctxCtor.setAccessible(true);
+        Object surfaceCtx = ctxCtor.newInstance(surfaceSystem, randomState, chunkAccess, noiseChunk,
+            (java.util.function.Function<net.minecraft.core.BlockPos, net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome>>)
+                pos -> biomeManager.getBiome(pos),
+            biomeRegistry, genCtx);
+        net.minecraft.world.level.levelgen.SurfaceRules.SurfaceRule surfaceRule =
+            ruleSource.apply((net.minecraft.world.level.levelgen.SurfaceRules.Context) surfaceCtx);
+        java.lang.reflect.Method tryApply = surfaceRule.getClass().getMethod("tryApply", int.class, int.class, int.class);
+        tryApply.setAccessible(true);
+
+        java.lang.reflect.Field fBlockX = surfaceCtx.getClass().getDeclaredField("blockX");
+        java.lang.reflect.Field fBlockZ = surfaceCtx.getClass().getDeclaredField("blockZ");
+        java.lang.reflect.Field fSurfaceDepth = surfaceCtx.getClass().getDeclaredField("surfaceDepth");
+        java.lang.reflect.Field fWaterHeight = surfaceCtx.getClass().getDeclaredField("waterHeight");
+        java.lang.reflect.Field fStoneBelow = surfaceCtx.getClass().getDeclaredField("stoneDepthBelow");
+        java.lang.reflect.Field fStoneAbove = surfaceCtx.getClass().getDeclaredField("stoneDepthAbove");
+        java.lang.reflect.Field fBiome = surfaceCtx.getClass().getDeclaredField("biome");
+        for (java.lang.reflect.Field f : new java.lang.reflect.Field[] {fBlockX, fBlockZ, fSurfaceDepth, fWaterHeight, fStoneBelow, fStoneAbove, fBiome}) {
+            f.setAccessible(true);
+        }
+        java.lang.reflect.Method mGetMin = ctxClass.getDeclaredMethod("getMinSurfaceLevel");
+        mGetMin.setAccessible(true);
+        java.lang.reflect.Method mGetSecondary = ctxClass.getDeclaredMethod("getSurfaceSecondary");
+        mGetSecondary.setAccessible(true);
+        java.lang.reflect.Method mUpdateXZ = ctxClass.getDeclaredMethod("updateXZ", int.class, int.class);
+        mUpdateXZ.setAccessible(true);
+        java.lang.reflect.Method mUpdateY = ctxClass.getDeclaredMethod("updateY", int.class, int.class, int.class, int.class, int.class, int.class);
+        mUpdateY.setAccessible(true);
+
+        int minBlockX = cx << 4;
+        int minBlockZ = cz << 4;
+        int minY = chunkAccess.getMinY();
+        var sb = new StringBuilder();
+        sb.append("x\tz\ty\tbiome\tsurfaceDepth\tminSurfaceLevel\tsecondary\twaterHeight\tstoneAbove\tstoneBelow\treplacement\n");
+        int n = 0;
+        for (int i = 0; i < 16; ++i) {
+            for (int i1 = 0; i1 < 16; ++i1) {
+                int i2 = minBlockX + i;
+                int i3 = minBlockZ + i1;
+                int i4 = chunkAccess.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, i, i1) + 1;
+                mUpdateXZ.invoke(surfaceCtx, i2, i3);
+                int i5 = chunkAccess.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, i, i1) + 1;
+                int i6 = 0;
+                int i7 = Integer.MIN_VALUE;
+                int i8 = Integer.MAX_VALUE;
+                for (int i9 = i5; i9 >= minY; --i9) {
+                    var block = chunkAccess.getBlockState(new net.minecraft.core.BlockPos(i2, i9, i3));
+                    if (block.isAir()) { i6 = 0; i7 = Integer.MIN_VALUE; continue; }
+                    if (!block.getFluidState().isEmpty()) {
+                        if (i7 != Integer.MIN_VALUE) continue;
+                        i7 = i9 + 1;
+                        continue;
+                    }
+                    if (i8 >= i9) {
+                        i8 = -32512;
+                        for (int i10 = i9 - 1; i10 >= minY - 1; --i10) {
+                            var below = chunkAccess.getBlockState(new net.minecraft.core.BlockPos(i2, i10, i3));
+                            if (isStone(below)) continue;
+                            i8 = i10 + 1;
+                            break;
+                        }
+                    }
+                    mUpdateY.invoke(surfaceCtx, ++i6, i9 - i8 + 1, i7, i2, i9, i3);
+                    Object biomeVal = fBiome.get(surfaceCtx);
+                    net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biomeHolder = null;
+                    if (biomeVal instanceof java.util.function.Supplier<?> sup) {
+                        biomeHolder = (net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome>) sup.get();
+                    } else if (biomeVal instanceof net.minecraft.core.Holder<?> h) {
+                        biomeHolder = (net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome>) h;
+                    }
+                    String biomeName = biomeHolder == null ? "?"
+                        : biomeHolder.unwrapKey().map(k -> k.location().toString()).orElse("?");
+                    Object replacement = block.equals(defaultBlock)
+                        ? tryApply.invoke(surfaceRule, i2, i9, i3) : null;
+                    String replName = replacement == null ? "-"
+                        : ((net.minecraft.world.level.block.state.BlockState) replacement).getBlock().toString()
+                            .replaceAll("[\\[\\]{}=,]", "");
+                    sb.append(i2).append('\t').append(i3).append('\t').append(i9)
+                      .append('\t').append(biomeName)
+                      .append('\t').append(fSurfaceDepth.getInt(surfaceCtx))
+                      .append('\t').append(mGetMin.invoke(surfaceCtx))
+                      .append('\t').append(mGetSecondary.invoke(surfaceCtx))
+                      .append('\t').append(fWaterHeight.getInt(surfaceCtx))
+                      .append('\t').append(fStoneAbove.getInt(surfaceCtx))
+                      .append('\t').append(fStoneBelow.getInt(surfaceCtx))
+                      .append('\t').append(replName)
+                      .append('\n');
+                    ++n;
+                    if (replacement != null) {
+                        chunkAccess.setBlockState(new net.minecraft.core.BlockPos(i2, i9, i3),
+                            (net.minecraft.world.level.block.state.BlockState) replacement);
+                    }
+                }
+            }
+        }
+        Files.writeString(out, sb.toString());
+        plugin.getLogger().info("GOLDEN SURFACE CAPTURE COMPLETE n=" + n + " dir=" + out);
+        ack.sendMessage("goldensurface: complete n=" + n + " dir=" + out);
+    }
+
+    private static boolean isStone(net.minecraft.world.level.block.state.BlockState s) {
+        return !s.isAir() && s.getFluidState().isEmpty();
+    }
 }

@@ -281,3 +281,112 @@ pub fn apply_carvers_pass(
     apply_carvers(chunk, seed, &k, &mut ctx, aquifer, &biome_carvers);
     Ok(())
 }
+
+/// Session 6 bisect rig: replicate the build_surface walk for ONE chunk and
+/// emit the same TSV the Java /goldensurface capture writes (VectorCapture).
+#[allow(clippy::too_many_arguments)]
+pub fn trace_surface(
+    rs: &mut RandomState,
+    kit: &mut StageKit,
+    _dir: &WorldgenDir,
+    seed: i64,
+    cx: i32,
+    cz: i32,
+) -> Result<String, String> {
+    use std::fmt::Write as _;
+    kit.rule_set.reset_caches();
+    let mut chunk = generate_noise_chunk(rs, seed, cx, cz)?;
+    let default_block = chunk.state_table.intern_canonical(&rs.settings.default_block);
+    let zoom_seed = crate::biomes::biome_zoom_seed(seed);
+    let source = RefCell::new(BiomeSource::new(rs));
+    let mut ctx = SurfaceContext::new(&kit.system, rs, &kit.biome_noise, &kit.facts, &source, zoom_seed);
+    ctx.default_block = default_block;
+    let mut cols = ChunkColumns { chunk: &mut chunk };
+    let mut out = String::from(
+        "x\tz\ty\tbiome\tsurfaceDepth\tminSurfaceLevel\tsecondary\twaterHeight\tstoneAbove\tstoneBelow\treplacement\n",
+    );
+    let min_block_x = cx << 4;
+    let min_block_z = cz << 4;
+    let min_y = cols.chunk.min_y;
+    for i in 0..16i32 {
+        for i1 in 0..16i32 {
+            let x = min_block_x + i;
+            let z = min_block_z + i1;
+            let i5 = cols.height_wg(i, i1) + 1;
+            ctx.update_xz(x, z);
+            let mut i6 = 0i32;
+            let mut i7 = i32::MIN;
+            let mut i8 = i32::MAX;
+            let mut y = i5;
+            while y >= min_y {
+                let block = cols.get_block(x, y, z);
+                if crate::surface_rules::is_air_state(block, &cols.chunk.state_table) {
+                    i6 = 0;
+                    i7 = i32::MIN;
+                    y -= 1;
+                    continue;
+                }
+                if crate::surface_rules::is_fluid_state(block, &cols.chunk.state_table) {
+                    if i7 != i32::MIN {
+                        y -= 1;
+                        continue;
+                    }
+                    i7 = y + 1;
+                    y -= 1;
+                    continue;
+                }
+                if i8 >= y {
+                    i8 = -32512;
+                    let mut i10 = y - 1;
+                    while i10 >= min_y - 1 {
+                        let below = cols.get_block(x, i10, z);
+                        if crate::surface_rules::is_stone_state(below, &cols.chunk.state_table) {
+                            i10 -= 1;
+                            continue;
+                        }
+                        i8 = i10 + 1;
+                        break;
+                    }
+                }
+                i6 += 1;
+                ctx.update_y(i6, y - i8 + 1, i7, x, y, z);
+                let replacement = if block == default_block {
+                    kit.rule_set
+                        .root
+                        .try_apply(&mut ctx, &cols)
+                        .map(|s| s.replace(['[', ']', '{', '}', '=', ','], ""))
+                        .unwrap_or_else(|| "-".to_string())
+                } else {
+                    "-".to_string()
+                };
+                let min_surface = ctx.get_min_surface_level();
+                let secondary = ctx.get_surface_secondary();
+                let _ = writeln!(
+                    out,
+                    "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+                    x,
+                    z,
+                    y,
+                    ctx.biome.clone().unwrap_or_default(),
+                    ctx.surface_depth,
+                    min_surface,
+                    secondary,
+                    ctx.water_height,
+                    ctx.stone_depth_above,
+                    ctx.stone_depth_below,
+                    replacement,
+                );
+                if let Some(new_state) = if block == default_block {
+                    kit.rule_set.root.try_apply(&mut ctx, &cols)
+                } else {
+                    None
+                } {
+                    let id = cols.chunk.state_table.intern_canonical(&new_state);
+                    cols.set_block(x, y, z, id);
+                }
+                y -= 1;
+            }
+        }
+    }
+    Ok(out)
+}

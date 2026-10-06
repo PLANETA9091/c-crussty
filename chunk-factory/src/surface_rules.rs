@@ -517,6 +517,7 @@ pub fn java_math_round_i32(v: f64) -> i32 {
 ///   orange loop: for (i=0; i<192; ++i) { if ((i += nextInt(5)+1) >= 192) continue; b[i]=ORANGE; }
 ///   white loop:  for (i2=0, i1=0; i1<ix && i2<192; ++i1, i2 += nextInt(16)+4) { body }
 fn generate_bands(random: &mut dyn RandomSource, table: &mut StateTable) -> Vec<String> {
+    let _ = table; // the serial form no longer interns band states (P4.7 split)
     let terracotta = TERRACOTTA.to_string();
     let orange = ORANGE_TERRACOTTA.to_string();
     let yellow = YELLOW_TERRACOTTA.to_string();
@@ -970,7 +971,7 @@ impl Cond {
 
 impl Rule {
     #[inline]
-    fn try_apply(&self, ctx: &mut SurfaceContext, chunk: &ChunkColumns) -> Option<String> {
+    pub fn try_apply(&self, ctx: &mut SurfaceContext, chunk: &ChunkColumns) -> Option<String> {
         match self {
             Rule::Block(state) => Some(state.clone()),
             Rule::Bandlands => Some(
@@ -1086,6 +1087,21 @@ pub fn build_surface(
             }
         }
     }
+}
+
+#[inline]
+pub fn is_air_state(state: u32, table: &StateTable) -> bool {
+    is_air_id(state, table)
+}
+
+#[inline]
+pub fn is_fluid_state(state: u32, table: &StateTable) -> bool {
+    is_fluid_id(state, table)
+}
+
+#[inline]
+pub fn is_stone_state(state: u32, table: &StateTable) -> bool {
+    is_stone_id(state, table)
 }
 
 #[inline]

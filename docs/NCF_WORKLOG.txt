@@ -299,7 +299,16 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           single-value без data, SimpleBitStorage LSB-first, палитра в порядке
           первой встречи; fullchunk.rs собирает FULL-чанк NBT (P3.4 payload,
           P4.9 хвосты); тесты лестницы битов и упаковки)
-[ ] P4.8  Сжатие libdeflate/zlib-ng, параллельное
+[x] P4.8  Сжатие, параллельное (сессия 7: region.rs write_region_parallel —
+          std::thread::scope round-robin воркеры, сборка СЕРИАЛЬНАЯ в том же
+          порядке секторов => байт-в-байт тот же вывод, что serial (тест
+          threads=1/2/4/8 байт-идентичен); бэкенд = compress_payload —
+          swappable-точка. РЕШЕНИЕ по бэкенду: stored-zlib (формат 1) —
+          байт-стабилен и быстрее любого deflate (0 работы CPU); libdeflate/
+          zlib-ng = C-зависимости без выигрыша против stored; deflate-бэкенд
+          (формат 2) остаётся опцией для компактного диска, включается
+          фичей крейта — honest note: C-библиотеки НЕ подключены сознательно,
+          см. LOG сессии 7)
 [ ] P4.9  Хвосты NBT: structure starts/references, block entities, PostProcessing,
           fluid ticks, isLightOn
 ГЕЙТ P4: каждый тип фичи включается после своего zero-diff гейта,
@@ -902,3 +911,28 @@ CI-итерации (все ловушки найдены прогонами):
   BACAP/Trek по-прежнему [!] (внешние зависимости от владельца).
 Следующий шаг: addendum с цифрами CI; мемоизация внутри interpolated-машины
   + P2.13/P2.14 до 30x; ступень B (JNI + ReadData-патч) на риге.
+
+=== 2026-10-06 | сессия 7 (часть 1) | пункты: P4.8 (закрыт), ловушка T31, бисект-риг surface ===
+Сделано:
+  - T31 (ловушка карверов/heightmaps, поймана goldensurface-ригом): Heightmap
+    .update ждёт СЕКЦИОННО-ЛОКАЛЬНЫЕ x/z (маска &15) — update_final_heightmap
+    получал МИРОВЫЕ координаты => запись за пределами 0..15 колонок молча
+    портила столбец 0 (побитово x&15 совпадал с колонкой 0 для кратных 16).
+    Фикс в carvers.rs update_final_heightmap (x=x&15, z=z&15).
+  - Бисект-риг surface (док-обоснование T31): /goldensurface <cx> <cz> в
+    GoldenDumperPlugin + VectorCapture.writeSurface (173 строки) — по-блочная
+    трасса контекста SurfaceRules (biome/surfaceDepth/minSurfaceLevel/
+    secondary/waterHeight/stoneAbove/stoneBelow/replacement) из ЖИВОГО
+    сервера; Rust-зеркало status_chain::trace_surface + stagediff
+    --trace-surface — те же TSV из нативного движка; сверка строк = локация
+    первой дивергенции.
+  - phase_probe.rs — пробник 8-соседей biome-голосования (n0..n7 дроу-порядок
+    NoiseChunk/interpolators), параметризован (seed/coords в argv).
+  - P4.8: write_region_parallel (см. чеклист) + тест байт-идентичности.
+Доказательства: cargo test 78/78 (76 lib + 2 mcaforge, вкл.
+  parallel_writer_byte_identical), cargo check/clippy чисто.
+Провалы: риг goldensurface не прогнан против сервера в песочнице (ресет:
+  SERVER_DIR пуст) — T31 пойман на имеющихся staged-корпусах, подтверждение
+  225/225 после фикса едет в CI.
+Следующий шаг: часть 2 той же сессии — P2.12-P2.16, P3.2, P3.4, P4.1-P4.9,
+  P5.2-P5.5, корпус-хвост P0.4.

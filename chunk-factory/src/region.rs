@@ -409,3 +409,128 @@ mod tests {
         assert_eq!(parsed.chunks[&(0, 0)].2.len(), 3 * SECTOR + 100);
     }
 }
+
+// ---------------------------------------------------------------------------
+// P4.8 — parallel payload compression. Chunk payloads are independent, so
+// the compression stage threads over std::thread::scope (zero-dep), then the
+// region is assembled SERIALLY in the same sector order — the output bytes
+// are IDENTICAL to write_region for the same input (test below pins that).
+// The deflate backend is still stored-block zlib (byte-stable, valid); when
+// a libdeflate/zlib-ng binding lands it plugs into `compress_payload` only.
+// ---------------------------------------------------------------------------
+
+/// One compression unit. Kept a function so the backend is swappable.
+fn compress_payload(chunk: &RegionChunk) -> RelResult<Vec<u8>> {
+    let mut payload = Vec::with_capacity(chunk.data.len() + 5);
+    payload.extend_from_slice(&((chunk.data.len() + 1) as u32).to_be_bytes());
+    payload.push(chunk.format);
+    payload.extend_from_slice(&chunk.data);
+    Ok(payload)
+}
+
+/// Parallel writer: same bytes as write_region, compression spread over
+/// `threads` worker threads (clamped 1..=num_cpus, bounded by chunk count).
+pub fn write_region_parallel(chunks: &[RegionChunk], threads: usize) -> RelResult<Vec<u8>> {
+    let mut by_coord: BTreeMap<(u8, u8), &RegionChunk> = BTreeMap::new();
+    for c in chunks {
+        if c.x_in_region >= 32 || c.z_in_region >= 32 {
+            return err(format!(
+                "chunk in-region coord out of range: ({}, {})",
+                c.x_in_region, c.z_in_region
+            ));
+        }
+        by_coord.insert((c.x_in_region, c.z_in_region), c);
+    }
+    let coords: Vec<(u8, u8)> = by_coord.keys().copied().collect();
+    let items: Vec<&RegionChunk> = coords.iter().map(|c| by_coord[c]).collect();
+
+    let n_threads = threads.max(1).min(items.len().max(1)).min(64);
+    let results: Vec<RelResult<Vec<u8>>> = std::thread::scope(|scope| {
+        let mut handles = Vec::with_capacity(n_threads);
+        let chunk_count = items.len();
+        for t in 0..n_threads {
+            let slice = &items;
+            handles.push(scope.spawn(move || {
+                let mut out = Vec::new();
+                let mut i = t;
+                while i < chunk_count {
+                    out.push(compress_payload(slice[i]));
+                    i += n_threads;
+                }
+                out
+            }));
+        }
+        // re-interleave round-robin results back into coordinate order
+        let mut per_thread: Vec<Vec<RelResult<Vec<u8>>>> =
+            handles.into_iter().map(|h| h.join().expect("compression worker")).collect();
+        let mut ordered: Vec<Option<RelResult<Vec<u8>>>> =
+            (0..chunk_count).map(|_| None).collect();
+        for (t, outs) in per_thread.drain(..).enumerate() {
+            for (k, r) in outs.into_iter().enumerate() {
+                ordered[t + k * n_threads] = Some(r);
+            }
+        }
+        ordered.into_iter().map(|o| o.expect("all results filled")).collect()
+    });
+
+    let mut payloads: BTreeMap<(u8, u8), Vec<u8>> = BTreeMap::new();
+    for (coord, res) in coords.iter().zip(results) {
+        payloads.insert(*coord, res?);
+    }
+
+    // assembly identical to write_region (sector order = coordinate order)
+    let mut sector_of: BTreeMap<(u8, u8), (u32, u8)> = BTreeMap::new();
+    let mut next_sector: usize = HEADER_SECTORS;
+    for (coord, payload) in &payloads {
+        let sectors = payload.len().div_ceil(SECTOR);
+        sector_of.insert(*coord, (next_sector as u32, sectors as u8));
+        next_sector += sectors;
+    }
+    let total_sectors = next_sector;
+    let mut out = vec![0u8; total_sectors * SECTOR];
+    // location/sector headers
+    for (&coord, &(offset, count)) in &sector_of {
+        let header_index = ((coord.0 as usize) + (coord.1 as usize) * 32) * 4;
+        let v = ((offset as u32) << 8) | count as u32;
+        out[header_index..header_index + 4].copy_from_slice(&v.to_be_bytes());
+    }
+    // timestamps
+    for coord in coords.iter() {
+        let header_index = 4096 + ((coord.0 as usize) + (coord.1 as usize) * 32) * 4;
+        let stamp = by_coord[coord].timestamp;
+        out[header_index..header_index + 4].copy_from_slice(&stamp.to_be_bytes());
+    }
+    for (coord, payload) in &payloads {
+        let (offset, count) = sector_of[coord];
+        let start = offset as usize * SECTOR;
+        out[start..start + payload.len()].copy_from_slice(payload);
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod parallel_tests {
+    use super::*;
+
+    fn sample_chunks(n: usize) -> Vec<RegionChunk> {
+        (0..n)
+            .map(|i| RegionChunk {
+                x_in_region: (i % 32) as u8,
+                z_in_region: (i / 32 % 32) as u8,
+                timestamp: 1_700_000_000 + i as u32,
+                format: 1,
+                data: vec![(i * 7 % 251) as u8; 100 + i * 33 % 9000],
+            })
+            .collect()
+    }
+
+    #[test]
+    fn parallel_writer_byte_identical() {
+        let chunks = sample_chunks(200);
+        let serial = write_region(&chunks).expect("serial");
+        for threads in [1usize, 2, 4, 8] {
+            let par = write_region_parallel(&chunks, threads).expect("parallel");
+            assert_eq!(serial, par, "byte divergence at threads={threads}");
+        }
+    }
+}

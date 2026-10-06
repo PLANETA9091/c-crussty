@@ -115,6 +115,23 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         println!("stagediff --selftest: GREEN");
         return Ok(0);
     }
+    if args.first().map(|s| s == "--trace-surface").unwrap_or(false) {
+        // --trace-surface <seed> <cx> <cz> <worldgen_dir> <out.tsv>
+        let seed: i64 = args.get(1).ok_or("seed")?.parse().map_err(|_| "seed")?;
+        let cx: i32 = args.get(2).ok_or("cx")?.parse().map_err(|_| "cx")?;
+        let cz: i32 = args.get(3).ok_or("cz")?.parse().map_err(|_| "cz")?;
+        let wg = args.get(4).ok_or("worldgen dir")?;
+        let out = args.get(5).ok_or("out file")?;
+        std::env::set_var("NCF_DATA_ROOT", wg);
+        let dir = WorldgenDir::load(Path::new(wg)).map_err(|e| e.to_string())?;
+        let mut rs = RandomState::build(&dir, "minecraft", "overworld", seed).map_err(|e| e.to_string())?;
+        let mut kit = StageKit::build(&mut rs, &dir).map_err(|e| e.to_string())?;
+        let rows = chunk_factory::status_chain::trace_surface(&mut rs, &mut kit, &dir, seed, cx, cz)
+            .map_err(|e| e.to_string())?;
+        std::fs::write(out, rows).map_err(|e| e.to_string())?;
+        println!("trace written to {out}");
+        return Ok(0);
+    }
     if args.first().map(|s| s == "--gen-batch").unwrap_or(false) {
         // --gen-batch <seed> <x0> <x1> <z0> <z1> <worldgen_dir> <out_dir>
         //   builds the RandomState ONCE (the real factory shape), generates

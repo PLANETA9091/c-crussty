@@ -239,6 +239,9 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
         }
         getCommand("goldendump").setExecutor(this);
         getCommand("goldenvec").setExecutor(this);
+        if (getCommand("goldensurface") != null) {
+            getCommand("goldensurface").setExecutor(this);
+        }
         getLogger().info("GoldenDumper ready: corpus dumps + vector captures are vanilla-only (no CRUSSTY agent boots)");
     }
 
@@ -265,6 +268,25 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
                 return true;
             }
             VectorCapture.run(this, args[0], sender);
+            return true;
+        }
+        // session 6 bisect rig: /goldensurface <cx> <cz> — replicate the
+        // buildSurface walk on the REAL generated chunk and dump the
+        // SurfaceRules.Context fields per block (reflection into the
+        // package-private context).
+        if (command.getName().equals("goldensurface")) {
+            getLogger().info("goldensurface invoked args=" + java.util.Arrays.toString(args));
+            if (args.length != 2) {
+                sender.sendMessage("usage: /goldensurface <chunkX> <chunkZ>");
+                return true;
+            }
+            try {
+                VectorCapture.captureSurface(this, Integer.parseInt(args[0]), Integer.parseInt(args[1]), sender);
+            } catch (Throwable t) {
+                getLogger().warning("GOLDENSURFACE FAILED: " + t);
+                t.printStackTrace();
+                sender.sendMessage("goldensurface: FAILED: " + t);
+            }
             return true;
         }
         // Executor/console-only guard. RCON commands arrive as
