@@ -1485,3 +1485,33 @@ Run 37562951453 (HEAD ca89491): golden-harness = SUCCESS, контроль по�
   2184/192; tectonic: 0/2376) — T41 не задел staged-путь, P2 остаётся
   честно красным только по T38-B/T40. Дамп сжатого корпуса снова в ОДНОМ
   тике (boot-константа LastUpdate внутри дампа восстановлена).
+
+=== 2026-10-07 | сессия 7 (аддендум 17: Job 440772 — независимый ре-аудит закрытия T35; код не менялся) ===
+Cron-мандат 440772 (10:05 +08) повторял план бисекта T35 по устаревшему
+  состоянию борды (35-37/225). Цель УЖЕ закрыта аддендумами 4-7; выполнен
+  НЕЗАВИСИМЫЙ ре-аудит всех шагов мандата (без доверия LOG, по исходникам):
+1) Декомпилы перечитаны: decompY BiomeManager.getBiome/getFiddledDistance/
+   getFiddle + LinearCongruentialGenerator vs chunk-factory/src/biomes.rs —
+   БАЙТ-ИДЕНТИЧНО: lcg_next (wrapping = Java-переполнение; MUL
+   6364136223846793005, INCR 1442695040888963407), get_fiddle
+   (((l>>24)&0x3FF)-512)*8.7890625e-4, get_fiddled_distance (6 next
+   x,y,z,x,y,z + два re-mix seed; сумма квадратов z+y+x), vote_best_corner
+   (x-2>>2, дробь (i&3)/4.0, строго-меньший выигрывает — при равенстве
+   первый). Презумпция мандата «fiddle amplitude 10.0/400» декомпилом
+   ОПРОВЕРГНУТА (истина: 0.9/1024 свёрнуто, амплитуда ±0.45; см. аддендум 7).
+2) decompX SurfaceRules$Context.updateY (строка 90): biome supplier получает
+   РОВНО (blockX, blockY, blockZ) через pos.set; наш update_y передаёт те же
+   аргументы в get_biome_voted_region; min_section/section_count =
+   min_y>>4 / height>>4; memoize vs eager value-идентичны (чистая функция).
+3) Риг captureSurface НЕ ТРЕБУЕТСЯ: живой сервер подтвердил фикс — CI на
+   HEAD 950501e (run 37564320034): ncf-staged (surface)/(carvers)/(noise) =
+   SUCCESS — ДЕСЯТЫЙ зелёный прогон подряд; красны только gate-P2 ячейки
+   (T38-B/T40 скаляры — вне скоупа мандата, честно красные).
+4) Локальная верификация (этот коммит — только worklog, код не тронут):
+   cargo test chunk_factory 102+2 GREEN (вкл. t35_fiddle_constant_bits,
+   t35_stored_quart_y_clamp, t35_region_vote_clamps_winner); A/B
+   NCF_TILE_CACHE=0/1 --gen-batch 3053459 100..104 x 100..104 surface:
+   25/25 БАЙТ-ИДЕНТИЧНО (скрипт scripts/ab_tilecache_440772.sh).
+Доказательства: декомпил-файлы decompY/decompX (перечитаны), job-уровень
+  run 37564320034, локальные cargo test + A/B 25/25. Несоответствий НЕ
+  найдено — нового фикса нет; контракты veccheck/stagediff не тронуты.
