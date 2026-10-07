@@ -2322,3 +2322,37 @@ CI run 37633932250 (ab1d14e):
 АМДАЛЬ (директива 2): таблица аддендума 26 в силе.
 КОРПУС (директива 3): tectA/tectB вектора (двойные прогоны до/после
   фикса) — в golden/<label>/vectors/ (CI-артефакты) и локально.
+
+=== 2026-10-07 | сессия 11 (аддендум 33: Job 441690 — второй корень СУЖЕН до surface-scan: наш -32512 при fp=false/msl=48 оракульно верен; расходится СА scan (preliminary_surface_level на 13 колоннах ЗА пределами чанка, overlay.1_21_9 версия) ===
+Инструментация (NCF_AQUA_DEBUG=1 в compute_surface_level, env-gated — остаётся
+  в коде для след. тика): при заполнении кэша slot95:
+  -32512 at (211,44,391) deep_dark=false d=-0.2349 d1=-0.6349 msl=48 fp=false
+  d3_here=+0.16513167120263977 (= java, бит-точно; d3_quart=1 — кварт-сдвиг
+  НЕ при чём: range_choice пака не содержит flat_cache, d3_quart просто
+  попал в плато range_choice=1)
+  => наш -32512 ОРАКУЛЬНО КОРРЕКТЕН при данных fp=false и msl=48:
+     d2=0 -> d4=+0.8 -> d1=0.165-0.8<0; d=d3-0.4<0 => -32512.
+  => расходится СА surface-scan (13 офсетов ±1 секция = ±16 блоков — КОЛОННЫ
+     ЗА ПРЕДЕЛОМ чанка): наш min(preliminary_surface_level)=48 и flag=false,
+     у java fp=true (иначе d1>0 дал бы 63... точнее: java (63,water) требует
+     d1>0 при d3=+0.165 => d4<0.165 => d2>0.786 => fp=true И msl+8-44<13.7
+     => msl<=49 — т.е. у java ЛИБО fp=true при msl<=49, ЛИБО иной msl).
+  => первый расходящийся скаляр = preliminary_surface_level на одной из
+     13 скан-колонн (x 195..227, z 375..407 — за пределами захвата 192..207),
+     причём prelim_surface_level в паке = overlay.1_21_9-версия (замена из
+     overlay листинга: density_function/overworld/noise_router/
+     preliminary_surface_level.json) — в 15-полевом захвате бит-точна только
+     ВНУТРИ чанка; скан-колонны не валидированы.
+СЛЕДУЮЩИЙ ТИК (узкая задача, детерминированный судья):
+  1) вывести наши 13 скан-значений prelim_surface_level для compute_fluid
+     слота 95 (offsets, i5, i6, flag) — env-гейт уже готов;
+  2) java-сторона: /aquafields-риг (аддендум 26) дампит java
+     preliminary_surface_level на тех же колоннах (или новый capture-флаг);
+  3) первая расходящаяся колонна => вскрыть chain overlay.1_21_9
+     preliminary_surface_level ( suspect: ещё один несостоятельный фолд
+     класса границ — напр. Ap2 Max bounds lo = x1.min(y1).max(x2.min(y2))
+     выглядит подозрительно для max-диапазона) -> фикс -> tectA/tectB
+     aquacheck gate 0 -> CI gate-P2 tectonic ЗЕЛЁНЫЙ.
+СТАТУС ТИКА: фолд-фокс (аддендум 31) в CI подтверждён (veccheck ZERO-DIFF,
+  ваниль 5/5 зелёная, 3 tectonic ячейки зелёные); остаток — status-слой,
+  сужен до surface-scan колоны вне чанка.

@@ -687,6 +687,18 @@ impl<'a> NoiseBasedAquifer<'a> {
         } else if d > 0.0 {
             self.compute_randomized_fluid_surface_level(x, y, z, max_surface_level)
         } else {
+            if std::env::var("NCF_AQUA_DEBUG").as_deref() == Ok("1") {
+                let dd = self.is_deep_dark_region(x, y, z);
+                let d3q = mth::clamp(
+                    self.fluid_level_floodedness_noise.compute(self.bank, x & !3, y, z & !3),
+                    -1.0,
+                    1.0,
+                );
+                eprintln!(
+                    "NCF_AQUA_DEBUG -32512 at ({x},{y},{z}) deep_dark={dd} d={d} d1={d1} msl={max_surface_level} fp={fluid_present} d3_here={} d3_quart={d3q}",
+                    mth::clamp(self.fluid_level_floodedness_noise.compute(self.bank, x, y, z), -1.0, 1.0),
+                );
+            }
             -32512
         }
     }
