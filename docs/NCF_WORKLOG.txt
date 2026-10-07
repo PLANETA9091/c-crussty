@@ -2356,3 +2356,100 @@ CI run 37633932250 (ab1d14e):
 СТАТУС ТИКА: фолд-фокс (аддендум 31) в CI подтверждён (veccheck ZERO-DIFF,
   ваниль 5/5 зелёная, 3 tectonic ячейки зелёные); остаток — status-слой,
   сужен до surface-scan колоны вне чанка.
+
+=== 2026-10-07 | сессия 12 (аддендум 34: Job 441690 — surface-scan: первый расходящийся скаляр = prelim ЦЕНТРАЛЬНОЙ scan-колонны (ours 80 vs java <=55); suspect Max-fold опровергнут эмпирически; tectC-захват + aquafields-оракул в CI) ===
+ХОД ТИКА:
+  0) sandbox: reset --hard до a8ab480 (аддендум 33), cargo на месте.
+  1) ДО-ДОКАЗАТЕЛЬСТВО (локальный aquacheck на сохранённых tectA-векторах,
+     tectonic-extract): substance_diff=0, decision_diff=4 (первый
+     @ (207,39,385) mine=air java=water), sched_diff=6, fluid_diff=43 /
+     loc_diff=102 = класс пустого rust-мета-дампа (аддендум 24/31);
+     content gate 10 — ТОЧНО числа аддендума 32, судья воспроизведён.
+  2) SUSPECT-1 (аддендум 33: Ap2 Max bounds в trusted_bounds) — МАТЕМАТИКА
+     ПОДТВЕРЖДЕНА КАК БАГ: CFR TwoArgumentSimpleFunction.create для MAX
+     хранит min = Math.max(d, d1), max = Math.max(d2, d3); наш код
+     lo = x1.min(y1).max(x2.min(y2)) — контрпример [0,10]x[5,6]: java 5,
+     наш 6 — интервал без достижимых значений => несостоятелен.
+     НО ЭМПИРИЧЕСКИ ОПРОВЕРГНУТ КАК КОРЕНЬ surface-scan: новый бин
+     prelimprobe (opt-vs-raw) на 100 scan-колоннах (x 192..228, z 372..408,
+     шаг 4, y=0) = ZERO-DIFF: на prelim-дереве tectonic фолды вообще не
+     стреляют (топ-узел = find_top_surface — untrusted для trusted_bounds).
+     ПУНКТ ОСТАЁТСЯ ОТКРЫТЫМ ХАРДЕНИНГОМ (отдельный коммит со своей A/B,
+     в этот тик НЕ входит).
+  3) ОРАКУЛ (CFR, полный): tectonic prelim = find_top_surface(upper=128+
+     128*max_offset, lower=-64, cell_height=8, density=add(-0.390625,
+     initial_density_without_jaggedness)); NoiseChunk.preliminarySurfaceLevel
+     = floor(field.compute(SinglePointContext(qx,0,qz))) на WIRED-поле
+     (router.mapAll(this::wrap)); NoiseInterpolator при context != chunk
+     -> noiseFiller НАПРЯМУЮ (без интерполяции); FlatCache: в окне 5x5
+     кварт -> кэш y=0, вне окна -> filler напрямую. Aquifer.computeFluid:
+     13 офсетов SURFACE_SAMPLING_OFFSETS; i = min(i5); flag (fluid_present)
+     ставит ТОЛЬКО центр (0,0) при не-воздушном глобальном флюиде на
+     (x, i6, z); ранние выходы: (центр && y-12 > i6) -> глобальный статус,
+     (y+12 > i6 && флюид не воздух) -> статус кандидата.
+  4) ОРАКУЛЬНАЯ МАТЕМАТИКА slot95 (211,44,391): d3 = +0.16513167120263977
+     бит-точен (аддендум 33); статус java (63,water) ТРЕБУЕТ fp=true
+     (ветка randomized при d3=0.165 недостижима: d2>1.196 невозможно);
+     fp=true <=> центральный i6 = prelim(211,391)+8 <= 63 <=>
+     prelim(211,391) <= 55 (крат 8 => 48/40/32...). НАШЕ ЗНАЧЕНИЕ = 80
+     (i6=88 -> воздух -> fp=false) => ПЕРВЫЙ РАСХОДЯЩИЙСЯ СКАЛЯР =
+     prelim ЦЕНТРАЛЬНОЙ scan-колонны; дельта = 4+ scan-шага (80 vs <=55),
+     НЕ sub-ulp. tectB: наш prelim(-198,-240) = 88 (i6=96 -> воздух) —
+     тот же класс.
+  5) ГИПОТЕЗЫ (локально, prelimprobe --trace @ (208,388)):
+     (a) flat-cache y-pin на y-зависимом содержимом — ОПРОВЕРГНУТА: в
+     wired prelim-дереве НЕТ FlatCache-маркеров; прямые под-цепи
+     offset/final, full_continents, continent_selector, raw_continents,
+     factor/continents, factor/islands, erosion_folded, ridges — ВСЕ
+     y-свободны (y0==y64==y80==y128 по битам); y-зависим только
+     tectonic:depth (y_clamped_gradient — ожидаемо);
+     (b) разложение scan-шага (208,80,388): density = -0.390625 + (-0.7 +
+     4*(SPL+depth)*F); SPL (сплайн по full_continents, точки -1:0/-0.9:
+     -0.2/-0.4:-0.2/-0.3:0, производные 0) при координате -0.1136885136 ->
+     за последним узлом -> плоская экстраполяция = 0 (сверено); depth(80)
+     = YG(80)+OF = 0.375 - 0.3164343219 = 0.0585656781; F =
+     factor/continents = 5.59999990463256836 (плато 5.6 с f32-следом
+     вложенного сплайна; factor/islands = 5.59999999999999964 = f64 5.6 —
+     согласуется с валидированной f32-семантикой сплайнов); наш
+     density(80) = +0.2212461665 > 0 => наш scan остановился на 80;
+     (c) ОГРАНИЧЕНИЕ на java: density(80) <= 0 => 4*(SPL+depth)*F <=
+     1.090625; при наших depth/F единственный выход = SPL = -0.2
+     (full_continents java в [-0.4,-0.3)) => density(48) = +1.34 => java
+     prelim = 48 — СОГЛАСУЕТСЯ; альтернатива: java depth*F <= 0.2727
+     (F <= 4.65 или depth <= 0.0487) — climate-цепь на этой колонне.
+  6) РЕШАЮЩИЙ ЭКСПЕРИМЕНТ (этот коммит, CI):
+     - tectC_8675309: захват ncf-density на чанке (13,24), база (208,384),
+       band 48..88 — решётка СОДЕРЖИТ расходящуюся scan-колонну
+       (208, 48..80, 388) по углам ячеек; veccheck на tectC-векторах
+       назовёт ПЕРВОЕ РАСХОДЯЩЕЕСЯ ПОЛЕ (temperature/humidity/.../depth/
+       prelim/final) на точных scan-координатах;
+     - aquafields-оракул (риг аддендума 26) заведён в ci_density.sh через
+       env AQX/AQY/AQZ (пусто = пропуск, старые работы не тронуты):
+       tectA (211,44,391), tectB (-198,57,-240), tectC (211,44,391) —
+       java dump 13 prelim + wrapped-полей + computeFluid; tectC даст
+       кросс-машинную проверку тех же колонн (окно FlatCache чанка 13,24:
+       x 208..223 — колонна 208 из КРАЙНЕЙ стала ВНУТРЕННЕЙ).
+  7) ИНФРА: бин prelimprobe (режим прямоугольника opt-vs-raw + --trace:
+     y-freeness пробы + воспроизведение FindTopSurface-скана); ci.yml:
+     +aqx/aqy/aqz у tectA/tectB, +запись tectC_8675309; bash -n + YAML ok.
+cargo test --workspace (корень): 417 GREEN; chunk-factory: 108 GREEN
+  (Rust-поведение не менялось — только новый диагностический бин + CI).
+АМДАЛЬ (директива 2): таблица аддендума 26 в силе — тик = диагностический
+  бин + CI-инфраструктура, горячий путь не тронут; Rust 38.3 мс/чанк local
+  против Java 41.6 мс/чанк CI по noise-статусу.
+КОРПУС (директива 3): tectC добавит ПЕРВЫЙ pack-захват ВНЕ чанка tectA
+  (region scan-колонн) — упреждающее пополнение ДО фикса, как требует
+  директива.
+SLEДУЮЩИЙ ТИК (узкая задача, детерминированный судья):
+  1) CI: aquafields prelim[0,0] -> java центральный prelim (ожидание <=55,
+     если =48/40 — класс подтверждён количественно);
+  2) veccheck tectC-векторов -> первое расходящееся поле @ (208,y,388)
+     -> фикс корня в этой цепи -> tectA/tectB aquacheck gate 0 -> CI
+     gate-P2 tectonic ЗЕЛЁНЫЙ;
+  3) хардинг отдельным коммитом: trusted_bounds Ap2::Max lo = x1.max(y1)
+     (математика доказана этим тиком, НЕ применён — нужна своя A/B);
+  4) P5.3 piece engine — параллельная главная ветка (terralith класс (а)).
+ПРИМЕЧАНИЕ: cron-шаблон 3-й тик подряд перечисляет устаревшие
+  корни-кандидаты (aquifer-barrier/noodle/пороговые флипы) —
+  первоисточник = этот LOG; addenda 32-34 сузили остаток до prelim-скана.
+ОЖИДАНИЕ CI: run на этом коммите.

@@ -167,6 +167,18 @@ done
 [ -n "$marker" ] || die "no GOLDEN DENSITY COMPLETE marker within 300s"
 log "$marker"
 
+# addendum 34 (Job 441690): optional aquafields oracle dump — java's 13
+# SURFACE_SAMPLING_OFFSETS preliminary surface levels + the wrapped aquifer
+# fields + computeFluid at ONE query column, straight from the live
+# NoiseChunk (console log). Env-gated by AQX/AQY/AQZ (empty = skip — old
+# matrix jobs keep their exact previous behaviour).
+if [ -n "$AQX" ]; then
+    log "RCON: aquafields $AQX $AQY $AQZ (oracle prelim[13] + wrapped aquifer fields)"
+    python3 "$GOLDEN_DIR/../ab/rcon.py" "$RCON_PORT" "$RCON_PW" \
+        "aquafields $AQX $AQY $AQZ" \
+        || log "aquafields failed over RCON (non-fatal, continuing)"
+fi
+
 python3 "$GOLDEN_DIR/../ab/rcon.py" "$RCON_PORT" "$RCON_PW" "stop" >/dev/null 2>&1 || true
 for _ in $(seq 1 60); do
     pgrep -f 'purpur-1.21.10.jar' >/dev/null || break
