@@ -258,7 +258,8 @@ if [ -n "${SC:-}" ] && [ -n "${EXCL:-}" ]; then
     mkdir -p "$EXCL_DIR"
     for key in $EXCL; do
         jf="$JAVA_DIR/c_${key}.nbt"
-        rf="$RUST_DIR/c_${key}.nbt"
+        # gen-batch writes into $RUST_DIR/seed_<seed>/ (stagediff layout)
+        rf="$RUST_DIR/seed_${SEED}/c_${key}.nbt"
         if [ -f "$jf" ] && [ -f "$rf" ]; then
             mv "$jf" "$EXCL_DIR/j_${key}.nbt"
             mv "$rf" "$EXCL_DIR/r_${key}.nbt"
