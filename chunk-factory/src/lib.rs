@@ -177,6 +177,7 @@ pub mod fallback;
 /// RandomSpread structure placement prescreen (P5.1).
 pub mod random_spread;
 pub mod beardifier;
+pub mod jigsaw;
 /// Status chain: NOISE -> SURFACE -> CARVERS orchestration (P2.5/P2.8).
 pub mod status_chain;
 /// P2.14 interval cutoff: sound build-time rewrites (RangeChoice/Clamp/mul-1).

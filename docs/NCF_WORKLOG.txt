@@ -2683,3 +2683,77 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 КОРПУС (директива 3): без изменений (ядро тика — тесты против CFR).
 ПРИМЕЧАНИЕ: cron-шаблон 5-й тик подряд отстаёт от LOG — первоисточник
   = этот LOG.
+
+=== 2026-10-08 | сессия 14 (аддендум 39: Job 441690 — CI 37657858163 (dfb001a): вся доска ЗЕЛЁНАЯ кроме 5 терралит-ячеек класса (а); P5.3 инкремент 2a: модуль jigsaw.rs — точный RNG-протокол setLargeFeatureSeed, Rotation/Util-шаффлы, трансформы шаблонов, извлечение jigsaw-блоков из NBT, резолв пулов, canAttach — оракулы довыгружены CFR) ===
+ХОД ТИКА:
+  0) sandbox: reset --hard до dfb001a (аддендум 38), cargo на месте; LOG
+     прочитан первым (cron-шаблон отстаёт 6-й тик подряд).
+  1) CI-ВЕРДИКТ 37657858163 (dfb001a = хардинг 56b810d + инкремент 1):
+     gate-P2 vanilla 5/5 OK, tectonic 5/5 OK, ncf-staged 3/3 OK,
+     ВСЕ ncf-density OK (tectA отфлакнулся и прошёл), vectors/mca/
+     datapacks/chunk-factory/native/module OK. ЕДИНСТВЕННЫЙ красный =
+     5 терралит-ячеек (класс (а), задокументировано) => хардинг и
+     инкремент 1 CI-подтверждены; прогон 56b810d отменён как
+     суперседенный (конкурентность workflow), результат взят с dfb001a.
+  2) ОРАКУЛЫ P5.3 довыгружены (cfr.jar на mojang-mapped 1.21.10):
+     WorldgenRandom.setLargeFeatureSeed (setSeed(base); a=nextLong;
+     b=nextLong; setSeed(cx*a ^ cz*b ^ base)); Rotation (enum order
+     NONE,CW90,CW180,CCW90; getRandom=values[nextInt(4)]; getShuffled=
+     shuffledCopy); Util.shuffle (Fisher-Yates СВЕРХУ: i=n..2, swap(i-1,
+     nextInt(i)))/shuffledCopy/getRandom; StructureTemplate.transform
+     (CW90 (x1+z1-z, z1-x1+x), CW180 (2x1-x, 2z1-z), CCW90 (x1-z1+z,
+     x1+z1-x)); getBoundingBox (ZERO и size-1 через transform, fromCorners,
+     move); getJigsaws (позиция трансформ+offset, front/top ротируются);
+     JigsawBlockInfo.of (дефолты name/pool/target=minecraft:empty,
+     priorities=0); getJointType (nbt joint иначе: front horizontal ->
+     ALIGNED иначе ROLLABLE); StructureTemplatePool (расширение по весу,
+     getRandomTemplate=templates[nextInt], getShuffledTemplates);
+     SinglePoolElement.getShuffledJigsawBlocks (shuffle + СТАБИЛЬНАЯ
+     сортировка selectionPriority DESC); ListPoolElement (jigsaws из
+     elements[0], bbox=union детей); EmptyPoolElement (bbox запрещён);
+     BooleanOp ONLY_FIRST=a&&!b / ONLY_SECOND=b&&!a (сверено);
+     SequencedPriorityIterator (адд: приоритет >= highest -> замена;
+     поп: FIFO; переключение: МАКС приоритет непустых — доказано, что
+     ранний break на highest-1 эквивалентен max-выбору, т.к. приоритеты
+     целые и все непустые <= highest-1 => порядок хеш-итерации НЕ влияет);
+     JigsawBlock.canAttach (front==front1.opposite() && (rollable(parent!)
+     || top==top1) && parent.target==child.name); менеджер шаблонов:
+     префикс "structure" ЕДИНСТВЕННЫЙ (в jar 1.21.10 проверено
+     data/minecraft/structure/... единственная форма).
+  3) ИНКРЕМЕНТ 2a — chunk-factory/src/jigsaw.rs (автономный, БЕЗ смены
+     поведения дерева): set_large_feature_seed; Rotation (полные таблицы
+     трансформа позиций и направлений); util_shuffle/shuffled_copy/
+     get_random (точное потребление RNG); parse_template (NBT: size +
+     palette[jigsaw]-фильтр в порядке block-list, orientation front_top,
+     все дефолты JigsawBlockInfo); TemplateData::bounding_box (точная
+     форма fromCorners+move); jigsaws_at (трансформ+ротация front/top);
+     PoolElement (Empty/Single{legacy-эквив}/List/Unsupported-громко),
+     Projection, ResolvedPool (расширение весов, fallback,
+     get_random_template/get_shuffled_templates/size); can_attach;
+     shuffled_jigsaw_blocks (shuffle + stable sort DESC). pool_aliases
+     пока identity + флаг has_aliases (инкремент 2b).
+  4) ТЕСТЫ (9): RNG-протокол против независимого LegacyRandomSource;
+     потребление RNG rotation/random+shuffle (последовательность nextInt);
+     таблицы трансформа с pivot (0,0) и (3,-2) — ручной вывод из CFR;
+     карта направлений; bbox-трансформ (3 ротации, ручной расчёт);
+     canAttach truth-table (включая родительский rollable — тест-баг
+     найден и исправлен); дефолты/парсинг jigsaw-NBT; stable-sort+RNG;
+     расширение весов пула. ИТОГ: chunk-factory lib 125 GREEN,
+     all-targets 128 GREEN.
+  5) СМЕНА ПОВЕДЕНИЯ: НЕТ (модуль автономен).
+СЛЕДУЮЩИЕ ИНКРЕМЕНТЫ P5.3:
+  a) 2b: Placer.tryPlacingChildren — точная алгебра свободного места
+     (VoxelShape = бокс минус боксы, точно на сетке 0.25: все боксы
+     целые либо 0.25-сдвинуты deflate(0.25); предикат B\A непуст
+     через sweep по интервалам), SequencedPriorityIterator, junctions
+     (два addJunction из CFR 314-315), expansion-hack (getMaxSize по
+     YSpan при Rotation.NONE), heightmap-путь (getFirstFreeHeight —
+     только для не-RIGID проекций; village_plains RIGID почти всюду);
+  b) pool_aliases (PoolAliasLookup: direct/random/static типы);
+  c) piece_dump бин + java-оракул-захват списка боксов для
+     village_plains @ seed 3053459 (проверка инкремента b);
+  d) разъёмка Df::Beardifier (инкремент 1 готов) -> класс (а).
+АМДАЛЬ (директива 2): таблица аддендума 26 в силе; инкременты 2a не
+  входят в горячий цикл.
+КОРПУС (директива 3): без изменений (тик = оракулы + каркас + тесты).
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 6-й тик; первоисточник = этот LOG.
