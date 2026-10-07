@@ -208,9 +208,38 @@ jobs:
   ncf-density:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        # addendum 19/21: (1) the canonical vanilla 3053459 blob (T38-B);
+        # (2) seed 90210 at the ancient_city stub column (chunk (-18,-14),
+        # box-center grid around (-246..-182, -27)) — the decisive Г1/Г2
+        # experiment: if java's climate scalars there say deep_dark while
+        # --biome-at says jungle, the KERNEL climate lookup diverges at
+        # negative coords (Г1); if they match (jungle) and the aquacheck
+        # substance rows still flip deep (y -26..-53), the residual 90210
+        # divergences are the aquifer locationCache class (Г2).
+        include:
+          - seed: '3053459'
+            bx: '-160'
+            bz: '-256'
+            band_y0: '40'
+            band_y1: '100'
+            label: blob3053459
+          - seed: '90210'
+            bx: '-246'
+            bz: '-182'
+            band_y0: '-64'
+            band_y1: '16'
+            label: blob90210
     env:
       PURPUR_BUILD: '2535'
-      SEED: '3053459'
+      SEED: ${{ matrix.seed }}
+      BX: ${{ matrix.bx }}
+      BZ: ${{ matrix.bz }}
+      BAND_Y0: ${{ matrix.band_y0 }}
+      BAND_Y1: ${{ matrix.band_y1 }}
+      LABEL: ${{ matrix.label }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -227,12 +256,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: golden-density-blob
+          name: golden-density-blob-${{ matrix.label }}
           path: |
             bench/golden/results/veccheck_blob_*.log
             bench/golden/results/aquacheck_blob_*.log
             bench/golden/results/golden_density_boot.log
-            ci-server/golden/blob3053459/vectors/
+            ci-server/golden/${{ matrix.label }}/vectors/
           if-no-files-found: warn
           retention-days: 30
 
