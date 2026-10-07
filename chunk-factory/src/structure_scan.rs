@@ -217,30 +217,60 @@ fn parse_start_height(v: Option<&crate::json::Json>) -> StartHeightSpec {
 
 // ---------------------------------------------------------------------------
 
-fn stub_ys(
+/// The validity stub is the START-BOX CENTER: addPieces builds the start
+/// piece box at blockPos1 = the CHUNK CORNER (template origin, extending
+/// +x/+z) and checks the biome at (box.center.x, stub_y, box.center.z) —
+/// NOT the chunk middle. The center offset = half the start template's
+/// size, which we do not know before P5.3 — so sample a conservative GRID:
+///   - projected structures (villages/outposts/trail_ruins, start templates
+///     small): in-chunk offsets {0,4,8,12}^2, per-column WORLD_SURFACE_WG
+///     height (getFirstFreeHeight is evaluated AT the box center column);
+///   - non-projected (ancient_city city_center ~84 wide => half 42,
+///     trial_chambers): offsets {0,16,32,48,64}^2 at the fixed stub y.
+/// Any sample matching the biome predicate marks the start valid
+/// (over-approximation). Residual false-negative risk: projected start
+/// templates wider than 24 (center beyond corner+12) — a named red chunk
+/// exposes it; P5.3 replaces this whole layer with real piece boxes.
+fn stub_samples(
     structure: &crate::json::Json,
-    height_at_middle: Option<i32>,
-) -> (Vec<i32>, bool) {
+    height_of: &dyn Fn(i32, i32) -> Option<i32>,
+) -> (Vec<(i32, i32, i32)>, bool) {
     let proj = structure
         .get("project_start_to_heightmap")
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
     let sh = parse_start_height(structure.get("start_height"));
+    let mut out = Vec::new();
+    let mut unknown = false;
     match (proj.as_deref(), sh) {
-        // JigsawStructure.findGenerationPoint -> addPieces: i2 = pos.y +
-        // getFirstFreeHeight(WORLD_SURFACE_WG); stub y = i2 (+ vec3i.y == 0
-        // when startJigsawName is absent — the gate structures have none).
         (Some("WORLD_SURFACE_WG") | Some("WORLD_SURFACE"), StartHeightSpec::Constant(off)) => {
-            match height_at_middle {
-                Some(h) => (vec![h + 1 + off], false),
-                None => (vec![], true),
+            for dx in [0i32, 4, 8, 12] {
+                for dz in [0i32, 4, 8, 12] {
+                    if let Some(h) = height_of(dx, dz) {
+                        out.push((dx, dz, h + 1 + off));
+                    }
+                }
             }
         }
-        (Some(_), _) => (vec![], true), // other heightmap types: v1 unknown
-        (None, StartHeightSpec::Constant(off)) => (vec![off], false),
-        (None, StartHeightSpec::UniformRange(a, b)) => (vec![a, b], false),
-        (None, StartHeightSpec::Unknown) => (vec![], true),
+        (Some(_), _) => unknown = true,
+        (None, StartHeightSpec::Constant(off)) => {
+            for dx in [0i32, 16, 32, 48, 64] {
+                for dz in [0i32, 16, 32, 48, 64] {
+                    out.push((dx, dz, off));
+                }
+            }
+        }
+        (None, StartHeightSpec::UniformRange(a, b)) => {
+            for dx in [0i32, 16, 32, 48, 64] {
+                for dz in [0i32, 16, 32, 48, 64] {
+                    out.push((dx, dz, a));
+                    out.push((dx, dz, b));
+                }
+            }
+        }
+        (None, StartHeightSpec::Unknown) => unknown = true,
     }
+    (out, unknown)
 }
 
 /// Overworld climate lookup at a block coord — mirrors filler.rs's
@@ -290,8 +320,9 @@ pub fn scan_batch(
             .map(|(p, n)| (p, n.to_string()))
             .collect(),
     });
-    // noise-fill WORLD_SURFACE_WG height at chunk middles, cached per chunk
-    let mut height_cache: HashMap<(i32, i32), Option<i32>> = HashMap::new();
+    // noise-fill WORLD_SURFACE_WG heightmap per chunk (idx = x + z*16),
+    // cached; heights feed the stub-grid for projected structures.
+    let mut height_cache: HashMap<(i32, i32), Option<std::sync::Arc<[i32; 256]>>> = HashMap::new();
     let mut seen_starts: HashSet<(String, String, i32, i32)> = HashSet::new();
 
     for ns in dir.namespaces() {
@@ -385,27 +416,56 @@ pub fn scan_batch(
                         if px < lo_x || px > hi_x || pz < lo_z || pz > hi_z {
                             continue;
                         }
-                        // validity: biome at the stub position
+                        // validity: biome at the start-box-center grid
                         let mut valid = true;
                         let mut unknown_validity = pred_unknown;
                         if !pred_unknown {
-                            let h = *height_cache
-                                .entry((px, pz))
-                                .or_insert_with(|| {
-                                    match crate::filler::generate_noise_chunk(rs, seed, px, pz) {
-                                        Ok(fc) => Some(
-                                            fc.heightmaps[1].first_available[(8 + 8 * 16) as usize] - 1,
-                                        ),
-                                        Err(_) => None,
-                                    }
-                                });
-                            let (ys, unk) = stub_ys(&sj, h);
+                            // projected grids stay inside the candidate chunk:
+                            // fetch its heightmap once, read columns from it
+                            let hm: Option<std::sync::Arc<[i32; 256]>> = {
+                                let needs_height = sj
+                                    .get("project_start_to_heightmap")
+                                    .and_then(|v| v.as_str())
+                                    .is_some();
+                                if needs_height {
+                                    height_cache
+                                        .entry((px, pz))
+                                        .or_insert_with(|| {
+                                            match crate::filler::generate_noise_chunk(rs, seed, px, pz)
+                                            {
+                                                Ok(fc) => {
+                                                    let mut a = Box::new([0i32; 256]);
+                                                    a.copy_from_slice(
+                                                        &fc.heightmaps[1].first_available,
+                                                    );
+                                                    Some(std::sync::Arc::new(*a))
+                                                }
+                                                Err(_) => None,
+                                            }
+                                        })
+                                        .clone()
+                                } else {
+                                    None
+                                }
+                            };
+                            let height_of = |dx: i32, dz: i32| -> Option<i32> {
+                                let col = ((px * 16 + dx) & 15) as usize
+                                    + (((pz * 16 + dz) & 15) * 16) as usize;
+                                hm.as_ref().map(|a| a[col] - 1)
+                            };
+                            let (samples, unk) = stub_samples(&sj, &height_of);
                             unknown_validity |= unk;
-                            if ys.is_empty() {
+                            if samples.is_empty() {
                                 valid = true; // unknown validity — over-approx
                             } else {
-                                valid = ys.iter().any(|y| {
-                                    let b = biome_at(rs, &mut biome_list, px * 16 + 8, *y, pz * 16 + 8);
+                                valid = samples.iter().any(|(dx, dz, y)| {
+                                    let b = biome_at(
+                                        rs,
+                                        &mut biome_list,
+                                        px * 16 + dx,
+                                        *y,
+                                        pz * 16 + dz,
+                                    );
                                     biomes.contains(&b)
                                 });
                             }
@@ -453,27 +513,32 @@ mod tests {
     }
 
     #[test]
-    fn stub_ys_replicate_addpieces() {
-        let mut j = crate::json::parse(r#"{"start_height":{"absolute":0},"project_start_to_heightmap":"WORLD_SURFACE_WG"}"#).unwrap();
-        // villages: y = h + 1 + 0
-        let (ys, unk) = stub_ys(&j, Some(70));
-        assert_eq!(ys, vec![71]);
+    fn stub_samples_replicate_addpieces() {
+        let height_of = |_dx: i32, _dz: i32| -> Option<i32> { Some(70) };
+        // villages: y = h + 1 + 0 (per grid column)
+        let j = crate::json::parse(r#"{"start_height":{"absolute":0},"project_start_to_heightmap":"WORLD_SURFACE_WG"}"#).unwrap();
+        let (samples, unk) = stub_samples(&j, &height_of);
+        assert_eq!(samples.len(), 16);
+        assert!(samples.iter().all(|(dx, dz, y)| *y == 71 && *dx <= 12 && *dz <= 12));
         assert!(!unk);
         // trail_ruins: y = h + 1 - 15
-        j = crate::json::parse(r#"{"start_height":{"absolute":-15},"project_start_to_heightmap":"WORLD_SURFACE_WG"}"#).unwrap();
-        let (ys, _) = stub_ys(&j, Some(70));
-        assert_eq!(ys, vec![56]);
-        // ancient_city: no projection, absolute -27
-        j = crate::json::parse(r#"{"start_height":{"absolute":-27}}"#).unwrap();
-        let (ys, _) = stub_ys(&j, None);
-        assert_eq!(ys, vec![-27]);
+        let j = crate::json::parse(r#"{"start_height":{"absolute":-15},"project_start_to_heightmap":"WORLD_SURFACE_WG"}"#).unwrap();
+        let (samples, _) = stub_samples(&j, &height_of);
+        assert!(samples.iter().all(|(_, _, y)| *y == 56));
+        // ancient_city: no projection, absolute -27, wide grid
+        let j = crate::json::parse(r#"{"start_height":{"absolute":-27}}"#).unwrap();
+        let (samples, _) = stub_samples(&j, &height_of);
+        assert_eq!(samples.len(), 25);
+        assert!(samples.iter().all(|(_, _, y)| *y == -27));
         // trial_chambers: uniform -40..-20 -> both endpoints
-        j = crate::json::parse(r#"{"start_height":{"type":"minecraft:uniform","max_inclusive":{"absolute":-20},"min_inclusive":{"absolute":-40}}}"#).unwrap();
-        let (ys, _) = stub_ys(&j, None);
-        assert_eq!(ys, vec![-40, -20]);
+        let j = crate::json::parse(r#"{"start_height":{"type":"minecraft:uniform","max_inclusive":{"absolute":-20},"min_inclusive":{"absolute":-40}}}"#).unwrap();
+        let (samples, _) = stub_samples(&j, &height_of);
+        assert_eq!(samples.len(), 50);
+        assert!(samples.iter().any(|(_, _, y)| *y == -40));
+        assert!(samples.iter().any(|(_, _, y)| *y == -20));
         // unknown projection -> unknown validity
-        j = crate::json::parse(r#"{"start_height":{"absolute":0},"project_start_to_heightmap":"OCEAN_FLOOR_WG"}"#).unwrap();
-        let (_, unk) = stub_ys(&j, Some(70));
+        let j = crate::json::parse(r#"{"start_height":{"absolute":0},"project_start_to_heightmap":"OCEAN_FLOOR_WG"}"#).unwrap();
+        let (_, unk) = stub_samples(&j, &height_of);
         assert!(unk);
     }
 

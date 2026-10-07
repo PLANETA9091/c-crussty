@@ -132,6 +132,64 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         println!("trace written to {out}");
         return Ok(0);
     }
+    if args.first().map(|s| s == "--biome-at").unwrap_or(false) {
+        // --biome-at <seed> <bx> <by> <bz> <worldgen_dir>
+        //   Deterministic narrow probe (owner directive: judges must be
+        //   deterministic): prints the 6 climate scalars (f64 + f32) and the
+        //   quantized target + winning biome at one block coord — the same
+        //   path fillBiomesFromNoise uses. For bisecting climate lookups at
+        //   arbitrary (negative) coords against /goldendensity-style dumps.
+        let seed: i64 = args.get(1).ok_or("--biome-at: seed")?.parse().map_err(|_| "seed")?;
+        let bx: i32 = args.get(2).ok_or("bx")?.parse().map_err(|_| "bx")?;
+        let by: i32 = args.get(3).ok_or("by")?.parse().map_err(|_| "by")?;
+        let bz: i32 = args.get(4).ok_or("bz")?.parse().map_err(|_| "bz")?;
+        let wg = args.get(5).ok_or("worldgen dir")?;
+        std::env::set_var("NCF_DATA_ROOT", wg);
+        let dir = WorldgenDir::load(Path::new(wg)).map_err(|e| e.to_string())?;
+        let rs = RandomState::build_overworld(&dir, seed).map_err(|e| e.to_string())?;
+        let fields: [&chunk_factory::density::Df; 6] = [
+            &rs.router.temperature,
+            &rs.router.vegetation,
+            &rs.router.continents,
+            &rs.router.erosion,
+            &rs.router.depth,
+            &rs.router.ridges,
+        ];
+        let names = ["temperature", "vegetation", "continentalness", "erosion", "depth", "weirdness"];
+        let mut vals = [0.0f64; 6];
+        for (fi, f) in fields.iter().enumerate() {
+            vals[fi] = f.compute(&rs.bank, bx, by, bz);
+        }
+        for (fi, v) in vals.iter().enumerate() {
+            eprintln!("BIOME-AT scalar {} f64={v:.17e} f32={:e}", names[fi], *v as f32);
+        }
+        let mut list = chunk_factory::climate::ParameterList::new(match &rs.biome_points {
+            Some(pts) => pts.clone(),
+            None => chunk_factory::vanilla_biomes::overworld_points()
+                .into_iter()
+                .map(|(p, n)| (p, n.to_string()))
+                .collect(),
+        });
+        let target = chunk_factory::climate::TargetPoint {
+            temperature: chunk_factory::climate::quantize_coord(vals[0] as f32),
+            humidity: chunk_factory::climate::quantize_coord(vals[1] as f32),
+            continentalness: chunk_factory::climate::quantize_coord(vals[2] as f32),
+            erosion: chunk_factory::climate::quantize_coord(vals[3] as f32),
+            depth: chunk_factory::climate::quantize_coord(vals[4] as f32),
+            weirdness: chunk_factory::climate::quantize_coord(vals[5] as f32),
+        };
+        println!(
+            "BIOME-AT ({bx},{by},{bz}) seed={seed} target=[{},{},{},{},{},{}] winner={}",
+            target.temperature,
+            target.humidity,
+            target.continentalness,
+            target.erosion,
+            target.depth,
+            target.weirdness,
+            list.find_value(&target)
+        );
+        return Ok(0);
+    }
     if args.first().map(|s| s == "--fallback-list").unwrap_or(false) {
         // --fallback-list <seed> <x0> <x1> <z0> <z1> <worldgen_dir>
         //   I8 structure-fallback prescan (T38-B pending P5.3): prints
