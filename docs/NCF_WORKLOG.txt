@@ -1473,3 +1473,15 @@ Run 37559068451 (HEAD b374d2b): ядро 11/11 GREEN (ncf-staged surface/carvers
   ci_gate.sh в CI собирает плагин из исходников — этот же коммит едет в ран.
 Статус: повторный прогон — CI-ран этого пуша; gate-P2 остаётся честно
   красным по T38-B/T40 (не задето). Контракты veccheck/stagediff не тронуты.
+
+=== 2026-10-07 | сессия 7 (аддендум 16: T41 ПОДТВЕРЖДЁН CI — контроль порядка снова 256/256) ===
+Run 37562951453 (HEAD ca89491): golden-harness = SUCCESS, контроль порядка
+  pairs=256 equal=0 semantic_equal=256 diverged=0 (исторически зелёная
+  форма; equal=0 — это BYTE_ONLY InhabitedTime/LastUpdate, ожидаемо).
+  Ядро 11/11 GREEN: module/native/fuzz-crate/chunk-factory/golden-harness/
+  ncf-vectors/ncf-datapacks/ncf-mca + ncf-staged surface/carvers/noise
+  (ДЕВЯТЫЙ зелёный прогон подряд — T35 стабилен). ГЕЙТ P2: все 15 ячеек
+  измерены, цифры воспроизвели аддендум 14 бит-в-бит (vanilla 3053459:
+  2184/192; tectonic: 0/2376) — T41 не задел staged-путь, P2 остаётся
+  честно красным только по T38-B/T40. Дамп сжатого корпуса снова в ОДНОМ
+  тике (boot-константа LastUpdate внутри дампа восстановлена).
