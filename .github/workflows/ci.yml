@@ -232,6 +232,26 @@ jobs:
             band_y0: '-64'
             band_y1: '16'
             label: blob90210
+          # addendum 23: the TWO residual vanilla-3053459 divergences after the
+          # I8 exclusion (run 37601709929: 1191/1193; c_15_-5 @ (253,-29,-67),
+          # c_17_-12 @ (284,-37,-183), java=air rust=stone) — density-class at
+          # y<40 outside the shadow (addendum 22; ancient_city refuted: the
+          # stub column is forest in our own pipeline). Decisive per-block
+          # capture: if veccheck/aquacheck FAIL here, the first diverging
+          # field IS the root; if they PASS, the flip lives below the capture
+          # granularity (aquifer meta/loc class).
+          - seed: '3053459'
+            bx: '253'
+            bz: '-67'
+            band_y0: '16'
+            band_y1: '40'
+            label: resid1_3053459
+          - seed: '3053459'
+            bx: '284'
+            bz: '-183'
+            band_y0: '16'
+            band_y1: '40'
+            label: resid2_3053459
     env:
       PURPUR_BUILD: '2535'
       SEED: ${{ matrix.seed }}
