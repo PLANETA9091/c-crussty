@@ -1601,3 +1601,38 @@ Cron-мандат 440772 (10:05 +08) повторял план бисекта T3
   (build_golden.sh против purpur-unpack 2535); локальный смок: stagediff
   --gen-batch noise 25 чанков (-12..-8 x -18..-14, вкл. c_-10_-16) без
   паник; bash -n. Первое поле дивергенции решит CI-прогон ncf-density.
+
+=== 2026-10-07 | сессия 8 (аддендум 19: Job 441690 — T38-B КОРЕНЬ ДОКАЗАН: Beardifier структур; риг ncf-density бит-точен на блоб-чанке) ===
+ncf-density (run 37590325213, be6e62e) = SUCCESS — блоб-корпус чанка (-10,-16)
+  с ПУСТЫМ beardifier (BeardifierMarker) бит-точен ПОЛНОСТЬЮ:
+  density.csv 112071/0 (15 полей: угловая решётка base..base+16 шаг 4 вся
+  высота шаг 8 + 6 полей на каждом блоке полосы 40..100 — отрицательные
+  координаты КЕРНЕЛОВ чисты), interp.csv 786432/0 (interp_count 8),
+  aquacheck substance_diff=0 decision_diff=0 sched_diff=0 (98304 строк).
+  Захват: GOLDEN DENSITY COMPLETE rows=996807 за 853ms, БЕЗ JVM-флагов.
+При этом NBT gate-P2 на ТОМ ЖЕ чанке расходится (stone<->air/water) =>
+  дивергенция живёт в ЕДИНСТВЕННОМ неснятом слое — Beardifier
+  .forStructuresInChunk: реальный doFill на NOISE-статусе получает
+  плотностные добавки terrain-адаптации структур, наш filler — маркер 0.0
+  (filler.rs: «structures are Phase 5; gate corpus generated with an EMPTY
+  beardifier»). Риги были СЛЕПЫ к этому слою по построению.
+t38probe (этот коммит): minecraft:villages at chunk (-14,-15) — ЦЕНТР блоба
+  (дивергенции -18..-10 x -19..-11), trail_ruins at (-18,-11) — оба
+  terrain-adapting jigsaw (BEARD_THIN/BEARD_BOX); рядом swamp_huts
+  (-31,-18), pillager_outposts (-26,-9). Блоб 8x9 чанков = зона адаптации
+  деревни. Оба знака флипов согласуются с формой поля beardifier (под
+  piece/над piece). 225-чанковый staged-гейт зелёный потому, что в
+  100..104 terrain-adapting структур нет — КОРПУС БЫЛ СМЕЩЁН (урок).
+ВТОРИЧНАЯ зацепка (не гейт): aquacheck loc_diff=89 fluid_diff=40 — мета
+  aquiferLocationCache/aquiferCache расходится при decision/substance=0 —
+  выравнивание индексов мета-дампа на отрицательных grid-координатах
+  (self-consistent, решения не затрагивает); копнуть в P5.3.
+ФИКС = P5.3 piece engine: structure starts (jigsaw-сборка: template pools +
+  stacking + biome-фильтры + terrain_adaptation из structure JSON) =>
+  Beardifier contributions в substance. random_spread/prescreen (P5.1) и
+  template_cache (P5.2) есть; сборки pieces НЕТ. Честный статус: T38-B
+  КОРЕНЬ НАЙДЕН И ДОКАЗАН, фиксы едет следующими тиками; gate-P2 ванильные
+  ячейки остаются честно красными до P5.3. T40 (4f2ed06, параллельная
+  сессия): пак-ячейки в 37590325213 всё ещё красные — добивка следующего
+  тика. Контракты veccheck/stagediff не тронуты; ncf-staged 3 статуса
+  SUCCESS в том же ране.
