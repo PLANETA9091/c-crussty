@@ -289,6 +289,26 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             }
             return true;
         }
+        // NCF P5.3 piece-engine oracle: /goldenpieces <chunkX> <chunkZ> —
+        // force-generate to STRUCTURE_STARTS, dump StructureStart pieces
+        // (boxes / ground level delta / junctions) as JSON for the Rust
+        // piece_dump bit-compare.
+        if (command.getName().equals("goldenpieces")) {
+            getLogger().info("goldenpieces invoked args=" + java.util.Arrays.toString(args));
+            if (args.length != 2) {
+                sender.sendMessage("usage: /goldenpieces <chunkX> <chunkZ>");
+                return true;
+            }
+            try {
+                VectorCapture.capturePieces(this,
+                        Integer.parseInt(args[0]), Integer.parseInt(args[1]), sender);
+            } catch (Throwable t) {
+                getLogger().warning("GOLDENPIECES FAILED: " + t);
+                t.printStackTrace();
+                sender.sendMessage("goldenpieces: FAILED: " + t);
+            }
+            return true;
+        }
         // T38-B bisect rig: /goldendensity <blockX> <blockZ> <y0> <y1> <label>
         // — dump interp/aquifer/density vector families at an ARBITRARY chunk
         // column (negative coords fine, no JVM flags: coords are args).

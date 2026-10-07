@@ -3094,3 +3094,70 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
   ( Beardifier потребляет ГОТОВЫЙ список боксов; замер после разъёмки).
 КОРПУС (директива 3): без изменений (тик = оракулы + каркас + тесты).
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 8-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 18 (аддендум 43: Job 441690 — java-оракул piece-захвата РАБОТАЕТ (/goldenpieces + локальный boot); КОРЕНЬ #1: assembly RNG 1.21.10 = Legacy(0)+setLargeFeatureSeed (НЕ xoroshiro) — старт-пitrBIT-ИДЕНТИЧЕН; осталось: выбор кандидата из streets-пула) ===
+
+1) CI-ДИСЦИПЛИНА: вердикты читаем ТОЛЬКО при run.status=completed (в начале
+   тика in-flight ран 37678944788 был ложно прочитан как массовый провал —
+   у queued/in_progress jobs conclusion=None). ФИНАЛ a39f9ea (2d-фид): 33
+   jobs, не-зелёные = ровно 5 документированных терралит-ячеек класса (а);
+   vanilla 5/5 + tectonic 5/5 — инкремент 2d-фид верифицирован.
+2) JAVA-ОРАКУЛ PIECE-ЗАХВАТА (P5.3 2d, оракул-сторона):
+   a) GoldenDumper: +команда /goldenpieces <cx> <cz> (VectorCapture.
+      capturePieces): форс-генерация чанка до ChunkStatus.STRUCTURE_STARTS,
+      дамп ВСЕХ валидных StructureStart'ов (box 6×i, gld, rotation, type,
+      element toString, position, junctions[sourceX, sourceGroundY,
+      sourceZ, deltaY, destProjection]) в JSON: golden/pieces_<cx>_<cz>.
+      json. JigsawJunction геттеры 1:1 = Rust Junction; BoundingBox min/max
+      INCLUSIVE = Rust InclusiveBox; порядок pieces = build() порядок.
+   b) Фиксы компиляции (ecj, маппинг 1.21.10): у StructurePiece НЕТ
+      getGroundLevelDelta (только PoolElementStructurePiece); RegistryAccess
+      .lookupOrThrow -> HolderLookup (имена структур через listElements +
+      unwrapKey, IdentityHashMap).
+   c) ЛОКАЛЬНЫЙ BOOT (без CI): scripts/piece_capture.sh — LAUNCHER =
+      versions/purpur-1.21.10.jar (paperclip; образ versions/1.21.10/*.jar
+      НЕ запускается напрямую — NoClassDefFoundError joptsimple), свежий
+      уровень world_pieces, seed 3053459, RCON 25576, чистый plugins/.
+      Захвачено: ci-server/golden/pieces_-14_-15.json (30 КБ, village_taiga
+      @ чанк (-14,-15), 87 pieces).
+3) КОРЕНЬ #1 НАЙДЕН И ИСПРАВЛЕН (piece_feed.rs): assembly RNG 1.21.10 =
+   Structure.GenerationContext.makeRandom = НОВЫЙ WorldgenRandom(
+   LegacyRandomSource(0)) + setLargeFeatureSeed(levelSeed, chunkPos.x,
+   chunkPos.z), создаваемый НА КАЖДОГО КАНДИДАТА (Structure.generate строит
+   новый GenerationContext), а 1.21.10 JigsawPlacement.addPieces БОЛЬШЕ НЕ
+   делает reseed (CFR 71: worldgenRandom = context.random() — поле рекорда
+   потребляется как есть; сверено с декомпомMapped jара). piece_feed
+   ошибочно использовал XoroshiroRandomSource — ИСПРАВЛЕНО на Legacy(0)+
+   setLargeFeatureSeed. ПОСЛЕ фикса СТАРТ-PIECE БИТ-ИДЕНТИЧЕН java:
+   box [-224,65,-240,-203,67,-223], gld 1, rotation NONE, 5 junctions
+   в ТОМ ЖЕ порядке ([-218,66,-241,0,terrain_matching], [-217,66,-238,1,
+   rigid], [-225,66,-237,0,terrain_matching], [-215,66,-235,1,rigid],
+   [-222,66,-236,1,rigid]).
+4) ОСТАВШЕЕСЯ РАСХОЖДЕНИЕ: дети из streets-пула — java piece 1 =
+   corner_01@CLOCKWISE_180 (16×16×16), rust piece 1 = crossroad_05@NONE
+   (5×2×5); при этом villager-дети 2/4 совпадают коробками на обоих
+   бортах. Проба examples/streetprobe.rs воспроизводит поток до streets-
+   шафла: rot=NONE, town_centers expanded=100, старт-шаблон 18 джигсо
+   (шафл), streets expanded=49 (Util.shuffledCopy = copy + Fisher-Yates
+   for i=n..>1: swap(i-1, nextInt(i)) — сверено с оракулом). Следующий
+   шаг бисекта: трассировка пер-кандидата (canAttach / коллизия / стоп на
+   первом Empty в шаффл-списке — while hasNext && next != EMPTY, CFR
+   238-245) на ПЕРВОМ родительском джигсо; сверить порядок кандидатов и
+   предикат приёма.
+5) НЕ-ПРОБЛЕМА: "[m"-съедание в консольном выводе (ANSI-артефакт
+   отображения) — сырые байты файла чистые (od -c: LegacySingle[Left[
+   minecraft...); в сравнении не участвует.
+6) СМЕНА ПОВЕДЕНИЯ: НЕТ — piece_feed/height_feed по-прежнему не
+   подключены к генерации; lib 144 + root 417 GREEN; gate-контракты
+   veccheck/stagediff не тронуты.
+СЛЕДУЮЩИЕ ШАГИ P5.3:
+  a) бисект streets-кандидата (трассировка placer: порядок кандидатов +
+     canAttach + коллизия + Empty-стоп) -> бит-равные 87/102 pieces;
+  b) pool_aliases (direct/random/static);
+  c) разъёмка Df::Beardifier per-chunk -> класс (а) закрывается на gate-P2
+     terralith (5 ячеек) + vanilla I8-фолбэк сужается до реального радиуса
+     Beardifier (директива владельца 1).
+АМДАЛЬ (директива 2): без изменений (аддендумы 41-42); сборка деревни
+  5.4-7.6 с/старт оракулская, в горячий цикл не входит.
+КОРПУС (директива 3): без изменений.
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 9-й тик; первоисточник = этот LOG.

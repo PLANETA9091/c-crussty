@@ -125,15 +125,38 @@ fn main() {
             println!(" \"pieces\":[");
             for (i, p) in assembly.pieces.iter().enumerate() {
                 let b = &p.bounding_box;
+                let rot_name = match p.rotation {
+                    chunk_factory::jigsaw::Rotation::None => "NONE",
+                    chunk_factory::jigsaw::Rotation::Clockwise90 => "CLOCKWISE_90",
+                    chunk_factory::jigsaw::Rotation::Clockwise180 => "CLOCKWISE_180",
+                    chunk_factory::jigsaw::Rotation::Counterclockwise90 => "COUNTERCLOCKWISE_90",
+                };
+                let elem = match &p.element {
+                    chunk_factory::jigsaw::PoolElement::Single { location, .. } => {
+                        format!("LegacySingle[{location}]")
+                    }
+                    chunk_factory::jigsaw::PoolElement::List { elements, .. } => {
+                        format!("List[{}]", elements.len())
+                    }
+                    chunk_factory::jigsaw::PoolElement::Feature { feature_id, .. } => {
+                        format!("Feature[{feature_id}]")
+                    }
+                    chunk_factory::jigsaw::PoolElement::Empty => "Empty".to_string(),
+                    chunk_factory::jigsaw::PoolElement::Unsupported { kind } => {
+                        format!("Unsupported[{kind}]")
+                    }
+                };
                 println!(
-                    "  {{\"i\":{i},\"box\":[{},{},{},{},{},{}],\"gld\":{},\"junctions\":[",
+                    "  {{\"i\":{i},\"box\":[{},{},{},{},{},{}],\"gld\":{},\"rotation\":\"{}\",\"element\":\"{}\",\"junctions\":[",
                     b.min_x,
                     b.min_y,
                     b.min_z,
                     b.max_x,
                     b.max_y,
                     b.max_z,
-                    p.ground_level_delta
+                    p.ground_level_delta,
+                    rot_name,
+                    elem
                 );
                 for (j, jn) in p.junctions.iter().enumerate() {
                     let sep = if j + 1 < p.junctions.len() { "," } else { "" };

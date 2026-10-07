@@ -25,14 +25,14 @@
 //!      vanilla villages], dimensionPadding, liquidSettings.
 //!
 //! The pick/assembly split matches Java exactly: each retried candidate
-//! gets a FRESH assembly RNG (a new GenerationContext.random() = the
-//! settings' random source over the level seed — Xoroshiro for overworld),
-//! the pick RNG carries across retries within one set.
+//! gets a FRESH GenerationContext whose makeRandom = WorldgenRandom(
+//! LegacyRandomSource(0)) seeded setLargeFeatureSeed(levelSeed, chunkPos)
+//! (1.21.10: addPieces does NOT reseed — the record field is consumed as
+//! is); the pick RNG carries across retries within one set.
 
 use crate::beardifier::TerrainAdjustment;
 use crate::jigsaw::{self, PoolElement, ResolvedPool, TemplateData};
 use crate::jrandom::{LegacyRandomSource, RandomSource};
-use crate::xoroshiro::XoroshiroRandomSource;
 use crate::placer::{add_pieces, AssemblyParams, AssemblyResult, FirstFreeHeight, PoolSource};
 use crate::router::WorldgenDir;
 use crate::template_cache::TemplateCache;
@@ -413,7 +413,15 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
                 .push(format!("non-absolute start_height on {}", sj.key));
         }
         let params = params_for(&sj, chunk_x, chunk_z);
-        let mut assembly_rng = XoroshiroRandomSource::new(level_seed);
+        // Structure.GenerationContext.makeRandom (1.21.10 CFR — the ROOT of
+        // the first piece_dump divergence): the assembly random is a fresh
+        // WorldgenRandom(LegacyRandomSource(0L)) seeded setLargeFeatureSeed
+        // (levelSeed, chunkPos.x, chunkPos.z) — constructed PER CANDIDATE
+        // (Structure.generate makes a new GenerationContext), and 1.21.10
+        // JigsawPlacement.addPieces does NOT reseed (line 71 consumes the
+        // record's field). The xoroshiro source is NOT used here.
+        let mut assembly_rng = LegacyRandomSource::new(0);
+        jigsaw::set_large_feature_seed(&mut assembly_rng, level_seed, chunk_x, chunk_z);
         let generated = add_pieces(&params, pools, &mut assembly_rng, sampler);
         let Some(assembly) = generated else {
             list.remove(i1);

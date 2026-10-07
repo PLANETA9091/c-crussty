@@ -200,7 +200,15 @@ import net.minecraft.world.level.levelgen.NoiseSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.RandomSupport;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructurePiece;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.levelgen.structure.pools.JigsawJunction;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
 import net.minecraft.world.level.levelgen.synth.ImprovedNoise;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
@@ -1547,6 +1555,104 @@ public final class VectorCapture {
             plugin.getLogger().warning("AQUAFIELDS FAILED: " + t);
             t.printStackTrace();
             ack.sendMessage("aquafields: FAILED: " + t);
+        }
+    }
+
+    /**
+     * NCF P5.3 increment 2d oracle — /goldenpieces <chunkX> <chunkZ>:
+     * force-generate the chunk to STRUCTURE_STARTS and dump every valid
+     * StructureStart's pieces (bounding box, ground level delta, rotation,
+     * element, position, junctions) as JSON — the bit-exact oracle for the
+     * Rust piece engine (piece_dump). JigsawJunction fields map 1:1 to the
+     * Rust Junction (source_x, source_ground_y, source_z, delta_y,
+     * dest_projection); BoundingBox min/max are INCLUSIVE like the Rust
+     * InclusiveBox; piece order = StructurePiecesBuilder.build() order
+     * (the placer's push order — same as the Rust Vec<Piece>).
+     */
+    public static void capturePieces(JavaPlugin plugin, int cx, int cz, CommandSender ack) {
+        ServerLevel level = ((CraftWorld) plugin.getServer().getWorlds().get(0)).getHandle();
+        Path root;
+        String prop = System.getProperty("goldendump.out");
+        if (prop != null && !prop.isBlank()) {
+            root = Paths.get(prop);
+        } else {
+            Path pluginsDir = plugin.getDataFolder().getAbsoluteFile().toPath().getParent();
+            Path serverDir = pluginsDir == null ? null : pluginsDir.getParent();
+            if (serverDir == null) {
+                ack.sendMessage("goldenpieces: cannot resolve server dir — set -Dgoldendump.out=<dir>");
+                return;
+            }
+            root = serverDir.resolve("golden");
+        }
+        Path out = root.resolve("pieces_" + cx + "_" + cz + ".json");
+        try {
+            ChunkAccess chunk = level.getChunkSource().getChunk(cx, cz, ChunkStatus.STRUCTURE_STARTS, true);
+            java.util.Map<Structure, StructureStart> starts = chunk.getAllStarts();
+            java.util.IdentityHashMap<Structure, String> names = new java.util.IdentityHashMap<>();
+            level.registryAccess().lookupOrThrow(Registries.STRUCTURE).listElements()
+                    .forEach(h -> h.unwrapKey().ifPresent(k ->
+                            names.put(h.value(), String.valueOf(k.location()))));
+            java.util.List<java.util.Map.Entry<Structure, StructureStart>> entries =
+                    new java.util.ArrayList<>(starts.entrySet());
+            entries.sort(java.util.Comparator.comparing(
+                    e -> names.getOrDefault(e.getKey(), "?")));
+            StringBuilder sb = new StringBuilder();
+            sb.append("{\n \"chunk\": [").append(cx).append(", ").append(cz).append("],\n");
+            sb.append(" \"seed\": ").append(level.getSeed()).append(",\n");
+            sb.append(" \"starts\": [\n");
+            boolean firstStart = true;
+            for (java.util.Map.Entry<Structure, StructureStart> en : entries) {
+                StructureStart start = en.getValue();
+                if (start == null || !start.isValid()) continue;
+                if (!firstStart) sb.append(",\n");
+                firstStart = false;
+                sb.append("  {\"structure\": \"").append(names.getOrDefault(en.getKey(), "?"))
+                  .append("\", \"chunkPos\": [").append(start.getChunkPos().x)
+                  .append(", ").append(start.getChunkPos().z).append("],\n");
+                sb.append("   \"pieces\": [\n");
+                boolean firstPiece = true;
+                for (StructurePiece piece : start.getPieces()) {
+                    if (!firstPiece) sb.append(",\n");
+                    firstPiece = false;
+                    BoundingBox b = piece.getBoundingBox();
+                    sb.append("    {\"box\": [").append(b.minX()).append(", ").append(b.minY())
+                      .append(", ").append(b.minZ()).append(", ").append(b.maxX())
+                      .append(", ").append(b.maxY()).append(", ").append(b.maxZ()).append("]");
+                    sb.append(", \"rotation\": \"").append(piece.getRotation().name()).append("\"");
+                    sb.append(", \"type\": \"").append(piece.getClass().getSimpleName()).append("\"");
+                    if (piece instanceof PoolElementStructurePiece pe) {
+                        sb.append(", \"gld\": ").append(pe.getGroundLevelDelta());
+                        sb.append(", \"element\": \"").append(pe.getElement().toString().replace("\"", "'")).append("\"");
+                        sb.append(", \"position\": [").append(pe.getPosition().getX())
+                          .append(", ").append(pe.getPosition().getY())
+                          .append(", ").append(pe.getPosition().getZ()).append("]");
+                        sb.append(", \"junctions\": [");
+                        boolean firstJ = true;
+                        for (JigsawJunction j : pe.getJunctions()) {
+                            if (!firstJ) sb.append(", ");
+                            firstJ = false;
+                            sb.append("[").append(j.getSourceX()).append(", ")
+                              .append(j.getSourceGroundY()).append(", ")
+                              .append(j.getSourceZ()).append(", ")
+                              .append(j.getDeltaY()).append(", \"")
+                              .append(j.getDestProjection().getName()).append("\"]");
+                        }
+                        sb.append("]");
+                    }
+                    sb.append("}");
+                }
+                sb.append("\n   ]}");
+            }
+            sb.append("\n ]}\n");
+            Files.createDirectories(out.getParent());
+            Files.writeString(out, sb.toString());
+            String msg = "goldenpieces: wrote " + out + " (" + sb.length() + " bytes)";
+            plugin.getLogger().info(msg);
+            ack.sendMessage(msg);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("GOLDENPIECES FAILED: " + t);
+            t.printStackTrace();
+            ack.sendMessage("goldenpieces: FAILED: " + t);
         }
     }
 }
