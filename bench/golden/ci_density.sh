@@ -18,6 +18,14 @@ REPO="$(cd "$GOLDEN_DIR/../.." && pwd)"
 CRATE="$REPO/chunk-factory"
 SERVER_DIR="${SERVER_DIR:-$REPO/ci-server}"
 SEED="${SEED:-3053459}"
+# addendum 28 (Job 441690): PACK support — the tectonic class-(b) residuals
+# (run 37619650435: (8675309, tectonic) diverged=5, (424242, tectonic)
+# diverged=5) need the SAME per-block density bisect as the vanilla resid
+class, but on a server booted WITH the pack and against the MERGED extract
+# (vanilla base + pack overlay, the ci_datapacks protocol). PACK=vanilla
+# (default) keeps the historical behaviour bit-for-bit.
+PACK="${PACK:-vanilla}"
+DP_ROOT="${DP_ROOT:-$REPO/ci-datapacks}"
 PURPUR_BUILD="${PURPUR_BUILD:-2535}"
 PURPUR_URL="${PURPUR_URL:-https://api.purpurmc.org/v2/purpur/1.21.10/${PURPUR_BUILD}/download}"
 RCON_PORT=25575
@@ -34,10 +42,10 @@ BAND_Y1="${BAND_Y1:-100}"
 LABEL="${LABEL:-blob3053459}"
 RESULTS="$GOLDEN_DIR/results"
 
-log() { printf '[ci_density] %s %s\n' "$(date -u +%H:%M:%S)" "$*" >&2; }
+log() { printf '[ci_density %s/%s] %s %s\n' "$PACK" "$SEED" "$(date -u +%H:%M:%S)" "$*" >&2; }
 die() { log "FATAL: $*"; exit 1; }
 
-mkdir -p "$RESULTS" "$SERVER_DIR/versions" "$SERVER_DIR/plugins"
+mkdir -p "$RESULTS" "$SERVER_DIR/versions" "$SERVER_DIR/plugins" "$DP_ROOT"
 
 # ---- 1. provision (identical protocol to ci_vectors.sh) ----------------------
 
@@ -95,12 +103,38 @@ log "GoldenDumper.jar installed"
 
 # ---- 3. boot + capture the blob vectors ------------------------------------
 
+# addendum 28: pack flow — the worldgen extract (merged vanilla+pack) must
+# exist BEFORE the gates; build it here (ci_datapacks --extract-only needs
+# the mapped jar, provisioned in step 1). Vanilla keeps its historical
+# post-capture jar extraction (step 4).
+if [ "$PACK" != vanilla ]; then
+    case "$PACK" in
+        terralith) SLUG="terralith" ;;
+        tectonic)  SLUG="tectonic" ;;
+        *) die "unknown pack $PACK" ;;
+    esac
+    EXTRACT="$DP_ROOT/${SLUG}-extract"
+    if [ ! -d "$EXTRACT/data" ]; then
+        log "building merged worldgen extract for $SLUG"
+        bash "$GOLDEN_DIR/ci_datapacks.sh" --extract-only "$SLUG" 2>&1 | sed 's/^/[ci_datapacks] /' >&2 \
+            || die "pack extract failed (ci_datapacks --extract-only $SLUG)"
+    fi
+    [ -d "$EXTRACT/data" ] || die "merged extract missing data/ dir: $EXTRACT"
+fi
+
 cd "$SERVER_DIR"
 rm -rf world world_nether world_the_end
 mkdir -p logs
 [ -f logs/latest.log ] && mv logs/latest.log logs/latest.prev 2>/dev/null || true
 
-log "booting PURE-VANILLA server (seed $SEED) for the blob-density capture"
+if [ "$PACK" != vanilla ]; then
+    # inject the pack into the world datapacks dir (same as ci_gate_p2.sh)
+    mkdir -p world/datapacks
+    cp "$DP_ROOT/$SLUG.zip" world/datapacks/
+    log "pack $SLUG injected (world/datapacks/$SLUG.zip)"
+fi
+
+log "booting server (pack=$PACK seed=$SEED) for the blob-density capture"
 nohup setsid java -Xms512M -Xmx1024m -jar versions/purpur-1.21.10.jar --nogui \
     </dev/null > "$RESULTS/golden_density_boot.log" 2>&1 &
 disown || true
@@ -146,8 +180,9 @@ for f in interp.csv aquifer.csv aquifer_meta.txt density.csv; do
 done
 wc -l "$VECDIR"/*.csv
 
-# ---- 4. extract the vanilla worldgen datapack -------------------------------
+# ---- 4. worldgen extract for the gates ---------------------------------------
 
+if [ "$PACK" = vanilla ]; then
 EXTRACT="$SERVER_DIR/worldgen-extract"
 rm -rf "$EXTRACT"
 python3 - "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar" "$EXTRACT" <<'PY'
@@ -162,6 +197,7 @@ for name in z.namelist():
         n += 1
 print(f'extracted {n} worldgen json files')
 PY
+fi
 
 # ---- 5. gates: veccheck (density + interp) + aquacheck (aquifer) ------------
 

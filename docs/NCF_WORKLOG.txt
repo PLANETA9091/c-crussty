@@ -2070,3 +2070,66 @@ CI run 37619650435 (dc57431 — фикс кварт-вида FlatCache в isDeep
   судья); (3) P5.3 piece engine — главная ветка, снимает класс (а).
 АМДАЛЬ (директива 2): таблица аддендума 26 в силе; в gate-P2 добавка
   от кварт-вида = 0 (координатная арифметика на статусном слое).
+
+=== 2026-10-07 | сессия 10 (аддендум 28: Job 441690 — красные pack-ячейки классифицированы; rig /goldendensity стал pack-aware; 2 решающих tectonic-захвата зазеркалены) ===
+КЛАССИФИКАЦИЯ КРАСНЫХ ЯЧЕЕК run 37619650435 (логи построчно, все 7):
+  (а) ВЫРОЖДЕННЫЕ — I8 исключает ВСЁ (2376/2376 + 25 spawn = 0 сравненных
+      пар, honest «не измерена»): ВСЕ 5 terralith-ячеек (3053459, 8675309,
+      90210, 424242, 133700). Лечится ТОЛЬКО P5.3 (настоящий piece engine
+      без I8-тени). Это те же ячейки, что и в ранах 37609324268/37601709929 —
+      НЕ регрессия, НЕ новые данные.
+  (б) pack-специфичные — измеренные остатки, РОВНО diverged=5 в обеих:
+      (8675309, tectonic): excluded 759, pairs=1617, equal=1612, diverged=5
+        c_12_24 @ (15,37,1)   java=stone  rust=air          [кластер A]
+        c_13_24 @ (3,36,0)    java=stone  rust=air          [A]
+        c_14_20 @ (12,54,7)   java=stone  rust=water[0]     [B, обратный]
+        c_14_22 @ (15,54,0)   java=water[0] rust=stone      [B]
+        c_9_21  @ (11,61,0)   java=stone  rust=air          [A]
+      (424242, tectonic): excluded 612, pairs=1764, equal=1759, diverged=5
+        c_-13_-15 @ (10,57,0)  java=water[0] rust=stone     [B]
+        c_-13_-16 @ (9,57,10)  java=water[0] rust=stone     [B]
+        c_-19_-16 @ (8,30,0)   java=stone  rust=air          [A]
+        c_-19_-17 @ (8,30,15)  java=stone  rust=air          [A]
+        c_-24_-16 @ (0,61,2)   java=water[0] rust=stone     [B]
+  СИГНАТУРА: два глубинных кластера по-пороговые флипы final_density —
+  A (y 30..37): rust density слишком НИЗКА (воздух вместо камня);
+  B (y 54..61, ниже sea_level=63): rust density слишком ВЫСОКА (камень
+  вместо воды аквифера/океана) — aquifer/fluid-boundary класс, как
+  resid-ветка vanilla, НО в tectonic И при уже влитом FlatCache-фиксе
+  dc57431 (гейт 8780 шёл С фиксом) => НОВЫЙ корень, не повторка.
+ЛОКАЛЬНАЯ РЕКОГНОСЦИРОВКА (до CI): tectonic 3.0.25-datapack — sea_level=63,
+  aquifers_enabled=true, default_fluid=water[level=0] (= vanilla, САМ
+  sea_level НЕ подозреваемый); noise_router весь ссылочный:
+  noise_router.X -> "minecraft:overworld/noise_router/X" (файлы
+  density_function/overworld/noise_router/X.json пака) -> цепочки в
+  tectonic:* (99 df-файлов, 3 noise-файла). Merged extract
+  (ci_datapacks --extract-only tectonic) собран ЛОКАЛЬНО: base 1250 +
+  tectonic 134 + overlay.datapack 34 + overlay.1_21_9 2; WorldgenDir грузит
+  оба ns; ircheck в CI (ncf-datapacks) уже проводывает ВСЕ noise_settings
+  пака; gen-batch гейта оценивает тот же DAG (1612/1617 равных) =>
+  инфраструктура скаляров пака подтверждена, остаток живёт в тонких
+  ветках (статусный слой аквифера / интерполятор / wrapped-виды).
+РИГ (этот коммит): ci_density.sh получил PACK (vanilla|terralith|tectonic):
+  пак инжектится в world/datapacks перед boot (протокол ci_gate_p2),
+  merged extract строится ci_datapacks --extract-only ДО захвата и
+  подаётся в veccheck+aquacheck; PACK=vanilla сохраняет прежний путь
+  бит-в-бит. ci.yml: +2 матричных захвата ncf-density —
+    tectA_8675309: seed 8675309, chunk (12,24), world base (192,384),
+      band 24..48 — первая гейт-дивергенция c_12_24 @ (15,37,1);
+    tectB_424242: seed 424242, chunk (-13,-15), world base (-208,-240),
+      band 48..72 — первая c_-13_-15 @ (10,57,0) + граница 63 в диапазоне.
+  Решающий исход: veccheck/aquacheck FAIL на этих колонках = первое
+  расходящееся поле = корень; PASS = флип ниже гранулярности (wrapped/
+  интерполяционный класс, урок аддендума 26) — тогда следующий шаг
+  /aquafields на wrapped-полях пака.
+cargo test --workspace: 417 GREEN (код Rust не менялся — только rig+CI).
+АМДАЛЬ (директива 2): таблица аддендума 26 в силе (Rust 38.3 мс/чанк
+  local против Java 41.6 мс/чанк CI по noise-статусу; изменения этого
+  тика на перф не влияют — CI-инфраструктура).
+КОРПУС (директива 3): захватные чанки (12,24) и (-13,-15) добавлены в
+  матрицу ДО покраснения (захват и есть упреждающее пополнение корпуса —
+  каждый ncf-density job кладёт векторы в golden/<label>/vectors/).
+СЛЕДУЮЩИЙ ТИК: (1) прочитать CI-результаты tectA/tectB -> первое
+  расходящееся поле; (2) фикс корня в Rust; (3) P5.3 piece engine —
+  параллельная главная ветка (снимает класс (а): 5 terralith-ячеек).
+ОЖИДАНИЕ CI: run на этом коммите.

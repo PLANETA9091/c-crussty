@@ -252,9 +252,35 @@ jobs:
             band_y0: '16'
             band_y1: '40'
             label: resid2_3053459
+          # addendum 28 (Job 441690): tectonic class-(b) residuals of run
+          # 37619650435 — each cell diverged=5, two depth clusters:
+          #   cluster A y 30..37 java=stone rust=air (underground density,
+          #     rust too LOW);
+          #   cluster B y 54..61 java=water[level=0] rust=stone (fluid
+          #     boundary, rust too HIGH / aquifer-fluid class).
+          # Deterministic judge: the FIRST listed gate divergence per cell.
+          # (8675309): c_12_24 @ (15,37,1) -> chunk (12,24), world (207,37,385);
+          # band 24..48 covers it with margin. (424242): c_-13_-15 @ (10,57,0)
+          # -> chunk (-13,-15), world (-198,57,-240); band 48..72 also spans
+          # the sea-level boundary (63) for cluster-B context.
+          - seed: '8675309'
+            pack: 'tectonic'
+            bx: '192'
+            bz: '384'
+            band_y0: '24'
+            band_y1: '48'
+            label: tectA_8675309
+          - seed: '424242'
+            pack: 'tectonic'
+            bx: '-208'
+            bz: '-240'
+            band_y0: '48'
+            band_y1: '72'
+            label: tectB_424242
     env:
       PURPUR_BUILD: '2535'
       SEED: ${{ matrix.seed }}
+      PACK: ${{ matrix.pack || 'vanilla' }}
       BX: ${{ matrix.bx }}
       BZ: ${{ matrix.bz }}
       BAND_Y0: ${{ matrix.band_y0 }}
