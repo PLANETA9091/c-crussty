@@ -191,7 +191,10 @@ def extract_worldgen(prefix):
         if not name.endswith('.json') or not name.startswith(prefix + 'data/'):
             continue
         parts = name[len(prefix + 'data/'):].split('/')
-        if len(parts) < 3 or parts[1] not in ('worldgen', 'dimension'):
+        if len(parts) < 3 or parts[1] not in ('worldgen', 'dimension', 'tags'):
+            # 'tags': pack biome tags (#<pack>:has_structure/...) feed the
+            # P5.3-pre fallback prescan (structure_scan.rs reads them from
+            # <extract>/data/<ns>/tags/worldgen/biome).
             continue
         if parts[1] == 'worldgen' and len(parts) < 4:
             continue
@@ -255,7 +258,8 @@ n = 0
 for name in z.namelist():
     if name.endswith('.json') and (
         name.startswith('data/minecraft/worldgen/') or name.startswith('data/minecraft/tags/block/')
-    ):
+        or name.startswith('data/minecraft/tags/worldgen/')
+    ):  # + tags/worldgen: biome tags for the P5.3-pre fallback prescan
         dest = os.path.join(sys.argv[2], *name.split('/'))
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         open(dest, 'wb').write(z.read(name))

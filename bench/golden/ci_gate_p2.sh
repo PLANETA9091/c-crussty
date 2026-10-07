@@ -84,7 +84,8 @@ n = 0
 for name in z.namelist():
     if name.endswith('.json') and (
         name.startswith('data/minecraft/worldgen/') or name.startswith('data/minecraft/tags/block/')
-    ):
+        or name.startswith('data/minecraft/tags/worldgen/')
+    ):  # + tags/worldgen: biome tags for the P5.3-pre fallback prescan
         dest = os.path.join(sys.argv[2], *name.split('/'))
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         open(dest, 'wb').write(z.read(name))
@@ -271,6 +272,31 @@ if [ -n "${SC:-}" ] && [ -n "${EXCL:-}" ]; then
     log "excluded $NEXCL spawn-chunk pairs (FULL-status chunks on java; radius 2 around spawn $SC)"
 fi
 
+# ---- 4c. I8 structure-fallback exclusion (T38-B pending P5.3; owner directive
+# 2026-10-07: chunks within the Beardifier reach of a terrain-adapting
+# structure start go to Java-fallback — the SAME honest-exclusion protocol as
+# step 4b: pairs moved out, counted, reported; coverage cost documented) -----
+FBLIST="$RESULTS/p2_${PACK}_${SEED}_${STATUS}_fallback.txt"
+FB_DIR="$SERVER_DIR/p2_fallback_${PACK}_${SEED}_${STATUS}"
+NFB=0
+log "fallback prescan"
+cargo run --release --bin stagediff -- --fallback-list "$SEED" "$X0" "$X1" "$Z0" "$Z1" "$EXTRACT" \
+    > "$FBLIST" 2> "${FBLIST%.txt}.log" || die "fallback prescan failed"
+if [ -s "$FBLIST" ]; then
+    mkdir -p "$FB_DIR"
+    while IFS= read -r key; do
+        [ -n "$key" ] || continue
+        jf="$JAVA_DIR/seed_${SEED}/${key}.nbt"
+        rf="$RUST_DIR/seed_${SEED}/${key}.nbt"
+        if [ -f "$jf" ] && [ -f "$rf" ]; then
+            mv "$jf" "$FB_DIR/f_${key}.nbt"
+            mv "$rf" "$FB_DIR/r_${key}.nbt"
+            NFB=$((NFB+1))
+        fi
+    done < "$FBLIST"
+fi
+log "I8 structure-fallback: $NFB chunk pairs excluded (Beardifier radii; P5.3 pending)"
+
 cargo run --release --bin stagediff -- "$JAVA_DIR" "$RUST_DIR" \
     2>&1 | tee "$RESULTS/p2_${PACK}_${SEED}_${STATUS}_diff.log"
-log "GATE CELL PASS: $PACK seed=$SEED status=$STATUS $N_FILES dumped, $NEXCL spawn-excluded, $((N_FILES - NEXCL)) compared"
+log "GATE CELL PASS: $PACK seed=$SEED status=$STATUS $N_FILES dumped, $NEXCL spawn-excluded, $NFB I8-fallback, $((N_FILES - NEXCL - NFB)) compared"

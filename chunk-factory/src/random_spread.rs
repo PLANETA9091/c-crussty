@@ -56,6 +56,15 @@ impl RandomSpreadStructurePlacement {
         }
         let i = chunk_x.div_euclid(self.spacing);
         let j = chunk_z.div_euclid(self.spacing);
+        self.potential_chunk_for_region(seed, i, j)
+    }
+
+    /// Region-index entry point (i = chunk_x.div_euclid(spacing) already
+    /// applied) — P5.3-pre prescan iterates REGIONS, not chunks.
+    pub fn potential_chunk_for_region(&self, seed: i64, i: i32, j: i32) -> Option<(i32, i32)> {
+        if self.spacing <= self.separation || self.spacing <= 0 {
+            return None; // degenerate config — vanilla never ships one
+        }
         let mut rng = LegacyRandomSource::new(0);
         rng.set_large_feature_with_salt(seed, i, j, self.salt);
         let d = self.spacing - self.separation;

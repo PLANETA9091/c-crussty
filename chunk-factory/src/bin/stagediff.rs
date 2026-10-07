@@ -132,6 +132,52 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         println!("trace written to {out}");
         return Ok(0);
     }
+    if args.first().map(|s| s == "--fallback-list").unwrap_or(false) {
+        // --fallback-list <seed> <x0> <x1> <z0> <z1> <worldgen_dir>
+        //   I8 structure-fallback prescan (T38-B pending P5.3): prints
+        //   c_<x>_<z> lines (stagediff naming) for every chunk that the
+        //   Beardifier could touch (terrain-adapting structures), to stdout;
+        //   per-start / per-skip diagnostics go to stderr. The gate script
+        //   moves BOTH corpora's files for these chunks out of the compare
+        //   (same honest-exclusion protocol as the T38-A spawn exclusion).
+        let seed: i64 = args.get(1).ok_or("--fallback-list: seed")?.parse().map_err(|_| "seed")?;
+        let x0: i32 = args.get(2).ok_or("x0")?.parse().map_err(|_| "x0")?;
+        let x1: i32 = args.get(3).ok_or("x1")?.parse().map_err(|_| "x1")?;
+        let z0: i32 = args.get(4).ok_or("z0")?.parse().map_err(|_| "z0")?;
+        let z1: i32 = args.get(5).ok_or("z1")?.parse().map_err(|_| "z1")?;
+        let wg = args.get(6).ok_or("worldgen dir")?;
+        std::env::set_var("NCF_DATA_ROOT", wg);
+        let dir = WorldgenDir::load(Path::new(wg)).map_err(|e| e.to_string())?;
+        let rs = RandomState::build_overworld(&dir, seed).map_err(|e| e.to_string())?;
+        let t0 = std::time::Instant::now();
+        let report = chunk_factory::structure_scan::scan_batch(&dir, &rs, seed, Path::new(wg), x0, x1, z0, z1)
+            .map_err(|e| e.to_string())?;
+        for s in &report.skipped {
+            eprintln!("FALLBACK skipped {s}");
+        }
+        for s in &report.starts {
+            eprintln!(
+                "FALLBACK start structure={} set={} cx={} cz={} r={}{}",
+                s.structure,
+                s.set,
+                s.cx,
+                s.cz,
+                s.radius,
+                if s.unknown_validity { " (unknown-validity)" } else { "" }
+            );
+        }
+        for (cx, cz) in &report.chunks {
+            println!("c_{cx}_{cz}");
+        }
+        eprintln!(
+            "FALLBACK summary: {} starts, {} chunks in [{x0}..{x1}]x[{z0}..{z1}] ({} of batch), scan {}ms",
+            report.starts.len(),
+            report.chunks.len(),
+            ((x1 - x0 + 1) * (z1 - z0 + 1)) as i64,
+            t0.elapsed().as_millis()
+        );
+        return Ok(0);
+    }
     if args.first().map(|s| s == "--gen-batch").unwrap_or(false) {
         // --gen-batch <seed> <x0> <x1> <z0> <z1> <worldgen_dir> <out_dir>
         //   builds the RandomState ONCE (the real factory shape), generates
@@ -162,9 +208,14 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         std::fs::create_dir_all(&seed_dir).map_err(|e| e.to_string())?;
         let status_key = format!("minecraft:{status}");
         let t0 = std::time::Instant::now();
+        // NCF_TIMING=1: per-stage ms/chunk breakdown (Amdahl table, owner
+        // directive 2026-10-07: "стадия, мс/чанк Rust, мс/чанк Java, доля").
+        let timing = std::env::var("NCF_TIMING").is_ok();
+        let mut stage_ms: std::collections::BTreeMap<&'static str, u128> = Default::default();
         let mut n = 0usize;
         for cx in x0..=x1 {
             for cz in z0..=z1 {
+                let s0 = std::time::Instant::now();
                 let fc = match (status.as_str(), kit.as_mut()) {
                     ("noise", _) => generate_noise_chunk(&rs, seed, cx, cz),
                     ("surface", Some(k)) => generate_surface_chunk(&mut rs, k, &dir, seed, cx, cz),
@@ -172,15 +223,37 @@ fn real_main(args: &[String]) -> Result<i32, String> {
                     (s, _) => return Err(format!("gen-batch: unsupported status {s}")),
                 }
                 .map_err(|e| e.to_string())?;
+                let stage = match status.as_str() {
+                    "noise" => "noise_fill",
+                    "surface" => "surface_rules",
+                    "carvers" => "carvers",
+                    _ => "gen",
+                };
+                let s1 = std::time::Instant::now();
                 let mut st = filler_to_staged(&fc, &status_key, 4556);
                 st.x = cx;
                 st.z = cz;
                 std::fs::write(seed_dir.join(format!("c_{cx}_{cz}.nbt")), write_staged_file(&st))
                     .map_err(|e| e.to_string())?;
+                let s2 = std::time::Instant::now();
+                if timing {
+                    *stage_ms.entry(stage).or_default() += (s1 - s0).as_millis();
+                    *stage_ms.entry("staged_nbt_write").or_default() += (s2 - s1).as_millis();
+                }
                 n += 1;
             }
         }
         let elapsed = t0.elapsed().as_secs_f64();
+        if timing {
+            for (stage, ms) in &stage_ms {
+                eprintln!(
+                    "TIMING stage={} total_ms={} chunks={n} ms_per_chunk={:.2}",
+                    stage,
+                    ms,
+                    *ms as f64 / n as f64
+                );
+            }
+        }
         println!("gen-batch[{status}]: {n} chunks in {elapsed:.2}s ({:.1} chunks/s single-core, incl. staged NBT write)", n as f64 / elapsed);
         return Ok(0);
     }

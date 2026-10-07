@@ -190,6 +190,8 @@ pub mod features;
 pub mod jni_bridge;
 /// P5.2 structure template cache (once per world/datapack).
 pub mod template_cache;
+/// P5.3-pre I8 structure-fallback prescan (Beardifier-radius honest exclusion).
+pub mod structure_scan;
 /// P5.5 entity-region writer + spawn bookkeeping.
 pub mod entity_region;
 
