@@ -78,8 +78,26 @@ fn trusted_bounds(df: &Df, bank: &NoiseBank) -> Option<(f64, f64)> {
             let (lo, hi) = trusted_bounds(input, bank)?;
             if *is_add {
                 (lo + argument, hi + argument)
-            } else {
+            } else if *argument >= 0.0 {
                 (lo * argument, hi * argument)
+            } else {
+                // addendum 31 (Job 441690) ROOT FIX — the tectonic class-(b)
+                // divergences: a NEGATIVE multiplier REVERSES the interval.
+                // The old code returned (lo*arg, hi*arg) = (max, min) — an
+                // INVALID box (lo > hi) — which then mis-fired R1's
+                // `hi < min_inclusive` test (tectonic continent_selector =
+                // add(1, mul(-1, island_selector)) got bounds (1.0, 0.0) =>
+                // folded to the WRONG range_choice branch (factor/islands
+                // Const 5.6 instead of the factor/continents spline) =>
+                // ~1 ulp f32 deltas in sloped_cheese => the -1.7e-8
+                // multiplicative final_density noise => near-threshold
+                // content flips (diverged=5 per tectonic gate cell).
+                // Java's own per-node bounds (TwoArgumentSimpleFunction /
+                // MulOrAdd.create) compute min/max over the mapped ENDPOINTS,
+                // which for arg<0 is (hi*arg, lo*arg). Same for -0.0: the
+                // product keeps the operand order sign-safe, so route it
+                // through the negating branch too (x * -0.0 flips signs).
+                (hi * argument, lo * argument)
             }
         }
         Df::Ap2 { ty, a1, a2, .. } => {

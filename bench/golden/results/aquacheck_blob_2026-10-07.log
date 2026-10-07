@@ -298,87 +298,118 @@ warning: method `resolve` is never used
     |        ^^^^^^^
 
 warning: `chunk_factory` (lib) generated 28 warnings (run `cargo fix --lib -p chunk_factory` to apply 8 suggestions)
-    Finished `release` profile [optimized] target(s) in 0.01s
-     Running `target/release/aquacheck /home/z/my-project/c-crussty/ci-server/golden/resid1/vectors/aquifer.csv /home/z/my-project/c-crussty/ci-server/golden/resid1/vectors/aquifer_meta.txt --worldgen /home/z/my-project/c-crussty/ci-server/worldgen-extract --seed 3053459`
-FIRST decision diff @ (253,-28,-68): mine null java minecraft:air
-  my meta: (130, 14, -7, -6, 3, 3)
-  base grid cell: (15,-3,-5)
-  cand grid=(15,-4,-5) slot=31 mine_loc=68169720614869 java_loc=68169720614869 java_d2=325
-  cand grid=(15,-4,-4) slot=34 mine_loc=67894842789844 java_loc=67894842789844 java_d2=449
-  cand grid=(15,-3,-5) slot=40 mine_loc=66245575274463 java_loc=66245575274463 java_d2=230
-  cand grid=(15,-3,-4) slot=43 mine_loc=66245575319519 java_loc=66245575319519 java_d2=219
-  cand grid=(15,-2,-5) slot=49 mine_loc=68444598534122 java_loc=68444598534122 java_d2=86
-  cand grid=(15,-2,-4) slot=52 mine_loc=68169720672238 java_loc=68169720672238 java_d2=172
-  cand grid=(16,-4,-5) slot=32 mine_loc=72292889210833 java_loc=72292889210833 java_d2=542
-  cand grid=(16,-4,-4) slot=35 mine_loc=72567767195608 java_loc=72567767195608 java_d2=325
-  cand grid=(16,-3,-5) slot=41 mine_loc=71743133401054 java_loc=71743133401054 java_d2=166
-  cand grid=(16,-3,-4) slot=44 mine_loc=72018011369441 java_loc=72018011369441 java_d2=109
-  cand grid=(16,-2,-5) slot=50 mine_loc=73117522948080 java_loc=73117522948080 java_d2=324
-  cand grid=(16,-2,-4) slot=53 mine_loc=70918499745772 java_loc=70918499745772 java_d2=129
-  java-side 4 nearest by locs: [(49, 68444598534122, 86), (44, 72018011369441, 109), (53, 70918499745772, 129), (41, 71743133401054, 166)]
-  center slot=49 pos=(248,-22,-73) mine_status=(-32512,Water) deep_dark=true flooded=NaN d2=NaN maxsurf=80 fluid_present=false
-  center slot=49 java_status=Some(Some((-32512, "minecraft:water")))
-  center slot=44 pos=(261,-31,-62) mine_status=(-32512,Water) deep_dark=true flooded=NaN d2=NaN maxsurf=64 fluid_present=false
-  center slot=44 java_status=Some(Some((-32512, "minecraft:water")))
-aquacheck: rows=98304 substance_diff=0 decision_diff=5 sched_diff=34 loc_diff=138 fluid_diff=65
-  meta: mine (130, 14, -7, -6, 3, 3) java (0, 0, 0, 0, 0, 0)
-  loc[10]: mine 9223372036854775807 java 68169720565690
-  loc[11]: mine 9223372036854775807 java 72842644975551
-  loc[12]: mine 9223372036854775807 java 62397284585405
-  loc[13]: mine 9223372036854775807 java 67894842711992
-  loc[14]: mine 9223372036854775807 java 72018011320255
-  loc[15]: mine 9223372036854775807 java 62122406735803
-  loc[16]: mine 9223372036854775807 java 67619964878783
-  loc[17]: mine 9223372036854775807 java 72292889280445
-  loc[18]: mine 9223372036854775807 java 62947040305095
-  loc[19]: mine 9223372036854775807 java 67894842646469
-  loc[20]: mine 9223372036854775807 java 73117522878404
-  loc[21]: mine 9223372036854775807 java 62397284573127
-  loc[22]: mine 9223372036854775807 java 67619964817349
-  loc[23]: mine 9223372036854775807 java 71193377578955
-  loc[24]: mine 9223372036854775807 java 63771674173387
-  loc[25]: mine 9223372036854775807 java 66795331166154
-  loc[26]: mine 9223372036854775807 java 70643621830599
-  loc[27]: mine 9223372036854775807 java 61847528706007
-  loc[28]: mine 9223372036854775807 java 67070208942035
-  loc[29]: mine 9223372036854775807 java 70643621703632
-  loc[30]: mine 9223372036854775807 java 62397284573138
-  loc[31]: mine 9223372036854775807 java 68169720614869
-  loc[32]: mine 9223372036854775807 java 72292889210833
-  loc[33]: mine 9223372036854775807 java 63221918351318
-  loc[34]: mine 9223372036854775807 java 67894842789844
-  loc[35]: mine 9223372036854775807 java 72567767195608
-  loc[36]: mine 9223372036854775807 java 62397284511715
-  loc[37]: mine 9223372036854775807 java 67345086848994
-  loc[38]: mine 9223372036854775807 java 70643621720029
-  loc[39]: mine 9223372036854775807 java 62672162484194
-  loc[40]: mine 9223372036854775807 java 66245575274463
-  loc[41]: mine 9223372036854775807 java 71743133401054
-  loc[42]: mine 9223372036854775807 java 63221918367710
-  loc[43]: mine 9223372036854775807 java 66245575319519
-  loc[44]: mine 9223372036854775807 java 72018011369441
-  loc[45]: mine 9223372036854775807 java 64321429835752
-  loc[46]: mine 9223372036854775807 java 67894842654701
-  loc[47]: mine 9223372036854775807 java 72842644975594
-  loc[48]: mine 9223372036854775807 java 61847528738799
-  loc[49]: mine 9223372036854775807 java 68444598534122
-  fluid[22]: mine None java Some((-32512, "minecraft:lava"))
+warning: value assigned to `d` is never read
+   --> src/bin/aquacheck.rs:296:51
+    |
+296 |                         let (mut a, mut b, mut c, mut d) = (s10, s11, s12, s13);
+    |                                                   ^^^^^ this value is reassigned later and never used
+...
+302 |                         else { d = slot; h = d2; }
+    |                                -------- `d` is overwritten here before the previous value is read
+    |
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: `chunk_factory` (bin "aquacheck") generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.00s
+     Running `target/release/aquacheck /home/z/my-project/c-crussty/ci-server/golden/tectB_424242/vectors/aquifer.csv /home/z/my-project/c-crussty/ci-server/golden/tectB_424242/vectors/aquifer_meta.txt --worldgen /home/z/my-project/c-crussty/ci-datapacks/tectonic-extract --seed 424242`
+  TRACE: substance=-0.003093760671064566 (0xbf6958161cec87c0) decision=minecraft:air touched_by_this_decision=[]
+  TRACE: selected i10..i13 = slots (112,104,100,110) dists (i6..i9) = (4,114,216,241) grid_min=(-14,-7,-16) grid_size=(3,3)
+  TRACE: i10 slot=112 mine_cache=Some(FluidStatus { fluid_level: -32512, kind: Water }) java_meta=Some((63, "minecraft:water"))
+  TRACE: i11 slot=104 mine_cache=Some(FluidStatus { fluid_level: 63, kind: Water }) java_meta=Some((63, "minecraft:water"))
+  TRACE: i12 slot=100 mine_cache=None java_meta=None
+  TRACE: i13 slot=110 mine_cache=None java_meta=None
+  FIELDS slot=100 pos=(-206,56,-251) erosion=-0.29552340507507324 depth=0.28942073695361614 floodedness=1.0 spread=0.08050240960348233 lava=-0.11432306068657393 deep_dark=false | QUART erosion=-0.29703062772750854 depth=0.29726071655750275 deep_dark=false
+  FIELDS slot=103 pos=(-203,48,-233) erosion=-0.2989434599876404 depth=0.4022183921188116 floodedness=-0.21257147199672258 spread=-0.09675997574367703 lava=0.5384431782118752 deep_dark=false | QUART erosion=-0.2984406650066376 depth=0.4023210871964693 deep_dark=false
+  FIELDS slot=109 pos=(-201,60,-256) erosion=-0.2837035059928894 depth=0.17258186638355255 floodedness=1.0 spread=-0.2227054187469733 lava=0.1176544076016049 deep_dark=false | QUART erosion=-0.2874423861503601 depth=0.17171858064830303 deep_dark=false
+  FIELDS slot=112 pos=(-200,64,-239) erosion=-0.2967855632305145 depth=0.28047142550349236 floodedness=-0.18003911564277628 spread=0.038550864630188156 lava=-0.10212605466476994 deep_dark=false | QUART erosion=-0.2962343096733093 depth=0.27848296985030174 deep_dark=false
+  FIELDS slot=118 pos=(-207,78,-247) erosion=-0.29549095034599304 depth=0.1427512764930725 floodedness=-0.18050166158837336 spread=0.1338466558064998 lava=-0.10720967236333408 deep_dark=false | QUART erosion=-0.29655420780181885 depth=0.14715268090367317 deep_dark=false
+  FIELDS slot=121 pos=(-208,76,-234) erosion=-0.2989457845687866 depth=0.1794808693230152 floodedness=-0.20752636391509865 spread=0.34408333390871637 lava=-0.18204812971722503 deep_dark=false | QUART erosion=-0.2987041473388672 depth=0.1812334582209587 deep_dark=false
+  FIELDS slot=101 pos=(-188,55,-247) erosion=-0.27333885431289673 depth=0.21454713679850101 floodedness=1.0 spread=0.11872676000849337 lava=0.041535400630811146 deep_dark=false | QUART erosion=-0.2724997401237488 depth=0.21137052960693836 deep_dark=false
+  FIELDS slot=104 pos=(-192,55,-240) erosion=-0.2908256947994232 depth=0.3153476193547249 floodedness=1.0 spread=0.12982196483898895 lava=0.23514721125166388 deep_dark=false | QUART erosion=-0.2908256947994232 depth=0.3153476193547249 deep_dark=false
+  FIELDS slot=110 pos=(-191,66,-251) erosion=-0.2780013680458069 depth=0.13561638817191124 floodedness=1.0 spread=-0.13521028788776232 lava=-0.2914884689796692 deep_dark=false | QUART erosion=-0.2787831127643585 depth=0.13504132255911827 deep_dark=false
+  FIELDS slot=113 pos=(-184,66,-236) erosion=-0.28084778785705566 depth=0.16415200755000114 floodedness=1.0 spread=0.11536152888431474 lava=-0.2712608056251341 deep_dark=false | QUART erosion=-0.28084778785705566 depth=0.16415200755000114 deep_dark=false
+  FIELDS slot=119 pos=(-186,75,-253) erosion=-0.26326966285705566 depth=0.031345940195024014 floodedness=-0.018908015933545064 spread=-0.09034840175720361 lava=0.02026481145209836 deep_dark=false | QUART erosion=-0.26084083318710327 depth=0.020944744348526 deep_dark=false
+  FIELDS slot=122 pos=(-187,73,-239) erosion=-0.2830197215080261 depth=0.11671659722924232 floodedness=-0.030575665964076383 spread=0.3105334558820014 lava=0.08608069168860753 deep_dark=false | QUART erosion=-0.28355148434638977 depth=0.1192360632121563 deep_dark=false
+FIRST decision diff @ (-200,62,-239): mine minecraft:air java minecraft:water[level=0]
+  my meta: (130, -14, -7, -16, 3, 3)
+  base grid cell: (-13,5,-16)
+  cand grid=(-13,4,-16) slot=100 mine_loc=-56349971951560 java_loc=-56349971951560 java_d2=216
+  cand grid=(-13,4,-15) slot=103 mine_loc=-55525338157008 java_loc=-55525338157008 java_d2=241
+  cand grid=(-13,5,-16) slot=109 mine_loc=-54975582437316 java_loc=-54975582437316 java_d2=294
+  cand grid=(-13,5,-15) slot=112 mine_loc=-54700704460736 java_loc=-54700704460736 java_d2=4
+  cand grid=(-13,6,-16) slot=118 mine_loc=-56624849842098 java_loc=-56624849842098 java_d2=369
+  cand grid=(-13,6,-15) slot=121 mine_loc=-56899727695796 java_loc=-56899727695796 java_d2=285
+  cand grid=(-12,4,-16) slot=101 mine_loc=-51402169610185 java_loc=-51402169610185 java_d2=257
+  cand grid=(-12,4,-15) slot=104 mine_loc=-52501681209289 java_loc=-52501681209289 java_d2=114
+  cand grid=(-12,5,-16) slot=110 mine_loc=-52226803347390 java_loc=-52226803347390 java_d2=241
+  cand grid=(-12,5,-15) slot=113 mine_loc=-50302657937342 java_loc=-50302657937342 java_d2=281
+  cand grid=(-12,6,-16) slot=119 mine_loc=-50852413820853 java_loc=-50852413820853 java_d2=561
+  cand grid=(-12,6,-15) slot=122 mine_loc=-51127291670455 java_loc=-51127291670455 java_d2=290
+  java-side 4 nearest by locs: [(112, -54700704460736, 4), (104, -52501681209289, 114), (100, -56349971951560, 216), (103, -55525338157008, 241)]
+  center slot=112 pos=(-200,64,-239) mine_status=(-32512,Water) deep_dark=false flooded=-0.18003911564277628 d2=0 maxsurf=64 fluid_present=false
+  center slot=112 java_status=Some(Some((63, "minecraft:water")))
+  center slot=104 pos=(-192,55,-240) mine_status=(63,Water) deep_dark=false flooded=1 d2=0 maxsurf=64 fluid_present=false
+  center slot=104 java_status=Some(Some((63, "minecraft:water")))
+aquacheck cache population: mine=56 java=55
+aquacheck: rows=98304 substance_diff=0 decision_diff=118 sched_diff=133 loc_diff=123 fluid_diff=55
+  meta: mine (130, -14, -7, -16, 3, 3) java (0, 0, 0, 0, 0, 0)
+  loc[10]: mine 9223372036854775807 java -55525338226756
+  loc[11]: mine 9223372036854775807 java -50577535914049
+  loc[13]: mine 9223372036854775807 java -55525338173511
+  loc[14]: mine 9223372036854775807 java -51402169548867
+  loc[16]: mine 9223372036854775807 java -56075093897280
+  loc[17]: mine 9223372036854775807 java -50852413661250
+  loc[18]: mine 9223372036854775807 java -58823873110072
+  loc[19]: mine 9223372036854775807 java -56624849854519
+  loc[20]: mine 9223372036854775807 java -51677047545912
+  loc[21]: mine 9223372036854775807 java -61297774202935
+  loc[22]: mine 9223372036854775807 java -56075093958716
+  loc[23]: mine 9223372036854775807 java -51127291658294
+  loc[24]: mine 9223372036854775807 java -60198262526007
+  loc[25]: mine 9223372036854775807 java -55800216023100
+  loc[26]: mine 9223372036854775807 java -50852413698100
+  loc[27]: mine 9223372036854775807 java -59098751029291
+  loc[28]: mine 9223372036854775807 java -54975582408747
+  loc[29]: mine 9223372036854775807 java -50302657982504
+  loc[30]: mine 9223372036854775807 java -61022896308264
+  loc[31]: mine 9223372036854775807 java -54425826521134
+  loc[32]: mine 9223372036854775807 java -51127291650089
+  loc[33]: mine 9223372036854775807 java -60748018323504
+  loc[34]: mine 9223372036854775807 java -54700704370734
+  loc[35]: mine 9223372036854775807 java -51402169499691
+  loc[36]: mine 9223372036854775807 java -61297774293022
+  loc[37]: mine 9223372036854775807 java -56349971943460
+  loc[38]: mine 9223372036854775807 java -51677047541793
+  loc[39]: mine 9223372036854775807 java -61022896312356
+  loc[40]: mine 9223372036854775807 java -56349971902492
+  loc[41]: mine 9223372036854775807 java -51402169548832
+  loc[42]: mine 9223372036854775807 java -59923384602653
+  loc[43]: mine 9223372036854775807 java -54700704378908
+  loc[44]: mine 9223372036854775807 java -50027779956768
+  loc[45]: mine 9223372036854775807 java -60198262640664
+  loc[46]: mine 9223372036854775807 java -56624849854484
+  loc[47]: mine 9223372036854775807 java -51402169614356
+  loc[48]: mine 9223372036854775807 java -58823873028114
+  loc[49]: mine 9223372036854775807 java -54700704452630
+  loc[50]: mine 9223372036854775807 java -50577535856660
+  loc[51]: mine 9223372036854775807 java -61297774141458
+  fluid[19]: mine None java Some((-32512, "minecraft:lava"))
   fluid[23]: mine None java Some((-32512, "minecraft:water"))
+  fluid[26]: mine None java Some((-32512, "minecraft:water"))
   fluid[28]: mine None java Some((-32512, "minecraft:water"))
   fluid[30]: mine None java Some((-32512, "minecraft:water"))
   fluid[31]: mine None java Some((-32512, "minecraft:water"))
   fluid[32]: mine None java Some((-32512, "minecraft:water"))
   fluid[34]: mine None java Some((-32512, "minecraft:water"))
+  fluid[35]: mine None java Some((-32512, "minecraft:water"))
   fluid[37]: mine None java Some((-32512, "minecraft:water"))
-  fluid[39]: mine None java Some((-32512, "minecraft:water"))
   fluid[40]: mine None java Some((-32512, "minecraft:water"))
   fluid[41]: mine None java Some((-32512, "minecraft:water"))
   fluid[43]: mine None java Some((-32512, "minecraft:water"))
   fluid[44]: mine None java Some((-32512, "minecraft:water"))
   fluid[49]: mine None java Some((-32512, "minecraft:water"))
-  fluid[50]: mine None java Some((-20, "minecraft:lava"))
   fluid[52]: mine None java Some((-32512, "minecraft:water"))
   fluid[53]: mine None java Some((-32512, "minecraft:water"))
-  fluid[55]: mine None java Some((-20, "minecraft:water"))
   fluid[58]: mine None java Some((-32512, "minecraft:water"))
-aquacheck content gate: 39 (loc/fluid = probe-cascade info)
+  fluid[61]: mine None java Some((-32512, "minecraft:water"))
+aquacheck content gate: 251 (loc/fluid = probe-cascade info)
