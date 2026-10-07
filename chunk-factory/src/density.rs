@@ -37,11 +37,13 @@ use crate::noise::{BlendedNoise, NormalNoise};
 // --------------------------------------------------------------------------
 
 /// CubicSpline.Constant or CubicSpline.Multipoint (net.minecraft.util).
+#[derive(Debug, Clone)]
 pub enum SplineValue {
     Const(f32),
     Multi(Box<MultiSpline>),
 }
 
+#[derive(Debug, Clone)]
 pub struct MultiSpline {
     pub coordinate: Box<Df>,
     pub locations: Vec<f32>,
@@ -327,6 +329,7 @@ pub struct NoiseBank {
 }
 
 /// Wired density function tree (scalar reference form).
+#[derive(Debug, Clone)]
 #[allow(clippy::large_enum_variant)]
 pub enum Df {
     Const(f64),
@@ -367,6 +370,25 @@ pub enum Df {
     Beardifier,
     EndIslands, // wired with the level seed; scalar eval unsupported (P2 tail)
     FindTopSurface { density: Box<Df>, upper_bound: Box<Df>, lower_bound: i32, cell_height: i32 },
+    /// Addendum 35 (Job 441690) — machine-wired FlatCache view. Java's
+    /// NoiseChunk constructor maps the whole router through `this::wrap`,
+    /// replacing every Marker::FlatCache with a per-chunk FlatCache holding
+    /// a (noiseSizeXZ+1)^2 quart-column cache PRECOMPUTED AT y=0. Its
+    /// compute() (CFR NoiseChunk.java):
+    ///   quart(x,z) inside [firstNoiseX, firstNoiseX+sizeXZ) x [same z]
+    ///     -> the cached value = filler.compute(quart-column, y=0)
+    ///   outside -> filler.compute(raw x, y, z)
+    /// The aquifer's scalar path evaluates the WIRED fields with
+    /// SinglePointContext, so it observes exactly this semantics. Our
+    /// passthrough (Df::Marker) missed the in-window quart quantization:
+    /// tectonic ridges = flat_cache(ridge) quantized java's value at the
+    /// out-of-chunk scan columns to the quart column, flipping the
+    /// underground_river/parameters range_choice gate (0.2008 vs 0.2
+    /// threshold) => floodedness/barrier branch => aquifer status.
+    /// Built per-machine by `with_flat_cache_windows`; never spec-hashed
+    /// (the transform runs after RandomState::build's hash) and never
+    /// interned (aquifer-local).
+    FlatCacheWindow { wrapped: Box<Df>, first_noise_x: i32, first_noise_z: i32, size_xz: i32 },
 }
 
 impl Df {
@@ -407,6 +429,17 @@ impl Df {
                 input.compute(bank, x, y, z)
             }
             Df::Marker { wrapped, .. } => wrapped.compute(bank, x, y, z),
+            Df::FlatCacheWindow { wrapped, first_noise_x, first_noise_z, size_xz } => {
+                // NoiseChunk.FlatCache.compute — quart quantization + y=0 pin
+                // inside the machine window, raw filler outside.
+                let qx = (x >> 2) - first_noise_x;
+                let qz = (z >> 2) - first_noise_z;
+                if qx >= 0 && qz >= 0 && qx < *size_xz && qz < *size_xz {
+                    wrapped.compute(bank, x & !3, 0, z & !3)
+                } else {
+                    wrapped.compute(bank, x, y, z)
+                }
+            }
             Df::WeirdScaledSampler { input, noise, rarity } => {
                 let value = input.compute(bank, x, y, z);
                 let d = rarity.map(value);
@@ -493,6 +526,7 @@ impl Df {
             }
             Df::BlendDensity(_) => f64::NEG_INFINITY,
             Df::Marker { wrapped: w, .. } => w.min_value_of(bank),
+            Df::FlatCacheWindow { wrapped: w, .. } => w.min_value_of(bank),
             Df::WeirdScaledSampler { noise, rarity, .. } => {
                 0.0f64.min(rarity.max_rarity() * bank.noises[*noise].max_value())
             }
@@ -524,6 +558,7 @@ impl Df {
             }
             Df::BlendDensity(_) => f64::INFINITY,
             Df::Marker { wrapped: w, .. } => w.max_value_of(bank),
+            Df::FlatCacheWindow { wrapped: w, .. } => w.max_value_of(bank),
             Df::WeirdScaledSampler { noise, rarity, .. } => {
                 rarity.max_rarity() * bank.noises[*noise].max_value()
             }
@@ -673,6 +708,12 @@ impl Df {
                 *y_scale == 0.0
             }
             Df::Marker { wrapped, .. } => wrapped.is_y_free(bank),
+            // The window value switches between the y=0-pinned quart column
+            // (in-window) and the raw-context filler (out-window); even a
+            // y-free wrapped content yields DIFFERENT per-column values on
+            // the two sides, so a per-column memo keyed by (x,z) alone would
+            // mix them. Conservative: Y-DEPENDENT.
+            Df::FlatCacheWindow { .. } => false,
             Df::BlendDensity(i) => i.is_y_free(bank),
             // WeirdScaledSampler feeds y/d into a full 3D noise — Y-DEPENDENT.
             Df::WeirdScaledSampler { .. } => false,
@@ -838,5 +879,182 @@ impl Df {
             }
             _ => self.compute(bank, x, y, z),
         }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Addendum 35 (Job 441690) — the machine FlatCache view for unbound scalar
+// evaluation (aquifer path). NoiseChunk maps the router through this::wrap,
+// swapping every Marker::FlatCache for a per-chunk FlatCache with a
+// (noiseSizeXZ+1)^2 quart-column cache precomputed at y=0 (CFR
+// NoiseChunk.java FlatCache.compute: in-window -> cached quart column,
+// out-window -> filler at the raw context). The aquifer evaluates the wired
+// fields with SinglePointContext, i.e. THROUGH those wrappers; our scalar
+// passthrough must reproduce them. This transform binds each FlatCache
+// marker to ONE machine window.
+// ---------------------------------------------------------------------------
+
+/// Rebuild `df` replacing every Marker::FlatCache with a FlatCacheWindow
+/// bound to (first_noise_x, first_noise_z, size_xz). Clones leaves; recurses
+/// into every child including spline coordinates and nested spline values.
+pub fn with_flat_cache_windows(df: &Df, first_noise_x: i32, first_noise_z: i32, size_xz: i32) -> Df {
+    let rec = |d: &Df| with_flat_cache_windows(d, first_noise_x, first_noise_z, size_xz);
+    match df {
+        Df::Const(_)
+        | Df::YClampedGradient { .. }
+        | Df::Noise(..)
+        | Df::ShiftA(_)
+        | Df::ShiftB(_)
+        | Df::Shift(_)
+        | Df::Blended(_)
+        | Df::BlendAlpha
+        | Df::BlendOffset
+        | Df::Beardifier
+        | Df::EndIslands => (*df).clone(),
+        | Df::FlatCacheWindow { .. } => (*df).clone(),
+        Df::Marker { ty, wrapped } => {
+            let w = Box::new(rec(wrapped));
+            if matches!(ty, MarkerType::FlatCache) {
+                Df::FlatCacheWindow { wrapped: w, first_noise_x, first_noise_z, size_xz }
+            } else {
+                Df::Marker { ty: *ty, wrapped: w }
+            }
+        }
+        Df::ShiftedNoise { shift_x, shift_y, shift_z, xz_scale, y_scale, noise } => Df::ShiftedNoise {
+            shift_x: Box::new(rec(shift_x)),
+            shift_y: Box::new(rec(shift_y)),
+            shift_z: Box::new(rec(shift_z)),
+            xz_scale: *xz_scale,
+            y_scale: *y_scale,
+            noise: *noise,
+        },
+        Df::BlendDensity(input) => Df::BlendDensity(Box::new(rec(input))),
+        Df::WeirdScaledSampler { input, noise, rarity } => Df::WeirdScaledSampler {
+            input: Box::new(rec(input)),
+            noise: *noise,
+            rarity: *rarity,
+        },
+        Df::RangeChoice { input, min_inclusive, max_exclusive, when_in_range, when_out_of_range } => {
+            Df::RangeChoice {
+                input: Box::new(rec(input)),
+                min_inclusive: *min_inclusive,
+                max_exclusive: *max_exclusive,
+                when_in_range: Box::new(rec(when_in_range)),
+                when_out_of_range: Box::new(rec(when_out_of_range)),
+            }
+        }
+        Df::Clamp { input, min, max } => Df::Clamp {
+            input: Box::new(rec(input)),
+            min: *min,
+            max: *max,
+        },
+        Df::Mapped { ty, input, min, max } => Df::Mapped {
+            ty: *ty,
+            input: Box::new(rec(input)),
+            min: *min,
+            max: *max,
+        },
+        Df::MulOrAdd { is_add, input, min, max, argument } => Df::MulOrAdd {
+            is_add: *is_add,
+            input: Box::new(rec(input)),
+            min: *min,
+            max: *max,
+            argument: *argument,
+        },
+        Df::Ap2 { ty, a1, a2, min, max } => Df::Ap2 {
+            ty: *ty,
+            a1: Box::new(rec(a1)),
+            a2: Box::new(rec(a2)),
+            min: *min,
+            max: *max,
+        },
+        Df::Spline(ms) => Df::Spline(Box::new(spline_with_flat_cache_windows(ms, first_noise_x, first_noise_z, size_xz))),
+        Df::FindTopSurface { density, upper_bound, lower_bound, cell_height } => Df::FindTopSurface {
+            density: Box::new(rec(density)),
+            upper_bound: Box::new(rec(upper_bound)),
+            lower_bound: *lower_bound,
+            cell_height: *cell_height,
+        },
+    }
+}
+
+fn spline_with_flat_cache_windows(ms: &MultiSpline, fx: i32, fz: i32, sxz: i32) -> MultiSpline {
+    let rec_value = |v: &SplineValue| match v {
+        SplineValue::Const(c) => SplineValue::Const(*c),
+        SplineValue::Multi(inner) => SplineValue::Multi(Box::new(spline_with_flat_cache_windows(inner, fx, fz, sxz))),
+    };
+    MultiSpline {
+        coordinate: Box::new(with_flat_cache_windows(&ms.coordinate, fx, fz, sxz)),
+        locations: ms.locations.clone(),
+        values: ms.values.iter().map(rec_value).collect(),
+        derivatives: ms.derivatives.clone(),
+        min: ms.min,
+        max: ms.max,
+    }
+}
+
+#[cfg(test)]
+mod flat_cache_window_tests {
+    use super::*;
+
+    /// Addendum 35: in-window queries return the y=0-PINNED quart-column
+    /// value (even at y != 0); out-window queries pass the raw context.
+    #[test]
+    fn flat_cache_window_y_pin_and_fallback() {
+        let bank = NoiseBank { noises: Vec::new(), blended: Vec::new() };
+        // y-dependent content: the gradient value differs at every y.
+        let inner = Df::YClampedGradient { from_y: -16, to_y: 16, from_value: 5.0, to_value: -5.0 };
+        let df = Df::FlatCacheWindow {
+            wrapped: Box::new(inner),
+            first_noise_x: 0,
+            first_noise_z: 0,
+            size_xz: 5,
+        };
+        // y=0 gradient value = 0.0; in-window quart x/z = 0..4 => blocks 0..15.
+        let y0 = Df::YClampedGradient { from_y: -16, to_y: 16, from_value: 5.0, to_value: -5.0 }
+            .compute(&bank, 0, 0, 0);
+        assert_eq!(y0.to_bits(), 0.0f64.to_bits());
+        for x in [0, 3, 15] {
+            for y in [-40, -1, 0, 7, 44] {
+                let v = df.compute(&bank, x, y, 9);
+                assert_eq!(v.to_bits(), y0.to_bits(), "in-window ({x},{y},9) must pin y=0");
+            }
+        }
+        // Out of window (x=20 => quart 5 >= size_xz): raw gradient at y.
+        // clamped_map(10, -16, 16, 5, -5) = 5 - (26/32)*10 = -3.125
+        let v = df.compute(&bank, 20, 10, 0);
+        assert_eq!(v.to_bits(), (-3.125f64).to_bits(), "out-window must stay raw");
+    }
+
+    /// Negative-chunk windows: firstNoiseX = floorDiv(chunkMinX, 4) and the
+    /// quart quantization must floor toward -inf (x & !3 semantics).
+    #[test]
+    fn flat_cache_window_negative_origin() {
+        let bank = NoiseBank { noises: Vec::new(), blended: Vec::new() };
+        let inner = Df::Const(7.5);
+        // chunk (12,24) from the tectA evidence: firstNoiseX = 48, window
+        // x quarts 48..52 = blocks 192..211 INCLUSIVE (the slot-95 column!).
+        let df = Df::FlatCacheWindow {
+            wrapped: Box::new(inner),
+            first_noise_x: 48,
+            first_noise_z: 96,
+            size_xz: 5,
+        };
+        for x in [192, 207, 208, 211] {
+            assert_eq!(df.compute(&bank, x, 44, 391).to_bits(), 7.5f64.to_bits(), "x={x} in-window");
+        }
+        assert_eq!((208i32 >> 2) - 48, 4, "block 208 = last in-window quart");
+        assert_eq!((212i32 >> 2) - 48, 5, "block 212 = first out-window quart");
+        // Negative origin: floorDiv semantics via arithmetic shift.
+        let dfn = Df::FlatCacheWindow {
+            wrapped: Box::new(Df::Const(1.0)),
+            first_noise_x: -52,
+            first_noise_z: -60,
+            size_xz: 5,
+        };
+        // chunk (-13,-15): blocks -208..-193 x -240..-225 in-window.
+        assert_eq!((-198i32 >> 2) - (-52), 2, "negative floor division");
+        assert_eq!(dfn.compute(&bank, -198, 57, -240).to_bits(), 1.0f64.to_bits());
+        assert_eq!(dfn.compute(&bank, -192, 57, -240).to_bits(), 1.0f64.to_bits());
     }
 }

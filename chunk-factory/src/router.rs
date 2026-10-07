@@ -1144,6 +1144,12 @@ fn write_shape(df: &Df, keys: &[String], blended: &[(u64, u64, u64, u64, u64)], 
             out.push(':');
             write_shape(wrapped, keys, blended, out)
         }
+        // Never reached on the spec-hash path (FlatCacheWindow trees are
+        // built AFTER the hash, aquifer-local); kept total + loud.
+        Df::FlatCacheWindow { wrapped, .. } => {
+            out.push_str("flatcachewindow:AQUAFERLOCAL:");
+            write_shape(wrapped, keys, blended, out)
+        }
         Df::WeirdScaledSampler { input, noise, rarity } => {
             out.push_str(&format!(
                 "weird:{}:{rarity:?}:",

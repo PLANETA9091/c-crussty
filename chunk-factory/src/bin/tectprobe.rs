@@ -53,6 +53,10 @@ fn walk_eval(df: &Df, d: usize, max_d: usize, bank: &chunk_factory::density::Noi
             println!("{pad}Marker {ty:?} {tag}");
             walk_eval(wrapped, d + 1, max_d, bank, x, y, z);
         }
+        Df::FlatCacheWindow { wrapped, first_noise_x, first_noise_z, size_xz } => {
+            println!("{pad}FlatCacheWindow fx={first_noise_x} fz={first_noise_z} sxz={size_xz} {tag}");
+            walk_eval(wrapped, d + 1, max_d, bank, x, y, z);
+        }
         Df::WeirdScaledSampler { input, .. } => {
             println!("{pad}WeirdScaledSampler {tag}");
             walk_eval(input, d + 1, max_d, bank, x, y, z);

@@ -168,17 +168,20 @@ fn from_grid_z(grid_z: i32, offset: i32) -> i32 {
 /// unaffected; ONLY the aquifer's status layer queries these fields at
 /// ARBITRARY blocks — the resid T38-B divergence root.
 
-/// NoiseBasedAquifer replica. Lifetimes: borrows the router's density fields
-/// and the noise bank (both live as long as the RandomState).
+/// NoiseBasedAquifer replica. The density fields are OWNED machine views:
+/// each is the optimized router tree with every Marker::FlatCache bound to
+/// THIS machine's window (Df::FlatCacheWindow, addendum 35) — the scalar
+/// path then reproduces Java's NoiseChunk.FlatCache quart quantization
+/// (in-window = y=0-pinned quart column, out-window = raw filler).
 pub struct NoiseBasedAquifer<'a> {
     bank: &'a crate::density::NoiseBank,
-    barrier_noise: &'a Df,
-    fluid_level_floodedness_noise: &'a Df,
-    fluid_level_spread_noise: &'a Df,
-    lava_noise: &'a Df,
-    erosion: &'a Df,
-    depth: &'a Df,
-    preliminary_surface_level: &'a Df,
+    barrier_noise: Df,
+    fluid_level_floodedness_noise: Df,
+    fluid_level_spread_noise: Df,
+    lava_noise: Df,
+    erosion: Df,
+    depth: Df,
+    preliminary_surface_level: Df,
     positional_random_factory: XoroshiroPositionalRandomFactory,
     aquifer_cache: Vec<Option<FluidStatus>>,
     aquifer_location_cache: Vec<i64>,
@@ -223,15 +226,24 @@ impl<'a> NoiseBasedAquifer<'a> {
         let i3 = grid_z(max_block_z - 5) + 1;
         let grid_size_z = i3 - min_grid_z + 1;
         let cache_len = (grid_size_x as usize) * (grid_size_y as usize) * (grid_size_z as usize);
+        // Addendum 35: bind every Marker::FlatCache in the aquifer-relevant
+        // fields to THIS machine's window. size_xz = NoiseChunk.noiseSizeXZ+1
+        // = (chunk width in blocks >> 2) + 1 = 5 for 16-wide chunks.
+        let flat_size_xz = ((max_block_x - min_block_x + 1) >> 2) + 1;
+        let fx = min_block_x >> 2;
+        let fz = min_block_z >> 2;
+        let bind = |df: &Df| {
+            crate::density::with_flat_cache_windows(df, fx, fz, flat_size_xz)
+        };
         let mut aquifer = NoiseBasedAquifer {
             bank,
-            barrier_noise: &router.barrier,
-            fluid_level_floodedness_noise: &router.fluid_level_floodedness,
-            fluid_level_spread_noise: &router.fluid_level_spread,
-            lava_noise: &router.lava,
-            erosion: &router.erosion,
-            depth: &router.depth,
-            preliminary_surface_level: &router.preliminary_surface_level,
+            barrier_noise: bind(&router.barrier),
+            fluid_level_floodedness_noise: bind(&router.fluid_level_floodedness),
+            fluid_level_spread_noise: bind(&router.fluid_level_spread),
+            lava_noise: bind(&router.lava),
+            erosion: bind(&router.erosion),
+            depth: bind(&router.depth),
+            preliminary_surface_level: bind(&router.preliminary_surface_level),
             positional_random_factory: aquifer_factory,
             aquifer_cache: vec![None; cache_len],
             aquifer_location_cache: vec![i64::MAX; cache_len],
@@ -308,33 +320,21 @@ impl<'a> NoiseBasedAquifer<'a> {
         level + 8
     }
 
-    /// NoiseChunk.FlatCache coordinate view: flat_cache-wrapped subtrees are
-    /// evaluated at the QUART-ALIGNED column while the query quart lies inside
-    /// the machine's 5x5 quart window (firstNoiseX..firstNoiseX+4 inclusive),
-    /// and per-block otherwise (FlatCache fallback). The y coordinate passes
-    /// through unchanged (the wrapped content is y-free; the depth tree's
-    /// y_clamped_gradient child is NOT flat_cache-wrapped and must stay per-y).
-    #[inline]
-    fn wrap_coords(&self, x: i32, y: i32, z: i32) -> (i32, i32, i32) {
-        let qx = (x >> 2) - self.first_noise_x;
-        let qz = (z >> 2) - self.first_noise_z;
-        if qx >= 0 && qz >= 0 && qx < 5 && qz < 5 {
-            (x & !3, y, z & !3)
-        } else {
-            (x, y, z)
-        }
-    }
+    /// (Superseded, addendum 35: the wrap_coords helper is gone — its
+    /// semantics are implemented exactly by Df::FlatCacheWindow inside the
+    /// transformed trees, including the y=0 pin that the old helper lacked.)
 
     /// OverworldBiomeBuilder.isDeepDarkRegion through the NoiseChunk-wrapped
-    /// erosion/depth fields (see the module-level wrap-semantics comment).
+    /// erosion/depth fields. Addendum 35: the FlatCache window semantics now
+    /// live INSIDE the transformed field trees (Df::FlatCacheWindow), so the
+    /// evaluation is a plain compute — no ad-hoc coordinate shifting.
     #[inline]
     fn is_deep_dark_region(&self, x: i32, y: i32, z: i32) -> bool {
-        let (wx, wy, wz) = self.wrap_coords(x, y, z);
-        let e = self.erosion.compute(self.bank, wx, wy, wz);
+        let e = self.erosion.compute(self.bank, x, y, z);
         if !(e < -0.224_999_994_039_535_52) {
             return false;
         }
-        let d = self.depth.compute(self.bank, wx, wy, wz);
+        let d = self.depth.compute(self.bank, x, y, z);
         d > 0.899_999_976_158_142_1
     }
 

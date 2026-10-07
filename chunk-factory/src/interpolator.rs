@@ -348,6 +348,20 @@ pub fn intern_df(df: &crate::density::Df, arena: &mut Arena, bank: &NoiseBank) -
         Df::Shift(i) => INode::Shift(*i),
         Df::BlendDensity(i) => INode::BlendDensity(intern_df(i, arena, bank)),
         Df::Marker { ty, wrapped } => INode::Marker { ty: *ty, wrapped: intern_df(wrapped, arena, bank) },
+        // FlatCacheWindow trees are aquifer-local (built after interning) —
+        // arm kept total; the intern shape mirrors the Marker passthrough
+        // with the window constants folded into the tag.
+        Df::FlatCacheWindow { wrapped, first_noise_x, first_noise_z, size_xz } => INode::Marker {
+            ty: crate::density::MarkerType::Cache2D,
+            wrapped: {
+                // window semantics are NOT representable in INode — but this
+                // arm is unreachable on every current path (the transformed
+                // trees never reach the interpolator); if it ever fires it
+                // must not silently pass, so panic loudly instead.
+                let _ = (wrapped, first_noise_x, first_noise_z, size_xz);
+                panic!("FlatCacheWindow reached intern_df — the machine view must stay aquifer-local (addendum 35)")
+            },
+        },
         Df::WeirdScaledSampler { input, noise, rarity } => INode::WeirdScaledSampler {
             input: intern_df(input, arena, bank),
             noise: *noise,

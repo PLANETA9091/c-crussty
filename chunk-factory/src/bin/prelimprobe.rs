@@ -37,7 +37,7 @@ fn bits(v: f64) -> String {
 /// (Java's wired FlatCache returns the y=0 CACHED column value inside the
 /// machine window — a y-dependent content diverges from a raw passthrough
 /// at scan y != 0).
-fn run_trace(root: &str, seed: i64, x: i32, z: i32) {
+fn run_trace(root: &str, seed: i64, raw_x: i32, y_probe: i32, raw_z: i32) {
     use chunk_factory::density::{Ap2Type, Df, MappedType};
 
     let dir = WorldgenDir::load(Path::new(root)).expect("load extract");
@@ -45,9 +45,9 @@ fn run_trace(root: &str, seed: i64, x: i32, z: i32) {
     let prelim = &rs.router.preliminary_surface_level;
     let bank = &rs.bank;
 
-    let x = x & !3;
-    let z = z & !3;
-    println!("=== trace column ({x},0,{z}) ===");
+    let x = raw_x & !3;
+    let z = raw_z & !3;
+    println!("=== trace column raw=({raw_x},{y_probe},{raw_z}) aligned=({x},0,{z}) ===");
 
     // 1) flat-cache y-freeness probe over the whole tree
     fn probe_yfree(df: &Df, bank: &chunk_factory::density::NoiseBank, x: i32, z: i32, path: &str, depth: usize) {
@@ -145,6 +145,8 @@ fn run_trace(root: &str, seed: i64, x: i32, z: i32) {
         "tectonic:terrain_spline/factor/islands",
         "tectonic:noise/continent/erosion_folded",
         "tectonic:noise/continent/ridges",
+        "tectonic:noise/continent/ridges_folded",
+        "tectonic:underground_river/parameters",
     ] {
         let df = {
             use chunk_factory::router::parse_df_value;
@@ -164,12 +166,19 @@ fn run_trace(root: &str, seed: i64, x: i32, z: i32) {
                 .expect("wire")
         };
         let bank = &wiring.bank;
-        let v0 = df.compute(bank, x, 0, z);
-        let v64 = df.compute(bank, x, 64, z);
-        let v80 = df.compute(bank, x, 80, z);
-        let v128 = df.compute(bank, x, 128, z);
-        let yfree = v0.to_bits() == v64.to_bits() && v0.to_bits() == v128.to_bits();
-        println!("subchain {name}: y0={} y64={} y80={} y128={} y-free={yfree}", bits(v0), bits(v64), bits(v80), bits(v128));
+        // probe BOTH the quart-aligned column and the RAW column when the
+        // caller passed a non-aligned one: java's wired FlatCache quantizes
+        // in-window queries to the quart column (and pins y=0); our scalar
+        // passthrough does not — the delta is the suspected root.
+        let mut cols: Vec<(i32, i32, &str)> = vec![(x, z, "aligned")];
+        if (raw_x & !3) != raw_x || (raw_z & !3) != raw_z {
+            cols.push((raw_x, raw_z, "raw"));
+        }
+        for (cx, cz, tag) in cols {
+            let v44 = df.compute(bank, cx, y_probe, cz);
+            let v0 = df.compute(bank, cx, 0, cz);
+            println!("subchain[{tag} @{cx},{y_probe},{cz}] {name}: y{y_probe}={} y0={} y0@aligned-diff={}", bits(v44), bits(v0), v0.to_bits() != df.compute(bank, x, 0, z).to_bits());
+        }
     }
 }
 
@@ -179,8 +188,9 @@ fn main() {
     let seed: i64 = args[1].parse().expect("seed");
     if args[2] == "--trace" {
         let x: i32 = args[3].parse().expect("x");
-        let z: i32 = args[4].parse().expect("z");
-        run_trace(root, seed, x, z);
+        let y: i32 = args[4].parse().expect("y");
+        let z: i32 = args[5].parse().expect("z");
+        run_trace(root, seed, x, y, z);
         return;
     }
     let x0: i32 = args[2].parse().expect("x0");

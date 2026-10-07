@@ -2453,3 +2453,87 @@ SLEДУЮЩИЙ ТИК (узкая задача, детерминированн�
   корни-кандидаты (aquifer-barrier/noodle/пороговые флипы) —
   первоисточник = этот LOG; addenda 32-34 сузили остаток до prelim-скана.
 ОЖИДАНИЕ CI: run на этом коммите.
+
+=== 2026-10-07 | сессия 12 (аддендум 35: Job 441690 — КОРЕНЬ КЛАССА (b) НАЙДЕН И ИСПРАВЛЕН: NoiseChunk.FlatCache quart-квантование В ОКНЕ машины отсутствовало на скалярном пути аквифера; ridges(211,391): ours -0.2008 (напрямую) vs java -0.1638 (кварт-колонна (208,388)) => гейт реки 0.2 перевёрнут => ветка floodedness/barrier => статус; tectA+tectB aquacheck gate 0) ===
+ЦЕПОЧКА ДОКАЗАТЕЛЬСТВА (каждый шаг — отдельное наблюдение; инструменты:
+  prelimprobe --trace, CI-артefакты run 37642490218, CFR):
+  1) AQUAFIELDS-ОРАКУЛ (CI, tectA job): java @(211,44,391):
+     barrierNoise=-1.0, fluidLevelFloodednessNoise=+1.0, spread=-0.188,
+     lava=+0.04, erosion=-0.2404, depth=+0.33984, isDeepDark=false,
+     computeFluid=63/water, prelim[0,0=80 -2,-1=48 -1,-1=56 0,-1=64
+     1,-1=72 -3,0=48 -2,0=64 -1,0=64 1,0=72 -2,1=72 -1,1=80 0,1=88 1,1=80].
+     НАШЕ значение центра prelim = ТОЖЕ 80 (совпадает!) — гипотеза
+     аддендума 34 «java prelim(211,391) <= 55» ОПРОВЕРГНУТА; НО dumped
+     floodedness=+1.0 против наших +0.165 — поля diverge!
+  2) Объяснение dumped-значений: tectonic fluid_level_floodedness =
+     range_choice(underground_river/parameters, [0.9,1.1) -> 1 : noise);
+     barrier = range_choice(параметры, [0.9,1.1) -> range_choice(y in
+     [64,72) -> noise : -1) : noise). java floodedness=1.0 и barrier=-1.0
+     = ВЕТКА РЕКИ (параметры=1) — у нас параметры=0 => шумовая ветка
+     (floodedness 0.165 => d1=-0.635 => -32512; у java d1=+0.2 => 63/water).
+  3) underground_river/parameters = cache_once(range_choice(y in [32,72),
+     range_choice(ridges_folded in [0,0.2), range_choice(raw_continents >=
+     -0.17, range_choice(erosion_folded in [0,0.37), 1, 0), 0), 0), 0));
+     ridges_folded = abs(ridges); ridges = flat_cache(ridge-noise)!
+  4) БИТ-ТОЧНАЯ ЛОКАЛИЗАЦИЯ (prelimprobe --trace 211 44 391):
+     ridges_folded @ RAW-колонна (211,391) = +0.2008462403 (НАД порогом
+     0.2 => река НЕТ) vs @ КВАРТ-колонна (208,388) = +0.1637749196 (ПОД
+     порогом => река ДА). Джава в окне FlatCache (кварт 48..52 x 96..100 =
+     блоки 192..211 x 384..403) возвращает КЭШ КВАРТ-КОЛОННЫ (y=0),
+     наши (passthrough Df::Marker) — прямое значение RAW-колонны.
+     Полная проверка: java floodedness(211,44,391) = 1.0 байт-в-байт =
+     наша цепь при ridges из (208,388); computeFluid => 63/water = dump.
+  5) КОМПЬЮТАЦИЯ ИСПРАВЛЕНИЯ (этот коммит):
+     - density.rs: Df::FlatCacheWindow { wrapped, first_noise_x,
+       first_noise_z, size_xz } — compute: quart(x,z) внутри
+       [fx, fx+size_xz) x [fz, fz+size_xz) => wrapped(x & !3, 0, z & !3);
+       вне => wrapped(x, y, z) — точный CFR NoiseChunk.FlatCache.compute
+       (кварт-квантование + y=0-pin; вне окна — сырой контекст);
+       with_flat_cache_windows — рекурсивная трансформа дерева
+       (включая spline-координаты и вложенные сплайны); Df/MultiSpline/
+       SplineValue derive(Clone); min/max_value_of, is_y_free=false
+       (окно смешивает значения кварт-колонны и сырой колонны —
+       per-column кэш по (x,z) опасен); write_shape/intern_df — total
+       arms (трансформа выполняется ПОСЛЕ spec-hash и интернирования).
+     - aquifer.rs: поля бартера/флудднесс/spread/lava/erosion/depth/prelim
+       стали ВЛАДЕЛЬНЫМИ трансформнутыми деревьями (bind в new(),
+       size_xz = (ширина чанка >> 2) + 1 = 5; fx/fz = firstNoiseX/Z);
+       ad-hoc wrap_coords (dc57431) УДАЛЁН — его семантика теперь
+       реализована точно в дереве, включая y=0-pin, которого старый
+       хелпер не делал.
+  6) ПОДТВЕРЖДЕНИЕ (локально, все сохранённые векторы):
+     - tectA_8675309: aquacheck rows=98304 substance_diff=0
+       decision_diff=0 sched_diff=0 content gate 0 (БЫЛО decision_diff=4,
+       gate 10, первый @ (207,39,385));
+     - tectB_424242: decision_diff=0, gate 0;
+     - vanilla resid1 + resid53: gate 0 (регрессии нет);
+     - veccheck tectA/tectB/resid1: ZERO-DIFF 941511/941511,
+       843207/843207 (плотностный контекст не тронут);
+     - A/B NCF_TILE_CACHE=0/1 stagediff --gen-batch: vanilla (3053459)
+       и tectonic (8675309, чанки 12-13 x 24-25) — дифф ПУСТ байт-в-байт;
+     - cargo test: корень 417 GREEN; chunk-factory 110 GREEN
+       (108 + 2 новых теста FlatCacheWindow: y-pin/фоллбэк и
+       negative-origin/последний-в-окне кварт 208=52-48=4).
+  7) ЧИСЛА tectB (симметричное подтверждение): наш prelim(-198,-240)=88
+     (совпал сdump-логикой), расходится та же ridges-гейт-ветка —
+     fix симметрично закрывает обе ячейки.
+ОЖИДАНИЕ CI: gate-P2 tectonic (8675309) и (424242) должны свести
+  diverged=5 в ЗЕЛЁНЫЙ; vanilla 5/5 и ncf-staged не тронуты (трансформа
+  применяется только к аквиферным машинам; интерполятор/филлер не тронуты).
+АМДАЛЬ (директива 2): таблица аддендума 26 в силе: Rust 38.3 мс/чанк
+  local vs Java 41.6 мс/чанк CI (noise-статус); добавилась одноразовая
+  (на машину) трансформа 7 деревьев — константный оверхед построения,
+  в горячем цикле скаляров изменений нет (тот же Df::compute).
+КОРПУС (директива 3): tectA/tectB/tectC векторы (с фикс-сборкой
+  перезахват не требуется — aquacheck сравнивает против java-артефактов)
+  остаются в golden/<label>/vectors/; tectC добавил pack-регион ВНЕ чанка
+  tectA (запрошен и получен в run 37642490218 — veccheck tectC
+  ZERO-DIFF 966087/966087 — решётка scan-колонн бит-точна).
+СЛЕДУЮЩИЙ ТИК:
+  1) CI: gate-P2 tectonic обе ячейки ЗЕЛЁНЫЕ => класс (b) ЗАКРЫТ честно;
+  2) хардинг отдельным коммитом: trusted_bounds Ap2::Max lo = x1.max(y1)
+     (доказано аддендумом 34, не применено — нужна своя A/B);
+  3) P5.3 piece engine — параллельная главная ветка (terralith класс (а),
+     5 вырожденных ячеек — единственное лечение по аддендуму 28).
+ПРИМЕЧАНИЕ: cron-шаблон опять перечислял устаревшие корни — первоисточник
+  = этот LOG (4-й тик подряд).
