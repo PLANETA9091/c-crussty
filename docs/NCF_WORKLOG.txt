@@ -3234,3 +3234,76 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
   аддендумов 41-43.
 КОРПУС (директива 3): без изменений.
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 10-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 20 (аддендум 45: Job 441690 — CI-вердикт 6067830 (аддендум 44): 33 jobs, не-зелёные = ровно 5 документированных терралит-ячеек класса (а); P5.3 pool_aliases ИНКРЕМЕНТ: alias.rs (Direct/Random/RandomGroup + бит-точный lineage) + start_height uniform + dimension_padding; ОРАКУЛ trial_chambers @ 3053459 (4,6): 257/257 pieces БИТ-В-БИТ с первого захвата) ===
+
+1) CI-ДИСЦИПЛИНА: вердикт run 37686801926 (коммит 6067830) прочитан при
+   run.status=completed: 33 jobs, не-зелёные = РОВНО 5 терралит-ячеек
+   (133700/3053459/90210/8675309/424242, class a); vanilla 5/5 + tectonic
+   5/5 + ncf-staged surface/carvers/noise + density + mca + golden-harness
+   — ЗЕЛЁНЫЕ. Фиксы аддендума 44 (rotate_dir Y-axis + encapsulate
+   maxY-minY) верифицированы CI без регрессий.
+2) POOL_ALIASES (новый модуль chunk-factory/src/alias.rs; PoolAliasLookup
+   + PoolAliasBinding/ DirectPoolAlias/ RandomPoolAlias/
+   RandomGroupPoolAlias, CFR-декомп):
+   a) РАЗБОР: pool_aliases из structure JSON (type=minecraft:direct|
+      random|random_group; weighted lists {"weight","data"}). Единственный
+      ванильный пользователь = trial_chambers (1 random_group + 2 random);
+      неподдерживаемый type = громкая заметка + кандидат пропускается;
+   b) БИТ-ТОЧНЫЙ LINEAGE (PoolAliasLookup.create CFR 13-27):
+      LegacyRandomSource(levelSeed) -> forkPositional() =
+      LegacyPositionalRandomFactory(nextLong()) — ПОТРЕБЛЯЕТ один
+      next_long -> at(minBlockX, startY, minBlockZ) =
+      LegacyRandomSource(Mth.getSeed ^ factorySeed). BINDINGS в порядке
+      списка, ОДИН общий стрим; Random/RandomGroup =
+      WeightedList.getRandom (CFR 80-86): пустой список = НОЛЬ RNG
+      (Optional.empty до nextInt), иначе nextInt(totalWeight) +
+      вычитающий проход (Compact.get == Flat-расширение); RandomGroup =
+      один выбор среди групп, затем дети той же очередью стрима;
+      дубликат alias-ключа = first-wins + громкая заметка (Java
+      ImmutableMap.Builder бросает — crash-путь fallback-owned). Lookup =
+      map.getOrDefault(key, key). Линия независима от assembly/pick RNG;
+   c) ТОЧКИ ПРИМЕНЕНИЯ (CFR 74/203/244): старт-пул (отсутствующий
+      алиас-ключ -> RAW holder fallback, .orElse(startPool.value())),
+      пул каждого родительского джигсо, expansion-hack запросы пулов;
+      fallback-пулы БЕЗ алиасов (CFR 214 raw holder).
+3) ДОПОЛНИТЕЛЬНО К РАЗЪЁМКЕ trial_chambers:
+   a) start_height uniform (UniformHeight.sample CFR 52-64:
+      Mth.randomBetweenInclusive = nextInt(max-min+1)+min — ПЕРВЫЙ draw
+      assembly-RNG, CFR 97 ДО addPieces' Rotation.getRandom); absolute
+      как было; прочие провайдеры/анкеры = громко + пропуск кандидата
+      (crash-путь Java = fallback-owned);
+   b) dimension_padding (DimensionPadding codec CFR 22-24: int =>
+      (v,v); record {bottom, top} с 0-дефолтами; absent => ZERO) —
+      подключён в isStartTooCloseToWorldHeightLimits (placer 838-842);
+   c) AssemblyParams.alias_map; Placer владеет клоном карты.
+4) ОРАКУЛ: ci-server/golden/pieces_4_6.json (trial_chambers @ 3053459,
+   чанк (4,6), локальный риг scripts/piece_capture.sh) — 257/257 pieces
+   БИТ-В-БИТ (element/box/gld/rotation/junctions) С ПЕРВОГО ЗАХВАТА.
+   Один захват валидирует ВСЁ: алиасы (выбор группы + спавн-цели),
+   uniform start_height (y=-26 в -40..-20), padding 10 (через
+   dimension-check), encapsulate-адаптация. Регрессия villages
+   (-14,-15): 87/87 без изменений. piece_dump CLI: --find и --set
+   теперь сосуществуют (любой порядок).
+5) ТЕСТЫ +5 (lib 149 = 144 + 5): parse trial_chambers.json из extract;
+   empty-lookup identity; direct-маппинг + getOrDefault; random =
+   ровно один draw (независимый replay стрима); random_group = один
+   group-pick + дети на общем стриме (hand-replay). Root 417 GREEN.
+   A/B против чистого 6067830: veccheck resid1 @3053459 — БАЙТ-
+   ИДЕНТИЧЕН + ZERO-DIFF GATE PASS (843207/0); stagediff --gen-batch
+   3053459 (64 чанка) TILE_CACHE 0/1 БАЙТ-ИДЕНТИЧНЫ и оба БАЙТ-
+   ИДЕНТИЧНЫ пре-алиасному прогону. СМЕНА ПОВЕДЕНИЯ: НЕТ —
+   Df::Beardifier 0.0; piece_feed/height_feed в генерацию не
+   подключены; алиасы живут только в piece-движке (unwired).
+СЛЕДУЮЩИЕ ШАГИ P5.3:
+  a) разъёмка Df::Beardifier per-chunk (ядро инкремента 1 + 2d фид +
+     алиас-готовый PoolSource) -> класс (а) закрывается на gate-P2
+     terralith (5 ячеек); vanilla I8-фолбэк сужается до реального
+     радиуса Beardifier (директива 1);
+  b) terralith/tectonic структуры с pool_aliases: проверить перечень
+     типов алиасов в паках (random/direct/random_group покрыты).
+АМДАЛЬ (директива 2): trial_chambers сборка 0.52 с/старт (257 pieces,
+  depth 20); villages 6.79 с/старт — оракулский путь, в горячий
+  цикл генерации не входит. Без изменений против аддендумов 41-44.
+КОРПУС (директива 3): без изменений.
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 11-й тик; первоисточник = этот LOG.

@@ -387,6 +387,7 @@ pub struct Placer<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> {
     rng: &'a mut R,
     sampler: &'a mut S,
     use_expansion_hack: bool,
+    alias_map: std::collections::HashMap<String, String>,
     placing: SequencedPriorityIterator<PieceState>,
 }
 
@@ -398,8 +399,18 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
         rng: &'a mut R,
         sampler: &'a mut S,
         use_expansion_hack: bool,
+        alias_map: &std::collections::HashMap<String, String>,
     ) -> Self {
-        Placer { pools, max_depth, pieces, rng, sampler, use_expansion_hack, placing: SequencedPriorityIterator::new() }
+        Placer {
+            pools,
+            max_depth,
+            pieces,
+            rng,
+            sampler,
+            use_expansion_hack,
+            alias_map: alias_map.clone(),
+            placing: SequencedPriorityIterator::new(),
+        }
     }
 
     // -- element views (bbox + jigsaws, exact RNG consumption) --------------
@@ -533,7 +544,7 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
             let block_pos1 = relative(block_pos, front_facing);
             let i = block_pos.1 - min_y;
             let mut i1 = i32::MIN; // lazy firstFreeHeight memo per parent jigsaw
-            let pool_key = structure_block_info.pool.clone(); // alias: identity (2b)
+            let pool_key = crate::alias::lookup(&self.alias_map, &structure_block_info.pool).to_string(); // CFR 203
             if piece_trace() {
                 eprintln!(
                     "[TRACE]   jig pos={:?} front={:?} top={:?} name={:?} target={:?} joint={:?} pl_pri={} sel_pri={} pool={}",
@@ -605,7 +616,7 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
                                 if !bbox1.is_inside(nb.0, nb.1, nb.2) {
                                     return 0;
                                 }
-                                let k = info.pool.clone();
+                                let k = crate::alias::lookup(&self.alias_map, &info.pool).to_string(); // CFR 244
                                 let a = self.pools.max_size(&k);
                                 let b = self.pools.resolve(&k).map(|p| self.pools.max_size(&p.fallback)).unwrap_or(0);
                                 a.max(b)
@@ -770,6 +781,11 @@ pub struct AssemblyParams {
     /// LevelHeightAccessor bounds: min inclusive, max INCLUSIVE
     pub level_min_y: i32,
     pub level_max_y: i32,
+    /// PoolAliasLookup map (PoolAliasLookup.create output); empty = EMPTY
+    /// lookup (identity). Applies to the START pool, each parent jigsaw's
+    /// pool, and the expansion-hack pool queries (CFR 74/203/244); NOT to
+    /// fallback pools (CFR 214 resolves the raw holder).
+    pub alias_map: std::collections::HashMap<String, String>,
 }
 
 pub struct AssemblyResult {
@@ -788,12 +804,24 @@ pub fn add_pieces<R: RandomSource, S: FirstFreeHeight, P: PoolSource>(
     sampler: &mut S,
 ) -> Option<AssemblyResult> {
     let rot = rotation_get_random(rng);
-    // alias lookup is identity in 2b; Java falls back to the raw holder when
-    // the alias-resolved key is absent — identity makes that unreachable for
-    // a registered start pool. A missing pool here is a loud divergence.
-    let Some(start_pool) = pools.resolve(&params.start_pool) else {
-        pools.note_missing_pool(&params.start_pool);
-        return None;
+    // CFR 74: startPool.unwrapKey().flatMap(k => registry.getOptional(
+    // aliasLookup.lookup(k))).orElse(startPool.value()) — the ALIASED key
+    // first; a missing aliased pool falls back to the RAW holder.
+    let start_key = crate::alias::lookup(&params.alias_map, &params.start_pool).to_string();
+    let start_pool = match pools.resolve(&start_key) {
+        Some(p) => p,
+        None if start_key != params.start_pool => {
+            pools.note_missing_pool(&start_key);
+            let Some(p) = pools.resolve(&params.start_pool) else {
+                pools.note_missing_pool(&params.start_pool);
+                return None;
+            };
+            p
+        }
+        None => {
+            pools.note_missing_pool(&params.start_pool);
+            return None;
+        }
     };
     let start = start_pool.get_random_template(rng);
     if matches!(start, PoolElement::Empty) {
@@ -859,7 +887,7 @@ pub fn add_pieces<R: RandomSource, S: FirstFreeHeight, P: PoolSource>(
         let mut free = FreeShape::from_dbox(aabb);
         free.subtract(DBox::from_inclusive_box(&pieces[0].bounding_box)); // POST-MOVE
         let free_slot: ShapeSlot = Rc::new(RefCell::new(Some(free)));
-        let mut placer = Placer::new(pools, params.max_depth, &mut pieces, rng, sampler, params.use_expansion_hack);
+        let mut placer = Placer::new(pools, params.max_depth, &mut pieces, rng, sampler, params.use_expansion_hack, &params.alias_map);
         placer.run(0, free_slot);
     }
     Some(AssemblyResult { stub_position, pieces })
@@ -949,6 +977,9 @@ fn element_jigsaws_entry<R: RandomSource, P: PoolSource>(
 // ---------------------------------------------------------------------------
 #[cfg(test)]
 mod tests {
+    fn no_aliases() -> std::collections::HashMap<String, String> {
+        std::collections::HashMap::new()
+    }
     use super::*;
     use crate::jigsaw::{
         util_shuffle, JointType, PoolElement, Projection, Rotation, ROTATION_VALUES, TemplateData, TemplateJigsaw,
@@ -1249,7 +1280,7 @@ mod tests {
         let mut pieces = vec![parent_piece()];
         {
             let mut sampler = NoHeight;
-            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, false);
+            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, false, &no_aliases());
             placer.run(0, parent_free_slot());
         }
         // exactly one child placed, geometry per hand trace (rot NONE):
@@ -1304,7 +1335,7 @@ mod tests {
         let mut pieces = vec![parent_piece()];
         {
             let mut sampler = NoHeight;
-            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, false);
+            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, false, &no_aliases());
             placer.run(0, parent_free_slot());
         }
         assert_eq!(pieces.len(), 1);
@@ -1345,7 +1376,7 @@ mod tests {
         let mut pieces = vec![parent_piece()];
         {
             let mut sampler = NoHeight;
-            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, false);
+            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, false, &no_aliases());
             placer.run(0, parent_free_slot());
         }
         // j1's child fits inside the parent bbox -> placed; j2's child
@@ -1378,7 +1409,7 @@ mod tests {
         let mut pieces = vec![parent_piece()];
         {
             let mut sampler = NoHeight;
-            let mut placer = Placer::new(&mut pools, 0, &mut pieces, &mut rng, &mut sampler, false);
+            let mut placer = Placer::new(&mut pools, 0, &mut pieces, &mut rng, &mut sampler, false, &no_aliases());
             placer.run(0, parent_free_slot());
         }
         assert_eq!(pieces.len(), 1);
@@ -1392,7 +1423,7 @@ mod tests {
         let mut pieces = vec![parent_piece()];
         {
             let mut sampler = NoHeight;
-            let mut placer = Placer::new(&mut pools, 1, &mut pieces, &mut rng, &mut sampler, false);
+            let mut placer = Placer::new(&mut pools, 1, &mut pieces, &mut rng, &mut sampler, false, &no_aliases());
             placer.run(0, parent_free_slot());
         }
         assert_eq!(pieces.len(), 2);
@@ -1424,7 +1455,7 @@ mod tests {
         {
             let mut sampler = NoHeight;
             // useExpansionHack = TRUE (village_plains.json)
-            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, true);
+            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, true, &no_aliases());
             placer.run(0, parent_free_slot());
         }
         // i2 = max(maxSize(test:windows)=5, maxSize(test:wf)=2) = 5 > 0 ->
@@ -1455,7 +1486,7 @@ mod tests {
         let parent = DBox { x0: 10.0, y0: 64.0, z0: 10.0, x1: 18.0, y1: 68.0, z1: 18.0 };
         {
             let mut sampler = NoHeight;
-            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, true);
+            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, true, &no_aliases());
             placer.run(0, slot_of(FreeShape::join_only_first(room, parent)));
         }
         // the grown box (y up to 70) pokes above the room (y 69) -> collision
@@ -1515,6 +1546,7 @@ mod tests {
             dimension_padding: (0, 0),
             level_min_y: -64,
             level_max_y: 319,
+                alias_map: std::collections::HashMap::new(),
         };
         let res = add_pieces(&params, &mut pools, &mut rng, &mut sampler).expect("assembly");
         // start height: sampler at the bbox center (13, 13) -> i2 = 0 + 70
@@ -1610,6 +1642,7 @@ mod tests {
             dimension_padding: (0, 0),
             level_min_y: -64,
             level_max_y: 319,
+                alias_map: std::collections::HashMap::new(),
         };
         let res = add_pieces(&params, &mut pools, &mut rng, &mut sampler).expect("assembly");
         // blockPos = (12, 0, 13); vec3i = (2, 0, 3); blockPos1 = (8, 0, 7);
@@ -1641,6 +1674,7 @@ mod tests {
             dimension_padding: padding,
             level_min_y: -64,
             level_max_y: 319,
+                alias_map: std::collections::HashMap::new(),
         };
         let mut pools = TestPools::new()
             .pool("test:single", "minecraft:empty", vec![single("test:parent")])
@@ -1672,7 +1706,7 @@ mod tests {
         let mut pieces = vec![parent_piece()];
         {
             let mut sampler = NoHeight;
-            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, false);
+            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, false, &no_aliases());
             placer.run(0, parent_free_slot());
         }
         assert_eq!(pieces.len(), 1);
@@ -1686,7 +1720,7 @@ mod tests {
         let mut pieces = vec![parent_piece()];
         {
             let mut sampler = NoHeight;
-            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, false);
+            let mut placer = Placer::new(&mut pools, 6, &mut pieces, &mut rng, &mut sampler, false, &no_aliases());
             placer.run(0, parent_free_slot());
         }
         assert_eq!(pieces.len(), 1);

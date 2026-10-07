@@ -30,15 +30,17 @@ fn main() {
     let seed: i64 = args[3].parse().expect("seed");
     let cx: i32 = args[4].parse().expect("cx");
     let cz: i32 = args[5].parse().expect("cz");
-    let set_key = if args.len() > 7 && args[6] == "--set" {
-        args[7].clone()
-    } else {
-        "minecraft:villages".to_string()
-    };
+    let find = args.iter().any(|a| a == "--find");
+    let set_key = args
+        .iter()
+        .position(|a| a == "--set")
+        .and_then(|i| args.get(i + 1))
+        .cloned()
+        .unwrap_or_else(|| "minecraft:villages".to_string());
 
     // --find: scan chunks in a growing square around (cx, cz) for placement
     // chunks of the set and print them (no assembly) — the pilot locator.
-    if args.len() > 6 && args[6] == "--find" {
+    if find {
         let dir2 = WorldgenDir::load(Path::new(&args[1])).expect("worldgen dir");
         let text = dir2
             .get("minecraft", "structure_set", &set_key.split_once(':').unwrap().1)

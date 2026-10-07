@@ -30,6 +30,7 @@
 //! (1.21.10: addPieces does NOT reseed — the record field is consumed as
 //! is); the pick RNG carries across retries within one set.
 
+use crate::alias::{self, PoolAliasBinding};
 use crate::beardifier::TerrainAdjustment;
 use crate::jigsaw::{self, PoolElement, ResolvedPool, TemplateData};
 use crate::jrandom::{LegacyRandomSource, RandomSource};
@@ -153,6 +154,17 @@ impl<'d> PoolSource for DirPoolSource<'d> {
     }
 }
 
+/// JigsawStructure.start_height (HeightProvider): absolute = the constant y
+/// (no RNG); uniform absolute range = Mth.randomBetweenInclusive(
+/// context.random(), min, max) = nextInt(max-min+1)+min — the FIRST assembly
+/// RNG draw (JigsawStructure.findGenerationPoint CFR 97 precedes addPieces).
+/// Anything else (baseline anchors / other provider types) is loud.
+#[derive(Debug, Clone)]
+pub enum StartHeight {
+    Absolute(i32),
+    UniformAbsolute { min: i32, max: i32 },
+}
+
 /// JigsawStructure fields we consume (JigsawStructure.java CFR 84-99 CODEC).
 #[derive(Debug, Clone)]
 pub struct JigsawStructureJson {
@@ -161,14 +173,19 @@ pub struct JigsawStructureJson {
     pub start_pool: String,
     pub start_jigsaw_name: Option<String>,
     pub max_depth: i32,
-    /// HeightProvider: only `absolute` is wired (villages = 0); anything
-    /// else is a loud unsupported note (the REAL y is an RNG draw).
-    pub start_height_absolute: Option<i32>,
+    /// HeightProvider: absolute / uniform(absolute) wired; anything else is a
+    /// loud unsupported note (the REAL y is an RNG draw).
+    pub start_height: Option<StartHeight>,
     pub use_expansion_hack: bool,
     pub project_start_to_heightmap: bool,
     pub max_distance: (i32, i32),
     pub terrain_adaptation: TerrainAdjustment,
-    pub has_pool_aliases: bool,
+    /// DimensionPadding (bottom, top); (0, 0) == DimensionPadding.ZERO.
+    pub dimension_padding: (i32, i32),
+    /// PoolAliasBinding list (PoolAliasLookup.create; empty = identity).
+    pub pool_aliases: Vec<PoolAliasBinding>,
+    /// pool_aliases entries whose "type" is not wired (loud divergence).
+    pub unsupported_aliases: Vec<String>,
 }
 
 pub fn parse_structure_json(key: &str, text: &str) -> Result<JigsawStructureJson, String> {
@@ -185,16 +202,50 @@ pub fn parse_structure_json(key: &str, text: &str) -> Result<JigsawStructureJson
         },
         None => (80, 80),
     };
-    let start_height_absolute = j
-        .get("start_height")
-        .and_then(|h| h.get("absolute"))
-        .and_then(|v| v.as_i64())
-        .map(|v| v as i32);
-    let has_pool_aliases = j
-        .get("pool_aliases")
-        .and_then(|a| a.as_arr())
-        .map(|a| !a.is_empty())
-        .unwrap_or(false);
+    // DimensionPadding codec (CFR 22-24): NON_NEGATIVE_INT => (v, v); record
+    // {bottom, top} with 0 defaults. Absent => ZERO = (0, 0).
+    let dimension_padding = match j.get("dimension_padding") {
+        Some(v) => match v.as_i64() {
+            Some(d) => (d as i32, d as i32),
+            None => (
+                v.get("bottom").and_then(|b| b.as_i64()).unwrap_or(0) as i32,
+                v.get("top").and_then(|t| t.as_i64()).unwrap_or(0) as i32,
+            ),
+        },
+        None => (0, 0),
+    };
+    // start_height: {absolute: N} | {type: uniform, min_inclusive/max_inclusive
+    // {absolute: N}} — vertical anchors other than absolute are loud.
+    let start_height = j.get("start_height").map(|h| {
+        if let Some(a) = h.get("absolute").and_then(|v| v.as_i64()) {
+            Ok(StartHeight::Absolute(a as i32))
+        } else if h.get("type").and_then(|t| t.as_str()) == Some("minecraft:uniform") {
+            let mut anchor = |side: &str| -> Result<i32, String> {
+                h.get(side)
+                    .and_then(|s| s.get("absolute"))
+                    .and_then(|v| v.as_i64())
+                    .map(|v| v as i32)
+                    .ok_or_else(|| format!("start_height {side}: non-absolute anchor"))
+            };
+            let min = anchor("min_inclusive")?;
+            let max = anchor("max_inclusive")?;
+            Ok(StartHeight::UniformAbsolute { min, max })
+        } else {
+            Err("start_height: unsupported provider".to_string())
+        }
+    });
+    let unsupported_aliases = Vec::new();
+    let mut pool_aliases = Vec::new();
+    if let Some(arr) = j.get("pool_aliases").and_then(|a| a.as_arr()) {
+        for a in arr {
+            match PoolAliasBinding::parse_json(a) {
+                Ok(b) => pool_aliases.push(b),
+                Err(e) => {
+                    return Err(format!("{key}: {e}"));
+                }
+            }
+        }
+    }
     Ok(JigsawStructureJson {
         key: key.to_string(),
         biomes_tag: j
@@ -211,7 +262,11 @@ pub fn parse_structure_json(key: &str, text: &str) -> Result<JigsawStructureJson
             .and_then(|v| v.as_str())
             .map(|s| s.to_string()),
         max_depth: j.get("size").and_then(|v| v.as_i64()).unwrap_or(0) as i32,
-        start_height_absolute,
+        start_height: match start_height {
+            Some(Ok(v)) => Some(v),
+            Some(Err(_)) => None, // loud via unsupported start_height handling below
+            None => None,
+        },
         use_expansion_hack: matches!(j.get("use_expansion_hack"), Some(crate::json::Json::Bool(true))),
         project_start_to_heightmap: j
             .get("project_start_to_heightmap")
@@ -224,7 +279,9 @@ pub fn parse_structure_json(key: &str, text: &str) -> Result<JigsawStructureJson
         )
         .unwrap_or(TerrainAdjustment::None),
         max_distance,
-        has_pool_aliases,
+        dimension_padding,
+        pool_aliases,
+        unsupported_aliases,
     })
 }
 
@@ -359,18 +416,21 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
     }
     let _ = &non_jigsaw;
     let params_for =
-        |_sj: &JigsawStructureJson, cx: i32, cz: i32| -> AssemblyParams {
+        |_sj: &JigsawStructureJson, cx: i32, cz: i32, start_y: i32, alias_map: std::collections::HashMap<String, String>| -> AssemblyParams {
             AssemblyParams {
-                pos: (cx * 16, 0, cz * 16),
+                pos: (cx * 16, start_y, cz * 16),
                 start_pool: _sj.start_pool.clone(),
                 start_jigsaw_name: _sj.start_jigsaw_name.clone(),
                 max_depth: _sj.max_depth,
                 max_distance: _sj.max_distance,
                 use_expansion_hack: _sj.use_expansion_hack,
                 project_start_to_heightmap: _sj.project_start_to_heightmap,
-                dimension_padding: (0, 0), // DimensionPadding.DEFAULT (CFR 84)
+                // parsed from the structure JSON (CFR DimensionPadding codec);
+                // (0, 0) == DimensionPadding.ZERO (villages omit the field).
+                dimension_padding: _sj.dimension_padding,
                 level_min_y: rs.settings.min_y,
                 level_max_y: rs.settings.min_y + rs.settings.height - 1,
+                alias_map,
             }
         };
     let mut biome_list = biome_list_for(rs);
@@ -402,17 +462,19 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
             total -= entry.weight;
             continue;
         };
-        if sj.has_pool_aliases {
+        for a in &sj.unsupported_aliases {
+            pools.unsupported.push(format!("pool_aliases on {}: {a}", sj.key));
+        }
+        let Some(sh) = sj.start_height.clone() else {
             pools
                 .unsupported
-                .push(format!("pool_aliases on {} (alias increment pending)", sj.key));
-        }
-        if sj.start_height_absolute.is_none() {
-            pools
-                .unsupported
-                .push(format!("non-absolute start_height on {}", sj.key));
-        }
-        let params = params_for(&sj, chunk_x, chunk_z);
+                .push(format!("unsupported start_height on {} (skipped)", sj.key));
+            list.remove(i1);
+            total -= entry.weight;
+            continue;
+        };
+        let params_pos_y;
+        let alias_map;
         // Structure.GenerationContext.makeRandom (1.21.10 CFR — the ROOT of
         // the first piece_dump divergence): the assembly random is a fresh
         // WorldgenRandom(LegacyRandomSource(0L)) seeded setLargeFeatureSeed
@@ -422,6 +484,26 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
         // record's field). The xoroshiro source is NOT used here.
         let mut assembly_rng = LegacyRandomSource::new(0);
         jigsaw::set_large_feature_seed(&mut assembly_rng, level_seed, chunk_x, chunk_z);
+        // JigsawStructure.findGenerationPoint CFR 96-98: startHeight.sample(
+        // context.random(), ...) BEFORE addPieces' Rotation.getRandom.
+        let start_y = match &sh {
+            StartHeight::Absolute(v) => *v,
+            StartHeight::UniformAbsolute { min, max } => {
+                // Mth.randomBetweenInclusive: nextInt(max - min + 1) + min.
+                assembly_rng.next_int_bound(max - min + 1) + min
+            }
+        };
+        params_pos_y = start_y;
+        // PoolAliasLookup.create(poolAliases, blockPos=(minBlockX, startY,
+        // minBlockZ), context.seed()=levelSeed) — an INDEPENDENT random
+        // lineage (never touches the assembly/pick streams).
+        let (map, dup) = alias::build_lookup(&sj.pool_aliases, (chunk_x * 16, start_y, chunk_z * 16), level_seed);
+        for d in dup {
+            pools
+                .note_unsupported(&format!("duplicate alias key {} on {}", d.as_str(), sj.key.as_str()));
+        }
+        alias_map = map;
+        let params = params_for(&sj, chunk_x, chunk_z, params_pos_y, alias_map);
         let generated = add_pieces(&params, pools, &mut assembly_rng, sampler);
         let Some(assembly) = generated else {
             list.remove(i1);

@@ -177,6 +177,7 @@ pub mod fallback;
 /// RandomSpread structure placement prescreen (P5.1).
 pub mod random_spread;
 pub mod beardifier;
+pub mod alias;
 pub mod height_feed;
 pub mod piece_feed;
 pub mod jigsaw;
