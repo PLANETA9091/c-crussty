@@ -196,6 +196,46 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  # NCF T38-B bisect rig (Job 441690): the canon vector corpus covers
+  # POSITIVE coords only (density grid 1600..1840, chunk 100,100); the
+  # gate-P2 blobs live at NEGATIVE coords (vanilla 3053459: chunks
+  # -18..-10 x -19..-11; first divergence c_-10_-16 @ (-160,79,-251),
+  # stone<->air and stone<->water near the substance/aquifer threshold).
+  # /goldendensity dumps the FULL vector family (interp + aquifer + density
+  # scalar DAG incl. the 6 climate fields) at the blob chunk; veccheck and
+  # aquacheck must reproduce every row BIT-EXACTLY. No JVM flags: the
+  # capture coords ride as RCON arguments.
+  ncf-density:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PURPUR_BUILD: '2535'
+      SEED: '3053459'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: chunk-factory
+      - name: blob-density vector gate (boot -> goldendensity -> veccheck + aquacheck)
+        run: bash bench/golden/ci_density.sh
+      - name: upload blob-density gate artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-density-blob
+          path: |
+            bench/golden/results/veccheck_blob_*.log
+            bench/golden/results/aquacheck_blob_*.log
+            bench/golden/results/golden_density_boot.log
+            ci-server/golden/blob3053459/vectors/
+          if-no-files-found: warn
+          retention-days: 30
+
   # NCF task 5 gate: STAGED chunk content zero-diff. The server dumps 225
   # chunks at the NOISE ChunkStatus (raw noise+aquifer+vein content, pre-
   # surface); the Rust filler (chunk-factory::filler) regenerates the same

@@ -1568,3 +1568,36 @@ Cron-мандат 440772 (10:05 +08) повторял план бисекта T3
 Матч с сервером — gate-P2 pack-ячейки этого пуша: ожидание terralith/
   tectonic уйдут с equal=0 (остаток = честные скалярные дивергенции, если
   есть), vanilla-ячейки не изменятся.
+
+=== 2026-10-07 | сессия 8 (аддендум 18: Job 441690 — T38-B риг captureDensity; корень = входы substance/аквифера на ОТРИЦАТЕЛЬНЫХ координатах) ===
+Мандат 441690: открытые gate-P2 дивергенции (T35 закрыт, 11 зелёных).
+ФОРЕНЗИКА лога gate-P2 (vanilla 3053459, run 37562951453 job 112604153695,
+  artifact-лог): 40 захваченных строк = 21 java=stone/rust=water[level=0]
+  (sec 7, y 51..63) + 10 stone/air + 9 air/stone (sec 7-9, y 51..95), чанки
+  -18..-10 x -19..-11; ПЕРВАЯ точка c_-10_-16 @ мир (-160,79,-251).
+  Все три семейства = ОДИН корень: флип решения NoiseBasedAquifer
+  .computeSubstance у порога (при y>63 fluid-статус (63,water).at(y)=air =>
+  stone<->air; при 48..63 => stone<->water). Статический сверст
+  aquifer.rs с декомпилом (CFR 0.152, decomp441): дословно — thresholds
+  (>0.0), четыре дистанции с >=-семантикой, calculatePressure (d11-цепочка,
+  NaN-ветка недостижима), similarity 1-(b-a)/25.
+КЛЮЧЕВОЙ РАЗРЫВ ПОКРЫТИЯ: канонический вектор-корпус ТОЛЬКО положительные
+  координаты (density.csv XS 1600..1840; interp/aquifer чанк 100,100) —
+  низкочастотные входы substance (final_density interp, barrier,
+  floodedness/spread/lava, prelim-surface) на отрицательных координатах
+  НИКОГДА не гейтились. aquacheck/veccheck координатно-агностичны (CSV
+  заголовки/строки) — расширение только в захвате.
+РИГ (этот коммит): /goldendensity <blockX> <blockZ> <y0> <y1> <label> —
+  БЕЗ JVM-флагов (координаты = аргументы RCON-команды): writeInterp/
+  writeAquifer параметризованы координатами (форматы CSV НЕ тронуты,
+  координаты едут в существующих заголовках # firstNoise=/# chunk=),
+  writeDensityBlob — 15 полей роутера на угловой решётке ячеек (base..
+  base+16 шаг 4, вся высота шаг 8; вкл. 6 климат-полей мандата) + 6
+  аквифер-полей на КАЖДОМ блоке полосы y0..y1; ci_density.sh + CI-джоба
+  ncf-density (provision/boot/RCON/veccheck+aquacheck по блоб-корпусу);
+  veccheck парсит # firstNoise= (дефолт 1600,1600 — старые корпусы
+  бит-в-бит совместимы). Контракты veccheck/stagediff не тронуты.
+Доказательства: cargo test 102+2 GREEN; плагин компилируется
+  (build_golden.sh против purpur-unpack 2535); локальный смок: stagediff
+  --gen-batch noise 25 чанков (-12..-8 x -18..-14, вкл. c_-10_-16) без
+  паник; bash -n. Первое поле дивергенции решит CI-прогон ncf-density.

@@ -504,6 +504,10 @@ fn main() {
         let mut header_interp_count: Option<usize> = None;
         let mut cell_w_header: Option<i32> = None;
         let mut cell_h_header: Option<i32> = None;
+        // T38-B: the capture coords ride in the `# firstNoise=<bx>,<bz>`
+        // header (writeInterp has always written them). Absent = the canon
+        // corpus at 1600,1600 (backward compatible with old captures).
+        let mut header_base: Option<(i32, i32)> = None;
         for line in text.lines() {
             let t = line.trim();
             if !t.starts_with('#') {
@@ -515,6 +519,14 @@ fn main() {
             if let Some(v) = t.strip_prefix("# interpCount=") {
                 header_interp_count = v.parse().ok();
             }
+            if let Some(v) = t.strip_prefix("# firstNoise=") {
+                let mut it = v.split(',');
+                let bx = it.next().and_then(|s| s.parse().ok());
+                let bz = it.next().and_then(|s| s.parse().ok());
+                if let (Some(bx), Some(bz)) = (bx, bz) {
+                    header_base = Some((bx, bz));
+                }
+            }
             if let Some(v) = t.strip_prefix("# cellWidth=") {
                 // "# cellWidth=4 cellHeight=8 cellCountXZ=4 cellCountY=48 cellNoiseMinY=-8"
                 let mut it = v.split_whitespace();
@@ -525,6 +537,9 @@ fn main() {
                     }
                 }
             }
+        }
+        if let Some((bx, bz)) = header_base {
+            sim = chunk_factory::interpolator::NoiseChunkSim::from_random_state(&rs, 4, bx, bz);
         }
         if let Some(ws) = header_seed {
             assert_eq!(ws, seed, "interp.csv worldSeed != --seed");

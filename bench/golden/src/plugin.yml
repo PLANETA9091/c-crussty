@@ -10,6 +10,9 @@ commands:
   goldensurface:
     description: capture SurfaceRules.Context fields per block during a replicated buildSurface loop (session 6 bisect rig)
     usage: /goldensurface <chunkX> <chunkZ>
+  goldendensity:
+    description: dump interp/aquifer/density vector families at an arbitrary chunk column (T38-B bisect rig, negative coords fine)
+    usage: /goldendensity <blockX> <blockZ> <y0> <y1> <label>
   goldenvec:
     description: capture random/noise/density/interp/climate golden vectors from the real Paper classes (NCF P0.3 tail / P1 gate / P2.3-tail / P2.4)
     usage: /goldenvec <label>

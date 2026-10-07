@@ -289,6 +289,27 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             }
             return true;
         }
+        // T38-B bisect rig: /goldendensity <blockX> <blockZ> <y0> <y1> <label>
+        // — dump interp/aquifer/density vector families at an ARBITRARY chunk
+        // column (negative coords fine, no JVM flags: coords are args).
+        if (command.getName().equals("goldendensity")) {
+            getLogger().info("goldendensity invoked args=" + java.util.Arrays.toString(args));
+            if (args.length != 5) {
+                sender.sendMessage("usage: /goldendensity <blockX> <blockZ> <y0> <y1> <label>");
+                return true;
+            }
+            try {
+                VectorCapture.captureDensity(this,
+                        Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+                        Integer.parseInt(args[2]), Integer.parseInt(args[3]),
+                        args[4], sender);
+            } catch (Throwable t) {
+                getLogger().warning("GOLDENDENSITY FAILED: " + t);
+                t.printStackTrace();
+                sender.sendMessage("goldendensity: FAILED: " + t);
+            }
+            return true;
+        }
         // Executor/console-only guard. RCON commands arrive as
         // RemoteConsoleCommandSender (used by dump_corpus.sh via bench/ab/rcon.py),
         // the real console as ConsoleCommandSender; everything else is refused.

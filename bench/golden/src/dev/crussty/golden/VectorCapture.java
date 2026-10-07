@@ -260,14 +260,14 @@ public final class VectorCapture {
             rows = writeRandom(vecDir.resolve("random.csv"))
                     + writeNoise(vecDir.resolve("noise.csv"), level, seed)
                     + writeDensity(vecDir.resolve("density.csv"), level);
-            interpStats = writeInterp(vecDir.resolve("interp.csv"), level, seed);
+            interpStats = writeInterp(vecDir.resolve("interp.csv"), level, seed, FIRST_BLOCK_X, FIRST_BLOCK_Z);
             rows += interpStats.rows();
             climateRows = writeClimate(vecDir.resolve("climate.csv"), level, seed);
             rows += climateRows;
             climatePointRows = writeClimatePoints(vecDir.resolve("climate_points.csv"), level);
             rows += climatePointRows;
             aquiferRows = writeAquifer(vecDir.resolve("aquifer.csv"),
-                    vecDir.resolve("aquifer_meta.txt"), level, seed);
+                    vecDir.resolve("aquifer_meta.txt"), level, seed, FIRST_BLOCK_X, FIRST_BLOCK_Z);
             rows += aquiferRows;
         } catch (Throwable t) {
             plugin.getLogger().warning("GOLDEN VECTOR FAILED: " + t);
@@ -651,7 +651,8 @@ public final class VectorCapture {
         }
     }
 
-    private static InterpStats writeInterp(Path path, ServerLevel level, long seed) throws IOException {
+    private static InterpStats writeInterp(Path path, ServerLevel level, long seed,
+                                           int firstBlockX, int firstBlockZ) throws IOException {
         RandomState randomState = level.getChunkSource().randomState();
 
         // NoiseGeneratorSettings: the LIVE generator's own holder (stable
@@ -672,7 +673,7 @@ public final class VectorCapture {
         Aquifer.FluidPicker fluidPicker = (x, y, z) -> new Aquifer.FluidStatus(-54,
                 Fluids.WATER.defaultFluidState().createLegacyBlock());
 
-        NoiseChunk nc = new NoiseChunk(CELLS_XZ, randomState, FIRST_BLOCK_X, FIRST_BLOCK_Z,
+        NoiseChunk nc = new NoiseChunk(CELLS_XZ, randomState, firstBlockX, firstBlockZ,
                 noiseSettings, beardifierMarker(), settings,
                 fluidPicker, Blender.empty());
 
@@ -720,9 +721,9 @@ public final class VectorCapture {
             w.newLine();
             w.write("# worldSeed=" + seed);
             w.newLine();
-            w.write("# chunk=" + (FIRST_BLOCK_X >> 4) + "," + (FIRST_BLOCK_Z >> 4));
+            w.write("# chunk=" + (firstBlockX >> 4) + "," + (firstBlockZ >> 4));
             w.newLine();
-            w.write("# firstNoise=" + FIRST_BLOCK_X + "," + FIRST_BLOCK_Z);
+            w.write("# firstNoise=" + firstBlockX + "," + firstBlockZ);
             w.newLine();
             w.write("# cellWidth=" + cellW + " cellHeight=" + cellH + " cellCountXZ=" + CELLS_XZ
                     + " cellCountY=" + cellCountY + " cellNoiseMinY=" + minCellY);
@@ -741,10 +742,10 @@ public final class VectorCapture {
                             int by = (minCellY + cy) * cellH + inY;
                             nc.updateForY(by, (double) inY / (double) cellH);
                             for (int inX = 0; inX < cellW; inX++) {
-                                int bx = FIRST_BLOCK_X + cx * cellW + inX;
+                                int bx = firstBlockX + cx * cellW + inX;
                                 nc.updateForX(bx, (double) inX / (double) cellW);
                                 for (int inZ = 0; inZ < cellW; inZ++) {
-                                    int bz = FIRST_BLOCK_Z + cz * cellW + inZ;
+                                    int bz = firstBlockZ + cz * cellW + inZ;
                                     nc.updateForZ(bz, (double) inZ / (double) cellW);
                                     // sanity: the chunk context must track the drive loop
                                     if (nc.blockX() != bx || nc.blockY() != by || nc.blockZ() != bz) {
@@ -930,7 +931,8 @@ public final class VectorCapture {
      * aquifer_meta.txt: grid bounds + aquiferLocationCache + aquiferCache
      * (fluid level/type per slot) + skipSamplingAboveY.
      */
-    private static int writeAquifer(Path csv, Path meta, ServerLevel level, long seed) throws Exception {
+    private static int writeAquifer(Path csv, Path meta, ServerLevel level, long seed,
+                                    int firstBlockX, int firstBlockZ) throws Exception {
         RandomState randomState = level.getChunkSource().randomState();
         NoiseGeneratorSettings settings =
                 ((net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator)
@@ -950,7 +952,7 @@ public final class VectorCapture {
                 : new Aquifer.FluidStatus(seaLevel, waterState);
         Aquifer.FluidPicker realPicker = (x, y, z) -> picker.apply(y);
 
-        NoiseChunk nc = new NoiseChunk(CELLS_XZ, randomState, FIRST_BLOCK_X, FIRST_BLOCK_Z,
+        NoiseChunk nc = new NoiseChunk(CELLS_XZ, randomState, firstBlockX, firstBlockZ,
                 noiseSettings, beardifierMarker(), settings, realPicker, Blender.empty());
 
         // the aquifer (public accessor, NoiseChunk line 324)
@@ -1021,7 +1023,7 @@ public final class VectorCapture {
         int rows = 0;
         try (BufferedWriter w = newWriter(csv)) {
             w.write("# NCF aquifer vectors v1 / worldSeed=" + seed
-                    + " / chunk=" + (FIRST_BLOCK_X >> 4) + "," + (FIRST_BLOCK_Z >> 4));
+                    + " / chunk=" + (firstBlockX >> 4) + "," + (firstBlockZ >> 4));
             w.newLine();
             w.write("# block_x,block_y,block_z,substance(hex),decision,sched");
             w.newLine();
@@ -1035,10 +1037,10 @@ public final class VectorCapture {
                             int by = (minCellY + cy) * cellH + inY;
                             nc.updateForY(by, (double) inY / (double) cellH);
                             for (int inX = 0; inX < cellW; inX++) {
-                                int bx = FIRST_BLOCK_X + cx * cellW + inX;
+                                int bx = firstBlockX + cx * cellW + inX;
                                 nc.updateForX(bx, (double) inX / (double) cellW);
                                 for (int inZ = 0; inZ < cellW; inZ++) {
-                                    int bz = FIRST_BLOCK_Z + cz * cellW + inZ;
+                                    int bz = firstBlockZ + cz * cellW + inZ;
                                     nc.updateForZ(bz, (double) inZ / (double) cellW);
                                     int icx = inCellXF.getInt(nc);
                                     int icy = inCellYF.getInt(nc);
@@ -1301,5 +1303,146 @@ public final class VectorCapture {
 
     private static boolean isStone(net.minecraft.world.level.block.state.BlockState s) {
         return !s.isAir() && s.getFluidState().isEmpty();
+    }
+
+    // ------------------------------------------------------------------
+    // T38-B bisect rig: /goldendensity <blockX> <blockZ> <y0> <y1> <label>
+    // Dumps the FULL vector family at an ARBITRARY chunk column (negative
+    // coords included — the gate-P2 blob region was never covered by the
+    // canon /goldenvec corpus, whose density grid is 1600..1840 only):
+    //   interp.csv    — the 16 NoiseInterpolator per-block values (same
+    //                   format/headers as /goldenvec, `# firstNoise=` carries
+    //                   the coords; veccheck parses them since T38-B)
+    //   aquifer.csv + aquifer_meta.txt — substance/decision per block
+    //                   (same format as /goldenvec; aquacheck reads the
+    //                   chunk from the rows)
+    //   density.csv   — field,x,y,z,value rows (same format as /goldenvec):
+    //                   (a) the 15 router fields on the cell-corner lattice
+    //                   (x/z = base..base+16 step 4, y = full height step 8),
+    //                   (b) the 6 aquifer-relevant fields at EVERY block in
+    //                   the y band [y0..y1] (the substance/aquifer inputs
+    //                   that the corner lattice cannot cover).
+    // No JVM flags: the coords arrive as command arguments.
+    // ------------------------------------------------------------------
+
+    public static void captureDensity(JavaPlugin plugin, int bx, int bz, int y0, int y1,
+                                      String label, CommandSender ack) {
+        ServerLevel level = ((CraftWorld) plugin.getServer().getWorlds().get(0)).getHandle();
+        long seed = level.getSeed();
+
+        Path root;
+        String prop = System.getProperty("goldendump.out");
+        if (prop != null && !prop.isBlank()) {
+            root = Paths.get(prop);
+        } else {
+            Path pluginsDir = plugin.getDataFolder().getAbsoluteFile().toPath().getParent();
+            Path serverDir = pluginsDir == null ? null : pluginsDir.getParent();
+            if (serverDir == null) {
+                ack.sendMessage("goldendensity: cannot resolve server dir — set -Dgoldendump.out=<dir>");
+                return;
+            }
+            root = serverDir.resolve("golden");
+        }
+        Path vecDir = root.resolve(label).resolve("vectors");
+        try {
+            Files.createDirectories(vecDir);
+        } catch (IOException e) {
+            ack.sendMessage("goldendensity: cannot create " + vecDir + ": " + e);
+            return;
+        }
+
+        long t0 = System.nanoTime();
+        try {
+            InterpStats interpStats = writeInterp(vecDir.resolve("interp.csv"), level, seed, bx, bz);
+            int aquaRows = writeAquifer(vecDir.resolve("aquifer.csv"),
+                    vecDir.resolve("aquifer_meta.txt"), level, seed, bx, bz);
+            int densityRows = writeDensityBlob(vecDir.resolve("density.csv"), level, bx, bz, y0, y1);
+            long ms = (System.nanoTime() - t0) / 1_000_000L;
+            plugin.getLogger().info("GOLDEN DENSITY COMPLETE rows=" + (interpStats.rows() + aquaRows + densityRows)
+                    + " ms=" + ms + " dir=" + vecDir + " chunk=" + (bx >> 4) + "," + (bz >> 4)
+                    + " band=" + y0 + ".." + y1);
+            ack.sendMessage("goldendensity: complete dir=" + vecDir);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("GOLDEN DENSITY FAILED: " + t);
+            t.printStackTrace();
+            ack.sendMessage("goldendensity: FAILED: " + t);
+        }
+    }
+
+    /** The 15 router fields (same set/order as writeDensity). */
+    private static java.util.LinkedHashMap<String, DensityFunction> routerFields(ServerLevel level) {
+        RandomState rs = level.getChunkSource().randomState();
+        NoiseRouter router = rs.router();
+        java.util.LinkedHashMap<String, DensityFunction> dfs = new java.util.LinkedHashMap<>();
+        dfs.put("barrier", router.barrierNoise());
+        dfs.put("fluid_level_floodedness", router.fluidLevelFloodednessNoise());
+        dfs.put("fluid_level_spread", router.fluidLevelSpreadNoise());
+        dfs.put("lava", router.lavaNoise());
+        dfs.put("temperature", router.temperature());
+        dfs.put("vegetation", router.vegetation());
+        dfs.put("continents", router.continents());
+        dfs.put("erosion", router.erosion());
+        dfs.put("depth", router.depth());
+        dfs.put("ridges", router.ridges());
+        dfs.put("preliminary_surface_level", router.preliminarySurfaceLevel());
+        dfs.put("final_density", router.finalDensity());
+        dfs.put("vein_toggle", router.veinToggle());
+        dfs.put("vein_ridged", router.veinRidged());
+        dfs.put("vein_gap", router.veinGap());
+        return dfs;
+    }
+
+    private static int writeDensityBlob(Path path, ServerLevel level, int bx, int bz, int y0, int y1) throws IOException {
+        NoiseGeneratorSettings settings =
+                ((net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator)
+                        level.getChunkSource().getGenerator())
+                .generatorSettings().value();
+        NoiseSettings noiseSettings = settings.noiseSettings().clampToHeightAccessor(level);
+        int cellH = noiseSettings.getCellHeight();
+        int minCellY = Mth.floorDiv(noiseSettings.minY(), cellH);
+        int cellCountY = Mth.floorDiv(noiseSettings.height(), cellH);
+
+        java.util.LinkedHashMap<String, DensityFunction> dfs = routerFields(level);
+        // the aquifer-relevant subset sampled at EVERY block in the band
+        String[] bandFields = {"barrier", "fluid_level_floodedness", "fluid_level_spread",
+                "lava", "erosion", "depth"};
+
+        int rows = 0;
+        try (BufferedWriter w = newWriter(path)) {
+            header(w, "NoiseRouter scalar vectors — blob region (T38-B) / base="
+                    + bx + "," + bz + " band=" + y0 + ".." + y1);
+            w.write("# worldSeed=" + level.getSeed());
+            w.newLine();
+            // (a) cell-corner lattice, full height — the interpolation inputs
+            for (var e : dfs.entrySet()) {
+                DensityFunction df = e.getValue();
+                for (int x = bx; x <= bx + 16; x += 4) {
+                    for (int cy = 0; cy <= cellCountY; cy++) {
+                        int y = (minCellY + cy) * cellH;
+                        for (int z = bz; z <= bz + 16; z += 4) {
+                            double v = df.compute(new DensityFunction.SinglePointContext(x, y, z));
+                            w.write(e.getKey() + "," + x + "," + y + "," + z + "," + hx(v));
+                            w.newLine();
+                            rows++;
+                        }
+                    }
+                }
+            }
+            // (b) per-block band sweep — the aquifer's own inputs
+            for (String fname : bandFields) {
+                DensityFunction df = dfs.get(fname);
+                for (int y = y0; y <= y1; y++) {
+                    for (int x = bx; x < bx + 16; x++) {
+                        for (int z = bz; z < bz + 16; z++) {
+                            double v = df.compute(new DensityFunction.SinglePointContext(x, y, z));
+                            w.write(fname + "," + x + "," + y + "," + z + "," + hx(v));
+                            w.newLine();
+                            rows++;
+                        }
+                    }
+                }
+            }
+        }
+        return rows;
     }
 }
