@@ -791,15 +791,26 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             // Final marker line — the driver greps exactly this.
             getLogger().info("GOLDEN DUMP COMPLETE n=" + j.ok + " failed=" + j.failed + " dir=" + j.labelDir);
         } else {
-            // T37-b: schedule 2 ticks ahead so the current tick can COMPLETE.
-            // Evidence (runs 37544917131 vs 37549651622): the whole dump runs
-            // inside one tick — managedBlock() pumps scheduler rounds without
-            // closing the tick — and Paper's watchdog (org.spigotmc
-            // .WatchdogThread) kills after ~60s of no-tick REGARDLESS of
-            // server.properties max-tick-time=-1. runTask (next-scheduler-
-            // round) was re-entering the same tick; runTaskLater(2) is not
-            // due until the tick loop advances. Dump cost: ~2 ticks/chunk.
-            Bukkit.getScheduler().runTaskLater(this, this::processTick, 2);
+            // T41: compressed/raw dumps pump WITHIN ONE TICK (runTask, same-tick
+            // re-entry) — the pre-T37-b shape. Tick gaps here are a CORRECTNESS
+            // bug, not a timing detail: across a 2-tick gap the world ticks
+            // (chunk GC unloads/discards proto dependency chunks, ticker state
+            // advances) and the corpus content becomes a function of the
+            // gameTime at which the dump runs. Evidence: run 37560066762
+            // golden-harness ORDER-TEST control (two pure-vanilla boots, same
+            // seed/order) diverged 32/256 with feature-level diffs (a dirt
+            // blob, a granite blob, a whole spruce tree present in one boot
+            // and absent in the other) while boot B was byte-identical across
+            // runs and boot A moved (LastUpdate 9 vs 23 for the same chunk);
+            // per-chunk LastUpdate climbs inside one dump (9..61) proving the
+            // dump spans real ticks since T37-b. The watchdog rationale of
+            // T37-b does NOT apply here: compressed/raw dumps are <=256 chunks
+            // (~25s inside one tick, well under the 60s no-tick kill; green
+            // for weeks pre-T37-b). The staged path keeps runTaskLater(2) —
+            // 2401-chunk gate-P2 dumps genuinely exceed the watchdog window.
+            // INVARIANT: a compressed/raw plan must stay completable inside
+            // one tick; larger corpora must use the staged path or smaller plans.
+            Bukkit.getScheduler().runTask(this, this::processTick);
         }
     }
 
