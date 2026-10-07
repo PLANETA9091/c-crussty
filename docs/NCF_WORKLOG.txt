@@ -2537,3 +2537,35 @@ SLEДУЮЩИЙ ТИК (узкая задача, детерминированн�
      5 вырожденных ячеек — единственное лечение по аддендуму 28).
 ПРИМЕЧАНИЕ: cron-шаблон опять перечислял устаревшие корни — первоисточник
   = этот LOG (4-й тик подряд).
+
+=== 2026-10-07 | сессия 12 (аддендум 36: Job 441690 — CI 37648102189 (cbf7a46): КЛАСС (b) ЗАКРЫТ ЧЕСТНО — gate-P2 tectonic (8675309) pairs=1617 equal=1617 diverged=0, (424242) pairs=1764 equal=1764 diverged=0; tectonic 5/5 + vanilla 5/5 + ncf-staged 3/3 ЗЕЛЁНЫЕ) ===
+CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
+  - gate-P2 tectonic (8675309): GATE CELL PASS — 2401 dumped,
+    25 spawn-excluded, 759 I8-fallback (протокол 4b/4c, p2_fallback_*),
+    pairs=1617 equal=1617 diverged=0 (БЫЛО diverged=5);
+  - gate-P2 tectonic (424242): GATE CELL PASS — 2401 dumped, 25
+    spawn-excluded, 612 I8-fallback, pairs=1764 equal=1764 diverged=0
+    (БЫЛО diverged=5);
+  - gate-P2 tectonic (3053459/133700/90210): SUCCESS — держатся;
+  - gate-P2 vanilla 5/5: SUCCESS — регрессий от трансформы НЕТ
+    (ожидаемо: трансформа = точная семантика оракула);
+  - ncf-staged surface/carvers/noise: SUCCESS x3 — не тронуты;
+  - ncf-density: vanilla blob/resid SUCCESS x5; tectB/tectC SUCCESS
+    (tectC veccheck ZERO-DIFF 966087 — решётка scan-колонн бит-точна);
+    tectA-density = INFRA-флейк (FATAL: mojang-mapped jar not
+    materialized на подготовке бута, до любых гейтов; не гейт-контракт,
+    следующий прогон перезапустит);
+  - terralith 5 ячеек: failure — известный вырожденный класс (а),
+    единственное лечение = P5.3 piece engine (аддендум 28).
+ИТОГ ТИКА: T38-B/T40 класс (b) — tectonic density+status слои — ЗАКРЫТ
+  честно: aquacheck decision_diff 4 -> 0 локально на сохранённых
+  java-векторах + gate-P2 diverged=0 в CI на обеих ячейках, без единого
+  исключения сверх документированного I8-фоллбэка. Успех-критерий
+  аддендума 14 выполнен для tectonic; остался terralith класс (а) = P5.3.
+СЛЕДУЮЩИЙ ТИК:
+  1) перезапуск tectA-density job (инфра-флейк) — опционально;
+  2) хардинг отдельным коммитом: trusted_bounds Ap2::Max lo = x1.max(y1)
+     (CFR-доказательство в аддендуме 34; своя A/B);
+  3) P5.3 piece engine — главная параллельная ветка (класс (а));
+  4) Amdahl-таблица: перф-профиль неизменен (трансформа — оверхед
+     построения машины, замер в бенч-гейте при следующем перф-тике).
