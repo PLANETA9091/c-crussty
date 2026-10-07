@@ -1942,3 +1942,23 @@ aquacheck: substance_diff=0, decision_diff=5, sched_diff=34
   --trace), первый расходящийся шум статуса -> фикс aquifer.rs -> A/B ->
   CI. Инструменты: локальный захват resid1 теперь РАБОТАЕТ end-to-end
   (~4 мин/итерация), сервер в ci-server живёт.
+
+=== 2026-10-07 | сессия 8 (аддендум 25: Job 441690 — CI ПОДТВЕРЖДАЕТ локальную диагностику resid1 бит-в-бит; blob90210 теперь БИТ-ТОЧЕН) ===
+CI run 37609324268 (0268bfd, риг-фикс + регрессион-тест):
+  - ncf-density resid1_3053459: veccheck ZERO-DIFF PASS; aquacheck
+    substance_diff=0 decision_diff=5 sched_diff=34; FIRST decision diff
+    @ (253,-28,-68): mine null java minecraft:air — РОВНО локальные
+    числа (сандбокс и runner согласованы бит-в-бит; захват
+    воспроизводим в обеих средах ~4 мин/итерация);
+  - ncf-density resid2_3053459: gate FAIL = сигнал захвата (те же
+    decision-диффы класса);
+  - ncf-density blob3053459: success (контроль чист);
+  - ncf-density blob90210 (90210, -246,-182, band -64..16): SUCCESS —
+    С ГЕЙТАМИ: veccheck+aquacheck прошли => на колонке ancient_city
+    стаба 90210 всё бит-точно; 14 остатков 90210 (stripe B, аддендум
+    21 агента) живут в ДРУГИХ блоках — бисект по координатам из
+    stagediff-выборки следующим тиком.
+СТАТУС T38-B-RESID (класс, не структура, не ядро, не кандидаты):
+  getAquiferStatus/calculatePressure при отрицательном Y кандидатов.
+  След: трасса статусов top-2 (плагин-принт + aquacheck --trace) ->
+  первый расходящийся шум статуса -> фикс -> A/B -> gate-P2 зелёный.
