@@ -1515,3 +1515,56 @@ Cron-мандат 440772 (10:05 +08) повторял план бисекта T3
 Доказательства: декомпил-файлы decompY/decompX (перечитаны), job-уровень
   run 37564320034, локальные cargo test + A/B 25/25. Несоответствий НЕ
   найдено — нового фикса нет; контракты veccheck/stagediff не тронуты.
+
+=== 2026-10-07 | сессия 8 (аддендум 18: T40 КОРЕНЬ НАЙДЕН — extract-only клал паковые файлы МИМО data/) ===
+Мандат: закрыть gate-P2 pack-ячейки (terralith/tectonic equal=0/2376).
+БИСЕКТ без сервера (downloads снесены рециклом сендбокса — перекачаны
+  Mojang vanilla server 1.21.10 (inner jar, 952 worldgen) + terralith
+  2.5.13 zip (Modrinth, как fetch_pack в CI)):
+1. Содержательный дифф пака vs ванили (minecraft-ns): noise/temperature
+   [1.5,0,1,0,0,0]→[1.3,0,1,0,1,1], noise/vegetation [1,1,0,0,0,0]→
+   [0.909,1,0,1,0,1] и firstOctave -8→-9, noise/erosion -9→-10; df-цепочки
+   erosion/factor/jaggedness/offset/sloped_cheese; noise_settings/overworld.
+   Overlay 1-21-9 отличается ТОЛЬКО initial_density_without_jaggedness→
+   preliminary_surface_level (climate не задет).
+2. Резолв-путь в rust проверен чтением кода: build_overworld → build читает
+   noise_settings ИЗ dir; ссылки df/noise params — из dir (Wiring::noise
+   -> noise_params(dir)), хардкода нет => при корректном экстракте пак
+   обязан работать.
+3. КОРЕНЬ (двухслойный, в bench/golden/ci_datapacks.sh --extract-only —
+   ЭТОТ экстракт кормит gate-P2 pack-ячейки):
+   (1) dest БЕЗ сегмента "data/": файлы пака ложились в
+       <extract>/minecraft/... вместо <extract>/data/minecraft/... —
+       WorldgenDir::load (ходит по <root>/data/) НЕ ВИДЕЛ НИ ОДНОГО
+       пакового оверрайда => build_overworld молча брал ЧИСТО-ВАНИЛЬНЫЙ
+       путь (vanilla router + vanilla preset table) => rust=minecraft:
+       deep_dark на КАЖДОМ кварте (это и видел CI; интерпретация
+       аддендумов 12/14 «скаляры пака у порога» была НЕВЕРНОЙ).
+   (2) minecraft-only фильтр namespace: цепочка пака ссылается на СОБСТВЕННЫЙ
+       namespace (terralith:overworld/cliff/spline) => при честных путях
+       сборка падает «density_function file not found». Реальный merged
+       датапак грузит worldgen/dimension из ВСЕХ namespace.
+   (run_pack-экстрактор (line ~184, ncf-datapacks джоба) был ПРАВИЛЬНЫМ
+   (dest с "data", any-ns) — потому t39probe и видел 1713/149.)
+ФИКС (этот коммит): --extract-only extract_worldgen переписан по образцу
+  run_pack: any-namespace worldgen/dimension, dest = <extract>/data/...;
+  t40probe (новый бин, аналог t39probe): печатает содержимое экстракта
+  (чей temperature/vegetation/erosion json, оверлей ли noise_settings,
+  range_choice-ли erosion) + 6 скаляров и победителя таблицы на квартах.
+ДОКАЗАТЕЛЬСТВА (локально, seed 3053459):
+  - t40probe на ИСПРАВЛЕННОМ экстракте: table 1713/149 (t39-числа),
+    temp params [1.3,0,1,0,1,1] fO-10 (терралит), overlay-маркер
+    preliminary_surface_level=true, erosion range_choice=true; кварты:
+    (-12,-11,-6) -> terralith:cave/deep_caves — РОВНО биом, который CI-
+    диффы показывали у JAVA (rust до фикса говорил minecraft:deep_dark).
+  - gen-batch surface 48..50 x 32..34 (регион CI-дампа): terralith:cave/
+    deep_caves + thermal_caves в палитрах (246 terralith-ссылок на 9 чанков).
+  - на битом экстракте (как в CI до фикса): те же бинари дают vanilla
+    (deep_dark) — воспроизведение бага локально.
+  - ваниль не задета: vanilla extract -> A/B NCF_TILE_CACHE=0/1 25/25
+    БАЙТ-ИДЕНТИЧНО; cargo test 102+2 GREEN; bash -n + компиляция всех
+    python-блоков скрипта OK; veccheck/stagediff контракты не тронуты
+    (правка только CI-экстрактора).
+Матч с сервером — gate-P2 pack-ячейки этого пуша: ожидание terralith/
+  tectonic уйдут с equal=0 (остаток = честные скалярные дивергенции, если
+  есть), vanilla-ячейки не изменятся.

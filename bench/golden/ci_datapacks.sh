@@ -300,16 +300,34 @@ for entry in overlay_section.get('entries', []):
                 matching_overlays.append(entry)
 
 def extract_worldgen(prefix):
+    # T40 FIX: this extractor fed the gate-P2 pack cells and was doubly broken:
+    #   (1) dest lacked the "data/" segment (files landed at <extract>/minecraft/
+    #       ... instead of <extract>/data/minecraft/...), so WorldgenDir::load
+    #       (which walks <extract>/data/) saw NONE of the pack overrides ->
+    #       build_overworld silently took the pure-vanilla path (vanilla router
+    #       + vanilla preset table) -> every pack cell produced vanilla biomes
+    #       (rust=minecraft:deep_dark vs java=terralith:cave/*, equal=0/2401).
+    #   (2) the minecraft-only namespace filter starves the pack chain: pack
+    #       routers reference their own namespace (terralith:overworld/cliff/
+    #       spline -> "density_function file not found"). The real merged
+    #       datapack loads worldgen/dimension under EVERY namespace.
+    # Mirrors the run_pack extractor above: worldgen/dimension under any
+    # namespace, dest under <extract>/data/.
     n = 0
     for name in z.namelist():
-        if name.startswith(prefix + 'data/') and name.endswith('.json'):
-            rel = name[len(prefix) + len('data/'):]
-            if not rel.startswith('minecraft/worldgen/') and not rel.startswith('minecraft/tags/block/') and not rel.startswith('minecraft/dimension/'):
-                continue
-            dest = os.path.join(dest_root, *rel.split('/'))
-            os.makedirs(os.path.dirname(dest), exist_ok=True)
-            open(dest, 'wb').write(z.read(name))
-            n += 1
+        if not name.endswith('.json') or not name.startswith(prefix + 'data/'):
+            continue
+        parts = name[len(prefix) + len('data/'):].split('/')
+        if len(parts) < 3:
+            continue
+        if parts[1] not in ('worldgen', 'dimension'):
+            continue
+        if parts[1] == 'worldgen' and len(parts) < 4:
+            continue
+        dest = os.path.join(dest_root, 'data', *parts)
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        open(dest, 'wb').write(z.read(name))
+        n += 1
     return n
 
 n = extract_worldgen('')
