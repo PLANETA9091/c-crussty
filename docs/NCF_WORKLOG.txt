@@ -3161,3 +3161,76 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
   5.4-7.6 с/старт оракулская, в горячий цикл не входит.
 КОРПУС (директива 3): без изменений.
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 9-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 19 (аддендум 44: Job 441690 — P5.3 piece engine БИТ-ТОЧЕН на двух java-захватах: 87/87 + 116/116 pieces; КОРЕНЬ #2: Rotation.rotate_dir переворачивал Y-axis (Up<->Down) на CW180/CCW90 — Java возвращает Y-axis БЕЗ ИЗМЕНЕНИЙ; КОРЕНЬ #3: expansion-hack encapsulate с инклюзивным yspan вместо Java maxY-minY) ===
+
+1) МЕТОД БИСЕКТА (аддендум 43 п.4 -> холодный): env-gated ОРАКУЛ-ТРАССИРОВКА
+   placer::try_placing_children (NCF_PIECE_TRACE=1; eprintln на каждый
+   родительский джигсо/кандидата/ротацию/попытку canAttach/коллизию/бокс;
+   гейт-скрипты переменную не ставят => ноль поведения). Трасса taiga-сборки
+   (старт piece#0 тауга_meeting_point_1, 18 джигсо) показала: порядок
+   родительских джигсо и список кандидатов streets (49, corner_01 ПЕРВЫЙ,
+   crossroad_05 ВТОРОЙ) идентичны java-акцептансу => стрим ВЫРОВНЕН на входе
+   J1; расхождение = ОТКАЗ corner_01 в rust на ВСЕХ ротациях.
+2) КОРЕНЬ #2 (chunk-factory/src/jigsaw.rs rotate_dir): прежняя карта
+   применяла opposite()/counter_clock_wise() К ВЕРТИКАЛЯМ: Up->Down на
+   CW180/CCW90. Java Rotation.rotate (декомп 117-127): "if (facing.getAxis()
+   == Direction.Axis.Y) return facing;" — вертикали проходят БЕЗ ИЗМЕНЕНИЙ
+   при ЛЮБОЙ ротации. Эффект: street-джигсо corner_01 (7,1,0)@None
+   front=North top=Up -> @CW180 rust давал top=Down (Java: Up) =>
+   JigsawBlock.canAttach arm "topFacing == topFacing1" (parent Aligned,
+   top Up) ЛОЖЕН в rust, ИСТИНЕН в java => corner_01@CW180 принят java
+   (junction 1 [-218,66,-241,0,terrain_matching]), отвергнут rust =>
+   crossroad_05@NONE => десинк стрима (дети 2/4 "совпадали коробками"
+   лишь потому, что колонны 1x1 ротационно-инвариантны; их ротации
+   различались: baby@CW180 vs @NONE). ФИКС: вертикали не вращаются;
+   тест direction_rotation_map расширен таблицей истинности (4 ротации x
+   Up/Down, декомп-экзакт).
+3) КОРЕНЬ #3 (chunk-factory/src/placer.rs expansion-hack): rust брал
+   max(i2+1, bbox3.get_yspan()) — ИНКЛЮЗИВНЫЙ yspan (maxY-minY+1); Java CFR
+   276: "max = Math.max(i2 + 1, boundingBox3.maxY() - boundingBox3.minY())"
+   — ЭКСКЛЮЗИВНЫЙ (без +1). При yspan-1 >= i2+1 инкапсула Java садится
+   РОВНО на maxY (no-op), rust — на maxY+1 (+1 к высоте). Эффект: 7 домовых
+   pieces выше на 1 (armorer_2, library_1, small_house_3/4/5, small_farm_1,
+   butcher_shop_1: java 62..69 vs rust 62..70); улицы НЕ расходились (i2
+   = maxSize(houses)=14 доминирует: max(15,1)=max(15,2)=15). ФИКС: max =
+   (i2 + 1).max(bbox3.max_y - bbox3.min_y).
+4) РЕЗУЛЬТАТ (piece_dump vs java-оракул GoldenDumper /goldenpieces):
+   a) ci-server/golden/pieces_-14_-15.json (village_taiga @ 3053459,
+      чанк (-14,-15)): 87/87 pieces БИТ-В-БИТ: element/box/gld/rotation +
+      ВСЕ junctions (source_x/source_ground_y/source_z/delta_y/
+      dest_projection) в том же порядке; Feature-дети (spruce/pine/
+      pile_pumpkin) совпадают по placed_feature id;
+   b) ВТОРОЙ ЗАХВАТ ci-server/golden/pieces_1_-15.json (village_taiga,
+      чанк (1,-15), 116 pieces) — 116/116 БИТ-В-БИТ, ноль расхождений.
+      Движок сборки (placement/pick/assembly/height-projection/biome)
+      оракул-точен на двух независимых захватах.
+   c) Локальный риг пересобран (scripts/piece_capture.sh): LAUNCHER =
+      versions/purpur-1.21.10.jar (paperclip 57МБ; патченный jar под
+      versions/1.21.10/ НАПРЯМУЮ не стартует — NoClassDefFoundError
+      joptsimple, аддендум 43); RCON bench/ab/rcon.py 25575; свежий
+      уровень world_pieces; server.properties восстановлен (world/424242).
+5) ТЕСТЫ/БАТАРЕЯ: lib 144 + root 417 GREEN. A/B против чистого 6c0d7fa:
+   veccheck tectA_8675309/tectB_424242 — БАЙТ-ИДЕНТИЧНЫ (modulo TID;
+   известный stale-barrier артефакт воспроизводится одинаково на обоих
+   бинарях: panic 556 left:9/right:8 — локальные вектора устарели,
+   CI-вектора авторитетны, аддендум 41 п.5); veccheck resid1 @3053459 —
+   БАЙТ-ИДЕНТИЧЕН + "TOTAL: 843207 checked, 0 mismatches / VERDICT:
+   ZERO-DIFF GATE PASS (bit-exact)"; stagediff --gen-batch 3053459
+   (-3..3 x -3..3, 64 чанка): NCF_TILE_CACHE=0/1 БАЙТ-ИДЕНТИЧНЫ и оба
+   БАЙТ-ИДЕНТИЧНЫ чистому дереву. СМЕНА ПОВЕДЕНИЯ: НЕТ — Df::Beardifier
+   0.0, piece_feed/height_feed в генерацию не подключены, трассировка
+   env-gated.
+СЛЕДУЮЩИЕ ШАГИ P5.3:
+  a) pool_aliases (direct/random/static; PoolAliasLookup/PoolAliasBinding
+     декомп готов) — терралит/тектоник структуры без них не собираются;
+  b) разъёмка Df::Beardifier per-chunk (инкремент 1 ядро + 2d фид готовы)
+     -> класс (а) закрывается на gate-P2 terralith (5 ячеек) + vanilla
+     I8-фолбэк сужается до реального радиуса Beardifier (директива 1).
+АМДАЛЬ (директива 2): сборка village_taiga 6.8-7.5 с/старт (87-116
+  pieces, десятки кандидатов на джигсо, высотные пробы ~4.1 мс/колонка
+  vanilla) — оракулский путь, в горячий цикл генерации не входит;
+  Beardifier потребляет ГОТОВЫЙ список боксов. Без изменений против
+  аддендумов 41-43.
+КОРПУС (директива 3): без изменений.
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 10-й тик; первоисточник = этот LOG.

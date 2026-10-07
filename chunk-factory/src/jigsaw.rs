@@ -118,6 +118,17 @@ impl Dir {
 
 impl Rotation {
     pub fn rotate_dir(self, facing: Dir) -> Dir {
+        // Java Rotation.rotate (1.21.10 decomp lines 117-127): Y-axis
+        // directions pass through UNCHANGED for every rotation —
+        // `if (facing.getAxis() == Direction.Axis.Y) return facing;`.
+        // The previous map applied opposite()/counter_clock_wise() to
+        // verticals (Up<->Down under CW180/CCW90), which flipped the TOP
+        // facing of street/house jigsaws and broke JigsawBlock.canAttach's
+        // `topFacing == topFacing1` arm (root cause #2 of the terralith
+        // class-(a) piece divergence, oracle trace vs pieces_-14_-15.json).
+        if !facing.is_horizontal() {
+            return facing;
+        }
         match self {
             Rotation::None => facing,
             Rotation::Clockwise90 => facing.clock_wise(),
@@ -574,6 +585,12 @@ mod tests {
         assert_eq!(Counterclockwise90.rotate_dir(West), South);
         assert_eq!(Clockwise90.rotate_dir(Up), Up);
         assert_eq!(None.rotate_dir(Down), Down);
+        // Java Rotation.rotate: Y-axis directions are returned AS-IS for
+        // EVERY rotation (decomp lines 118-120) — no Up<->Down flips.
+        for r in [None, Clockwise90, Clockwise180, Counterclockwise90] {
+            assert_eq!(r.rotate_dir(Up), Up);
+            assert_eq!(r.rotate_dir(Down), Down);
+        }
     }
 
     #[test]

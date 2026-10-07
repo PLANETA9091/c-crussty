@@ -361,6 +361,24 @@ fn is_empty_holder(key: &str) -> bool {
     key == "minecraft:empty"
 }
 
+/// Oracle trace (NCF_PIECE_TRACE=1): per-jigsaw/per-candidate decision log
+/// mirroring CFR 185-305. Env-gated, zero behavior change.
+fn piece_trace() -> bool {
+    static TRACE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *TRACE.get_or_init(|| std::env::var_os("NCF_PIECE_TRACE").is_some())
+}
+
+/// Compact candidate id for the oracle trace.
+fn cand_id(c: &PoolElement) -> String {
+    match c {
+        PoolElement::Single { location, .. } => location.clone(),
+        PoolElement::Empty => "empty".into(),
+        PoolElement::List { elements, .. } => format!("list[{}]", elements.len()),
+        PoolElement::Feature { feature_id, .. } => format!("feature:{feature_id}"),
+        PoolElement::Unsupported { kind } => format!("unsupported:{kind}"),
+    }
+}
+
 /// Placer (CFR 167-183).
 pub struct Placer<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> {
     pools: &'a mut P,
@@ -502,6 +520,12 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
         let flag = parent_projection == Projection::Rigid;
         let per_piece: ShapeSlot = Rc::new(RefCell::new(None));
         let parent_jigsaws = self.element_jigsaws(&element, position, rotation);
+        if piece_trace() {
+            eprintln!(
+                "[TRACE] try_children piece#{} el={:?} pos={:?} rot={:?} box={:?} proj={:?} depth={} jigsaws={}",
+                piece_index, element, position, rotation, bounding_box, parent_projection, depth, parent_jigsaws.len()
+            );
+        }
         'parent: for parent_jig in parent_jigsaws {
             let structure_block_info = parent_jig.clone();
             let front_facing = structure_block_info.front; // rotated by jigsaws_at
@@ -510,6 +534,14 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
             let i = block_pos.1 - min_y;
             let mut i1 = i32::MIN; // lazy firstFreeHeight memo per parent jigsaw
             let pool_key = structure_block_info.pool.clone(); // alias: identity (2b)
+            if piece_trace() {
+                eprintln!(
+                    "[TRACE]   jig pos={:?} front={:?} top={:?} name={:?} target={:?} joint={:?} pl_pri={} sel_pri={} pool={}",
+                    structure_block_info.pos, structure_block_info.front, structure_block_info.top,
+                    structure_block_info.name, structure_block_info.target, structure_block_info.joint,
+                    structure_block_info.placement_priority, structure_block_info.selection_priority, pool_key
+                );
+            }
             let Some(pool) = self.pools.resolve(&pool_key) else {
                 self.pools.note_missing_pool(&pool_key);
                 continue;
@@ -545,16 +577,25 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
             }
             candidates.extend(fallback.get_shuffled_templates(self.rng));
             let placement_priority = structure_block_info.placement_priority;
+            if piece_trace() {
+                eprintln!("[TRACE]   candidates({}): {:?}", candidates.len(), candidates.iter().map(cand_id).collect::<Vec<_>>());
+            }
             for cand in candidates {
                 if matches!(cand, PoolElement::Empty) {
+                    if piece_trace() { eprintln!("[TRACE]   -- EMPTY stop"); }
                     break; // while hasNext && != EmptyPoolElement.INSTANCE
                 }
+                if piece_trace() { eprintln!("[TRACE]   try cand {}", cand_id(&cand)); }
                 for rot in rotation_get_shuffled(self.rng) {
                     // candidate jigsaws FIRST (RNG), bbox second (CFR 237-238)
                     let shuffled = self.element_jigsaws(&cand, (0, 0, 0), rot);
                     let Some(bbox1) = self.element_bbox(&cand, (0, 0, 0), rot) else {
+                        if piece_trace() { eprintln!("[TRACE]     rot={:?} NO BBOX", rot); }
                         continue;
                     };
+                    if piece_trace() {
+                        eprintln!("[TRACE]     rot={:?} bbox1={:?} jigsaws={}", rot, bbox1, shuffled.len());
+                    }
                     // expansion hack (CFR 239-250)
                     let i2 = if self.use_expansion_hack && bbox1.get_yspan() <= 16 {
                         shuffled
@@ -576,7 +617,13 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
                     };
                     for child_jig in &shuffled {
                         if !can_attach(&parent_jig, child_jig) {
+                            if piece_trace() {
+                                eprintln!("[TRACE]       jig {:?} no-attach (name={:?} target={:?} front={:?} top={:?})", child_jig.pos, child_jig.name, child_jig.target, child_jig.front, child_jig.top);
+                            }
                             continue;
+                        }
+                        if piece_trace() {
+                            eprintln!("[TRACE]       ATTACH jig pos={:?} name={:?} target={:?} front={:?} top={:?}", child_jig.pos, child_jig.name, child_jig.target, child_jig.front, child_jig.top);
                         }
                         let block_pos2 = child_jig.pos;
                         let block_pos3 = (block_pos1.0 - block_pos2.0, block_pos1.1 - block_pos2.1, block_pos1.2 - block_pos2.2);
@@ -599,7 +646,14 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
                         let mut bbox3 = bbox2.moved(0, i5, 0);
                         let block_pos4 = (block_pos3.0, block_pos3.1 + i5, block_pos3.2);
                         if i2 > 0 {
-                            let max = (i2 + 1).max(bbox3.get_yspan());
+                            // CFR 276: max = Math.max(i2 + 1, boundingBox3.maxY()
+                            // - boundingBox3.minY()) — the EXCLUSIVE span (no +1).
+                            // Using the inclusive get_yspan() pushed the encapsulate
+                            // point one block above Java's (which lands exactly on
+                            // maxY when yspan-1 >= i2+1 => no-op) and grew every
+                            // house box by +1 (root cause #3, oracle diff vs
+                            // pieces_-14_-15.json pieces 15/19/33/37/44/47/49).
+                            let max = (i2 + 1).max(bbox3.max_y - bbox3.min_y);
                             bbox3.encapsulate_pos(bbox3.min_x, bbox3.min_y + max, bbox3.min_z);
                         }
                         // collision: B' = bbox3.deflate(0.25) vs the slot shape
@@ -608,6 +662,9 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
                             let shape = guard.as_ref().expect("free slot initialized");
                             shape.only_second_nonempty(DBox::from_inclusive_box(&bbox3).deflate(0.25))
                         };
+                        if piece_trace() {
+                            eprintln!("[TRACE]       bbox3={:?} i4={} i5={} collides={}", bbox3, i4, i5, collides);
+                        }
                         if collides {
                             continue;
                         }
