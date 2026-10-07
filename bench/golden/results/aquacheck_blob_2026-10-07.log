@@ -1,0 +1,384 @@
+warning: unexpected `cfg` condition name: `ncf_profile`
+   --> src/filler.rs:357:29
+    |
+357 |     let skip_aquifer = cfg!(ncf_profile) && std::env::var("NCF_SKIP_AQUIFER").is_ok();
+    |                             ^^^^^^^^^^^
+    |
+    = help: expected names are: `docsrs`, `feature`, and `test` and 34 more
+    = help: consider using a Cargo feature instead
+    = help: or consider adding in `Cargo.toml` the `check-cfg` lint config for the lint:
+             [lints.rust]
+             unexpected_cfgs = { level = "warn", check-cfg = ['cfg(ncf_profile)'] }
+    = help: or consider adding `println!("cargo::rustc-check-cfg=cfg(ncf_profile)");` to the top of the `build.rs`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: `#[warn(unexpected_cfgs)]` on by default
+
+warning: unexpected `cfg` condition name: `ncf_profile`
+   --> src/filler.rs:358:27
+    |
+358 |     let skip_veins = cfg!(ncf_profile) && std::env::var("NCF_SKIP_VEINS").is_ok();
+    |                           ^^^^^^^^^^^
+    |
+    = help: consider using a Cargo feature instead
+    = help: or consider adding in `Cargo.toml` the `check-cfg` lint config for the lint:
+             [lints.rust]
+             unexpected_cfgs = { level = "warn", check-cfg = ['cfg(ncf_profile)'] }
+    = help: or consider adding `println!("cargo::rustc-check-cfg=cfg(ncf_profile)");` to the top of the `build.rs`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+
+warning: unexpected `cfg` condition name: `ncf_profile`
+   --> src/filler.rs:359:27
+    |
+359 |     let skip_write = cfg!(ncf_profile) && std::env::var("NCF_SKIP_WRITE").is_ok();
+    |                           ^^^^^^^^^^^
+    |
+    = help: consider using a Cargo feature instead
+    = help: or consider adding in `Cargo.toml` the `check-cfg` lint config for the lint:
+             [lints.rust]
+             unexpected_cfgs = { level = "warn", check-cfg = ['cfg(ncf_profile)'] }
+    = help: or consider adding `println!("cargo::rustc-check-cfg=cfg(ncf_profile)");` to the top of the `build.rs`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+
+warning: unexpected `cfg` condition name: `ncf_profile`
+   --> src/filler.rs:360:24
+    |
+360 |     let skip_hm = cfg!(ncf_profile) && std::env::var("NCF_SKIP_HM").is_ok();
+    |                        ^^^^^^^^^^^
+    |
+    = help: consider using a Cargo feature instead
+    = help: or consider adding in `Cargo.toml` the `check-cfg` lint config for the lint:
+             [lints.rust]
+             unexpected_cfgs = { level = "warn", check-cfg = ['cfg(ncf_profile)'] }
+    = help: or consider adding `println!("cargo::rustc-check-cfg=cfg(ncf_profile)");` to the top of the `build.rs`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+
+warning: unexpected `cfg` condition name: `ncf_profile`
+   --> src/filler.rs:361:27
+    |
+361 |     let skip_drive = cfg!(ncf_profile) && std::env::var("NCF_SKIP_DRIVE").is_ok();
+    |                           ^^^^^^^^^^^
+    |
+    = help: consider using a Cargo feature instead
+    = help: or consider adding in `Cargo.toml` the `check-cfg` lint config for the lint:
+             [lints.rust]
+             unexpected_cfgs = { level = "warn", check-cfg = ['cfg(ncf_profile)'] }
+    = help: or consider adding `println!("cargo::rustc-check-cfg=cfg(ncf_profile)");` to the top of the `build.rs`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+
+warning: unexpected `cfg` condition name: `ncf_profile`
+   --> src/filler.rs:362:27
+    |
+362 |     let skip_biome = cfg!(ncf_profile) && std::env::var("NCF_SKIP_BIOME").is_ok();
+    |                           ^^^^^^^^^^^
+    |
+    = help: consider using a Cargo feature instead
+    = help: or consider adding in `Cargo.toml` the `check-cfg` lint config for the lint:
+             [lints.rust]
+             unexpected_cfgs = { level = "warn", check-cfg = ['cfg(ncf_profile)'] }
+    = help: or consider adding `println!("cargo::rustc-check-cfg=cfg(ncf_profile)");` to the top of the `build.rs`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+
+warning: unused import: `HeightmapKind`
+  --> src/sections.rs:20:49
+   |
+20 | use crate::filler::{BlockStateDef, FillerChunk, HeightmapKind, StateTable};
+   |                                                 ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `StateTable`
+  --> src/carvers.rs:23:34
+   |
+23 | use crate::filler::{FillerChunk, StateTable};
+   |                                  ^^^^^^^^^^
+
+warning: unused import: `HashSet`
+  --> src/carvers.rs:27:33
+   |
+27 | use std::collections::{HashMap, HashSet};
+   |                                 ^^^^^^^
+
+warning: unused import: `StateTable`
+  --> src/features.rs:28:34
+   |
+28 | use crate::filler::{FillerChunk, StateTable};
+   |                                  ^^^^^^^^^^
+
+warning: unused import: `crate::mth`
+  --> src/features.rs:31:5
+   |
+31 | use crate::mth;
+   |     ^^^^^^^^^^
+
+warning: unused variable: `bank`
+   --> src/interpolator.rs:595:18
+    |
+595 |     pub fn build(bank: &NoiseBank, ifields: [usize; 15], arena: Arena) -> Self {
+    |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_bank`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `count`
+   --> src/region.rs:504:22
+    |
+504 |         let (offset, count) = sector_of[coord];
+    |                      ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+
+warning: value assigned to `remaining` is never read
+   --> src/carvers.rs:423:36
+    |
+423 |     let mut remaining: [bool; 4] = [true; 4]; // OCEAN_FLOOR, WORLD_SURFACE, MB, MB_NO_LEAVES
+    |                                    ^^^^^^^^^ this value is reassigned later and never used
+...
+426 |             remaining = [true; 4];
+    |             --------------------- `remaining` is overwritten here before the previous value is read
+    |
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> src/carvers.rs:642:25
+    |
+642 |                     let mut cols = ChunkColumns { chunk: state.chunk };
+    |                         ----^^^^
+    |                         |
+    |                         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: type `LazyCache` is more private than the item `Cond::BiomeIs::cache`
+   --> src/surface_rules.rs:287:36
+    |
+287 |     BiomeIs { biomes: Vec<String>, cache: std::cell::Cell<LazyCache> },
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::BiomeIs::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+    = note: `#[warn(private_interfaces)]` on by default
+
+warning: type `LazyCache` is more private than the item `Cond::StoneDepth::cache`
+   --> src/surface_rules.rs:288:99
+    |
+288 |     StoneDepth { offset: i32, add_surface_depth: bool, secondary_depth_range: i32, ceiling: bool, cache: std::cell::Cell<LazyCache> },
+    |                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::StoneDepth::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::YAbove::cache`
+   --> src/surface_rules.rs:289:72
+    |
+289 |     YAbove { anchor: VerticalAnchor, mult: i32, add_stone_depth: bool, cache: std::cell::Cell<LazyCache> },
+    |                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::YAbove::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::Water::cache`
+   --> src/surface_rules.rs:290:60
+    |
+290 |     Water { offset: i32, mult: i32, add_stone_depth: bool, cache: std::cell::Cell<LazyCache> },
+    |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::Water::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::Temperature::cache`
+   --> src/surface_rules.rs:291:19
+    |
+291 |     Temperature { cache: std::cell::Cell<LazyCache> },
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::Temperature::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::VerticalGradient::cache`
+   --> src/surface_rules.rs:292:110
+    |
+292 | ...omFactory>, cache: std::cell::Cell<LazyCache> },
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::VerticalGradient::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::NoiseThreshold::cache`
+   --> src/surface_rules.rs:294:60
+    |
+294 |     NoiseThreshold { noise_idx: usize, min: f64, max: f64, cache: std::cell::Cell<LazyCache> },
+    |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::NoiseThreshold::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::Steep::cache`
+   --> src/surface_rules.rs:295:13
+    |
+295 |     Steep { cache: std::cell::Cell<LazyCache> },
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::Steep::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::Hole::cache`
+   --> src/surface_rules.rs:296:12
+    |
+296 |     Hole { cache: std::cell::Cell<LazyCache> },
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::Hole::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `WNode` is more private than the item `SimTemplate::wnodes`
+   --> src/interpolator.rs:578:5
+    |
+578 |     pub wnodes: Vec<WNode>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^ field `SimTemplate::wnodes` is reachable at visibility `pub`
+    |
+note: but type `WNode` is only usable at visibility `pub(self)`
+   --> src/interpolator.rs:428:1
+    |
+428 | enum WNode {
+    | ^^^^^^^^^^
+
+warning: type `WSpline` is more private than the item `SimTemplate::wsplines`
+   --> src/interpolator.rs:582:5
+    |
+582 |     pub wsplines: Vec<WSpline>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^ field `SimTemplate::wsplines` is reachable at visibility `pub`
+    |
+note: but type `WSpline` is only usable at visibility `pub(self)`
+   --> src/interpolator.rs:454:1
+    |
+454 | struct WSpline {
+    | ^^^^^^^^^^^^^^
+
+warning: field `noise_size_xz` is never read
+   --> src/interpolator.rs:550:5
+    |
+533 | pub struct NoiseChunkSim<'a> {
+    |            ------------- field in this struct
+...
+550 |     noise_size_xz: i32,
+    |     ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `resolve` is never used
+   --> src/features.rs:206:8
+    |
+205 | impl HeightAnchor {
+    | ----------------- method in this implementation
+206 |     fn resolve(&self, min_y: i32, height: i32) -> i32 {
+    |        ^^^^^^^
+
+warning: `chunk_factory` (lib) generated 28 warnings (run `cargo fix --lib -p chunk_factory` to apply 8 suggestions)
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `target/release/aquacheck /home/z/my-project/c-crussty/ci-server/golden/resid1/vectors/aquifer.csv /home/z/my-project/c-crussty/ci-server/golden/resid1/vectors/aquifer_meta.txt --worldgen /home/z/my-project/c-crussty/ci-server/worldgen-extract --seed 3053459`
+FIRST decision diff @ (253,-28,-68): mine null java minecraft:air
+  my meta: (130, 14, -7, -6, 3, 3)
+  base grid cell: (15,-3,-5)
+  cand grid=(15,-4,-5) slot=31 mine_loc=68169720614869 java_loc=68169720614869 java_d2=325
+  cand grid=(15,-4,-4) slot=34 mine_loc=67894842789844 java_loc=67894842789844 java_d2=449
+  cand grid=(15,-3,-5) slot=40 mine_loc=66245575274463 java_loc=66245575274463 java_d2=230
+  cand grid=(15,-3,-4) slot=43 mine_loc=66245575319519 java_loc=66245575319519 java_d2=219
+  cand grid=(15,-2,-5) slot=49 mine_loc=68444598534122 java_loc=68444598534122 java_d2=86
+  cand grid=(15,-2,-4) slot=52 mine_loc=68169720672238 java_loc=68169720672238 java_d2=172
+  cand grid=(16,-4,-5) slot=32 mine_loc=72292889210833 java_loc=72292889210833 java_d2=542
+  cand grid=(16,-4,-4) slot=35 mine_loc=72567767195608 java_loc=72567767195608 java_d2=325
+  cand grid=(16,-3,-5) slot=41 mine_loc=71743133401054 java_loc=71743133401054 java_d2=166
+  cand grid=(16,-3,-4) slot=44 mine_loc=72018011369441 java_loc=72018011369441 java_d2=109
+  cand grid=(16,-2,-5) slot=50 mine_loc=73117522948080 java_loc=73117522948080 java_d2=324
+  cand grid=(16,-2,-4) slot=53 mine_loc=70918499745772 java_loc=70918499745772 java_d2=129
+  java-side 4 nearest by locs: [(49, 68444598534122, 86), (44, 72018011369441, 109), (53, 70918499745772, 129), (41, 71743133401054, 166)]
+  center slot=49 pos=(248,-22,-73) mine_status=(-32512,Water) deep_dark=true flooded=NaN d2=NaN maxsurf=80 fluid_present=false
+  center slot=49 java_status=Some(Some((-32512, "minecraft:water")))
+  center slot=44 pos=(261,-31,-62) mine_status=(-32512,Water) deep_dark=true flooded=NaN d2=NaN maxsurf=64 fluid_present=false
+  center slot=44 java_status=Some(Some((-32512, "minecraft:water")))
+aquacheck: rows=98304 substance_diff=0 decision_diff=5 sched_diff=34 loc_diff=138 fluid_diff=65
+  meta: mine (130, 14, -7, -6, 3, 3) java (0, 0, 0, 0, 0, 0)
+  loc[10]: mine 9223372036854775807 java 68169720565690
+  loc[11]: mine 9223372036854775807 java 72842644975551
+  loc[12]: mine 9223372036854775807 java 62397284585405
+  loc[13]: mine 9223372036854775807 java 67894842711992
+  loc[14]: mine 9223372036854775807 java 72018011320255
+  loc[15]: mine 9223372036854775807 java 62122406735803
+  loc[16]: mine 9223372036854775807 java 67619964878783
+  loc[17]: mine 9223372036854775807 java 72292889280445
+  loc[18]: mine 9223372036854775807 java 62947040305095
+  loc[19]: mine 9223372036854775807 java 67894842646469
+  loc[20]: mine 9223372036854775807 java 73117522878404
+  loc[21]: mine 9223372036854775807 java 62397284573127
+  loc[22]: mine 9223372036854775807 java 67619964817349
+  loc[23]: mine 9223372036854775807 java 71193377578955
+  loc[24]: mine 9223372036854775807 java 63771674173387
+  loc[25]: mine 9223372036854775807 java 66795331166154
+  loc[26]: mine 9223372036854775807 java 70643621830599
+  loc[27]: mine 9223372036854775807 java 61847528706007
+  loc[28]: mine 9223372036854775807 java 67070208942035
+  loc[29]: mine 9223372036854775807 java 70643621703632
+  loc[30]: mine 9223372036854775807 java 62397284573138
+  loc[31]: mine 9223372036854775807 java 68169720614869
+  loc[32]: mine 9223372036854775807 java 72292889210833
+  loc[33]: mine 9223372036854775807 java 63221918351318
+  loc[34]: mine 9223372036854775807 java 67894842789844
+  loc[35]: mine 9223372036854775807 java 72567767195608
+  loc[36]: mine 9223372036854775807 java 62397284511715
+  loc[37]: mine 9223372036854775807 java 67345086848994
+  loc[38]: mine 9223372036854775807 java 70643621720029
+  loc[39]: mine 9223372036854775807 java 62672162484194
+  loc[40]: mine 9223372036854775807 java 66245575274463
+  loc[41]: mine 9223372036854775807 java 71743133401054
+  loc[42]: mine 9223372036854775807 java 63221918367710
+  loc[43]: mine 9223372036854775807 java 66245575319519
+  loc[44]: mine 9223372036854775807 java 72018011369441
+  loc[45]: mine 9223372036854775807 java 64321429835752
+  loc[46]: mine 9223372036854775807 java 67894842654701
+  loc[47]: mine 9223372036854775807 java 72842644975594
+  loc[48]: mine 9223372036854775807 java 61847528738799
+  loc[49]: mine 9223372036854775807 java 68444598534122
+  fluid[22]: mine None java Some((-32512, "minecraft:lava"))
+  fluid[23]: mine None java Some((-32512, "minecraft:water"))
+  fluid[28]: mine None java Some((-32512, "minecraft:water"))
+  fluid[30]: mine None java Some((-32512, "minecraft:water"))
+  fluid[31]: mine None java Some((-32512, "minecraft:water"))
+  fluid[32]: mine None java Some((-32512, "minecraft:water"))
+  fluid[34]: mine None java Some((-32512, "minecraft:water"))
+  fluid[37]: mine None java Some((-32512, "minecraft:water"))
+  fluid[39]: mine None java Some((-32512, "minecraft:water"))
+  fluid[40]: mine None java Some((-32512, "minecraft:water"))
+  fluid[41]: mine None java Some((-32512, "minecraft:water"))
+  fluid[43]: mine None java Some((-32512, "minecraft:water"))
+  fluid[44]: mine None java Some((-32512, "minecraft:water"))
+  fluid[49]: mine None java Some((-32512, "minecraft:water"))
+  fluid[50]: mine None java Some((-20, "minecraft:lava"))
+  fluid[52]: mine None java Some((-32512, "minecraft:water"))
+  fluid[53]: mine None java Some((-32512, "minecraft:water"))
+  fluid[55]: mine None java Some((-20, "minecraft:water"))
+  fluid[58]: mine None java Some((-32512, "minecraft:water"))
+aquacheck content gate: 39 (loc/fluid = probe-cascade info)

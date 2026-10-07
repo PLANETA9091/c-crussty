@@ -1456,4 +1456,97 @@ public final class VectorCapture {
         }
         return rows;
     }
+
+    // ------------------------------------------------------------------
+    // T38-B resid bisect: /aquafields <blockX> <blockY> <blockZ>
+    //
+    // Dumps the MACHINE-WRAPPED aquifer field values — the NoiseBasedAquifer's
+    // private DensityFunction fields are noiseRouter1 = noiseRouter.mapAll(wrap)
+    // versions (NoiseChunk.FlatCache@y0 / NoiseChunk.Cache2D instances), NOT the
+    // raw randomState router the density.csv capture evaluates. Plus the REAL
+    // computeFluid status and the deep-dark verdict at the position, using the
+    // SAME wrapped fields computeSurfaceLevel sees. This is the status-layer
+    // oracle that closes the "all 15 fields bit-exact yet the status differs"
+    // contradiction (worklog addenda 25/26).
+    // ------------------------------------------------------------------
+    public static void aquaFields(JavaPlugin plugin, int x, int y, int z, CommandSender ack) {
+        ServerLevel level = ((CraftWorld) plugin.getServer().getWorlds().get(0)).getHandle();
+        try {
+            NoiseGeneratorSettings settings =
+                    ((net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator)
+                            level.getChunkSource().getGenerator())
+                    .generatorSettings().value();
+            NoiseSettings noiseSettings = settings.noiseSettings().clampToHeightAccessor(level);
+
+            net.minecraft.world.level.block.state.BlockState lavaState =
+                    Fluids.LAVA.defaultFluidState().createLegacyBlock();
+            net.minecraft.world.level.block.state.BlockState waterState =
+                    Fluids.WATER.defaultFluidState().createLegacyBlock();
+            int seaLevel = settings.seaLevel();
+            Aquifer.FluidPicker realPicker = (px, py, pz) -> py < Math.min(-54, seaLevel)
+                    ? new Aquifer.FluidStatus(-54, lavaState)
+                    : new Aquifer.FluidStatus(seaLevel, waterState);
+
+            RandomState randomState = level.getChunkSource().randomState();
+            int machineBaseX = x & ~15;
+            int machineBaseZ = z & ~15;
+            NoiseChunk nc = new NoiseChunk(CELLS_XZ, randomState, machineBaseX, machineBaseZ,
+                    noiseSettings, beardifierMarker(), settings, realPicker, Blender.empty());
+
+            Aquifer aquifer = nc.aquifer();
+            if (!(aquifer instanceof Aquifer.NoiseBasedAquifer)) {
+                ack.sendMessage("aquafields: aquifers disabled on the live settings?");
+                return;
+            }
+            Class<?> c = aquifer.getClass();
+            java.util.LinkedHashMap<String, DensityFunction> wrapped = new java.util.LinkedHashMap<>();
+            for (String n : new String[]{"barrierNoise", "fluidLevelFloodednessNoise",
+                    "fluidLevelSpreadNoise", "lavaNoise", "erosion", "depth"}) {
+                java.lang.reflect.Field fl = c.getDeclaredField(n);
+                fl.setAccessible(true);
+                wrapped.put(n, (DensityFunction) fl.get(aquifer));
+            }
+            DensityFunction.FunctionContext ctx = new DensityFunction.SinglePointContext(x, y, z);
+            StringBuilder line = new StringBuilder("aquafields @(" + x + "," + y + "," + z + ")");
+            for (var e : wrapped.entrySet()) {
+                double v = e.getValue().compute(ctx);
+                line.append(" ").append(e.getKey()).append("=").append(Double.toHexString(v));
+            }
+            boolean deepDark = net.minecraft.world.level.biome.OverworldBiomeBuilder
+                    .isDeepDarkRegion(wrapped.get("erosion"), wrapped.get("depth"), ctx);
+            line.append(" isDeepDark=").append(deepDark);
+            // the real computeFluid (private) — the status the aquifer caches
+            java.lang.reflect.Method cf = c.getDeclaredMethod("computeFluid",
+                    int.class, int.class, int.class);
+            cf.setAccessible(true);
+            Object status = cf.invoke(aquifer, x, y, z);
+            int fluidLevel = (Integer) status.getClass().getDeclaredMethod("fluidLevel").invoke(status);
+            Object fluidType = status.getClass().getDeclaredMethod("fluidType").invoke(status);
+            line.append(" computeFluid=").append(fluidLevel).append("/").append(fluidType);
+            // prelim surface levels for the 13-offset scan around the column
+            // SURFACE_SAMPLING_OFFSETS_IN_CHUNKS = (0,0),(-2,-1),(-1,-1),(0,-1),
+            // (1,-1),(-3,0),(-2,0),(-1,0),(1,0),(-2,1),(-1,1),(0,1),(1,1)
+            int[] offX = {0, -2, -1, 0, 1, -3, -2, -1, 1, -2, -1, 0, 1};
+            int[] offZ = {0, -1, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 1};
+            java.lang.reflect.Method psl = NoiseChunk.class.getDeclaredMethod(
+                    "preliminarySurfaceLevel", int.class, int.class);
+            psl.setAccessible(true);
+            StringBuilder cols = new StringBuilder(" prelim[");
+            for (int i = 0; i < offX.length; i++) {
+                int px = x + offX[i] * 16;
+                int pz = z + offZ[i] * 16;
+                cols.append(offX[i]).append(",").append(offZ[i]).append("=")
+                        .append(psl.invoke(nc, px, pz)).append(" ");
+            }
+            cols.append("]");
+            line.append(cols);
+            String out = line.toString();
+            plugin.getLogger().info(out);
+            ack.sendMessage(out);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("AQUAFIELDS FAILED: " + t);
+            t.printStackTrace();
+            ack.sendMessage("aquafields: FAILED: " + t);
+        }
+    }
 }

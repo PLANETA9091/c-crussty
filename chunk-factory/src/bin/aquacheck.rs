@@ -8,7 +8,7 @@
 //!              "minecraft:lava[level=0]" | "null" (solid -> default block)
 //! aquifer_meta.txt: skipSamplingAboveY/minGrid*/gridSize* = lines,
 //!   "loc <i> <long>" lines, "fluid <i> <level|-> <name|->" lines.
-use chunk_factory::aquifer::{FluidKind, GlobalFluidPicker, NoiseBasedAquifer, OreStateIds, OreVeinifierRule};
+use chunk_factory::aquifer::{FluidKind, FluidStatus, GlobalFluidPicker, NoiseBasedAquifer, OreStateIds, OreVeinifierRule};
 use chunk_factory::filler::StateTable;
 use chunk_factory::interpolator::NoiseChunkSim;
 use chunk_factory::router::{RandomState, WorldgenDir};
@@ -240,6 +240,10 @@ fn run(csv_path: &str, meta_path: &str, wg: &str, seed: i64) -> Result<i32, Stri
     let java_locs_for_debug = locs.clone();
     let java_fluid_debug: Vec<Option<(i32, String)>> = fluids.clone();
     let mut first_debug_done = false;
+    // decision trace: cache snapshot BEFORE this block's decision (i.e. the
+    // state left by all previous blocks) — lets us see exactly which slots
+    // THIS decision touched and what statuses it read.
+    let mut prev_cache: Vec<Option<FluidStatus>> = aquifer_ref.fluid_statuses().to_vec();
     sim.drive_blocks(&mut |bx: i32, by: i32, bz: i32, sim: &mut NoiseChunkSim| {
         let row = &rows[idx];
         debug_assert_eq!((row.x, row.y, row.z), (bx, by, bz));
@@ -259,6 +263,73 @@ fn run(csv_path: &str, meta_path: &str, wg: &str, seed: i64) -> Result<i32, Stri
         let mine_dec = decision_name(state, &table);
         if mine_dec != row.decision && !first_debug_done {
             first_debug_done = true;
+            // ---- decision touch-trace ---------------------------------
+            let after = aquifer_ref.fluid_statuses();
+            let touched: Vec<usize> = after
+                .iter()
+                .zip(prev_cache.iter())
+                .enumerate()
+                .filter(|(_, (a, b))| a.is_some() && b.is_none())
+                .map(|(i, _)| i)
+                .collect();
+            eprintln!("  TRACE: substance={} (0x{:x}) decision={} touched_by_this_decision={:?}", row.substance, row.substance.to_bits(), mine_dec, touched);
+            // replicate the 4-nearest cascade verbatim (locations are all
+            // populated by the candidate loop before selection)
+            let (gx0, gy0, gz0) = ((bx - 5) >> 4, (by + 1).div_euclid(12), (bz - 5) >> 4);
+            let meta0 = aquifer_ref.meta();
+            let (mgx, mgy, mgz, gsx, gsz) = (meta0.1, meta0.2, meta0.3, meta0.4, meta0.5);
+            let mut i6 = i32::MAX;
+            let mut i7 = i32::MAX;
+            let mut i8 = i32::MAX;
+            let mut i9 = i32::MAX;
+            let mut s10 = 0usize;
+            let mut s11 = 0usize;
+            let mut s12 = 0usize;
+            let mut s13 = 0usize;
+            for i14 in 0..=1i32 {
+                for i15 in -1..=1i32 {
+                    for i16 in 0..=1i32 {
+                        let slot = aquifer_ref.debug_index(gx0 + i14, gy0 + i15, gz0 + i16);
+                        let l = aquifer_ref.locations()[slot];
+                        let (lx, ly, lz) = ((l >> 38) as i32, ((l << 52) >> 52) as i32, ((l << 26) >> 38) as i32);
+                        let d2 = (lx - bx) * (lx - bx) + (ly - by) * (ly - by) + (lz - bz) * (lz - bz);
+                        let (mut a, mut b, mut c, mut d) = (s10, s11, s12, s13);
+                        let (mut e, mut f, mut g, mut h) = (i6, i7, i8, i9);
+                        if e >= d2 { d = c; c = b; b = a; a = slot; h = g; g = f; f = e; e = d2; }
+                        else if f >= d2 { d = c; c = b; b = slot; h = g; g = f; f = d2; }
+                        else if g >= d2 { d = c; c = slot; h = g; g = d2; }
+                        else if h < d2 { continue; }
+                        else { d = slot; h = d2; }
+                        (s10, s11, s12, s13) = (a, b, c, d);
+                        (i6, i7, i8, i9) = (e, f, g, h);
+                    }
+                }
+            }
+            eprintln!("  TRACE: selected i10..i13 = slots ({s10},{s11},{s12},{s13}) dists (i6..i9) = ({i6},{i7},{i8},{i9}) grid_min=({mgx},{mgy},{mgz}) grid_size=({gsx},{gsz})");
+            for (name, s) in [("i10", s10), ("i11", s11), ("i12", s12), ("i13", s13)] {
+                let mine = after.get(s).copied().flatten();
+                let jf = java_fluid_debug.get(s).cloned().flatten();
+                eprintln!("  TRACE: {name} slot={s} mine_cache={mine:?} java_meta={jf:?}");
+            }
+            // raw field values at each of the 12 candidate positions (both
+            // sides must be compared on the SAME positions)
+            for i14 in 0..=1i32 {
+                for i15 in -1..=1i32 {
+                    for i16 in 0..=1i32 {
+                        let slot = aquifer_ref.debug_index(gx0 + i14, gy0 + i15, gz0 + i16);
+                        let l = aquifer_ref.locations()[slot];
+                        let (lx, ly, lz) = ((l >> 38) as i32, ((l << 52) >> 52) as i32, ((l << 26) >> 38) as i32);
+                        if (lx, ly, lz) == (0, 0, 0) {
+                            continue;
+                        }
+                        let (e, d, f, s, lv, dd) = aquifer_ref.debug_fields(lx, ly, lz);
+                        let (qe, qd, qdd) = aquifer_ref.debug_fields_quart(lx, ly, lz);
+                        eprintln!(
+                            "  FIELDS slot={slot} pos=({lx},{ly},{lz}) erosion={e:?} depth={d:?} floodedness={f:?} spread={s:?} lava={lv:?} deep_dark={dd} | QUART erosion={qe:?} depth={qd:?} deep_dark={qdd}"
+                        );
+                    }
+                }
+            }
             eprintln!("FIRST decision diff @ ({bx},{by},{bz}): mine {mine_dec} java {}", row.decision);
             eprintln!("  my meta: {:?}", aquifer_ref.meta());
             let (gx, gy, gz) = ((bx - 5) >> 4, (by + 1).div_euclid(12), (bz - 5) >> 4);
@@ -327,7 +398,11 @@ fn run(csv_path: &str, meta_path: &str, wg: &str, seed: i64) -> Result<i32, Stri
         }
         checked += 1;
         idx += 1;
+        prev_cache = aquifer_ref.fluid_statuses().to_vec();
     });
+    let mine_pop = aquifer.fluid_statuses().iter().filter(|s| s.is_some()).count();
+    let java_pop = fluids.iter().filter(|f| f.is_some()).count();
+    eprintln!("aquacheck cache population: mine={mine_pop} java={java_pop}");
 
     println!(
         "aquacheck: rows={checked} substance_diff={sub_diff} decision_diff={dec_diff} sched_diff={sched_diff} loc_diff={loc_diff} fluid_diff={fluid_diff}"

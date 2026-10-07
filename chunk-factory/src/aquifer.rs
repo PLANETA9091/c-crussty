@@ -152,15 +152,21 @@ fn from_grid_z(grid_z: i32, offset: i32) -> i32 {
 
 /// OverworldBiomeBuilder.isDeepDarkRegion (javap-verified constants):
 /// erosion < (double)(float)-0.225 && depth > (double)(float)0.9.
-#[inline]
-fn is_deep_dark_region(bank: &crate::density::NoiseBank, erosion: &Df, depth: &Df, x: i32, y: i32, z: i32) -> bool {
-    let e = erosion.compute(bank, x, y, z);
-    if !(e < -0.224_999_994_039_535_52) {
-        return false;
-    }
-    let d = depth.compute(bank, x, y, z);
-    d > 0.899_999_976_158_142_1
-}
+///
+/// NOISECHUNK-WRAP SEMANTICS (worklog addendum 26, bit-exact probe-verified):
+/// the aquifer's erosion/depth fields come from noiseRouter1 =
+/// noiseRouter.mapAll(NoiseChunk::wrap) — the router's erosion field is a
+/// `flat_cache`-rooted subtree and depth contains `flat_cache(overworld/offset)`,
+/// and NoiseChunk.wrap replaces flat_cache markers with NoiseChunk.FlatCache
+/// whose values are precomputed AT QUART-ALIGNED COLUMNS (QuartPos.toBlock(
+/// QuartPos.fromBlock(x)) = x & !3) for the machine's 5x5 quart window
+/// (firstNoiseX = machineMinX >> 2, sizeXZ = 4 + 1); OUTSIDE that window
+/// FlatCache.compute falls back to the raw per-block evaluate. The wrapped
+/// content is y-free (climate splines / y_scale=0 noises), so only the x/z
+/// quantization matters. Both veccheck (unwrapped passthrough) and the
+/// interpolated final_density (cell-corner aligned ⇒ idempotent) are
+/// unaffected; ONLY the aquifer's status layer queries these fields at
+/// ARBITRARY blocks — the resid T38-B divergence root.
 
 /// NoiseBasedAquifer replica. Lifetimes: borrows the router's density fields
 /// and the noise bank (both live as long as the RandomState).
@@ -179,6 +185,9 @@ pub struct NoiseBasedAquifer<'a> {
     global_fluid_picker: GlobalFluidPicker,
     should_schedule_fluid_update: bool,
     skip_sampling_above_y: i32,
+    /// NoiseChunk.FlatCache window origin: QuartPos.fromBlock(machineMinX/Z).
+    first_noise_x: i32,
+    first_noise_z: i32,
     min_grid_x: i32,
     min_grid_y: i32,
     min_grid_z: i32,
@@ -229,6 +238,8 @@ impl<'a> NoiseBasedAquifer<'a> {
             global_fluid_picker,
             should_schedule_fluid_update: false,
             skip_sampling_above_y: 0,
+            first_noise_x: min_block_x >> 2,
+            first_noise_z: min_block_z >> 2,
             min_grid_x,
             min_grid_y,
             min_grid_z,
@@ -297,6 +308,36 @@ impl<'a> NoiseBasedAquifer<'a> {
         level + 8
     }
 
+    /// NoiseChunk.FlatCache coordinate view: flat_cache-wrapped subtrees are
+    /// evaluated at the QUART-ALIGNED column while the query quart lies inside
+    /// the machine's 5x5 quart window (firstNoiseX..firstNoiseX+4 inclusive),
+    /// and per-block otherwise (FlatCache fallback). The y coordinate passes
+    /// through unchanged (the wrapped content is y-free; the depth tree's
+    /// y_clamped_gradient child is NOT flat_cache-wrapped and must stay per-y).
+    #[inline]
+    fn wrap_coords(&self, x: i32, y: i32, z: i32) -> (i32, i32, i32) {
+        let qx = (x >> 2) - self.first_noise_x;
+        let qz = (z >> 2) - self.first_noise_z;
+        if qx >= 0 && qz >= 0 && qx < 5 && qz < 5 {
+            (x & !3, y, z & !3)
+        } else {
+            (x, y, z)
+        }
+    }
+
+    /// OverworldBiomeBuilder.isDeepDarkRegion through the NoiseChunk-wrapped
+    /// erosion/depth fields (see the module-level wrap-semantics comment).
+    #[inline]
+    fn is_deep_dark_region(&self, x: i32, y: i32, z: i32) -> bool {
+        let (wx, wy, wz) = self.wrap_coords(x, y, z);
+        let e = self.erosion.compute(self.bank, wx, wy, wz);
+        if !(e < -0.224_999_994_039_535_52) {
+            return false;
+        }
+        let d = self.depth.compute(self.bank, wx, wy, wz);
+        d > 0.899_999_976_158_142_1
+    }
+
     #[inline]
     pub fn should_schedule_fluid_update(&self) -> bool {
         self.should_schedule_fluid_update
@@ -346,7 +387,7 @@ impl<'a> NoiseBasedAquifer<'a> {
             }
             i = i.min(i5);
         }
-        deep_dark = is_deep_dark_region(self.bank, self.erosion, self.depth, x, y, z);
+        deep_dark = self.is_deep_dark_region(x, y, z);
         let level = if deep_dark {
             -32512
         } else {
@@ -372,6 +413,31 @@ impl<'a> NoiseBasedAquifer<'a> {
     /// Debug: the grid->slot index mapping (aquacheck bisect rig).
     pub fn debug_index(&self, grid_x: i32, grid_y: i32, grid_z: i32) -> usize {
         self.index(grid_x, grid_y, grid_z)
+    }
+
+    /// Debug: raw aquifer-relevant field values at a position
+    /// (erosion, depth, floodedness, spread, lava, is_deep_dark verdict).
+    /// `flat_cache`-wrapped fields are ALSO evaluated at the quart-aligned
+    /// column (NoiseChunk.FlatCache semantics) for the bisect rig.
+    pub fn debug_fields(&self, x: i32, y: i32, z: i32) -> (f64, f64, f64, f64, f64, bool) {
+        let e = self.erosion.compute(self.bank, x, y, z);
+        let d = self.depth.compute(self.bank, x, y, z);
+        let f = self.fluid_level_floodedness_noise.compute(self.bank, x, y, z);
+        let s = self.fluid_level_spread_noise.compute(self.bank, x, y, z);
+        let l = self.lava_noise.compute(self.bank, x, y, z);
+        let dd = self.is_deep_dark_region(x, y, z);
+        (e, d, f, s, l, dd)
+    }
+
+    /// Debug: quart-aligned (NoiseChunk.FlatCache-style) erosion/depth at the
+    /// column of (x, z) — the values the REAL NoiseChunk-wrapped aquifer sees.
+    pub fn debug_fields_quart(&self, x: i32, y: i32, z: i32) -> (f64, f64, bool) {
+        let qx = x & !3;
+        let qz = z & !3;
+        let e = self.erosion.compute(self.bank, qx, y, qz);
+        let d = self.depth.compute(self.bank, qx, y, qz);
+        let dd = e < -0.224_999_994_039_535_52 && d > 0.899_999_976_158_142_1;
+        (e, d, dd)
     }
 
     /// Meta snapshot for the aquacheck bisect rig (task 5).
@@ -604,7 +670,7 @@ impl<'a> NoiseBasedAquifer<'a> {
         fluid_present: bool,
     ) -> i32 {
         let (d, d1);
-        if is_deep_dark_region(self.bank, self.erosion, self.depth, x, y, z) {
+        if self.is_deep_dark_region(x, y, z) {
             d = -1.0;
             d1 = -1.0;
         } else {

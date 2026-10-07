@@ -13,6 +13,9 @@ commands:
   goldendensity:
     description: dump interp/aquifer/density vector families at an arbitrary chunk column (T38-B bisect rig, negative coords fine)
     usage: /goldendensity <blockX> <blockZ> <y0> <y1> <label>
+  aquafields:
+    description: dump the machine-wrapped aquifer field values + real computeFluid status at one block (T38-B resid bisect)
+    usage: /aquafields <blockX> <blockY> <blockZ>
   goldenvec:
     description: capture random/noise/density/interp/climate golden vectors from the real Paper classes (NCF P0.3 tail / P1 gate / P2.3-tail / P2.4)
     usage: /goldenvec <label>

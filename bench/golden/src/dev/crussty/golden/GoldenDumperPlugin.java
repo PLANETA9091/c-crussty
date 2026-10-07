@@ -310,6 +310,28 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             }
             return true;
         }
+        // T38-B resid bisect: /aquafields <blockX> <blockY> <blockZ> — dump the
+        // machine-WRAPPED aquifer field values (the NoiseBasedAquifer's private
+        // DensityFunction fields — these are noiseRouter1 = NoiseChunk.mapAll(wrap)
+        // versions, NOT the raw randomState router) + the real computeFluid
+        // status at ONE position. The decision-trace oracle for the status layer.
+        if (command.getName().equals("aquafields")) {
+            getLogger().info("aquafields invoked args=" + java.util.Arrays.toString(args));
+            if (args.length != 3) {
+                sender.sendMessage("usage: /aquafields <blockX> <blockY> <blockZ>");
+                return true;
+            }
+            try {
+                VectorCapture.aquaFields(this,
+                        Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+                        Integer.parseInt(args[2]), sender);
+            } catch (Throwable t) {
+                getLogger().warning("AQUAFIELDS FAILED: " + t);
+                t.printStackTrace();
+                sender.sendMessage("aquafields: FAILED: " + t);
+            }
+            return true;
+        }
         // Executor/console-only guard. RCON commands arrive as
         // RemoteConsoleCommandSender (used by dump_corpus.sh via bench/ab/rcon.py),
         // the real console as ConsoleCommandSender; everything else is refused.
