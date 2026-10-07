@@ -791,7 +791,15 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             // Final marker line — the driver greps exactly this.
             getLogger().info("GOLDEN DUMP COMPLETE n=" + j.ok + " failed=" + j.failed + " dir=" + j.labelDir);
         } else {
-            Bukkit.getScheduler().runTask(this, this::processTick);
+            // T37-b: schedule 2 ticks ahead so the current tick can COMPLETE.
+            // Evidence (runs 37544917131 vs 37549651622): the whole dump runs
+            // inside one tick — managedBlock() pumps scheduler rounds without
+            // closing the tick — and Paper's watchdog (org.spigotmc
+            // .WatchdogThread) kills after ~60s of no-tick REGARDLESS of
+            // server.properties max-tick-time=-1. runTask (next-scheduler-
+            // round) was re-entering the same tick; runTaskLater(2) is not
+            // due until the tick loop advances. Dump cost: ~2 ticks/chunk.
+            Bukkit.getScheduler().runTaskLater(this, this::processTick, 2);
         }
     }
 
@@ -837,7 +845,15 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             getLogger().info("GOLDEN STAGED DUMP COMPLETE " + j.stagedName + " n=" + j.ok
                     + " failed=" + j.failed + " dir=" + j.labelDir);
         } else {
-            Bukkit.getScheduler().runTask(this, this::processTick);
+            // T37-b: schedule 2 ticks ahead so the current tick can COMPLETE.
+            // Evidence (runs 37544917131 vs 37549651622): the whole dump runs
+            // inside one tick — managedBlock() pumps scheduler rounds without
+            // closing the tick — and Paper's watchdog (org.spigotmc
+            // .WatchdogThread) kills after ~60s of no-tick REGARDLESS of
+            // server.properties max-tick-time=-1. runTask (next-scheduler-
+            // round) was re-entering the same tick; runTaskLater(2) is not
+            // due until the tick loop advances. Dump cost: ~2 ticks/chunk.
+            Bukkit.getScheduler().runTaskLater(this, this::processTick, 2);
         }
     }
 

@@ -145,17 +145,27 @@ rcon.password=$RCON_PW
 online-mode=false
 spawn-protection=0
 sync-chunk-writes=true
-# T37 (run 37537274105): the 2401-chunk staged dump runs as main-thread
-# managedBlock batches (getChunkFuture().join(), ~29 chunks/s, failed=0) —
-# Paper's watchdog read the >15s parked batches as "server has not responded"
-# and STOPPED the healthy dump at 60s (processed=1771/2401). max-tick-time=-1
-# disables the watchdog kill; it cannot change any dumped chunk's bytes (it
-# only decides whether the process gets killed), so the corpus stays honest.
-# A real chunk-system deadlock is still caught by the DUMP_TIMEOUT FATAL.
+# T37 correction (run 37549651622 falsified the first T37 hypothesis): this
+# line does NOT disable Purpur's watchdog (org.spigotmc.WatchdogThread) —
+# the effective switch is config/paper-global.yml watchdog.enable=false
+# (written just before boot below). Kept as harmless belt-and-braces.
 max-tick-time=-1
 EOF
 
 log "booting (pack=$PACK seed=$SEED status=$STATUS radius=$RADIUS)"
+# T37-b (run 37549651622): server.properties max-tick-time=-1 does NOT disable
+# Purpur's watchdog (org.spigotmc.WatchdogThread) — it killed healthy dumps at
+# ~60s of no-tick (the dump runs inside ONE tick; see the plugin's
+# runTaskLater note). The documented Paper switch is paper-global.yml
+# watchdog.enable=false. A partial file is fine: Paper migrates and keeps the
+# set keys. No dumped chunk's bytes depend on this (the watchdog only decides
+# whether the process gets killed).
+mkdir -p config
+cat > config/paper-global.yml <<'EOF'
+_version: 29
+watchdog:
+  enable: false
+EOF
 nohup setsid java -Xms512M -Xmx1536m -jar versions/purpur-1.21.10.jar --nogui \
     </dev/null > "$RESULTS/p2_${PACK}_${SEED}_boot.log" 2>&1 &
 disown || true
