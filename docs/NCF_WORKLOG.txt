@@ -1389,3 +1389,16 @@ Run 37556763251 (HEAD bbd7939): ядро 10/11 (ncf-staged 3 статуса GREE
   gen-batch 115с->stagediff); ГЕЙТ P2 ЧЕСТНО КРАСНЫЙ по существу (реальные
   дивергенции скаляров) до закрытия T38-B/T40; veccheck/stagediff контракты
   не тронуты.
+
+=== 2026-10-07 | сессия 7 (аддендум 13: excluded 0 был на ОБОИХ путях — java-корпус тоже nested seed_<seed>/) ===
+Run 37558253991 (HEAD db298cf): ядро 11/11 GREEN (ncf-staged 3 статуса —
+  шестой зелёный подряд), gate-ячейки: excluded 0 ОПЯТЬ. Причина: у
+  ПЛАГИНА java-корпус тоже nested — GoldenDumperPlugin line 614
+  labelDir.resolve("seed_" + seed) / line 873 j.seedDir.resolve("c_" + x +
+  "_" + z + ".nbt") — аддендум 12 чинил только rust-сторону. Проверка
+  find "$JAVA_DIR" -name 'c_*.nbt' считала РЕКУРСИВНО, поэтому N_FILES
+  сходился и путь оставался незамеченным. ФИКС (этот коммит): оба пути
+  $DIR/seed_${SEED}/c_${key}.nbt.
+Цифры ранна (для истории): vanilla 3053459 pairs=2401 equal=2184
+  diverged=217 (блоб-семья T38-B, спавн-квадрат чист — не в списке);
+  terralith 3053459 pairs=2401 equal=0 (T40 скаляры пака).

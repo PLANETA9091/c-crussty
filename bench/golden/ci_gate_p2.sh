@@ -257,8 +257,10 @@ if [ -n "${SC:-}" ] && [ -n "${EXCL:-}" ]; then
     EXCL_DIR="$SERVER_DIR/p2_excluded_${PACK}_${SEED}"
     mkdir -p "$EXCL_DIR"
     for key in $EXCL; do
-        jf="$JAVA_DIR/c_${key}.nbt"
-        # gen-batch writes into $RUST_DIR/seed_<seed>/ (stagediff layout)
+        # BOTH corpora nest under seed_<seed>/ (plugin: labelDir.resolve
+        # ("seed_"+seed) line 614; stagediff: seed_dir join — addendum 12
+        # fixed the rust side only; this line fixes the java side too)
+        jf="$JAVA_DIR/seed_${SEED}/c_${key}.nbt"
         rf="$RUST_DIR/seed_${SEED}/c_${key}.nbt"
         if [ -f "$jf" ] && [ -f "$rf" ]; then
             mv "$jf" "$EXCL_DIR/j_${key}.nbt"
