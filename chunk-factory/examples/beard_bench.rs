@@ -34,6 +34,33 @@ fn main() {
         beard.junctions().len()
     );
 
+    // SCAN mode (NCF_SCAN=1): sweep a chunk range, report non-empty feeds +
+    // pool diagnostics — used to locate terralith adapting starts locally.
+    if std::env::var("NCF_SCAN").is_ok() {
+        let mut hits = 0usize;
+        for cx in -16..=16 {
+            for cz in -16..=16 {
+                let b = feed.build_for_chunk(&mut sampler, cx, cz);
+                if !b.is_empty() {
+                    hits += 1;
+                    println!(
+                        "chunk ({cx},{cz}): pieces {} junctions {}",
+                        b.pieces().len(),
+                        b.junctions().len()
+                    );
+                }
+            }
+        }
+        println!("scan: {hits}/1089 chunks non-empty");
+        println!("missing_pools: {:?}", feed.pools().missing_pools);
+        println!("missing_templates: {}", feed.pools().missing_templates.len());
+        for t in feed.pools().missing_templates.iter().take(12) {
+            println!("  MISSING {t}");
+        }
+        println!("unsupported: {:?}", feed.pools().unsupported);
+        return;
+    }
+
     // Repeat (cache-warm) and an empty neighborhood (cache-miss fast path).
     let t3 = Instant::now();
     let beard2 = feed.build_for_chunk(&mut sampler, 3, 6);

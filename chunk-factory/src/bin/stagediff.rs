@@ -262,6 +262,40 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         } else {
             Some(StageKit::build(&mut rs, &dir).map_err(|e| e.to_string())?)
         };
+        // P5.3 increment 4: the REAL per-chunk Beardifier feed (Java:
+        // NoiseChunk.forChunk gets Beardifier.forStructuresInChunk at
+        // createNoiseChunk). PRE-PASS: build every chunk's Beardifier BEFORE
+        // the generation loop (the feed/sampler hold &rs; the loop needs
+        // &mut rs for the surface/carvers passes). Starts stay cached across
+        // the whole pre-pass, so each placement chunk is assembled ONCE.
+        let mut beards: std::collections::HashMap<(i32, i32), chunk_factory::beardifier::Beardifier> =
+            Default::default();
+        {
+            let mut sampler = chunk_factory::height_feed::ColumnHeightSource::new(&rs, seed);
+            // root semantics = the dir CONTAINING data/ (tag files live at
+            // <root>/data/<ns>/tags/worldgen/biome) — that is the extract
+            // root (wg), NOT dir.data_root which is <extract>/data itself.
+            let mut feed =
+                chunk_factory::piece_feed::BeardFeed::new(&dir, Path::new(wg), &rs, seed);
+            for cx in x0..=x1 {
+                for cz in z0..=z1 {
+                    let beard = feed.build_for_chunk(&mut sampler, cx, cz);
+                    if std::env::var("NCF_BEARD_PROBE").is_ok() {
+                        eprintln!("[beard-probe] ({cx},{cz}): pieces {} junctions {} empty {}", beard.pieces().len(), beard.junctions().len(), beard.is_empty());
+                    }
+                    if !beard.is_empty() {
+                        beards.insert((cx, cz), beard);
+                    }
+                }
+            }
+            println!(
+                "beardifier feed: {} / {} chunks with adapting starts (missing_pools {}, missing_templates {})",
+                beards.len(),
+                ((x1 - x0 + 1) * (z1 - z0 + 1)) as i64,
+                feed.pools().missing_pools.len(),
+                feed.pools().missing_templates.len(),
+            );
+        }
         let seed_dir = Path::new(out).join(format!("seed_{seed}"));
         std::fs::create_dir_all(&seed_dir).map_err(|e| e.to_string())?;
         let status_key = format!("minecraft:{status}");
@@ -274,10 +308,19 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         for cx in x0..=x1 {
             for cz in z0..=z1 {
                 let s0 = std::time::Instant::now();
+                let beard = beards
+                    .remove(&(cx, cz))
+                    .unwrap_or_else(chunk_factory::beardifier::Beardifier::empty);
                 let fc = match (status.as_str(), kit.as_mut()) {
-                    ("noise", _) => generate_noise_chunk(&rs, seed, cx, cz),
-                    ("surface", Some(k)) => generate_surface_chunk(&mut rs, k, &dir, seed, cx, cz),
-                    ("carvers", Some(k)) => generate_carvers_chunk(&mut rs, k, &dir, seed, cx, cz),
+                    ("noise", _) => chunk_factory::filler::generate_noise_chunk_with_beardifier(&rs, seed, cx, cz, beard),
+                    ("surface", Some(k)) => {
+                        k.beard = beard;
+                        generate_surface_chunk(&mut rs, k, &dir, seed, cx, cz)
+                    }
+                    ("carvers", Some(k)) => {
+                        k.beard = beard;
+                        generate_carvers_chunk(&mut rs, k, &dir, seed, cx, cz)
+                    }
                     (s, _) => return Err(format!("gen-batch: unsupported status {s}")),
                 }
                 .map_err(|e| e.to_string())?;
@@ -330,10 +373,19 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         let dir = WorldgenDir::load(Path::new(wg)).map_err(|e| e.to_string())?;
         let mut rs = RandomState::build_overworld(&dir, seed).map_err(|e| e.to_string())?;
         let status_key = format!("minecraft:{status}");
+        // beardifier pre-pass in its own scope (frees the &rs borrows before
+        // the &mut RandomState surface/carvers paths).
+        let beard = {
+            let mut sampler = chunk_factory::height_feed::ColumnHeightSource::new(&rs, seed);
+            let mut feed =
+                chunk_factory::piece_feed::BeardFeed::new(&dir, Path::new(wg), &rs, seed);
+            feed.build_for_chunk(&mut sampler, cx, cz)
+        };
         let fc = match status.as_str() {
-            "noise" => generate_noise_chunk(&rs, seed, cx, cz),
+            "noise" => chunk_factory::filler::generate_noise_chunk_with_beardifier(&rs, seed, cx, cz, beard),
             "surface" | "carvers" => {
                 let mut kit = StageKit::build(&mut rs, &dir).map_err(|e| e.to_string())?;
+                kit.beard = beard;
                 if status == "surface" {
                     generate_surface_chunk(&mut rs, &mut kit, &dir, seed, cx, cz)
                 } else {

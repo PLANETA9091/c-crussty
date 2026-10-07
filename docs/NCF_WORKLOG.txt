@@ -3423,3 +3423,72 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 КОРПУС (директива 3): без изменений (структурные чанки пока исключены I8;
   после шага a вернутся с реальным beardifier).
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 12-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 22 (аддендум 47: Job 441690 — P5.3 ИНКРЕМЕНТ 4: Beardifier feed ВКЛЮЧЁН в stagediff gen-batch/--gen (pre-pass архитектура) + экстракты получают шаблоны .nbt + CI-fix: extract-зависимые тесты громко пропускаются (исправляет chunk-factory job, сломанный ЕЩЁ на f481bcc) + КОРРЕКЦИЯ чтения CI-вердикта аддендума 45) ===
+
+1) КОРРЕКЦИЯ CI-ЧТЕНИЯ (дисциплина): вердикт run 37686801926 (6067830):
+   33 jobs, не-зелёных = РОВНО 5 терралит-ячеек (как записано в
+   аддендуме 45). НО run 37689038370 (f481bcc) имел ШЕСТЬ не-зелёных:
+   5 ячеек + job "chunk-factory" — job сломало добавление alias-теста
+   (f481bcc), читающего ci-server/worldgen-extract, который GITIGNORED
+   (не попадает в CI checkout). Аддендум 45 ошибочно обобщил "5 не-зелёных"
+   на f481bcc. Run 37694275639 (c86c8d6) унаследовал те же 6.
+2) CI-FIX: chunk-factory/src/lib.rs test_support (extract_root/golden_dir):
+   оракул-тесты, зависящие от gitignored данных, ПРОПУСКАЮТСЯ с громкой
+   заметкой при отсутствии экстракта (локально и в provisioning-job'ах CI
+   тесты идут в полном объёме — 153/153 lib с экстрактом; без экстракта
+   153/153 за 0.03с: 4 beard-feed + 1 alias тест пропущены).
+   Затронуты: alias.rs parse_trial_chambers_aliases + 4 beard-feed теста.
+   Симуляция CI (ci-server скрыт) подтвердила: 0 провалов, 0.03с.
+3) FEED ВКЛЮЧЁН (stagediff): gen-batch строит Beardifier для КАЖДОГО чанка
+   батча ПРЕДПРОХОДОМ (beards map) — feed/sampler держат &rs только в
+   scope препрохода, генерация идёт с &mut rs (borrow-конфликт решён
+   архитектурно, не unsafe). kit.beard (StageKit) переносит Beardifier в
+   surface/carvers статусы; noise-статус получает его напрямую.
+   Сводная строка препрохода: "beardifier feed: N/M chunks with adapting
+   starts (missing_pools P, missing_templates T)" — громкая диагностика.
+   NCF_BEARD_PROBE=1 — поглаживание per-chunk (env-gated).
+   --gen (одиночный чанк): тот же feed в собственном scope.
+   status_chain: generate_surface_chunk/generate_carvers_chunk потребляют
+   kit.beard (сигнатуры НЕ менялись — jni_bridge остался на EMPTY kit).
+4) ЭКСТРАКТЫ + .nbt ШАБЛОНЫ: ci_datapacks.sh (vanilla base + pack overlay +
+   extract-only) и ci_gate_p2.sh (vanilla extract) теперь копируют
+   data/<ns>/structure/**/*.nbt: без них pack-шаблоны (terralith: 173 .nbt)
+   не резолвятся и feed деградирует в resource-missing. Локальный
+   terralith-extract пересобран: 1375 .nbt = 1202 vanilla jar + 173 zip.
+   ИНВЕНТАРИЗАЦИЯ: 1117 различимых template-ссылок (vanilla+terralith
+   пулы), ОТСУТСТВУЕТ ровно ОДНА — minecraft:ancient_city/walls/
+   intact_horizontal_wall_stairs_5 — её нет И В VANILLA JAR (1202 .nbt):
+   Java пропускает элемент идентично (SinglePoolElement.getBoundingBox ->
+   empty -> skip) — разногласия нет, loud-заметка остаётся.
+   missing_pools: 0.
+5) ВЕРИФИКАЦИЯ (feed ВКЛЮЧЁН, seed 3053459):
+   a) деревня (village_taiga, placement (-14,-15)): батч -20..-8 x -20..-8:
+      feed 45/169 чанков с адаптирующими стартами; 41 NBT ИЗМЕНИЛОСЬ против
+      пре-feed базлайна (BEARD_THIN вырезает плотность) — все 41 ⊆ 165
+      I8-помеченных (изменённые чанки уже исключены из сравнения гейта);
+   b) -3..3 (близко к нулю): 2/49 чанков со стартами; 2 NBT изменились —
+      ОБА в I8-помеченных (гейт-сравнение не затронуто);
+   c) TILE_CACHE 0/1 при ВКЛЮЧЁННОМ feed: БАЙТ-ИДЕНТИЧНЫ (деревенский
+      регион + свободный от структур регион);
+   d) veccheck resid1 843207/0, tectA/tectB 941511/0 ZERO-DIFF (veccheck
+      feed не использует — контракт не тронут); lib 153 + root 417 GREEN;
+   e) stagediff --fallback-list протокол не менялся (выход тот же формат,
+      сканирование то же — сужение отдельным шагом).
+СЛЕДУЮЩИЕ ШАГИ P5.3:
+  a) CI-вердикт этого коммита: ожидание = vanilla/tectonic ячейки зелёные,
+     terralith ячейки: часть закрылась (структурные чанки теперь генерируются
+     с реальным beardifier), часть — по результату;
+  b) сужение I8 (structure_scan): валидация через РЕАЛЬНУЮ сборку feed
+     (вместо приближения по высотам) — возвращает в корпус структурные
+     чанки, которые движок теперь собирает честно (директива 1);
+  c) терралит-ячейки, оставшиеся не-зелёными: байт-уровневая сверка
+     первого расходящегося поля (stagediff --compare-дампы из CI-артефактов).
+АМДАЛЬ (директива 2): pre-pass feed на 169-чанковый батч: первый старт
+  ~2.0 с (сборка), кэш-тёплые чанки ~0 мс; генерация чанка у структур
+  +14 мс (beardifier.compute в substance) — см. аддендум 46; сам препроход
+  ~1-2 с/батч на сборки biome-отклонённых стартов (Java платит ту же цену
+  на STRUCTURE_STARTS). TILE_CACHE A/B без изменений по времени.
+КОРПУС (директива 3): без изменений (структурные чанки возвращаются в
+  корпус после сужения I8 — шаг b).
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 13-й тик; первоисточник = этот LOG.

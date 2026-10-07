@@ -34,6 +34,11 @@ pub struct StageKit {
     pub carver_configs: HashMap<String, CarverConfig>,
     /// cached parsed configured_carver JSONs by ref
     pub default_block: String,
+    /// P5.3 increment 4: the per-chunk Beardifier, installed by the batch
+    /// driver BEFORE generate_surface_chunk/generate_carvers_chunk (EMPTY =
+    /// pre-wiring machine). Rides in the kit so the batch driver's
+    /// long-lived &RandomState borrows (feed/sampler) can coexist.
+    pub beard: crate::beardifier::Beardifier,
 }
 
 impl StageKit {
@@ -94,6 +99,7 @@ impl StageKit {
             biome_noise,
             carver_configs,
             default_block,
+            beard: crate::beardifier::Beardifier::empty(),
         })
     }
 }
@@ -160,7 +166,10 @@ fn expand_tag_json(
     Ok(())
 }
 
-/// Generate one chunk at SURFACE status.
+/// Generate one chunk at SURFACE status. The per-chunk Beardifier rides in
+/// the kit (kit.beard; EMPTY = pre-wiring behavior — Java's marker-only
+/// machine). Kept OUT of the signature so callers holding a &RandomState
+/// borrow (the Beardifier feed) can coexist with the &mut RandomState here.
 pub fn generate_surface_chunk(
     rs: &mut RandomState,
     kit: &mut StageKit,
@@ -169,7 +178,8 @@ pub fn generate_surface_chunk(
     cx: i32,
     cz: i32,
 ) -> Result<FillerChunk, String> {
-    let mut chunk = generate_noise_chunk(rs, seed, cx, cz)?;
+    let mut chunk =
+        crate::filler::generate_noise_chunk_with_beardifier(rs, seed, cx, cz, kit.beard.clone())?;
     apply_surface_pass(rs, kit, dir, seed, &mut chunk)?;
     Ok(chunk)
 }
@@ -196,7 +206,8 @@ pub fn apply_surface_pass(
     Ok(())
 }
 
-/// Generate one chunk at CARVERS status.
+/// Generate one chunk at CARVERS status (beardifier via kit.beard, see
+/// generate_surface_chunk).
 pub fn generate_carvers_chunk(
     rs: &mut RandomState,
     kit: &mut StageKit,

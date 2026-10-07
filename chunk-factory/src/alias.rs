@@ -198,10 +198,12 @@ mod tests {
         // The only vanilla pool_aliases user (1.21.10): one random_group +
         // two random bindings; data from data/minecraft/worldgen/structure/
         // trial_chambers.json.
-        let text = std::fs::read_to_string(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/../ci-server/worldgen-extract/data/minecraft/worldgen/structure/trial_chambers.json"
-        ))
+        let Some(root) = crate::test_support::extract_root() else {
+            return; // loud skip already printed by test_support
+        };
+        let text = std::fs::read_to_string(
+            root.join("data/minecraft/worldgen/structure/trial_chambers.json"),
+        )
         .expect("trial_chambers.json");
         let j = crate::json::parse(&text).unwrap();
         let arr = j.get("pool_aliases").and_then(|a| a.as_arr()).unwrap();

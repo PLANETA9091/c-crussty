@@ -231,3 +231,31 @@ mod tests {
         }
     }
 }
+
+/// Test-support: locate the worldgen extract used by oracle tests. The
+/// extract lives under ci-server/ which is GITIGNORED (not part of the CI
+/// checkout) — oracle tests that need it must skip LOUDLY when absent
+/// (they run in full wherever the extract exists: every dev sandbox and any
+/// CI job that provisions it).
+#[cfg(test)]
+pub(crate) mod test_support {
+    pub(crate) fn extract_root() -> Option<std::path::PathBuf> {
+        let p = std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ci-server/worldgen-extract"));
+        if p.join("data").is_dir() {
+            Some(p)
+        } else {
+            eprintln!("[test] ci-server/worldgen-extract absent (gitignored) — skipping extract-dependent oracle test");
+            None
+        }
+    }
+
+    pub(crate) fn golden_dir() -> Option<std::path::PathBuf> {
+        let p = std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ci-server/golden"));
+        if p.join("pieces_4_6.json").is_file() {
+            Some(p)
+        } else {
+            eprintln!("[test] ci-server/golden oracles absent (gitignored) — skipping golden-dependent oracle test");
+            None
+        }
+    }
+}

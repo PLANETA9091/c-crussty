@@ -817,10 +817,10 @@ mod beard_feed_tests {
 
     const SEED: i64 = 3053459;
 
-    fn extract_dir() -> (WorldgenDir, std::path::PathBuf) {
-        let root = std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ci-server/worldgen-extract"));
+    fn extract_dir() -> Option<(WorldgenDir, std::path::PathBuf)> {
+        let root = crate::test_support::extract_root()?;
         let dir = WorldgenDir::load(&root).expect("worldgen dir");
-        (dir, root)
+        Some((dir, root))
     }
 
     /// The whole-structure union box from the GoldenDumper JSON.
@@ -874,7 +874,9 @@ mod beard_feed_tests {
 
     #[test]
     fn beard_feed_matches_golden_oracle_chunk_4_6() {
-        let (dir, root) = extract_dir();
+        let Some((dir, root)) = extract_dir() else {
+            return; // loud skip already printed by test_support
+        };
         let rs = RandomState::build_overworld(&dir, SEED).expect("build_overworld");
         let mut sampler = ColumnHeightSource::new(&rs, SEED);
         let mut feed = BeardFeed::new(&dir, &root, &rs, SEED);
@@ -887,11 +889,12 @@ mod beard_feed_tests {
 
         // Oracle: ci-server/golden/pieces_4_6.json (bit-exact GoldenDumper
         // capture of the trial_chambers start @ (4,6)).
-        let text = std::fs::read_to_string(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/../ci-server/golden/pieces_4_6.json"
-        ))
-        .expect("oracle json");
+        let text = match crate::test_support::golden_dir()
+            .map(|g| std::fs::read_to_string(g.join("pieces_4_6.json")).expect("read oracle json"))
+        {
+            Some(t) => t,
+            None => return, // loud skip already printed
+        };
         let j = crate::json::parse(&text).unwrap();
         let (mbx, mbz) = (64, 96);
         let expected_boxes: Vec<InclusiveBox> =
@@ -973,7 +976,9 @@ mod beard_feed_tests {
         // Chunk (3,6): NOT the placement chunk, but the trial_chambers start
         // box touches its 16x16 column -> createReferences marks it and the
         // feed must see the start (pieces near it included).
-        let (dir, root) = extract_dir();
+        let Some((dir, root)) = extract_dir() else {
+            return; // loud skip already printed by test_support
+        };
         let rs = RandomState::build_overworld(&dir, SEED).expect("build_overworld");
         let mut sampler = ColumnHeightSource::new(&rs, SEED);
         let mut feed = BeardFeed::new(&dir, &root, &rs, SEED);
@@ -981,10 +986,9 @@ mod beard_feed_tests {
         assert!(!beard.is_empty(), "(3,6) must reference the (4,6) start");
 
         // Oracle expectation for the trial subset at (3,6).
-        let text = std::fs::read_to_string(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/../ci-server/golden/pieces_4_6.json"
-        ))
+        let text = std::fs::read_to_string(
+            crate::test_support::golden_dir().expect("golden dir").join("pieces_4_6.json"),
+        )
         .unwrap();
         let j = crate::json::parse(&text).unwrap();
         let (mbx, mbz) = (48, 96);
@@ -1013,7 +1017,9 @@ mod beard_feed_tests {
         // window (no start -> no pieces). Also: empty chunks EXIST in a scan
         // range (the biome filter kills most placements), and a fresh feed
         // reproduces the same rigids bit-for-bit (start cache determinism).
-        let (dir, root) = extract_dir();
+        let Some((dir, root)) = extract_dir() else {
+            return; // loud skip already printed by test_support
+        };
         let rs = RandomState::build_overworld(&dir, SEED).expect("build_overworld");
         let mut sampler = ColumnHeightSource::new(&rs, SEED);
         let mut feed = BeardFeed::new(&dir, &root, &rs, SEED);
@@ -1081,7 +1087,9 @@ mod beard_feed_tests {
         // BeardifierMarker) — the fed sim MUST differ from the EMPTY sim at a
         // block inside a trial_chambers piece (ENCAPSULATE adds bury*0.8
         // >= 0.55 inside the box).
-        let (dir, root) = extract_dir();
+        let Some((dir, root)) = extract_dir() else {
+            return; // loud skip already printed by test_support
+        };
         let rs = RandomState::build_overworld(&dir, SEED).expect("build_overworld");
         let mut sampler = ColumnHeightSource::new(&rs, SEED);
         let mut feed = BeardFeed::new(&dir, &root, &rs, SEED);

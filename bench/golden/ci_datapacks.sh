@@ -188,6 +188,16 @@ def extract_worldgen(prefix):
     # multi-noise biome table via data/minecraft/dimension/overworld.json.
     n = 0
     for name in z.namelist():
+        # P5.3 increment 4: structure TEMPLATE .nbt files ride along with the
+        # pack (data/<ns>/structure/**/*.nbt) — required by the jigsaw
+        # assembly for pack adapting structures (Beardifier feed).
+        if name.endswith('.nbt') and name.startswith(prefix + 'data/') and '/structure/' in name:
+            parts = name[len(prefix + 'data/'):].split('/')
+            dest = os.path.join(dest_root, "data", *parts)
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            open(dest, 'wb').write(z.read(name))
+            n += 1
+            continue
         if not name.endswith('.json') or not name.startswith(prefix + 'data/'):
             continue
         parts = name[len(prefix + 'data/'):].split('/')
@@ -256,10 +266,16 @@ import zipfile, os, sys
 z = zipfile.ZipFile(sys.argv[1])
 n = 0
 for name in z.namelist():
-    if name.endswith('.json') and (
+    is_json = name.endswith('.json') and (
         name.startswith('data/minecraft/worldgen/') or name.startswith('data/minecraft/tags/block/')
         or name.startswith('data/minecraft/tags/worldgen/')
-    ):  # + tags/worldgen: biome tags for the P5.3-pre fallback prescan
+    )  # + tags/worldgen: biome tags for the P5.3-pre fallback prescan
+    # P5.3 increment 4: structure TEMPLATE .nbt files — the jigsaw assembly
+    # (piece_feed/template_cache) reads data/<ns>/structure/<path>.nbt from
+    # the extract; without them pack/vanilla adapting starts fail
+    # resource-missing and the Beardifier feed degrades to I8 fallback.
+    is_nbt = name.endswith('.nbt') and name.startswith('data/minecraft/structure/')
+    if is_json or is_nbt:
         dest = os.path.join(sys.argv[2], *name.split('/'))
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         open(dest, 'wb').write(z.read(name))
@@ -319,6 +335,15 @@ def extract_worldgen(prefix):
     # namespace, dest under <extract>/data/.
     n = 0
     for name in z.namelist():
+        # P5.3 increment 4: structure TEMPLATE .nbt files (same rationale as
+        # the run_pack extractor above).
+        if name.endswith('.nbt') and name.startswith(prefix + 'data/') and '/structure/' in name:
+            parts = name[len(prefix) + len('data/'):].split('/')
+            dest = os.path.join(dest_root, "data", *parts)
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            open(dest, 'wb').write(z.read(name))
+            n += 1
+            continue
         if not name.endswith('.json') or not name.startswith(prefix + 'data/'):
             continue
         parts = name[len(prefix) + len('data/'):].split('/')
