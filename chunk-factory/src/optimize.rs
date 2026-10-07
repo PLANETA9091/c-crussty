@@ -111,7 +111,19 @@ fn trusted_bounds(df: &Df, bank: &NoiseBank) -> Option<(f64, f64)> {
                      cands.iter().cloned().fold(f64::NEG_INFINITY, f64::max))
                 }
                 Ap2Type::Min => (x1.min(y1), x2.min(y2)),
-                Ap2Type::Max => (x1.min(y1).max(x2.min(y2)), x2.max(y2)),
+                // addendum 37 (Job 441690) hardening — Java's
+                // TwoArgumentSimpleFunction.create for MAX stores
+                // min = Math.max(d, d1): the LOW bound of max(a,b) is the max
+                // of the two LOW bounds. The old formula
+                // x1.min(y1).max(x2.min(y2)) is unsound (counterexample
+                // [0,10]x[5,6]: java 5, ours 6 — a box with no reachable
+                // values) and could mis-fire R1/C2 folds (same failure family
+                // as the addendum-31 negative-multiplier reversal). Math was
+                // proven vs CFR in addendum 34; empirically the tectonic
+                // prelim tree fires no folds on this node (opt-vs-raw
+                // ZERO-DIFF, 100 columns), so this commit is pure soundness
+                // hardening — A/B byte-identical required.
+                Ap2Type::Max => (x1.max(y1), x2.max(y2)),
             }
         }
         Df::RangeChoice { when_in_range, when_out_of_range, .. } => {
@@ -368,5 +380,20 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn trusted_max_bounds_match_java_create() {
+        // addendum 37 hardening: Java TwoArgumentSimpleFunction.create(MAX)
+        // stores min = Math.max(d, d1). Counterexample box [0,10]x[5,6]:
+        // java lo = max(0,5) = 5; the old formula min(0,5).max(min(10,6)) = 6
+        // — an interval [6,10] with no reachable values (unsound).
+        let bank = NoiseBank { noises: Vec::new(), blended: Vec::new() };
+        let a1 = Df::Clamp { input: Box::new(Df::Const(0.0)), min: 0.0, max: 10.0 };
+        let a2 = Df::Clamp { input: Box::new(Df::Const(5.0)), min: 5.0, max: 6.0 };
+        let df = Df::Ap2 { ty: Ap2Type::Max, a1: Box::new(a1), a2: Box::new(a2), min: 5.0, max: 10.0 };
+        let (lo, hi) = trusted_bounds(&df, &bank).expect("clamp/ap2 max must be trusted");
+        assert_eq!(hi, 10.0, "max bound: max(10,6) = 10");
+        assert_eq!(lo, 5.0, "min bound: Math.max(0,5) = 5 (java create), not 6");
     }
 }
