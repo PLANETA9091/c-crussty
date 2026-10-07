@@ -2133,3 +2133,67 @@ cargo test --workspace: 417 GREEN (код Rust не менялся — толь�
   расходящееся поле; (2) фикс корня в Rust; (3) P5.3 piece engine —
   параллельная главная ветка (снимает класс (а): 5 terralith-ячеек).
 ОЖИДАНИЕ CI: run на этом коммите.
+
+=== 2026-10-07 | сессия 10 (аддендум 29: Job 441690 — ПЕРВЫЙ pack density-захват ЛОКАЛЬНО; класс (b) локализован в sloped_cheese, мультипликативная -1.75e-8 сигнатура; фикс риг-комментария) ===
+ХОД ТИКА:
+  1) Run 8782 (7477fdc): ВСЕ 6 ncf-density jobs FAIL exit 127 «line 24: class,:
+     command not found» — в моём addendum-28 комментарии потерян '# ' на строке
+     продолжения («...as the vanilla resid\nclass, but...»); bash -n пропустил
+     (синтаксически валидная команда). gate-p2 ячейки не затронуты (их скрипт
+     другой). УРОК: bash -n недостаточен для комментариев-продолжений; для
+     правок ригов нужна контрольная grep-проверка добавленных строк.
+     ФИКС (этот коммит): '# ' восстановлен; tectprobe добавлен как бин.
+  2) ЛОКАЛЬНЫЙ ЗАХВАТ tectA заработал end-to-end ДО CI (сервер ci-server жив:
+     boot с tectonic в world/datapacks, /goldendensity 192 384 24 48
+     tectA_8675309, merged extract в veccheck/aquacheck):
+       density.csv : checked 56775, mismatches 142 — ВСЕ на final_density,
+         остальные 14 полей БИТ-ТОЧНЫ (вкл. depth/ridges/continents/erosion —
+         сплайн-координаты климат-полей чисты);
+       interp.csv  : checked 884736, mismatches 61792 (каскад);
+       aquacheck   : не дошёл (veccheck gate FAIL прервал скрипт — ожидаемо).
+     ПАТТЕРН 142: все 25 xz-углов колонок решётки, y = 72..128 шаг 8
+     (решётка = cell-углы 4x8x4), y<72 ЧИСТЫ; flip-координаты гейта
+     (y 30..61) — тот же класс, пороговые флипы LSB-шума.
+  3) ЛОКАЛИЗАЦИЯ (tectprobe — новый бин: walk_eval дерева router.final_density
+     со значениями + piecewise-сборка корня):
+       root = min(squeeze(mul(0.64, interp(blend(chain)))), noodle) + branchB;
+       noodle=64 (не выбирается), branchB = min(0.0002, river)+lava = 0.0002
+       (точные константы на этой колонке) => дельта живёт в chain, т.е. в
+       min(base_terrain, caves); caves = 2.0 (сплайн depth<=0.1 -> 10 * 0.2);
+       => дельта в base_terrain = sloped_cheese.
+       ИНВЕРСИЯ оракула (все операции выше sloped_cheese — точные f64:
+       +1,*1,-1,-0.1,*1,+0.1,*0.64, squeeze, +0.0002):
+         java_sloped_cheese - rust_sloped_cheese = -1.75e-8 ОТНОСИТЕЛЬНАЯ,
+       СТАБИЛЬНЫЙ кластер -1.6e-8..-2.1e-8 по 100+ строкам (y 72..128, все
+       колонки) => МУЛЬТИПЛИКАТИВНАЯ сигнатура ~(1 - 1.75e-8), ~0.3 ulp f32 —
+       накопленная суб-ulp разность ВНУТРИ sloped_cheese, НЕ одиночный f32
+       каст результата (даёт дискретные ulp).
+     sloped_cheese (tectonic 3.0.25) = cache_once(add(mul(4, quarter_negative(
+       mul(add(depth+depth_additive, ...), range_choice(0.9,1.1, factor/
+       continents, ..., continent_selector)))), add(max(0, mul(dune_spline,
+       dune_final)), add(mul(spline(full_continents), roughness),
+       mul(spline(full_continents), ocean))))).
+     ИСКЛЮЧЕНО в этом тике: spline hermite (наш f32 = оракулу CFR
+     CubicSpline$Multipoint.apply построчно), multi_spline_create (bounds,
+     построчно = оракулу), координатный f32-каст (есть с обеих сторон),
+     cache_once/cache_2d/flat_cache семантика (value-identity на скалярном
+     пути; flat-cache колонки кварти-выровнены — (192,384) выровнен),
+     noise-параметры (климат-поля бит-точны в том же захвате).
+     Оставшиеся кандидаты (след. тик): (а) dune/full_continents-цепочки —
+     компоненты, которых НЕТ в vanilla sloped_cheese (vanilla-эквиваленты
+     бит-точны => наш сплайн/noise код верен для vanilla-форм; подозревать
+     форму/данные тектоника: 2-точечные сплайны с производными 0,
+     locations -1.05..., вложенные value-сплайны); (б) coords фактор/roughness/
+     ocean сплайнов (tectonic:noise/full_continents — ShiftedNoise со своей
+     шкалой); (в) variant-тест: подстановка f32-кастов в разных местах
+     sloped_cheese-цепочки против инвертированного java-оракула по всем 142
+     координатам (детерминированный судья — инструмент готов: tectprobe +
+     /tmp/tectA_pairs.txt инверсия).
+  4) CI: tectA/tectB захваты зеркалятся этим коммитом; ОЖИДАНИЕ — CI-повтор
+     локальной картины (142 mismatch на tectA) = кросс-средовая
+     воспроизводимость класса (b); tectB даст вторую точку (424242, кластер B
+     y=57 fluid-boundary).
+АМДАЛЬ (директива 2): таблица аддендума 26 в силе; tectprobe/инверсия —
+  локальные инструменты бисекта, в гейт не входят.
+КОРПУС (директива 3): захват tectA уже дал 941k строк векторов по пакету —
+  первый pack-регион в корпусе (раньше корпус был vanilla-only).

@@ -21,7 +21,7 @@ SEED="${SEED:-3053459}"
 # addendum 28 (Job 441690): PACK support — the tectonic class-(b) residuals
 # (run 37619650435: (8675309, tectonic) diverged=5, (424242, tectonic)
 # diverged=5) need the SAME per-block density bisect as the vanilla resid
-class, but on a server booted WITH the pack and against the MERGED extract
+# class, but on a server booted WITH the pack and against the MERGED extract
 # (vanilla base + pack overlay, the ci_datapacks protocol). PACK=vanilla
 # (default) keeps the historical behaviour bit-for-bit.
 PACK="${PACK:-vanilla}"
