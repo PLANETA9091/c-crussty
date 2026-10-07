@@ -293,6 +293,88 @@ pub struct StructureSetEntry {
     pub weight: i32,
 }
 
+/// Per-(set, placement chunk) pick diagnostics (I8 narrowing v2): which
+/// triggers make OUR pick chain potentially divergent from Java's.
+/// A faithful pick (all candidates jigsaw with supported start_height/alias
+/// types and resolvable pools) reproduces Java bit-for-bit — chunks whose
+/// whole neighborhood is faithful are generated with the REAL Beardifier
+/// and compared honestly by the gate; unfaithful neighborhoods stay I8-marked
+/// (conservative direction).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PickDiag {
+    /// drawn candidate whose structure JSON is not a supported jigsaw type
+    /// (Java generates it through its own StructureType; we skip + retry)
+    pub non_jigsaw_drawn: usize,
+    /// drawn candidate with an unsupported start_height provider (crash-path
+    /// fallback in Java; we skip the candidate entirely)
+    pub unsupported_start_height: usize,
+    /// drawn candidate carrying pool_alias bindings of unsupported types
+    /// (Java applies them; our lookup degrades to identity for those keys)
+    pub unsupported_alias: usize,
+    /// the assembly hit a pool key absent from the extract (Java's registry
+    /// may have it — extract protocol gap; the ALIASED-key raw fallback is
+    /// Java-identical but lands in the same counter — over-marking direction)
+    pub missing_pool: usize,
+}
+
+impl PickDiag {
+    pub fn unfaithful(&self) -> bool {
+        self.non_jigsaw_drawn > 0
+            || self.unsupported_start_height > 0
+            || self.unsupported_alias > 0
+            || self.missing_pool > 0
+    }
+}
+
+/// Overworld producible biome ids (the pack's biome table when T39 wired
+/// one, else the vanilla preset) — the domain of Java's biome check.
+fn overworld_biome_names(rs: &crate::router::RandomState) -> std::collections::HashSet<String> {
+    match &rs.biome_points {
+        Some(pts) => pts.iter().map(|(_, n)| n.clone()).collect(),
+        None => crate::vanilla_biomes::overworld_points()
+            .into_iter()
+            .map(|(_, n)| n.to_string())
+            .collect(),
+    }
+}
+
+/// Can the drawn candidate EVER generate in the overworld? Java runs the
+/// biome check on the real assembly stub — a candidate whose biome
+/// predicate resolves (tags readable) to a set DISJOINT from every overworld
+/// biome never generates anywhere in this dimension (e.g. the nether-gated
+/// nether_fossil inside an overworld gate). Skipping it is then
+/// Java-identical (Java draws it, assembles, biome-rejects, retries — the
+/// pick stream sees exactly one nextInt either way) — harmless, no I8 mark.
+/// `false` = potentially generable or unknown validity (conservative mark).
+fn candidate_harmless_in_overworld(
+    dir: &WorldgenDir,
+    root: &Path,
+    rs: &crate::router::RandomState,
+    structure_key: &str,
+) -> bool {
+    let Some((sns, spath)) = structure_key.split_once(':') else {
+        return false;
+    };
+    let Some(stext) = dir.get(sns, "structure", spath) else {
+        return false;
+    };
+    let Ok(j) = crate::json::parse(stext) else {
+        return false;
+    };
+    let Some(biomes) = j.get("biomes") else {
+        return false;
+    };
+    let mut names = std::collections::HashSet::new();
+    let mut visiting = Vec::new();
+    let mut unknown = false;
+    crate::structure_scan::resolve_biome_predicate(root, biomes, &mut names, &mut visiting, &mut unknown);
+    if unknown {
+        return false;
+    }
+    let ow = overworld_biome_names(rs);
+    names.is_disjoint(&ow)
+}
+
 /// Parse a structure_set JSON (random_spread placement only — the same
 /// known-gap list as structure_scan: concentric rings / exclusion zones are
 /// not wired).
@@ -371,6 +453,7 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
     set_key: &str,
     sampler: &mut S,
     pools: &mut DirPoolSource,
+    diag: &mut PickDiag,
 ) -> Result<Option<(String, AssemblyResult, TerrainAdjustment)>, String> {
     let (ns, path) = set_key
         .split_once(':')
@@ -415,6 +498,9 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
         }
     }
     let _ = &non_jigsaw;
+    let mut non_jigsaw_drawn = 0usize;
+    let mut unsupported_start_height = 0usize;
+    let mut unsupported_alias = 0usize;
     let params_for =
         |_sj: &JigsawStructureJson, cx: i32, cz: i32, start_y: i32, alias_map: std::collections::HashMap<String, String>| -> AssemblyParams {
             AssemblyParams {
@@ -458,14 +544,32 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
         }
         let entry = list[i1].clone();
         let Some(sj) = structures.get(&entry.structure_key).cloned() else {
+            // Non-jigsaw (or unparseable) candidate DRAWN: Java generates it
+            // through its own StructureType — a divergence source, UNLESS the
+            // candidate's biome predicate can never match an overworld biome
+            // (nether-gated etc.) — then Java biome-rejects it identically.
+            if !candidate_harmless_in_overworld(dir, root, rs, &entry.structure_key) {
+                non_jigsaw_drawn += 1;
+            }
             list.remove(i1);
             total -= entry.weight;
             continue;
         };
+        if !sj.unsupported_aliases.is_empty() {
+            if !candidate_harmless_in_overworld(dir, root, rs, &sj.key) {
+                unsupported_alias += 1;
+            }
+        }
         for a in &sj.unsupported_aliases {
             pools.unsupported.push(format!("pool_aliases on {}: {a}", sj.key));
         }
         let Some(sh) = sj.start_height.clone() else {
+            if candidate_harmless_in_overworld(dir, root, rs, &sj.key) {
+                list.remove(i1);
+                total -= entry.weight;
+                continue;
+            }
+            unsupported_start_height += 1;
             pools
                 .unsupported
                 .push(format!("unsupported start_height on {} (skipped)", sj.key));
@@ -504,7 +608,9 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
         }
         alias_map = map;
         let params = params_for(&sj, chunk_x, chunk_z, params_pos_y, alias_map);
+        let mp_before = pools.missing_pools.len();
         let generated = add_pieces(&params, pools, &mut assembly_rng, sampler);
+        diag.missing_pool += pools.missing_pools.len() - mp_before;
         let Some(assembly) = generated else {
             list.remove(i1);
             total -= entry.weight;
@@ -525,6 +631,9 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
         result = Some((entry.structure_key, assembly, sj.terrain_adaptation));
         break;
     }
+    diag.non_jigsaw_drawn = non_jigsaw_drawn;
+    diag.unsupported_start_height = unsupported_start_height;
+    diag.unsupported_alias = unsupported_alias;
     Ok(result)
 }
 
@@ -575,8 +684,12 @@ pub struct BeardFeed<'d, 'r> {
     pools: DirPoolSource<'d>,
     /// structure_start_for_chunk memo: assembly is deterministic per
     /// (set, levelSeed, placementChunk) and every chunk C within the
-    /// createReferences +-8 window re-queries the same P.
-    start_cache: HashMap<(String, i32, i32), Option<(String, AssemblyResult, TerrainAdjustment)>>,
+    /// createReferences +-8 window re-queries the same P. The pick
+    /// diagnostics ride along (I8 narrowing v2).
+    start_cache: HashMap<
+        (String, i32, i32),
+        (Option<(String, AssemblyResult, TerrainAdjustment)>, PickDiag),
+    >,
 }
 
 impl<'d, 'r> BeardFeed<'d, 'r> {
@@ -656,13 +769,15 @@ impl<'d, 'r> BeardFeed<'d, 'r> {
         set_key: &str,
         px: i32,
         pz: i32,
-    ) -> Option<(String, AssemblyResult, TerrainAdjustment)> {
+    ) -> (Option<(String, AssemblyResult, TerrainAdjustment)>, PickDiag) {
         let key = (set_key.to_string(), px, pz);
         if let Some(hit) = self.start_cache.get(&key) {
             return hit.clone();
         }
+        let mut diag = PickDiag::default();
         let hit = match structure_start_for_chunk(
             self.dir, self.root, self.rs, self.level_seed, px, pz, set_key, sampler, &mut self.pools,
+            &mut diag,
         ) {
             Ok(v) => v,
             Err(e) => {
@@ -670,18 +785,35 @@ impl<'d, 'r> BeardFeed<'d, 'r> {
                 None
             }
         };
-        self.start_cache.insert(key, hit.clone());
-        hit
+        if std::env::var("NCF_BEARD_PROBE").is_ok() && diag.unfaithful() {
+            eprintln!(
+                "[pick-diag] {set_key} @ ({px},{pz}): non_jigsaw {} uns_sh {} uns_alias {} miss_pool {} -> {:?}",
+                diag.non_jigsaw_drawn,
+                diag.unsupported_start_height,
+                diag.unsupported_alias,
+                diag.missing_pool,
+                hit.as_ref().map(|(k, _, _)| k)
+            );
+        }
+        self.start_cache.insert(key, (hit.clone(), diag.clone()));
+        (hit, diag)
     }
 
     /// Beardifier.forStructuresInChunk over the createReferences +-8 scan for
-    /// chunk (chunk_x, chunk_z).
-    pub fn build_for_chunk<S: FirstFreeHeight>(
+    /// chunk (chunk_x, chunk_z), with the I8-narrowing reach diagnostics:
+    /// `referenced` = adapting starts whose box touches this chunk's column;
+    /// `unfaithful` = SOME (set, P) in the +-8 neighborhood had a pick
+    /// trigger that may diverge from Java (see PickDiag) — regardless of the
+    /// reference outcome (an unfaithful pick can hide a Java start whose box
+    /// WOULD touch this chunk); `multi` = two or more starts referenced (the
+    /// Java HashMap sum-order edge).
+    pub fn build_for_chunk_diag<S: FirstFreeHeight>(
         &mut self,
         sampler: &mut S,
         chunk_x: i32,
         chunk_z: i32,
-    ) -> crate::beardifier::Beardifier {
+    ) -> (crate::beardifier::Beardifier, ReachDiag) {
+        let mut unfaithful = false;
         let min_block_x = chunk_x * 16;
         let min_block_z = chunk_z * 16;
         // (structure key, placement chunk) -> start — the Java reference map
@@ -693,7 +825,11 @@ impl<'d, 'r> BeardFeed<'d, 'r> {
         for set_key in &sets {
             for px in chunk_x - 8..=chunk_x + 8 {
                 for pz in chunk_z - 8..=chunk_z + 8 {
-                    let Some((structure_key, assembly, adj)) = self.start_for(sampler, set_key, px, pz) else {
+                    let (hit, diag) = self.start_for(sampler, set_key, px, pz);
+                    if diag.unfaithful() {
+                        unfaithful = true;
+                    }
+                    let Some((structure_key, assembly, adj)) = hit else {
                         continue;
                     };
                     if adj == TerrainAdjustment::None {
@@ -803,8 +939,29 @@ impl<'d, 'r> BeardFeed<'d, 'r> {
                 }
             }
         }
-        crate::beardifier::Beardifier::new(rigids, junctions, union)
+        let referenced = referenced.len();
+        (
+            crate::beardifier::Beardifier::new(rigids, junctions, union),
+            ReachDiag { referenced, unfaithful },
+        )
     }
+
+    /// Convenience wrapper (tests / tools that only need the Beardifier).
+    pub fn build_for_chunk<S: FirstFreeHeight>(
+        &mut self,
+        sampler: &mut S,
+        chunk_x: i32,
+        chunk_z: i32,
+    ) -> crate::beardifier::Beardifier {
+        self.build_for_chunk_diag(sampler, chunk_x, chunk_z).0
+    }
+}
+
+/// I8-narrowing reach diagnostics for one chunk (see build_for_chunk_diag).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ReachDiag {
+    pub referenced: usize,
+    pub unfaithful: bool,
 }
 
 #[cfg(test)]

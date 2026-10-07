@@ -86,6 +86,7 @@ fn main() {
         &set_key,
         &mut sampler,
         &mut pools,
+        &mut chunk_factory::piece_feed::PickDiag::default(),
     )
     .expect("structure_start_for_chunk");
     let dt = t0.elapsed();

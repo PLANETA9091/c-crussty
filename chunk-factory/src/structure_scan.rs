@@ -300,8 +300,26 @@ pub(crate) fn biome_at(rs: &RandomState, list: &mut ParameterList, bx: i32, by: 
     list.find_value(&target).to_string()
 }
 
-/// Scan one batch for structure-fallback chunks. `root` = the worldgen
-/// extract (biome tags are read from <root>/data/<ns>/tags/worldgen/biome).
+/// Scan one batch for I8-fallback chunks — v2 (P5.3 increment 5): the
+/// marking decision comes from the REAL Beardifier feed, not from the v1
+/// height/stub approximation (deleted; its over-approximation was the
+/// class-(a) red-cell mechanism — chunks Java actually generated were
+/// considered invalid and left unexcluded).
+///
+/// Marked (Java-fallback, excluded from the gate compare):
+///   - `unfaithful`: SOME (set, P) in the chunk's createReferences +-8
+///     neighborhood had a pick trigger that may diverge from Java
+///     (non-jigsaw candidate drawn / unsupported start_height / unsupported
+///     pool_alias type / pool key absent from the extract);
+///   - `multi`: two or more adapting starts referenced (Java sums their
+///     contributions in HashMap order — irreproducible last-bit sum order).
+///
+/// NOT marked (returned to the gate corpus, generated with the REAL
+/// Beardifier): chunks with a faithful neighborhood — zero or exactly one
+/// faithfully-assembled adapting start. Loud protocol:
+///   - sets with non-random_spread placement are still UNSCANNED (loud gap,
+///     unchanged — strongholds/concentric_rings);
+///   - the per-chunk reason rides the FallbackStart report.
 pub fn scan_batch(
     dir: &WorldgenDir,
     rs: &RandomState,
@@ -313,30 +331,18 @@ pub fn scan_batch(
     z1: i32,
 ) -> Result<FallbackReport, String> {
     let mut report = FallbackReport::default();
-    let mut biome_list = ParameterList::new(match &rs.biome_points {
-        Some(pts) => pts.clone(),
-        None => vanilla_biomes::overworld_points()
-            .into_iter()
-            .map(|(p, n)| (p, n.to_string()))
-            .collect(),
-    });
-    // noise-fill WORLD_SURFACE_WG heightmap per chunk (idx = x + z*16),
-    // cached; heights feed the stub-grid for projected structures.
-    let mut height_cache: HashMap<(i32, i32), Option<std::sync::Arc<[i32; 256]>>> = HashMap::new();
-    let mut seen_starts: HashSet<(String, String, i32, i32)> = HashSet::new();
 
+    // Loud skipped-set report (same protocol as v1): sets we deliberately do
+    // not scan (non-random_spread placement) — adapting structures inside
+    // them remain an honest hole in the marking.
     for ns in dir.namespaces() {
         for set_name in dir.list(&ns, "structure_set") {
-            let set_key = format!("{ns}:{set_name}");
             let Some(text) = dir.get(&ns, "structure_set", &set_name) else {
                 continue;
             };
-            let j = match crate::json::parse(text) {
-                Ok(j) => j,
-                Err(_) => {
-                    report.skipped.push(format!("{set_key}: unparseable"));
-                    continue;
-                }
+            let Ok(j) = crate::json::parse(text) else {
+                report.skipped.push(format!("{ns}:{set_name}: unparseable"));
+                continue;
             };
             let placement_ok = j
                 .get("placement")
@@ -347,156 +353,42 @@ pub fn scan_batch(
             if !placement_ok {
                 report
                     .skipped
-                    .push(format!("{set_key}: non-random_spread placement (known gap)"));
-                continue;
-            }
-            let placement = match RandomSpreadStructurePlacement::parse(&j) {
-                Ok(p) => p,
-                Err(e) => {
-                    report.skipped.push(format!("{set_key}: {e}"));
-                    continue;
-                }
-            };
-            let Some(structures) = j.get("structures") else {
-                continue;
-            };
-            let Some(entries) = structures.as_arr() else {
-                continue;
-            };
-            for entry in entries {
-                let Some(skey) = entry.get("structure").and_then(|v| v.as_str()) else {
-                    continue;
-                };
-                let Some((sns, spath)) = skey.split_once(':') else {
-                    continue;
-                };
-                let Some(stext) = dir.get(sns, "structure", spath) else {
-                    report.skipped.push(format!("{skey}: structure json missing"));
-                    continue;
-                };
-                let sj = match crate::json::parse(stext) {
-                    Ok(j) => j,
-                    Err(_) => {
-                        report.skipped.push(format!("{skey}: unparseable structure"));
-                        continue;
-                    }
-                };
-                let adapt = sj
-                    .get("terrain_adaptation")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("none");
-                if adapt == "none" {
-                    continue;
-                }
-                let maxdist = match sj.get("max_distance_from_center") {
-                    Some(v) => match (v.as_i64(), v.get("horizontal").and_then(|h| h.as_i64())) {
-                        (_, Some(h)) => h as i32,
-                        (Some(d), _) => d as i32,
-                        _ => 80,
-                    },
-                    None => 80,
-                };
-                let r = radius_chunks(maxdist);
-                // biome predicate
-                let mut biomes: HashSet<String> = HashSet::new();
-                let mut visiting: Vec<String> = Vec::new();
-                let mut pred_unknown = false;
-                if let Some(b) = sj.get("biomes") {
-                    resolve_biome_predicate(root, b, &mut biomes, &mut visiting, &mut pred_unknown);
-                } else {
-                    pred_unknown = true;
-                }
-                let (lo_x, hi_x) = (x0 - r, x1 + r);
-                let (lo_z, hi_z) = (z0 - r, z1 + r);
-                for rx in lo_x.div_euclid(placement.spacing)..=hi_x.div_euclid(placement.spacing) {
-                    for rz in lo_z.div_euclid(placement.spacing)..=hi_z.div_euclid(placement.spacing) {
-                        let Some((px, pz)) = placement.potential_chunk_for_region(seed, rx, rz) else {
-                            continue;
-                        };
-                        if px < lo_x || px > hi_x || pz < lo_z || pz > hi_z {
-                            continue;
-                        }
-                        // validity: biome at the start-box-center grid
-                        let mut valid = true;
-                        let mut unknown_validity = pred_unknown;
-                        if !pred_unknown {
-                            // projected grids stay inside the candidate chunk:
-                            // fetch its heightmap once, read columns from it
-                            let hm: Option<std::sync::Arc<[i32; 256]>> = {
-                                let needs_height = sj
-                                    .get("project_start_to_heightmap")
-                                    .and_then(|v| v.as_str())
-                                    .is_some();
-                                if needs_height {
-                                    height_cache
-                                        .entry((px, pz))
-                                        .or_insert_with(|| {
-                                            match crate::filler::generate_noise_chunk(rs, seed, px, pz)
-                                            {
-                                                Ok(fc) => {
-                                                    let mut a = Box::new([0i32; 256]);
-                                                    a.copy_from_slice(
-                                                        &fc.heightmaps[1].first_available,
-                                                    );
-                                                    Some(std::sync::Arc::new(*a))
-                                                }
-                                                Err(_) => None,
-                                            }
-                                        })
-                                        .clone()
-                                } else {
-                                    None
-                                }
-                            };
-                            let height_of = |dx: i32, dz: i32| -> Option<i32> {
-                                let col = ((px * 16 + dx) & 15) as usize
-                                    + (((pz * 16 + dz) & 15) * 16) as usize;
-                                hm.as_ref().map(|a| a[col] - 1)
-                            };
-                            let (samples, unk) = stub_samples(&sj, &height_of);
-                            unknown_validity |= unk;
-                            if samples.is_empty() {
-                                valid = true; // unknown validity — over-approx
-                            } else {
-                                valid = samples.iter().any(|(dx, dz, y)| {
-                                    let b = biome_at(
-                                        rs,
-                                        &mut biome_list,
-                                        px * 16 + dx,
-                                        *y,
-                                        pz * 16 + dz,
-                                    );
-                                    biomes.contains(&b)
-                                });
-                            }
-                        }
-                        if !valid {
-                            continue;
-                        }
-                        // dedupe: the same (set, structure, P) can be reached
-                        // from overlapping region windows when R > spacing
-                        let dedupe_key = (set_key.clone(), skey.to_string(), px, pz);
-                        if !seen_starts.insert(dedupe_key) {
-                            continue;
-                        }
-                        for cx in (px - r).max(x0)..=(px + r).min(x1) {
-                            for cz in (pz - r).max(z0)..=(pz + r).min(z1) {
-                                report.chunks.insert((cx, cz));
-                            }
-                        }
-                        report.starts.push(FallbackStart {
-                            structure: skey.to_string(),
-                            set: set_key.clone(),
-                            cx: px,
-                            cz: pz,
-                            radius: r,
-                            unknown_validity,
-                        });
-                    }
-                }
+                    .push(format!("{ns}:{set_name}: non-random_spread placement (unscanned gap)"));
             }
         }
     }
+
+    let mut sampler = crate::height_feed::ColumnHeightSource::new(rs, seed);
+    let mut feed = crate::piece_feed::BeardFeed::new(dir, root, rs, seed);
+    let mut marked = 0usize;
+    for cx in x0..=x1 {
+        for cz in z0..=z1 {
+            let (beard, diag) = feed.build_for_chunk_diag(&mut sampler, cx, cz);
+            if diag.unfaithful || diag.referenced >= 2 {
+                marked += 1;
+                report.chunks.insert((cx, cz));
+                report.starts.push(FallbackStart {
+                    structure: if diag.unfaithful && diag.referenced >= 2 {
+                        "unfaithful+multi-start".to_string()
+                    } else if diag.unfaithful {
+                        "unfaithful-pick".to_string()
+                    } else {
+                        "multi-start".to_string()
+                    },
+                    set: format!("feed: {} pieces", beard.pieces().len()),
+                    cx,
+                    cz,
+                    radius: 0,
+                    unknown_validity: diag.unfaithful,
+                });
+            }
+        }
+    }
+    eprintln!(
+        "[scan-v2] {} / {} batch chunks marked (feed-driven I8 narrowing)",
+        marked,
+        ((x1 - x0 + 1) * (z1 - z0 + 1)).max(0)
+    );
     Ok(report)
 }
 
