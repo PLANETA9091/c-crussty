@@ -788,6 +788,7 @@ pub struct AssemblyParams {
     pub alias_map: std::collections::HashMap<String, String>,
 }
 
+#[derive(Debug, Clone)]
 pub struct AssemblyResult {
     /// Structure.GenerationStub.position = (centerX, i4, centerZ)
     pub stub_position: (i32, i32, i32),

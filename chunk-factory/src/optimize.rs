@@ -54,7 +54,11 @@ fn trusted_bounds(df: &Df, bank: &NoiseBank) -> Option<(f64, f64)> {
         Df::Clamp { min, max, .. } => (*min, *max), // JSON-given constants
         Df::BlendAlpha => (1.0, 1.0),
         Df::BlendOffset => (0.0, 0.0),
-        Df::Beardifier => (0.0, 0.0),
+        // Java BeardifierOrMarker.minValue()/maxValue() (CFR Beardifier.java):
+        // NEGATIVE_INFINITY / POSITIVE_INFINITY — the per-chunk piece sum is
+        // unbounded a priori (the pre-wiring (0.0, 0.0) was the zero-leaf
+        // value, sound only while Df::Beardifier computed 0.0).
+        Df::Beardifier => (f64::NEG_INFINITY, f64::INFINITY),
         // COMPOSITION over trusted children (formulas = Java constructors
         // applied to OUR child bounds — sound iff children are sound)
         Df::Marker { wrapped: w, .. } => return trusted_bounds(w, bank),

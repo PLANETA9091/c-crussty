@@ -914,6 +914,22 @@ impl RandomState {
             for (i, f) in fields.iter().enumerate() {
                 ifields[i] = intern_df(f, &mut arena, &wiring.bank);
             }
+            // NoiseChunk CFR 156: the per-chunk machine's substance field is
+            // NOT the raw final_density — it is
+            //   cacheAllInCell(add(noiseRouter.finalDensity(),
+            //                       DensityFunctions.BeardifierMarker.INSTANCE))
+            // and NoiseChunk.wrap (CFR 372-373) replaces the marker with the
+            // per-chunk Beardifier. Wire the same synthetic add here; the
+            // Beardifier leaf evaluates through NoiseChunkSim::beard (EMPTY
+            // instance = +0.0 per block, the pre-wiring behavior except the
+            // IEEE -0.0 + 0.0 = +0.0 quirk which Java also applies).
+            let substance_df = ap2_create(
+                Ap2Type::Add,
+                router.final_density.clone(),
+                Df::Beardifier,
+                &wiring.bank,
+            );
+            ifields[11] = intern_df(&substance_df, &mut arena, &wiring.bank);
             SimTemplate::build(&wiring.bank, ifields, arena)
         };
 

@@ -527,3 +527,589 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
     }
     Ok(result)
 }
+
+// ---------------------------------------------------------------------------
+// P5.3 increment 3 — the per-chunk Beardifier feed (Job 441690).
+// ---------------------------------------------------------------------------
+
+/// The per-chunk Beardifier builder: replicates the exact Java protocol that
+/// connects jigsaw assembly to the noise chunk's density function.
+///
+/// Oracle chain (purpur-1.21.10 decompiles):
+/// 1. NoiseBasedChunkGenerator.createNoiseChunk (CFR 119-121):
+///    NoiseChunk.forChunk(chunk, random, Beardifier.forStructuresInChunk(
+///    structureManager, chunk.getPos()), ...) — the beardifier is built ONCE
+///    per chunk, before any noise evaluation.
+/// 2. ChunkGenerator.createReferences (CFR decomp441b 532-565): chunk C
+///    references every placement chunk P in [cx-8..cx+8] x [cz-8..cz+8]
+///    whose start's whole-structure bounding box intersects C's 16x16 X/Z
+///    column — BoundingBox.intersects(minBlockX, minBlockZ, minBlockX+15,
+///    minBlockZ+15), the 4-arg X/Z-only form with INCLUSIVE overlap
+///    (maxX >= minX && minX <= maxX && maxZ >= minZ && minZ <= maxZ).
+/// 3. StructureManager.startsForStructure (decomp441b 62-75): the Beardifier
+///    sees exactly the starts referenced by C (loaded from the start chunk
+///    at STRUCTURE_STARTS; isValid() = pieces non-empty), filtered by
+///    structure.terrainAdaptation() != NONE.
+/// 4. Beardifier.forStructuresInChunk (decomp441 30-70): per start, per
+///    piece — keep pieces with isCloseToChunk(chunkPos, 12) (4-arg X/Z
+///    intersect against [minBlockX-12, minBlockX+15+12] x [minBlockZ-12,
+///    minBlockZ+15+12]); PoolElementStructurePiece contributes
+///    Rigid(box, STRUCTURE-level adjustment, groundLevelDelta) only when
+///    the element projection == RIGID (non-rigid pieces contribute NOTHING
+///    to the piece list but their junctions are still collected); junctions
+///    are filtered by the EXCLUSIVE window `sourceX <= minBlockX - 12 ||
+///    sourceZ <= minBlockZ - 12 || sourceX >= minBlockX + 15 + 12 ||
+///    sourceZ >= minBlockZ + 15 + 12 -> reject`; non-PoolElement pieces
+///    contribute Rigid(box, adjustment, 0) (not reachable through this
+///    feed — the engine assembles jigsaw structures only; loud notes).
+///    Union box = encapsulating over the INCLUDED piece boxes and junction
+///    point boxes, then inflatedBy(24). Empty union => Beardifier.EMPTY.
+pub struct BeardFeed<'d, 'r> {
+    dir: &'d WorldgenDir,
+    root: &'r Path,
+    rs: &'r crate::router::RandomState,
+    level_seed: i64,
+    /// Structure sets carrying >= 1 structure with terrain_adaptation != none
+    /// (random_spread placement only, mirroring structure_scan's honest gap).
+    adapting_sets: Vec<String>,
+    pools: DirPoolSource<'d>,
+    /// structure_start_for_chunk memo: assembly is deterministic per
+    /// (set, levelSeed, placementChunk) and every chunk C within the
+    /// createReferences +-8 window re-queries the same P.
+    start_cache: HashMap<(String, i32, i32), Option<(String, AssemblyResult, TerrainAdjustment)>>,
+}
+
+impl<'d, 'r> BeardFeed<'d, 'r> {
+    pub fn new(dir: &'d WorldgenDir, root: &'r Path, rs: &'r crate::router::RandomState, level_seed: i64) -> Self {
+        let mut adapting_sets = Vec::new();
+        for ns in dir.namespaces() {
+            for set_name in dir.list(&ns, "structure_set") {
+                let Some(text) = dir.get(&ns, "structure_set", &set_name) else {
+                    continue;
+                };
+                let Ok(j) = crate::json::parse(text) else {
+                    continue;
+                };
+                let placement_ok = j
+                    .get("placement")
+                    .and_then(|p| p.get("type"))
+                    .and_then(|t| t.as_str())
+                    .unwrap_or("minecraft:random_spread")
+                    == "minecraft:random_spread";
+                if !placement_ok {
+                    // Loud honest gap (same protocol as structure_scan).
+                    eprintln!(
+                        "[beard-feed] {}: non-random_spread placement — not scanned",
+                        set_name
+                    );
+                    continue;
+                }
+                let has_adapting = j
+                    .get("structures")
+                    .and_then(|s| s.as_arr())
+                    .map(|entries| {
+                        entries.iter().any(|e| {
+                            e.get("structure")
+                                .and_then(|v| v.as_str())
+                                .and_then(|k| {
+                                    let (sns, spath) = k.split_once(':')?;
+                                    let stext = dir.get(sns, "structure", spath)?;
+                                    let sj = crate::json::parse(stext).ok()?;
+                                    sj.get("terrain_adaptation")
+                                        .and_then(|v| v.as_str())
+                                        .map(|a| a != "none")
+                                })
+                                .unwrap_or(false)
+                        })
+                    })
+                    .unwrap_or(false);
+                if has_adapting {
+                    adapting_sets.push(format!("{ns}:{set_name}"));
+                }
+            }
+        }
+        BeardFeed {
+            dir,
+            root,
+            rs,
+            level_seed,
+            adapting_sets,
+            pools: DirPoolSource::new(dir),
+            start_cache: HashMap::new(),
+        }
+    }
+
+    /// Assembly diagnostics accumulated by the DirPoolSource (missing pools
+    /// / templates / unsupported pieces — the narrowed-I8 inputs, directive 1).
+    pub fn pools(&self) -> &DirPoolSource<'d> {
+        &self.pools
+    }
+
+    /// The adapting set keys considered by this feed.
+    pub fn adapting_sets(&self) -> &[String] {
+        &self.adapting_sets
+    }
+
+    fn start_for<S: FirstFreeHeight>(
+        &mut self,
+        sampler: &mut S,
+        set_key: &str,
+        px: i32,
+        pz: i32,
+    ) -> Option<(String, AssemblyResult, TerrainAdjustment)> {
+        let key = (set_key.to_string(), px, pz);
+        if let Some(hit) = self.start_cache.get(&key) {
+            return hit.clone();
+        }
+        let hit = match structure_start_for_chunk(
+            self.dir, self.root, self.rs, self.level_seed, px, pz, set_key, sampler, &mut self.pools,
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("[beard-feed] {set_key} @ ({px},{pz}): {e}");
+                None
+            }
+        };
+        self.start_cache.insert(key, hit.clone());
+        hit
+    }
+
+    /// Beardifier.forStructuresInChunk over the createReferences +-8 scan for
+    /// chunk (chunk_x, chunk_z).
+    pub fn build_for_chunk<S: FirstFreeHeight>(
+        &mut self,
+        sampler: &mut S,
+        chunk_x: i32,
+        chunk_z: i32,
+    ) -> crate::beardifier::Beardifier {
+        let min_block_x = chunk_x * 16;
+        let min_block_z = chunk_z * 16;
+        // (structure key, placement chunk) -> start — the Java reference map
+        // is keyed by STRUCTURE; the same structure appearing via two sets
+        // yields ONE start (createStructures overwrites per chunk map).
+        let mut referenced: HashMap<(String, i32, i32), (AssemblyResult, TerrainAdjustment)> =
+            HashMap::new();
+        let sets = self.adapting_sets.clone();
+        for set_key in &sets {
+            for px in chunk_x - 8..=chunk_x + 8 {
+                for pz in chunk_z - 8..=chunk_z + 8 {
+                    let Some((structure_key, assembly, adj)) = self.start_for(sampler, set_key, px, pz) else {
+                        continue;
+                    };
+                    if adj == TerrainAdjustment::None {
+                        // startsForStructure predicate: adaptation != NONE.
+                        continue;
+                    }
+                    // Reference check: start's WHOLE-STRUCTURE box vs the
+                    // chunk's 16x16 column, 4-arg X/Z intersect (inclusive).
+                    let mut union: Option<crate::beardifier::InclusiveBox> = None;
+                    for piece in &assembly.pieces {
+                        let b = &piece.bounding_box;
+                        union = Some(match union {
+                            Some(u) => crate::beardifier::InclusiveBox::encapsulating(&u, b),
+                            None => *b,
+                        });
+                    }
+                    let Some(start_box) = union else { continue }; // invalid start (no pieces)
+                    let touches = start_box.max_x >= min_block_x
+                        && start_box.min_x <= min_block_x + 15
+                        && start_box.max_z >= min_block_z
+                        && start_box.min_z <= min_block_z + 15;
+                    if !touches {
+                        continue;
+                    }
+                    let map_key = (structure_key, px, pz);
+                    match &referenced.get(&map_key) {
+                        Some(_) => {
+                            // Same structure + start chunk via two sets: Java
+                            // overwrites with a bit-identical regeneration
+                            // (same seed/protocol) — keep the first, note it.
+                            eprintln!(
+                                "[beard-feed] duplicate start {} @ ({px},{pz}) via second set — kept first (bit-identical regeneration)",
+                                map_key.0
+                            );
+                        }
+                        None => {
+                            referenced.insert(map_key, (assembly, adj));
+                        }
+                    }
+                }
+            }
+        }
+
+        // forStructuresInChunk filter (step 4 of the header oracle chain).
+        let mut rigids = Vec::new();
+        let mut junctions = Vec::new();
+        let mut union: Option<crate::beardifier::InclusiveBox> = None;
+        // Deterministic order: chunk-position scan, then structure key. NOTE
+        // (honest edge): Java's references map is a HashMap (ChunkAccess CFR
+        // 114: Maps.newHashMap()) — when MULTIPLE adapting starts reference
+        // the same chunk, the Java beardifier sums their contributions in
+        // HASH order, which is not reproducible here; the f64 sum order can
+        // differ in the last bits. Single-start chunks (the gate corpus norm)
+        // are order-free. Loud if ever hit in a gate cell.
+        let mut map_keys: Vec<_> = referenced.keys().cloned().collect();
+        map_keys.sort_by(|a, b| (a.1, a.2, &a.0).cmp(&(b.1, b.2, &b.0)));
+        for (structure_key, px, _pz) in &map_keys {
+            let (assembly, adj) = &referenced[&(structure_key.clone(), *px, *_pz)];
+            let _ = structure_key;
+            for piece in &assembly.pieces {
+                let b = &piece.bounding_box;
+                // isCloseToChunk(chunkPos, 12): 4-arg X/Z intersect, INCLUSIVE.
+                let close = b.max_x >= min_block_x - 12
+                    && b.min_x <= min_block_x + 15 + 12
+                    && b.max_z >= min_block_z - 12
+                    && b.min_z <= min_block_z + 15 + 12;
+                if !close {
+                    continue;
+                }
+                if piece.element.projection() == crate::jigsaw::Projection::Rigid {
+                    rigids.push(crate::beardifier::BeardRigid::new(
+                        b.min_x, b.min_y, b.min_z, b.max_x, b.max_y, b.max_z, *adj,
+                        piece.ground_level_delta,
+                    ));
+                    union = Some(match union {
+                        Some(u) => crate::beardifier::InclusiveBox::encapsulating(&u, b),
+                        None => *b,
+                    });
+                }
+                for j in &piece.junctions {
+                    // EXCLUSIVE window (CFR: sourceX <= minBlockX - 12 ||
+                    // sourceX >= minBlockX + 15 + 12 rejected).
+                    if j.source_x <= min_block_x - 12
+                        || j.source_z <= min_block_z - 12
+                        || j.source_x >= min_block_x + 15 + 12
+                        || j.source_z >= min_block_z + 15 + 12
+                    {
+                        continue;
+                    }
+                    junctions.push(crate::beardifier::BeardJunction {
+                        source_x: j.source_x,
+                        source_ground_y: j.source_ground_y,
+                        source_z: j.source_z,
+                    });
+                    let jb = crate::beardifier::InclusiveBox {
+                        min_x: j.source_x,
+                        min_y: j.source_ground_y,
+                        min_z: j.source_z,
+                        max_x: j.source_x,
+                        max_y: j.source_ground_y,
+                        max_z: j.source_z,
+                    };
+                    union = Some(match union {
+                        Some(u) => crate::beardifier::InclusiveBox::encapsulating(&u, &jb),
+                        None => jb,
+                    });
+                }
+            }
+        }
+        crate::beardifier::Beardifier::new(rigids, junctions, union)
+    }
+}
+
+#[cfg(test)]
+mod beard_feed_tests {
+    use super::*;
+    use crate::beardifier::{InclusiveBox, TerrainAdjustment};
+    use crate::height_feed::ColumnHeightSource;
+    use crate::router::{RandomState, WorldgenDir};
+    use std::path::Path;
+
+    const SEED: i64 = 3053459;
+
+    fn extract_dir() -> (WorldgenDir, std::path::PathBuf) {
+        let root = std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ci-server/worldgen-extract"));
+        let dir = WorldgenDir::load(&root).expect("worldgen dir");
+        (dir, root)
+    }
+
+    /// The whole-structure union box from the GoldenDumper JSON.
+    fn oracle_pieces(json: &crate::json::Json) -> Vec<InclusiveBox> {
+        let mut out = Vec::new();
+        for start in json.get("starts").and_then(|s| s.as_arr()).unwrap_or_default() {
+            for piece in start.get("pieces").and_then(|p| p.as_arr()).unwrap_or_default() {
+                let b = piece.get("box").and_then(|v| v.as_arr()).unwrap();
+                let nums: Vec<i32> = b.iter().filter_map(|v| v.as_i64()).map(|v| v as i32).collect();
+                out.push(InclusiveBox {
+                    min_x: nums[0],
+                    min_y: nums[1],
+                    min_z: nums[2],
+                    max_x: nums[3],
+                    max_y: nums[4],
+                    max_z: nums[5],
+                });
+            }
+        }
+        out
+    }
+
+    fn oracle_junctions(json: &crate::json::Json) -> Vec<(i32, i32, i32)> {
+        let mut out = Vec::new();
+        for start in json.get("starts").and_then(|s| s.as_arr()).unwrap_or_default() {
+            for piece in start.get("pieces").and_then(|p| p.as_arr()).unwrap_or_default() {
+                for j in piece.get("junctions").and_then(|p| p.as_arr()).unwrap_or_default() {
+                    let nums: Vec<i32> = j.as_arr().unwrap().iter().filter_map(|v| v.as_i64()).map(|v| v as i32).collect();
+                    out.push((nums[0], nums[1], nums[2]));
+                }
+            }
+        }
+        out
+    }
+
+    /// Java isCloseToChunk(chunkPos, 12) — 4-arg X/Z intersect, inclusive.
+    fn is_close(b: &InclusiveBox, min_block_x: i32, min_block_z: i32) -> bool {
+        b.max_x >= min_block_x - 12
+            && b.min_x <= min_block_x + 15 + 12
+            && b.max_z >= min_block_z - 12
+            && b.min_z <= min_block_z + 15 + 12
+    }
+
+    /// Java junction window — EXCLUSIVE: source ∉ [min-12] ∪ [min+27).
+    fn junction_in_window(sx: i32, sz: i32, min_block_x: i32, min_block_z: i32) -> bool {
+        !(sx <= min_block_x - 12
+            || sz <= min_block_z - 12
+            || sx >= min_block_x + 15 + 12
+            || sz >= min_block_z + 15 + 12)
+    }
+
+    #[test]
+    fn beard_feed_matches_golden_oracle_chunk_4_6() {
+        let (dir, root) = extract_dir();
+        let rs = RandomState::build_overworld(&dir, SEED).expect("build_overworld");
+        let mut sampler = ColumnHeightSource::new(&rs, SEED);
+        let mut feed = BeardFeed::new(&dir, &root, &rs, SEED);
+        assert!(
+            feed.adapting_sets().iter().any(|s| s == "minecraft:trial_chambers"),
+            "trial_chambers set must be among the adapting sets"
+        );
+        let beard = feed.build_for_chunk(&mut sampler, 4, 6);
+        assert!(!beard.is_empty(), "chunk (4,6) hosts the trial_chambers start");
+
+        // Oracle: ci-server/golden/pieces_4_6.json (bit-exact GoldenDumper
+        // capture of the trial_chambers start @ (4,6)).
+        let text = std::fs::read_to_string(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../ci-server/golden/pieces_4_6.json"
+        ))
+        .expect("oracle json");
+        let j = crate::json::parse(&text).unwrap();
+        let (mbx, mbz) = (64, 96);
+        let expected_boxes: Vec<InclusiveBox> =
+            oracle_pieces(&j).into_iter().filter(|b| is_close(b, mbx, mbz)).collect();
+        let expected_glds: Vec<i32> = {
+            let mut v = Vec::new();
+            for start in j.get("starts").and_then(|s| s.as_arr()).unwrap() {
+                for piece in start.get("pieces").and_then(|p| p.as_arr()).unwrap() {
+                    let b = piece.get("box").and_then(|x| x.as_arr()).unwrap();
+                    let nums: Vec<i32> =
+                        b.iter().filter_map(|x| x.as_i64()).map(|x| x as i32).collect();
+                    let box_ = InclusiveBox {
+                        min_x: nums[0],
+                        min_y: nums[1],
+                        min_z: nums[2],
+                        max_x: nums[3],
+                        max_y: nums[4],
+                        max_z: nums[5],
+                    };
+                    if is_close(&box_, mbx, mbz) {
+                        v.push(piece.get("gld").and_then(|g| g.as_i64()).unwrap() as i32);
+                    }
+                }
+            }
+            v
+        };
+        assert!(!expected_boxes.is_empty());
+
+        let got = beard.pieces();
+        assert_eq!(
+            got.len(),
+            expected_boxes.len(),
+            "rigid piece count vs oracle (close-filter)"
+        );
+        for (g, (b, gld)) in got.iter().zip(expected_boxes.iter().zip(expected_glds.iter())) {
+            assert_eq!(g.adjustment, TerrainAdjustment::Encapsulate, "trial_chambers = encapsulate");
+            assert_eq!((g.min_x, g.min_y, g.min_z), (b.min_x, b.min_y, b.min_z));
+            assert_eq!((g.max_x, g.max_y, g.max_z), (b.max_x, b.max_y, b.max_z));
+            assert_eq!(g.ground_level_delta, *gld, "gld for box {b:?}");
+        }
+
+        // Junctions: window-filtered, order preserved.
+        let expected_j: Vec<(i32, i32, i32)> = oracle_junctions(&j)
+            .into_iter()
+            .filter(|(sx, _, sz)| junction_in_window(*sx, *sz, mbx, mbz))
+            .collect();
+        let got_j: Vec<(i32, i32, i32)> =
+            beard.junctions().iter().map(|j| (j.source_x, j.source_ground_y, j.source_z)).collect();
+        assert_eq!(got_j, expected_j, "junction windows/order");
+
+        // Union box: encapsulating over included pieces + junction points,
+        // inflated by 24.
+        let mut u: Option<InclusiveBox> = None;
+        for b in &expected_boxes {
+            u = Some(match u {
+                Some(p) => InclusiveBox::encapsulating(&p, b),
+                None => *b,
+            });
+        }
+        for (sx, sgy, sz) in &expected_j {
+            let jb = InclusiveBox {
+                min_x: *sx,
+                min_y: *sgy,
+                min_z: *sz,
+                max_x: *sx,
+                max_y: *sgy,
+                max_z: *sz,
+            };
+            u = Some(match u {
+                Some(p) => InclusiveBox::encapsulating(&p, &jb),
+                None => jb,
+            });
+        }
+        assert_eq!(beard.affected(), u.map(|b| b.inflated_by(24)).as_ref());
+    }
+
+    #[test]
+    fn beard_feed_reference_semantics_neighbor_chunk() {
+        // Chunk (3,6): NOT the placement chunk, but the trial_chambers start
+        // box touches its 16x16 column -> createReferences marks it and the
+        // feed must see the start (pieces near it included).
+        let (dir, root) = extract_dir();
+        let rs = RandomState::build_overworld(&dir, SEED).expect("build_overworld");
+        let mut sampler = ColumnHeightSource::new(&rs, SEED);
+        let mut feed = BeardFeed::new(&dir, &root, &rs, SEED);
+        let beard = feed.build_for_chunk(&mut sampler, 3, 6);
+        assert!(!beard.is_empty(), "(3,6) must reference the (4,6) start");
+
+        // Oracle expectation for the trial subset at (3,6).
+        let text = std::fs::read_to_string(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../ci-server/golden/pieces_4_6.json"
+        ))
+        .unwrap();
+        let j = crate::json::parse(&text).unwrap();
+        let (mbx, mbz) = (48, 96);
+        let expected: Vec<InclusiveBox> =
+            oracle_pieces(&j).into_iter().filter(|b| is_close(b, mbx, mbz)).collect();
+        let got_encapsulate: Vec<&crate::beardifier::BeardRigid> = beard
+            .pieces()
+            .iter()
+            .filter(|p| p.adjustment == TerrainAdjustment::Encapsulate)
+            .collect();
+        assert_eq!(
+            got_encapsulate.len(),
+            expected.len(),
+            "trial subset at (3,6) (other adapting starts would differ in adjustment)"
+        );
+        for (g, b) in got_encapsulate.iter().zip(expected.iter()) {
+            assert_eq!((g.min_x, g.min_y, g.min_z, g.max_x, g.max_y, g.max_z),
+                       (b.min_x, b.min_y, b.min_z, b.max_x, b.max_y, b.max_z));
+        }
+    }
+
+    #[test]
+    fn beard_feed_necessary_condition_and_determinism() {
+        // Protocol-direction check: a NON-EMPTY beardifier at chunk C implies
+        // some adapting placement chunk within the createReferences +-8
+        // window (no start -> no pieces). Also: empty chunks EXIST in a scan
+        // range (the biome filter kills most placements), and a fresh feed
+        // reproduces the same rigids bit-for-bit (start cache determinism).
+        let (dir, root) = extract_dir();
+        let rs = RandomState::build_overworld(&dir, SEED).expect("build_overworld");
+        let mut sampler = ColumnHeightSource::new(&rs, SEED);
+        let mut feed = BeardFeed::new(&dir, &root, &rs, SEED);
+        let mut empties = 0usize;
+        let mut nonempty = 0usize;
+        for (cx, cz) in [(30, 30), (35, 30), (40, 35), (-30, 25), (25, -40), (0, 60), (-45, -30)] {
+            let beard = feed.build_for_chunk(&mut sampler, cx, cz);
+            if beard.is_empty() {
+                empties += 1;
+            } else {
+                nonempty += 1;
+                let mut any_placement = false;
+                for set_key in feed.adapting_sets() {
+                    let Some(text) =
+                        dir.get("minecraft", "structure_set", set_key.split_once(':').unwrap().1)
+                    else {
+                        continue;
+                    };
+                    let Ok(j) = crate::json::parse(text) else { continue };
+                    let Ok(placement) =
+                        crate::random_spread::RandomSpreadStructurePlacement::parse(&j)
+                    else {
+                        continue;
+                    };
+                    for px in cx - 8..=cx + 8 {
+                        for pz in cz - 8..=cz + 8 {
+                            if placement.is_placement_chunk(SEED, px, pz) {
+                                any_placement = true;
+                            }
+                        }
+                    }
+                }
+                assert!(
+                    any_placement,
+                    "non-empty beardifier at ({cx},{cz}) but no adapting placement within +-8"
+                );
+            }
+        }
+        // NOTE: no nonempty>0 assertion — the far scan may legitimately miss
+        // every start; the NON-EMPTY path is exercised by the (4,6) oracle
+        // test, and here only the necessary-condition IMPLICATION is checked.
+        assert!(
+            empties >= 3,
+            "biome filter must leave several chunks beardifier-free (got {empties}/7)"
+        );
+        // Determinism: a fresh feed (no cache) at the trial start chunk
+        // produces the identical rigid list.
+        let mut feed2 = BeardFeed::new(&dir, &root, &rs, SEED);
+        let mut sampler2 = ColumnHeightSource::new(&rs, SEED);
+        let b1 = feed.build_for_chunk(&mut sampler, 4, 6);
+        let b2 = feed2.build_for_chunk(&mut sampler2, 4, 6);
+        assert_eq!(b1.pieces().len(), b2.pieces().len());
+        for (p1, p2) in b1.pieces().iter().zip(b2.pieces().iter()) {
+            assert_eq!(
+                (p1.min_x, p1.min_y, p1.min_z, p1.max_x, p1.max_y, p1.max_z, p1.ground_level_delta),
+                (p2.min_x, p2.min_y, p2.min_z, p2.max_x, p2.max_y, p2.max_z, p2.ground_level_delta)
+            );
+        }
+        assert_eq!(b1.junctions().len(), b2.junctions().len());
+    }
+
+    #[test]
+    fn beardifier_changes_substance_inside_encapsulate_box() {
+        // Wiring smoke test: the substance root is add(final_density,
+        // BeardifierMarker) — the fed sim MUST differ from the EMPTY sim at a
+        // block inside a trial_chambers piece (ENCAPSULATE adds bury*0.8
+        // >= 0.55 inside the box).
+        let (dir, root) = extract_dir();
+        let rs = RandomState::build_overworld(&dir, SEED).expect("build_overworld");
+        let mut sampler = ColumnHeightSource::new(&rs, SEED);
+        let mut feed = BeardFeed::new(&dir, &root, &rs, SEED);
+        let beard = feed.build_for_chunk(&mut sampler, 4, 6);
+        assert!(!beard.is_empty());
+
+        // A block inside the first oracle piece: box [46..64]x[-27..-8]x[96..114].
+        let (bx, by, bz) = (64, -20, 96);
+        let probe = |beard| -> f64 {
+            let mut sim = crate::interpolator::NoiseChunkSim::from_random_state(&rs, 4, 64, 96);
+            sim.set_beardifier(beard);
+            let mut got = None;
+            sim.drive_column(bx, bz, &mut |x, y, z, sim: &mut crate::interpolator::NoiseChunkSim| {
+                if y == by {
+                    got = Some(sim.substance_value());
+                    return true;
+                }
+                let _ = (x, z);
+                false
+            });
+            got.unwrap_or_else(|| panic!("column probe ({bx},{by},{bz}) never reached"))
+        };
+        let empty_v = probe(crate::beardifier::Beardifier::empty());
+        let fed_v = probe(beard);
+        assert_ne!(
+            empty_v.to_bits(),
+            fed_v.to_bits(),
+            "substance at ({bx},{by},{bz}) must change once the beardifier is fed (empty={empty_v}, fed={fed_v})"
+        );
+    }
+}

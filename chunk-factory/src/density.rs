@@ -494,6 +494,11 @@ impl Df {
             Df::Blended(idx) => bank.blended[*idx].compute(x, y, z),
             Df::BlendAlpha => 1.0,
             Df::BlendOffset => 0.0,
+            // Scalar-tree site: the ROUTER tree never carries a beardifier
+            // node (vanilla JSON has no "beardifier"; Java adds the marker
+            // ONLY inside NoiseChunk's substance wiring, CFR 156 — which the
+            // scalar evaluator does not model). The real per-chunk value
+            // lives in NoiseChunkSim::beard via the wired substance root.
             Df::Beardifier => 0.0,
             Df::EndIslands => panic!("EndIslands scalar eval not implemented yet (Phase 2 tail)"),
             Df::FindTopSurface { density, upper_bound, lower_bound, cell_height } => {
@@ -541,7 +546,9 @@ impl Df {
             Df::Blended(idx) => -bank.blended[*idx].max_value(),
             Df::BlendAlpha => 1.0,
             Df::BlendOffset => 0.0,
-            Df::Beardifier => 0.0,
+            // Java BeardifierOrMarker.minValue() = NEGATIVE_INFINITY (CFR
+            // Beardifier.java); the pre-wiring 0.0 was the zero-leaf value.
+            Df::Beardifier => f64::NEG_INFINITY,
             Df::EndIslands => -0.84375,
             Df::FindTopSurface { lower_bound, .. } => *lower_bound as f64,
         }
@@ -573,7 +580,9 @@ impl Df {
             Df::Blended(idx) => bank.blended[*idx].max_value(),
             Df::BlendAlpha => 1.0,
             Df::BlendOffset => 0.0,
-            Df::Beardifier => 0.0,
+            // Java BeardifierOrMarker.maxValue() = POSITIVE_INFINITY (CFR
+            // Beardifier.java); the pre-wiring 0.0 was the zero-leaf value.
+            Df::Beardifier => f64::INFINITY,
             Df::EndIslands => 0.5625,
             Df::FindTopSurface { lower_bound, upper_bound, .. } => {
                 (*lower_bound as f64).max(upper_bound.max_value_of(bank))
@@ -686,7 +695,10 @@ pub fn mapped_create(ty: MappedType, input: Df, bank: &NoiseBank) -> Df {
 impl Df {
     pub fn is_y_free(&self, bank: &NoiseBank) -> bool {
         match self {
-            Df::Const(_) | Df::BlendAlpha | Df::BlendOffset | Df::Beardifier => true,
+            Df::Const(_) | Df::BlendAlpha | Df::BlendOffset => true,
+            // The beardifier sums piece kernels over y — Y-DEPENDENT once
+            // real (kernel index (y+12) ∈ [0,24)).
+            Df::Beardifier => false,
             Df::YClampedGradient { .. } | Df::Blended(_) | Df::EndIslands | Df::FindTopSurface { .. } => false,
             // Noise value = instance.getValue(x*xz, y*ys, z*xz): y_scale == 0.0
             // makes the y input ±0.0 — the perlin gradient path is ±0-symmetric

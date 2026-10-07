@@ -547,6 +547,12 @@ struct Ctx {
 pub struct NoiseChunkSim<'a> {
     template: &'a SimTemplate,
     pub root_fields: Vec<usize>,
+    /// P5.3 increment 3 — the per-chunk Beardifier instance (Java:
+    /// NoiseChunk.forChunk receives Beardifier.forStructuresInChunk(manager,
+    /// chunkPos); NoiseChunk.wrap CFR 372-373 replaces the BeardifierMarker
+    /// node with it). EMPTY (zero) until the feed is wired — zero behavior
+    /// change by default.
+    beard: crate::beardifier::Beardifier,
     interpolators: Vec<InterpState>,
     cell_caches: Vec<CellCacheState>,
     cache2ds: Vec<Cache2DState>,
@@ -767,6 +773,7 @@ impl<'a> NoiseChunkSim<'a> {
             interpolation_counter: 0,
             array_interpolation_counter: 0,
             bank,
+            beard: crate::beardifier::Beardifier::empty(),
             substance_cache: vec![0.0; (cell_width * cell_width * cell_height) as usize],
             tile,
             tile_epoch,
@@ -936,7 +943,11 @@ impl TemplateBuilder {
     fn classify_node(&self, w: &WNode) -> u8 {
         let yfree_of = |idx: usize| self.node_flags[idx] != 0;
         let yf = match w {
-            WNode::Const(_) | WNode::BlendAlpha | WNode::BlendOffset | WNode::Beardifier => (true, false),
+            // Beardifier is Y-DEPENDENT once real (the kernel index is
+            // (y+12) in [0,24)); the pre-wiring zero leaf was y-free and
+            // the (true, false) was sound only while it computed 0.0.
+            WNode::Beardifier => (false, false),
+            WNode::Const(_) | WNode::BlendAlpha | WNode::BlendOffset => (true, false),
             WNode::ShiftA(_) | WNode::ShiftB(_) => (true, true),
             WNode::YClampedGradient { .. }
             | WNode::Noise(..)
@@ -1319,7 +1330,10 @@ impl<'a> NoiseChunkSim<'a> {
             WNode::Blended(idx) => self.bank.blended[idx].compute(ctx.x, ctx.y, ctx.z),
             WNode::BlendAlpha => 1.0,
             WNode::BlendOffset => 0.0,
-            WNode::Beardifier => 0.0,
+            // BeardifierMarker -> the per-chunk Beardifier (NoiseChunk.wrap
+            // CFR 372-373). EMPTY instance computes exactly 0.0 — identical
+            // to the pre-wiring marker semantics.
+            WNode::Beardifier => self.beard.compute(ctx.x, ctx.y, ctx.z),
             WNode::EndIslands => panic!("EndIslands scalar eval not implemented yet (Phase 2 tail)"),
             WNode::FindTopSurface { density, upper, lower_bound, cell_height } => {
                 let i = mth::floor(self.compute(upper, ctx) / cell_height as f64) * cell_height;
@@ -1723,6 +1737,13 @@ impl<'a> NoiseChunkSim<'a> {
         }
         self.array_interpolation_counter += 1;
         self.filling_cell = false;
+    }
+
+    /// P5.3 increment 3: install the per-chunk Beardifier (call BEFORE any
+    /// drive/drive_blocks — the substance cache fills lazily per cell and
+    /// reads the beardifier through the wired tree).
+    pub fn set_beardifier(&mut self, beard: crate::beardifier::Beardifier) {
+        self.beard = beard;
     }
 
     /// CacheAllInCell.compute: read the substance value for the CURRENT

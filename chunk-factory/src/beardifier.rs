@@ -185,6 +185,20 @@ impl Beardifier {
         self.affected.is_none()
     }
 
+    /// Test/oracle accessors (increment 3 feed tests compare against the
+    /// GoldenDumper JSON bit-for-bit).
+    pub fn pieces(&self) -> &[BeardRigid] {
+        &self.pieces
+    }
+
+    pub fn junctions(&self) -> &[BeardJunction] {
+        &self.junctions
+    }
+
+    pub fn affected(&self) -> Option<&InclusiveBox> {
+        self.affected.as_ref()
+    }
+
     /// Beardifier.compute(FunctionContext) — bit-exact.
     pub fn compute(&self, x: i32, y: i32, z: i32) -> f64 {
         let Some(affected) = &self.affected else { return 0.0 };

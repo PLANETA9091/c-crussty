@@ -284,6 +284,23 @@ impl FillerChunk {
 
 /// Generate one chunk's noise-stage content (NOISE status semantics).
 pub fn generate_noise_chunk(rs: &RandomState, seed: i64, cx: i32, cz: i32) -> Result<FillerChunk, String> {
+    // Pre-wiring delegate: EMPTY beardifier = exactly the pre-increment-3
+    // behavior (Df::Beardifier leaf = 0.0 everywhere).
+    generate_noise_chunk_with_beardifier(rs, seed, cx, cz, crate::beardifier::Beardifier::empty())
+}
+
+/// P5.3 increment 3: the noise fill with a REAL per-chunk Beardifier (Java:
+/// NoiseChunk.forChunk(..., Beardifier.forStructuresInChunk(manager, pos),
+/// ...) — NoiseBasedChunkGenerator.createNoiseChunk CFR 119-121). The caller
+/// builds the Beardifier via piece_feed::BeardFeed (createReferences +
+/// forStructuresInChunk protocol).
+pub fn generate_noise_chunk_with_beardifier(
+    rs: &RandomState,
+    seed: i64,
+    cx: i32,
+    cz: i32,
+    beard: crate::beardifier::Beardifier,
+) -> Result<FillerChunk, String> {
     if rs.settings.legacy_random_source {
         return Err("legacy_random_source settings (nether-style) not supported by the filler yet".into());
     }
@@ -350,6 +367,7 @@ pub fn generate_noise_chunk(rs: &RandomState, seed: i64, cx: i32, cz: i32) -> Re
     // the block rule per block. The aquifer/ore borrows all hang off the
     // immutable rs; only sections/post/hm/table mutate (none overlap rs).
     let mut sim = NoiseChunkSim::from_random_state(rs, 4, min_block_x, min_block_z);
+    sim.set_beardifier(beard);
     let aquifer_ref = &mut aquifer;
     let ore_ref = &ore_rule;
     // NCF profiling only: compiled OUT of normal builds (never in CI); set

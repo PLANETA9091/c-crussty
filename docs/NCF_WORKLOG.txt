@@ -3307,3 +3307,119 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
   цикл генерации не входит. Без изменений против аддендумов 41-44.
 КОРПУС (директива 3): без изменений.
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 11-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 21 (аддендум 46: Job 441690 — P5.3 ИНКРЕМЕНТ 3: Beardifier подключён к машине плотности (substance root add(final,BeardifierMarker), NoiseChunk CFR 156/372-373) + BeardFeed per-chunk протокол (createReferences +-8 + forStructuresInChunk); ОРАКУЛ feed @ trial_chambers (4,6) БИТ-В-БИТ vs pieces_4_6.json; ZERO behavior change доказан A/B против чистого f481bcc) ===
+
+1) ОРАКУЛЫ ДОЧИТАНЫ (decomp441b, новые файлы): StructureManager.java
+   (startsForStructure CFR 62-75: список стартов чанка C = РЕФЕРЕНСЫ
+   (getAllReferences(), Map<Structure, LongSet>) -> старт-чанки P ->
+   getStartForStructure(STRUCTURE_STARTS), isValid = pieces непуст),
+   ChunkGenerator.java (createReferences CFR 532-565: C ссылается на P
+   i3 in [cx-8..cx+8] x i4 in [cz-8..cz+8] iff
+   start.getBoundingBox().intersects(minBlockX, minBlockZ, minBlockX+15,
+   minBlockZ+15) — 4-арг X/Z-only форма с ИНКЛЮЗИВНЫМ перекрытием),
+   StructurePiece.java (isCloseToChunk CFR 123: та же 4-арг форма против
+   [min-12, min+15+12] по X и Z), BoundingBox.java (intersects(4): maxX>=x1
+   && minX<=x2 && maxZ>=z1 && minZ<=z2), StructureStart.java (isValid CFR
+   132 = pieceContainer непуст; getBoundingBox = adjustBoundingBox(
+   calculateBoundingBox()) = объединение боксов pieces), NoiseChunk.java
+   (КЛЮЧЕВОЕ: CFR 156 substance = cacheAllInCell(ADD(finalDensity,
+   BeardifierMarker.INSTANCE)).mapAll(wrap); wrap CFR 372-373 заменяет
+   маркер на per-chunk beardifier — БЕАРДИФАЕР ОЦЕНИВАЕТСЯ ПО-БЛОЧНО ВНУТРИ
+   cacheAllInCell, НЕ участвует в интерполяции cell-углов;
+   NoiseBasedChunkGenerator CFR 182: высотный путь сборки
+   (iterateNoiseColumn) использует ГОЛЫЙ BeardifierMarker (=0.0) —
+   height_feed НЕ трогаем, подтверждено).
+2) ПРОВОДКА (первые два нетривиальных узла):
+   a) router.rs RandomState::build: substance-корень (ifields[11]) теперь
+      ap2_create(Add, final_density.clone(), Df::Beardifier) — синтетическое
+      сложение ТОЧНО как NoiseChunk CFR 156 (маркер -> Beardifier-лист в
+      arena, wrap -> WNode::Beardifier). IEEE-квирк -0.0+0.0=+0.0
+      воспроизводится как в Java; на NBT-уровне неощутим (сравнения
+      substance -0.0/+0.0 эквивалентны) — ДОКАЗАНО A/B ниже;
+   b) interpolator.rs NoiseChunkSim: поле beard: Beardifier (EMPTY по
+      умолчанию) + set_beardifier; WNode::Beardifier => self.beard.compute(
+      x,y,z) (EMPTY даёт ровно 0.0 — прежняя семантика маркера);
+   c) interpolator.rs classify_node + density.rs is_y_free: Beardifier
+      Y-ЗАВИСИМ ((false,false)/false; прежнее y-free было беззвучно верно
+      только для нулевого листа — kernel-индекс (y+12) in [0,24));
+   d) optimize.rs trusted_bounds + density.rs min/max_value_of: Beardifier
+      = (-inf, +inf) — Java BeardifierOrMarker.minValue/maxValue (CFR
+      Beardifier.java); прежние (0.0,0.0) — значение нулевого листа;
+   e) filler.rs: generate_noise_chunk_with_beardifier(rs,seed,cx,cz,beard);
+      generate_noise_chunk = делегат с EMPTY (все 6 старых вызовов
+      veccheck/aquacheck/bench/ffprobe/structure_scan/height_feed без
+      изменений — нулевое поведение).
+3) BEARDFEED (piece_feed.rs, новый тип): полный протокол "сборка ->
+   плотность" per chunk C:
+   - перечисление adapting-наборов (>=1 структура с terrain_adaptation !=
+     none; random_spread only — strongholds = concentric_rings ОТКЛОНЯЮТСЯ
+     громко: non-jigsaw-сборка движком недоступна, остаётся I8-фолбэком);
+   - скан P in [cx-8..cx+8]^2: structure_start_for_chunk (pick/biome/alias
+     аддендума 42-45) -> adj != none -> РЕФЕРЕНС-проверка: объединённый бокс
+     стартов пересекает 16x16-колонку C (инклюзивно) -> referenced map
+     (ключ = структура+P, дубликат из второго набора = first-wins + громко:
+     Java перезаписывает бит-идентичной регенерацией);
+   - forStructuresInChunk-фильтр: isCloseToChunk(C,12) на бокс piece;
+     RIGID -> BeardRigid(бокс, STRUCTURE-уровень adj, gld); junctions
+     независимо от проекции в ЭКСКЛЮЗИВНОМ окне sourceX/Z ∉ [min-12,
+     min+27) -> BeardJunction + точечный бокс в union; union = encapsulating
+     (боксы + точки junctions), inflatedBy(24); пусто => Beardifier::empty;
+   - start_cache: (set,P) -> результат сборки (сборка детерминирована
+     (seed,P,set); каждый C в окне ±8 пере-запрашивает те же P);
+   - ЧЕСТНАЯ ГРАНЬ (громко, в код): Java references map = HashMap (ChunkAccess
+     CFR 114) — при НЕСКОЛЬКИХ adapting-стартах, ссылающихся на один C,
+     порядок суммирования f64 в Java хэш-порядок, здесь детерминированный
+     скан-порядок; одиночные старты (норма корпуса) порядко-независимы.
+4) ОРАКУЛ FEED: кус-тесты против ci-server/golden/pieces_4_6.json
+   (trial_chambers @ 3053459, чанк (4,6), 257 pieces, захват аддендума 45):
+   a) (4,6): 86 rigid pieces БИТ-В-БИТ (бокс/gld/adj=encapsulate, порядок
+      сборки) после isCloseToChunk-фильтра + 140 junctions в порядке и
+      окнах + affected-бокс = encapsulating(inflatedBy 24) — СОВПАЛО;
+   b) (3,6): НЕ placement-чанк, но бокс старта касается колонны ->
+      референс работает: trial-подмножество совпало (все Encapsulate);
+   c) направление протокола: непустой beardifier => в окне ±8 есть
+      placement-чанк (necessary condition) — проверено на 7 чанках,
+      7/7 пустых (biome-фильтр глубоких стартов) + >=3 пустых;
+   d) детерминизм: свежий feed без кэша = побитно тот же список rigids;
+   e) СМОК ПРОВОДКИ: drive_column @ блок (64,-20,96) внутри piece-бокса:
+      substance EMPTY vs FED — биты РАЗЛИЧНЫ (Encapsulate добавляет
+      bury*0.8>=0.55) — substance-корень реально потребляет beardifier.
+5) ТЕСТЫ/БАТАРЕЯ: lib 153 (=149+4 beard-feed) + root 417 GREEN. A/B:
+   veccheck resid1 @3053459 — ZERO-DIFF GATE PASS (843207/0);
+   veccheck tectA_8675309/tectB_424242 (tectonic-extract) — 941511/0 оба;
+   stagediff --gen-batch 3053459 (-3..3 x -3..3, 49 чанков) TILE_CACHE 0/1
+   БАЙТ-ИДЕНТИЧНЫ; ГЛАВНОЕ: vs ЧИСТОЕ ДЕРЕВО f481bcc (worktree, сборка
+   stagediff) — seed_3053459 БАЙТ-ИДЕНТИЧЕН (49/49 NBT; IEEE-квирк
+   substance неощутим на NBT). СМЕНА ПОВЕДЕНИЯ: НЕТ — feed в генерацию не
+   подключён (status_chain/stagediff продолжают generate_noise_chunk с
+   EMPTY), Df::Beardifier в скалярном дереве по-прежнему отсутствует
+   (vanilla/pack JSON его не содержат).
+СЛЕДУЮЩИЕ ШАГИ P5.3:
+  a) включение feed в status_chain (StageKit уже держит dir) + сужение I8
+     (structure_scan) до честного остатка: stronghold (bury, non-jigsaw) +
+     unsupported/missing сборки из BeardFeed::pools() (директива 1);
+  b) terralith class (a): 5 ячеек CI — после включения смотреть verdict
+     (vanilla/packs equal=2376) при зелёных ncf-staged surface/carvers/
+     noise; сами ячейки — terralith-структуры (jigsaw, адаптации beard_*),
+     движок сборки + feed готовы;
+  c) опционально: кэш сборок между чанками батча (сейчас per-BeardFeed).
+АМДАЛЬ (директива 2, examples/beard_bench.rs, release, 3053459):
+  стадия / мс / комментарий:
+  - build_overworld(rs)                    12 мс   (один раз на сид);
+  - BeardFeed::new                         0 мс    (перечисление наборов);
+  - build_for_chunk(4,6) ПЕРВЫЙ          2014 мс   (289 placement-проверок x
+    5 наборов + сборка trial_chambers 257 pieces + высотные пробы; кэш);
+  - build_for_chunk(3,6) кэш-тёплый        0 мс    (справедливо для ЛЮБОГО
+    чанка в окне уже собранного старта);
+  - build_for_chunk(40,35) пусто        1138 мс   (placement-проверки +
+    сборки, ОТКЛОНЁННЫЕ biome-фильтром — Java платит ту же цену на
+    STRUCTURE_STARTS; кэшируется);
+  - noise fill @ (4,6): fed 53 мс vs EMPTY 39 мс = +14 мс/чанк в ХОЛОДНОМ
+    пути ТОЛЬКО у чанков рядом со структурами (86 pieces в радиусе
+    kernel; пустой beardifier = мгновенный 0.0);
+  доля beardifier.compute в генерации чанка у структуры: ~26% (14/53);
+  по корпусу (большинство чанков пустые) — ~0%.
+КОРПУС (директива 3): без изменений (структурные чанки пока исключены I8;
+  после шага a вернутся с реальным beardifier).
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 12-й тик; первоисточник = этот LOG.
