@@ -410,12 +410,16 @@ pub fn generate_noise_chunk(rs: &RandomState, seed: i64, cx: i32, cz: i32) -> Re
 
     // Biome quarts (fillBiomesFromNoise): per section, 4x4x4 quarts, order
     // i1=x, i2=y, i3=z (LevelChunkSection.fillBiomesFromNoise).
-    let mut list = crate::climate::ParameterList::new(
-        crate::vanilla_biomes::overworld_points()
+    // T39: the table comes from the world — the hardcoded vanilla preset for
+    // vanilla worlds, the PACK dimension override's inline table when the
+    // extract carries data/minecraft/dimension/overworld.json (Terralith & co).
+    let mut list = crate::climate::ParameterList::new(match &rs.biome_points {
+        Some(pts) => pts.clone(),
+        None => crate::vanilla_biomes::overworld_points()
             .into_iter()
             .map(|(p, n)| (p, n.to_string()))
             .collect(),
-    );
+    });
     let q_min_x = min_block_x.div_euclid(4);
     let q_min_z = min_block_z.div_euclid(4);
 

@@ -662,8 +662,13 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
         if (stagedStatus != null) {
             ack.sendMessage("goldendump: start label=" + label + " mode=staged status=" + j.stagedName
                     + " chunks=" + coords.length + " seed=" + seed + " dir=" + labelDir);
+            // T38-A: spawn block coords ride on the start marker — the gate
+            // driver excludes the spawn-chunk square (Paper keeps it FULL,
+            // a staged NOISE dump then reads full chunks) from both corpora.
+            org.bukkit.Location sl = Bukkit.getWorlds().get(0).getSpawnLocation();
             getLogger().info("GOLDEN STAGED DUMP start label=" + label + " status=" + j.stagedName
-                    + " chunks=" + coords.length + " seed=" + seed + " dir=" + labelDir);
+                    + " chunks=" + coords.length + " seed=" + seed + " dir=" + labelDir
+                    + " spawn=" + sl.getBlockX() + "," + sl.getBlockZ());
         } else {
             ack.sendMessage("goldendump: start label=" + label + " mode=" + (raw ? "raw" : "compressed")
                     + " chunks=" + coords.length + " seed=" + seed + " dir=" + labelDir);

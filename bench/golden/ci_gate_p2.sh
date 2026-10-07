@@ -186,6 +186,20 @@ while [ $waited -lt 30 ]; do
 done
 [ -n "$started" ] || { tail -40 logs/latest.log >&2 || true; die "dump never started (command rejected?)"; }
 log "$started"
+# T38-A: spawn block coords from the marker (plugin). Paper keeps the
+# spawn-chunk square (spawn-chunk-radius=2 => 5x5 around the spawn chunk)
+# FULLY generated — a staged NOISE dump then reads those chunks at their
+# CURRENT status, so the java corpus legitimately contains full chunks that
+# a pure noise generation cannot match. They are EXCLUDED from the gate
+# below (after gen-batch), with the count reported — no hidden skips.
+SC=$(printf '%s' "$started" | sed -n 's/.* spawn=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1 \2/p')
+if [ -n "$SC" ]; then
+    EXCL=$(python3 -c "
+import sys
+bx, bz = map(int, sys.argv[1].split())
+scx, scz = bx >> 4, bz >> 4
+print(' '.join(f'{scx+i}_{scz+j}' for i in range(-2, 3) for j in range(-2, 3)))" "$SC")
+fi
 
 waited=0; marker=""
 while [ $waited -lt $DUMP_TIMEOUT ]; do
@@ -226,6 +240,24 @@ cargo run --release --bin stagediff -- --gen-batch "$SEED" "$X0" "$X1" "$Z0" "$Z
 # ---- 5. the gate --------------------------------------------------------------
 
 log "stagediff gate"
+
+# ---- 4b. spawn-chunk exclusion (T38-A, counted honestly) ---------------------
+NEXCL=0
+if [ -n "${SC:-}" ] && [ -n "${EXCL:-}" ]; then
+    EXCL_DIR="$SERVER_DIR/p2_excluded_${PACK}_${SEED}"
+    mkdir -p "$EXCL_DIR"
+    for key in $EXCL; do
+        jf="$JAVA_DIR/c_${key}.nbt"
+        rf="$RUST_DIR/c_${key}.nbt"
+        if [ -f "$jf" ] && [ -f "$rf" ]; then
+            mv "$jf" "$EXCL_DIR/j_${key}.nbt"
+            mv "$rf" "$EXCL_DIR/r_${key}.nbt"
+            NEXCL=$((NEXCL+1))
+        fi
+    done
+    log "excluded $NEXCL spawn-chunk pairs (FULL-status chunks on java; radius 2 around spawn $SC)"
+fi
+
 cargo run --release --bin stagediff -- "$JAVA_DIR" "$RUST_DIR" \
     2>&1 | tee "$RESULTS/p2_${PACK}_${SEED}_${STATUS}_diff.log"
-log "GATE CELL PASS: $PACK seed=$SEED status=$STATUS $N_FILES/$N_FILES"
+log "GATE CELL PASS: $PACK seed=$SEED status=$STATUS $N_FILES dumped, $NEXCL spawn-excluded, $((N_FILES - NEXCL)) compared"

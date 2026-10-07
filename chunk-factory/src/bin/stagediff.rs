@@ -124,7 +124,7 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         let out = args.get(5).ok_or("out file")?;
         std::env::set_var("NCF_DATA_ROOT", wg);
         let dir = WorldgenDir::load(Path::new(wg)).map_err(|e| e.to_string())?;
-        let mut rs = RandomState::build(&dir, "minecraft", "overworld", seed).map_err(|e| e.to_string())?;
+        let mut rs = RandomState::build_overworld(&dir, seed).map_err(|e| e.to_string())?;
         let mut kit = StageKit::build(&mut rs, &dir).map_err(|e| e.to_string())?;
         let rows = chunk_factory::status_chain::trace_surface(&mut rs, &mut kit, &dir, seed, cx, cz)
             .map_err(|e| e.to_string())?;
@@ -152,7 +152,7 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         // tags (carver replaceable) resolve against the same extract
         std::env::set_var("NCF_DATA_ROOT", wg);
         let dir = WorldgenDir::load(Path::new(wg)).map_err(|e| e.to_string())?;
-        let mut rs = RandomState::build(&dir, "minecraft", "overworld", seed).map_err(|e| e.to_string())?;
+        let mut rs = RandomState::build_overworld(&dir, seed).map_err(|e| e.to_string())?;
         let mut kit = if status == "noise" {
             None
         } else {
@@ -197,7 +197,7 @@ fn real_main(args: &[String]) -> Result<i32, String> {
             .unwrap_or_else(|| "noise".to_string());
         std::env::set_var("NCF_DATA_ROOT", wg);
         let dir = WorldgenDir::load(Path::new(wg)).map_err(|e| e.to_string())?;
-        let mut rs = RandomState::build(&dir, "minecraft", "overworld", seed).map_err(|e| e.to_string())?;
+        let mut rs = RandomState::build_overworld(&dir, seed).map_err(|e| e.to_string())?;
         let status_key = format!("minecraft:{status}");
         let fc = match status.as_str() {
             "noise" => generate_noise_chunk(&rs, seed, cx, cz),

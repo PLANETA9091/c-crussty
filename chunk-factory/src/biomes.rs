@@ -235,12 +235,15 @@ pub struct BiomeSource<'a> {
 
 impl<'a> BiomeSource<'a> {
     pub fn new(rs: &'a RandomState) -> Self {
-        let list = ParameterList::new(
-            crate::vanilla_biomes::overworld_points()
+        // T39: pack worlds (dimension/overworld.json override) resolve through
+        // the pack's inline biome table, vanilla through the coded preset.
+        let list = ParameterList::new(match &rs.biome_points {
+            Some(pts) => pts.clone(),
+            None => crate::vanilla_biomes::overworld_points()
                 .into_iter()
                 .map(|(p, n)| (p, n.to_string()))
                 .collect(),
-        );
+        });
         BiomeSource { rs, list, cache: HashMap::new() }
     }
 

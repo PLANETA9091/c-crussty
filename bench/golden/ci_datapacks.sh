@@ -184,12 +184,16 @@ for entry in overlay_section.get('entries', []):
 def extract_worldgen(prefix):
     # prefix: '' for base data/, or '<overlay>/' — overlay files land on the
     # SAME relative paths as the base (that is what an overlay means).
+    # T39: dimension/ overrides are extracted too — packs inject their
+    # multi-noise biome table via data/minecraft/dimension/overworld.json.
     n = 0
     for name in z.namelist():
         if not name.endswith('.json') or not name.startswith(prefix + 'data/'):
             continue
         parts = name[len(prefix + 'data/'):].split('/')
-        if len(parts) < 4 or parts[1] != 'worldgen':
+        if len(parts) < 3 or parts[1] not in ('worldgen', 'dimension'):
+            continue
+        if parts[1] == 'worldgen' and len(parts) < 4:
             continue
         dest = os.path.join(dest_root, "data", *parts)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
@@ -300,7 +304,7 @@ def extract_worldgen(prefix):
     for name in z.namelist():
         if name.startswith(prefix + 'data/') and name.endswith('.json'):
             rel = name[len(prefix) + len('data/'):]
-            if not rel.startswith('minecraft/worldgen/') and not rel.startswith('minecraft/tags/block/'):
+            if not rel.startswith('minecraft/worldgen/') and not rel.startswith('minecraft/tags/block/') and not rel.startswith('minecraft/dimension/'):
                 continue
             dest = os.path.join(dest_root, *rel.split('/'))
             os.makedirs(os.path.dirname(dest), exist_ok=True)

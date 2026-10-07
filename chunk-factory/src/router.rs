@@ -69,13 +69,26 @@ impl WorldgenDir {
                 let rel = p.strip_prefix(&data).map_err(|e| e.to_string())?;
                 let parts: Vec<&std::ffi::OsStr> = rel.iter().collect();
                 // data/<ns>/worldgen/<kind>/<path...>.json
-                if parts.len() < 4 || parts[1] != std::ffi::OsStr::new("worldgen") {
+                // data/<ns>/dimension/<name>.json          (T39: pack override)
+                if parts.len() < 3 {
+                    continue;
+                }
+                let is_wg = parts[1] == std::ffi::OsStr::new("worldgen");
+                let is_dim = parts[1] == std::ffi::OsStr::new("dimension");
+                if !is_wg && !is_dim {
+                    continue;
+                }
+                if is_wg && parts.len() < 4 {
                     continue;
                 }
                 let ns = parts[0].to_string_lossy().to_string();
-                let kind = parts[2].to_string_lossy().to_string();
+                let (kind, rest): (String, &[&std::ffi::OsStr]) = if is_dim {
+                    ("dimension".to_string(), &parts[2..])
+                } else {
+                    (parts[2].to_string_lossy().to_string(), &parts[3..])
+                };
                 let mut rel_path = std::path::PathBuf::new();
-                for seg in &parts[3..] {
+                for seg in rest {
                     rel_path.push(seg);
                 }
                 let rel_path = rel_path.with_extension("").to_string_lossy().to_string();
@@ -711,6 +724,13 @@ pub struct RandomState {
     /// P2.12: the chunk-independent wrapped-tree template (built once; the
     /// per-chunk machine state is instantiated from it in from_random_state).
     pub sim_template: crate::interpolator::SimTemplate,
+    /// T39: the multi-noise biome table for this world — None = the hardcoded
+    /// vanilla preset (vanilla_biomes::overworld_points); Some(points) = a
+    /// PACK dimension override's inline biome_source.biomes table
+    /// (data/minecraft/dimension/overworld.json — how Terralith/Tectonic
+    /// inject their biomes; vanilla resolve_biomes would otherwise return
+    /// vanilla names for every quart and every pack chunk diverges).
+    pub biome_points: Option<Vec<(crate::climate::ParameterPoint, String)>>,
 }
 
 impl RandomState {
@@ -903,7 +923,56 @@ impl RandomState {
             tile_cache: crate::tile::TileCache::new(),
             tile_epoch: crate::tile::tile_epoch(spec_hash, level_seed),
             sim_template,
+            biome_points: None,
         })
+    }
+
+    /// T39 — worldgen entry resolution for the OVERWORLD. A worldgen extract
+    /// may carry a PACK dimension override (data/minecraft/dimension/
+    /// overworld.json — the mechanism Terralith/Tectonic use: vanilla's own
+    /// multi_noise table is a CODED PRESET, unreachable from datapacks, so
+    /// packs replace the overworld dimension with a generator whose
+    /// biome_source carries the FULL inline biome/parameter table and whose
+    /// `settings` key selects the noise_settings file (may be vanilla's
+    /// "minecraft:overworld" or a pack-own key)).
+    ///
+    /// With the override present: the router is built from the `settings`
+    /// file and the biome table comes from the inline list. Without it:
+    /// exact vanilla behavior (noise_settings minecraft:overworld + the
+    /// hardcoded preset table) — bit-identical to build().
+    pub fn build_overworld(dir: &WorldgenDir, level_seed: i64) -> Result<Self, String> {
+        let mut rs = if let Some(text) = dir.get("minecraft", "dimension", "overworld") {
+            let j = json::parse(text).map_err(|e| format!("dimension/overworld.json: {e}"))?;
+            let gen = j.get("generator").ok_or("dimension: missing generator")?;
+            // generator.type must be minecraft:noise (the only kind we model)
+            let gtype = gen.get("type").and_then(|x| x.as_str()).unwrap_or("");
+            if gtype != "minecraft:noise" {
+                return Err(format!("dimension: unsupported generator type {gtype}"));
+            }
+            let st = gen
+                .get("settings")
+                .and_then(|x| x.as_str())
+                .unwrap_or("minecraft:overworld");
+            let (sns, sname) = split_rl(st)?;
+            let rs = Self::build(dir, &sns, &sname, level_seed)?;
+            let bs = gen
+                .get("biome_source")
+                .ok_or("dimension: missing biome_source")?;
+            let btype = bs.get("type").and_then(|x| x.as_str()).unwrap_or("");
+            if btype != "minecraft:multi_noise" {
+                return Err(format!("dimension: unsupported biome_source type {btype}"));
+            }
+            if bs.get("preset").is_some() {
+                // preset reference => the vanilla table (nothing to parse)
+                return Ok(rs);
+            }
+            let points = parse_biome_source_table(bs)?;
+            return Ok(Self { biome_points: Some(points), ..rs });
+        } else {
+            Self::build(dir, "minecraft", "overworld", level_seed)?
+        };
+        rs.biome_points = None;
+        Ok(rs)
     }
 
     /// `RandomState.getOrCreateNoise(key)` (5-b): intern a NormalNoise for an
@@ -1158,4 +1227,125 @@ pub fn fnv1a64(data: &[u8]) -> u64 {
         hash = hash.wrapping_mul(0x100000001b3);
     }
     hash
+}
+
+/// T39 — parse a PACK multi_noise biome_source's inline `biomes` table into
+/// (ParameterPoint, registry-name) pairs. Mirrors the vanilla codec of
+/// Climate.ParameterPoint: the six climate fields are FLOAT ranges
+/// (quantizeCoord = (long)(f * 10000.0f) per endpoint) and `offset` is a
+/// FLOAT that gets quantized the same way (vanilla_biomes.rs builds the
+/// preset table through the same quantize_coord path).
+pub fn parse_biome_source_table(
+    bs: &crate::json::Json,
+) -> Result<Vec<(crate::climate::ParameterPoint, String)>, String> {
+    use crate::climate::{quantize_coord, Parameter, ParameterPoint};
+    let entries = bs
+        .get("biomes")
+        .and_then(|x| x.as_arr())
+        .ok_or("biome_source: missing biomes array")?;
+    let mut out = Vec::with_capacity(entries.len());
+    for e in entries {
+        let name = e
+            .get("biome")
+            .and_then(|x| x.as_str())
+            .ok_or("biome entry: missing biome name")?
+            .to_string();
+        let p = e.get("parameters").ok_or("biome entry: missing parameters")?;
+        let span_of = |key: &str| -> Result<Parameter, String> {
+            let v = p
+                .get(key)
+                .ok_or_else(|| format!("parameters missing {key}"))?;
+            if let Some(arr) = v.as_arr() {
+                let a = arr
+                    .first()
+                    .and_then(|x| x.as_f64())
+                    .ok_or_else(|| format!("{key}: bad min"))? as f32;
+                let b = arr
+                    .get(1)
+                    .and_then(|x| x.as_f64())
+                    .ok_or_else(|| format!("{key}: bad max"))? as f32;
+                Ok(Parameter::span(a, b))
+            } else if let Some(n) = v.as_f64() {
+                Ok(Parameter::point(n as f32))
+            } else {
+                Err(format!("{key}: not a range or number"))
+            }
+        };
+        let offset = p.get("offset").and_then(|x| x.as_f64()).unwrap_or(0.0) as f32;
+        out.push((
+            ParameterPoint {
+                temperature: span_of("temperature")?,
+                humidity: span_of("humidity")?,
+                continentalness: span_of("continentalness")?,
+                erosion: span_of("erosion")?,
+                depth: span_of("depth")?,
+                weirdness: span_of("weirdness")?,
+                offset: quantize_coord(offset),
+            },
+            name,
+        ));
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod t39_tests {
+    use super::*;
+
+    /// T39: a pack dimension override's inline biome table parses into
+    /// ParameterPoints with the exact quantizeCoord semantics (f32 truncate
+    /// per endpoint; offset quantized the same way as the vanilla builder).
+    #[test]
+    fn t39_parse_pack_biome_table() {
+        let text = r#"{"generator": {"type": "minecraft:noise", "settings": "minecraft:overworld",
+            "biome_source": {"type": "minecraft:multi_noise", "biomes": [
+                {"biome": "terralith:cave/mantle_caves", "parameters": {
+                    "weirdness": [-1, 1], "continentalness": [-1.2, -0.455],
+                    "erosion": [-1, -0.78], "temperature": [-1.0047858741932016, -0.45],
+                    "humidity": [-1, 1], "depth": [-0.005, 0], "offset": 0}},
+                {"biome": "minecraft:deep_frozen_ocean", "parameters": {
+                    "weirdness": [-1, 1], "continentalness": [-1.2, -0.455],
+                    "erosion": [-1, -0.78], "temperature": [-1.0047858741932016, -0.45],
+                    "humidity": [-1, 1], "depth": [-0.005, 0], "offset": 0}}
+            ]}}}"#;
+        let j = json::parse(text).map_err(|e| e.to_string()).unwrap();
+        let gen = j.get("generator").unwrap();
+        let bs = gen.get("biome_source").unwrap();
+        let points = parse_biome_source_table(bs).unwrap();
+        assert_eq!(points.len(), 2);
+        let (p, name) = &points[0];
+        assert_eq!(name, "terralith:cave/mantle_caves");
+        // temperature min: -1.0047858741932016 (f64) -> f32 -> quantize
+        let t_min = crate::climate::quantize_coord(-1.004_785_9f32);
+        assert_eq!(p.temperature.min, t_min);
+        // offset 0 -> 0
+        assert_eq!(p.offset, 0);
+        // depth span [-0.005, 0] quantized
+        assert_eq!(p.depth.min, crate::climate::quantize_coord(-0.005f32));
+        assert_eq!(p.depth.max, 0);
+        // all six spans present via parameter_space (7 slots incl. offset)
+        assert_eq!(p.parameter_space().len(), 7);
+    }
+
+    /// T39 (shaped on NCF_WG): the vanilla extract has NO dimension override
+    /// => build_overworld returns biome_points=None and is bit-compatible
+    /// with build(). If a dimension file IS present (pack extract), the
+    /// biome table parses and mentions the pack namespace.
+    #[test]
+    fn t39_build_overworld_resolves_table() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = RandomState::build_overworld(&dir, 3053459).expect("build_overworld");
+        match &rs.biome_points {
+            None => {
+                // vanilla path: the hardcoded preset must still resolve
+                assert_eq!(rs.settings_name, "overworld");
+            }
+            Some(pts) => {
+                assert!(!pts.is_empty());
+                // pack table sanity: registry names parse as ns:name
+                assert!(pts.iter().all(|(_, n)| n.contains(':')));
+            }
+        }
+    }
 }

@@ -1258,3 +1258,61 @@ CI run 37525009608 (HEAD 61d0562):
 Доказательства: артефакт-лог ранна 37537274105 (джоба 112521359538), job-
   уровень того же ранна (staged-гейты SUCCESS), bash -n; повторный прогон —
   CI-ран этого пуша.
+
+=== 2026-10-07 | сессия 7 (аддендум 10: ГЕЙТ P2 впервые РАБОТАЕТ — T36/T37 подтверждены; T38-семейства; T39 pack-таблица закрыта) ===
+Фиксы T36/T37 в деле (run 37544917131, HEAD 9fff24c): ядро 11/11 GREEN
+  (ncf-staged surface/carvers/noise — четвёртый зелёный прогон подряд),
+  плагин ставится, dump СТАРТУЕТ и ЗАВЕРШАЕТСЯ: «GOLDEN STAGED DUMP COMPLETE
+  minecraft:noise n=2401 failed=0» (~90с на 2401 чанк), gen-batch+stagediff
+  прогоняются. ГЕЙТ P2 ВПЕРВЫЕ ИЗМЕРЯЕТ. Найдено честно:
+  - vanilla 424242: pairs=2401 equal=2312 diverged=89 — ДВЕ семьи:
+    (A) 25 чанков spawn-квадрата (x,z ∈ spawn±2): первый дифф @ (0,-64,0)
+        java=bedrock rust=stone — Paper держит spawn-чанки FULL (radius 2),
+        staged NOISE dump читает их в ТЕКУЩЕМ статусе — корпус подмешал
+        полные чанки; чистый noise их не обязан матчить. Это ПРОБЛЕМА
+        КОРПУСА, не генерации (корпус-чистота, урок TASK-148).
+    (B) ~64 чанка двумя блобами вне спавна: (x -24..-20, z 2..8)
+        java=stone rust=air (y -54..-16) И (x 17..18, z -23..-20)
+        java=air rust=stone (y -51..-40) — противоположные знаки на
+        границах => плотность слегка разъезжается в конкретных регионах
+        (кандидат: aquifer-barrier вклад в density / noodle-ветка).
+        ВЕКТОРНЫЕ ГЕЙТЫ (807к векторов на 3053459) это не покрывают —
+        нужен density-векторный риг на 424242. ОСТАЁТСЯ ОТКРЫТОЙ (T38-B).
+  - terralith 90210: pairs=2401 equal=0 — каждый чанк: биомы
+    java=terralith:cave/mantle_caves vs rust=minecraft:deep_dark.
+Ловушка T39 (КОРЕНЬ pack-ячеек): мульти-шумовая таблица биомов ВАНИЛИ —
+  КОДИРОВАННЫЙ ПРЕСЕТ ({"preset": "minecraft:overworld"} в
+  multi_noise_biome_source_parameter_list — наш vanilla_biomes.rs), он
+  НЕДОСТИЖИМ для дата-паков; Terralith/Tectonic инжектят биомы через
+  ПЕРЕЗАПИСЬ ИЗМЕРЕНИЯ data/minecraft/dimension/overworld.json (1.7МБ):
+  generator.settings = "minecraft:overworld" (роутер остаётся ванильный,
+  файл noise_settings оверрайдится базой+overlay пака — merge уже это
+  умел), а biome_source.biomes = ПОЛНАЯ инлайн-таблица (terralith 2.5.13:
+  1713 записей, 149 биомов, 95 terralith:*). Наша BiomeSource/filler
+  резолвили через HARDCODED ванильную таблицу => все pack-биомы ванильные
+  => equal=0.
+ФИКС T39 (этот коммит): (1) WorldgenDir::load индексирует
+  data/<ns>/dimension/*.json (kind "dimension", аддитивно); (2)
+  RandomState::build_overworld(dir, seed) — при наличии dimension/overworld
+  строит роутер из generator.settings и таблицу из biome_source.biomes
+  (parse_biome_source_table: 6 спанов f32->quantize_coord, offset — тем же
+  quantize; codec Climate.ParameterPoint); без dimension-файла — бит-в-бит
+  ванильный путь build(); (3) rs.biome_points текёт в filler.rs
+  (fillBiomesFromNoise) и biomes.rs (BiomeSource::new — surface/carvers);
+  (4) stagediff gen/gen-batch/trace-surface на build_overworld; (5)
+  ci_datapacks.sh извлекает minecraft/dimension/* (оба пути экстракта);
+  (6) T38-A: плагин пишет spawn=<bx>,<bz> в start-маркер, ci_gate_p2.sh
+  исключает 5x5 spawn-квадрат из ОБОИХ корпусов перед гейтом (счётчик
+  NEXCL печатается — никаких скрытых пропусков).
+Доказательства: локальный terralith-экстракт (pack base 114 + dimension
+  1.7MB) — t39probe: 1713 записей/149 биомов; gen-batch 90210 (10,10):
+  terra lith-биомы В чанке (birch_taiga, cave/mantle_caves,
+  thermal_caves, rocky_mountains); ванильная регрессия: surface И noise
+  5x5 (100..104) БАЙТ-ИДЕНТИЧНЫ pre-T39 (biome_points=None бит-в-бит);
+  cargo test 102+2 (t39_parse_pack_biome_table, t39_build_overworld_
+  resolves_table), clippy чисто; veccheck/stagediff контракты не тронуты
+  (stagediff — только входная точка RandomState).
+Честный статус после этого пуша: pack-ячейки должны пойти к 0 дивергенций
+  (роутер пака парсится с 6-й сессии); vanilla 424242 ОСТАНЕТСЯ красной
+  (~64, семья B) до density-бисекта; остальные vanilla-ячейки — по числу
+  блоб-семей на своём сиде/регионе.
