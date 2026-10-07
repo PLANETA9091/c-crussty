@@ -168,6 +168,32 @@ pub fn map(input: f64, input_min: f64, input_max: f64, output_min: f64, output_m
     lerp(inverse_lerp(input, input_min, input_max), output_min, output_max)
 }
 
+/// Mth#lengthSquared(x, y, z) — f64 additions left-to-right: (x*x + y*y) + z*z
+#[inline]
+pub fn length_squared3(x: f64, y: f64, z: f64) -> f64 {
+    x * x + y * y + z * z
+}
+
+/// Mth#length(x, y, z) = sqrt(lengthSquared)
+#[inline]
+pub fn length3(x: f64, y: f64, z: f64) -> f64 {
+    length_squared3(x, y, z).sqrt()
+}
+
+/// Mth#fastInvSqrt — exact bit-level port (1.21.10 CFR oracle):
+/// d = 0.5*number; l = raw bits; l = 6910469410427058090 - (l >> 1) (arithmetic
+/// shift on the i64 bit pattern); y = from_bits(l); return y * (1.5 - d*y*y).
+/// Returns f64 (no f32 narrowing in this version — verified against decomp441
+/// Mth.java lines 423-429: no (float) cast in the bytecode).
+#[inline]
+pub fn fast_inv_sqrt(number: f64) -> f64 {
+    let d = 0.5 * number;
+    let l = number.to_bits() as i64;
+    let l = 6910469410427058090i64.wrapping_sub(l >> 1);
+    let y = f64::from_bits(l as u64);
+    y * (1.5 - d * y * y)
+}
+
 /// Mth#ceillog2: `32 - Integer.numberOfLeadingZeros(value - 1)` for value >= 2,
 /// 0 for value == 1 (5-b: heightmap bit count).
 #[inline]

@@ -2625,3 +2625,61 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
      — разложить по стадиям парс/машина/скаляры/филлер).
 ПРИМЕЧАНИЕ: cron-шаблон 5-й тик подряд отстаёт от LOG — первоисточник
   = этот LOG.
+
+=== 2026-10-08 | сессия 13 (аддендум 38: Job 441690 — P5.3 инкремент 1: модуль beardifier.rs — бит-точный порт Beardifier.java (ядро f32-cast exp, fastInvSqrt, ветки TerrainAdjustment, junctions *0.4, affected-box inflate 24); Df::Beardifier пока 0.0 — БЕЗ смены поведения) ===
+ХОД ТИКА (продолжение сессии 13, тот же sandbox 56b810d):
+  1) P5.3 СТАРТ (пункт 2 аддендума 37): инкремент 1 = ядро Beardifier
+     как отдельный модуль chunk-factory/src/beardifier.rs:
+     - TerrainAdjustment (None/Bury/BeardThin/BeardBox/Encapsulate) +
+       from_json (имена vanilla-enum);
+     - BeardRigid (inclusive-бокс + STRUCTURE-уровневый adjustment —
+       forStructuresInChunk берёт его со StructureStart, НЕ с piece — +
+       groundLevelDelta), BeardJunction (sourceX/sourceGroundY/sourceZ);
+     - InclusiveBox: isInside (<=, Java-семантика), encapsulating,
+       inflatedBy(24);
+     - BEARD_KERNEL 13824 f32 через LazyLock: entry [z+12][x+12][y+12] =
+       (f32)exp(-lengthSquared(x, y+0.5, z)/16) — индексация сборки
+       array[i*576+i1*24+i2] = compute(i1-12, (i2-12)+0.5, i-12)
+       выверена против чтения i2*576+i*24+i1 (CFR 38-46, 183);
+     - get_beard_contribution: d2 = -(height+0.5) * fastInvSqrt(lsq/2)/2
+       * (f64)kernel[f32] (точно CFR getBeardContribution, 175-186);
+     - get_bury_contribution = clampedMap(length, 0, 6, 1, 0);
+     - compute: ветки BURY (i5=i4 БЕЗ клампа), BEARD_THIN/BOX *0.8,
+       ENCAPSULATE (max0/2, i5/2, max1/2) *0.8, junction *0.4, ранний
+       выход по inflate-24 боксу — точно CFR compute (116-158).
+  2) mth.rs: + length_squared3 / length3 (f64, лево-ассоциативно) +
+     fast_inv_sqrt (бит-точный: 6910469410427058090 - (bits>>1),
+     арифметический сдвиг, возвращает f64 — в 1.21.10 НЕТ f32-сужения,
+     сверено с decomp441 Mth.java 423-429).
+  3) ТЕСТЫ (8, все против оракульной математики, без сервера):
+     fastInvSqrt бит-в-бит + квейк-допуск 1.8e-3 (измеренный максимум
+     1.69e-3 @ 1.0); ядро = f32-cast exp в 5 точках (границы -12/11);
+     beard_contribution ручная сборка @ (3,-5,-2,h4) + ровно 0.0 вне
+     ядра; bury clampedMap (0 -> 1, 1.5 -> 0.75, >=6 -> 0); compute
+     BEARD_THIN piece+junction с union-боксом; все 4 ветки adjustment
+     (BURY над боксом, ENCAPSULATE внутри = 0.8, BEARD_BOX над боксом,
+     NONE = 0.0); EMPTY = 0.0 всюду; from_json.
+     ИТОГ: chunk-factory lib 116 GREEN (108 + 8).
+  4) СМЕНА ПОВЕДЕНИЯ: НЕТ — Df::Beardifier в дереве по-прежнему
+     константа 0.0; модуль автономен; вектор-гейты/A-B не требуются
+     (дерево/интерполятор/филлер не тронуты), но lib-тесты прогнаны.
+СЛЕДУЮЩИЕ ИНКРЕМЕНТЫ P5.3 (план):
+  a) фид piece-данных: startsForStructure-эквивалент на P5.1
+     random_spread + P5.2 template_cache: для чанка — какие jigsaw-
+     структуры имеют старт в 3x3 окне чанков, их TerrainAdjustment;
+  b) сборка piece-списка: JigsawPlacement.addPieces/tryPlacingChildren
+     (оракул decomp441 lines 1-330) + setLargeFeatureSeed без salt;
+     junctions из piece.getJunctions();
+  c) ПРОВЕРКА ИНКРЕМЕНТА b: для seed 3053459 / village_plains сверить
+     список боксов с java-дампом (новый оракул-захват или существующий
+     structure_scan);
+  d) РАЗЪЁМКА Df::Beardifier: per-chunk Beardifier в контекст скаляра
+     (вычисление в filler/density — хук уже известен), затем класс (а)
+     закрывается на gate-P2 terralith (5 ячеек) + vanilla I8-фоллбэк
+     сужается до реального радиуса Beardifier (директива владельца 1).
+АМДАЛЬ (директива 2): таблица аддендума 26 в силе; инкремент 1 не
+  входит в горячий цикл (модуль не вызывается из дерева); LazyLock-
+  ядро строится одноразово при первом обращении (следующие инкременты).
+КОРПУС (директива 3): без изменений (ядро тика — тесты против CFR).
+ПРИМЕЧАНИЕ: cron-шаблон 5-й тик подряд отстаёт от LOG — первоисточник
+  = этот LOG.
