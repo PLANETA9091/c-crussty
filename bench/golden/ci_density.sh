@@ -101,7 +101,7 @@ mkdir -p logs
 [ -f logs/latest.log ] && mv logs/latest.log logs/latest.prev 2>/dev/null || true
 
 log "booting PURE-VANILLA server (seed $SEED) for the blob-density capture"
-nohup setsid java -Xms512M -Xmx1536m -jar versions/purpur-1.21.10.jar --nogui \
+nohup setsid java -Xms512M -Xmx1024m -jar versions/purpur-1.21.10.jar --nogui \
     </dev/null > "$RESULTS/golden_density_boot.log" 2>&1 &
 disown || true
 

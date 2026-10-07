@@ -1353,9 +1353,20 @@ public final class VectorCapture {
 
         long t0 = System.nanoTime();
         try {
-            InterpStats interpStats = writeInterp(vecDir.resolve("interp.csv"), level, seed, bx, bz);
+            // T38-B rig fix (addendum 23): writeInterp/writeAquifer drive the
+            // per-CHUNK cell machinery (NoiseChunk cellStart/inCell indices +
+            // CacheAllInCell 4x8x4=128 slots) — their base MUST be the chunk
+            // corner, otherwise inCellX/Y/Z go out of range
+            // (ArrayIndexOutOfBoundsException 128/128 — reproduced locally for
+            // misaligned bases 253/-246/284; the old blob base -160 was
+            // chunk-aligned by luck). Snap the machine dumps to the chunk
+            // corner; writeDensityBlob keeps the caller's (possibly
+            // misaligned) block coords — pure df.compute is coord-free.
+            int machineBaseX = bx & ~15;
+            int machineBaseZ = bz & ~15;
+            InterpStats interpStats = writeInterp(vecDir.resolve("interp.csv"), level, seed, machineBaseX, machineBaseZ);
             int aquaRows = writeAquifer(vecDir.resolve("aquifer.csv"),
-                    vecDir.resolve("aquifer_meta.txt"), level, seed, bx, bz);
+                    vecDir.resolve("aquifer_meta.txt"), level, seed, machineBaseX, machineBaseZ);
             int densityRows = writeDensityBlob(vecDir.resolve("density.csv"), level, bx, bz, y0, y1);
             long ms = (System.nanoTime() - t0) / 1_000_000L;
             plugin.getLogger().info("GOLDEN DENSITY COMPLETE rows=" + (interpStats.rows() + aquaRows + densityRows)
