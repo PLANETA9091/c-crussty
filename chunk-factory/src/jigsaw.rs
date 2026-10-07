@@ -105,6 +105,15 @@ impl Dir {
     pub fn is_horizontal(self) -> bool {
         !matches!(self, Dir::Up | Dir::Down)
     }
+
+    /// Direction.getStepY — the Y component of the facing.
+    pub fn step_y(self) -> i32 {
+        match self {
+            Dir::Up => 1,
+            Dir::Down => -1,
+            _ => 0,
+        }
+    }
 }
 
 impl Rotation {

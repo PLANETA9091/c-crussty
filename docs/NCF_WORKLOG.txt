@@ -2757,3 +2757,145 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
   входят в горячий цикл.
 КОРПУС (директива 3): без изменений (тик = оракулы + каркас + тесты).
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 6-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 15 (аддендум 40: Job 441690 — CI 37662316658 (5dd825a): ПОЛНАЯ доска зелёная кроме 5 терралит-ячеек класса (а) — vanilla 5/5 + tectonic 5/5 gate-P2; P5.3 инкремент 2b: placer.rs — JigsawPlacement.addPieces + Placer.tryPlacingChildren бит-в-бит: точная алгебра свободного места на боксах (ячейки = полузакрытые), SequencedPriorityIterator (свежий CFR), junctions, expansion-hack, heightmap-граница через трейт; 15 тестов; локальная A/B батарея байт-идентична) ===
+ХОД ТИКА:
+  0) sandbox: reset --hard до 5dd825a (аддендум 39); cargo ОТСУТСТВОВАЛ ->
+     переустановлен (rustup minimal stable); LOG прочитан первым (cron-
+     шаблон отстаёт 7-й тик подряд).
+  1) CI-ВЕРДИКТ 37662316658 (5dd825a = инкремент 2a): ЗАВЕРШЁН. ВСЕ ЗЕЛЁНОЕ:
+     gate-P2 vanilla 5/5 (90210/424242/3053459/8675309/133700), tectonic 5/5,
+     ncf-staged 3/3 (surface/carvers/noise), ncf-density 4/4 (resid1, resid2,
+     tectA, tectC), ncf-vectors/mca/datapacks, module, native, chunk-factory,
+     golden-harness, fuzz-crate. ЕДИНСТВЕННЫЙ красный = 5 терралит-ячеек
+     (класс (а), задокументировано) => инкремент 2a CI-подтверждён; доска:
+     vanilla и tectonic полностью зелёные на gate-P2.
+  2) ОРАКУЛЫ 2b: SequencedPriorityIterator декомпилирован СВЕЖИМ CFR из
+     mojang-mapped classes (fast-path add: prio == highest -> addLast в
+     ТЕКУЩУЮ очередь; re-point при priority >= highest; pop FIFO; при
+     опустошении switch на МАКС приоритет НЕПУСТЫХ с ранним break на
+     highestPrio-1 — эквивалентен полному max-скану: максимум ОДИН ключ
+     highestPrio-1, все ключи выше только что опустошены => порядок хеша не
+     влияет; порт на BTreeMap детерминирован). Shapes.create (81-99): span
+     < 1.0E-7 по ЛЮБОЙ оси => EMPTY; мировые координаты => findBits = -1 =>
+     ArrayVoxelShape ТОЧНЫХ double-границ (одна ячейка [min,max] на ось).
+     BooleanOp: ONLY_FIRST = a && !b, ONLY_SECOND = b && !a. AABB.of
+     (BoundingBox) = (min, max+1); deflate(v) = inflate(-v). BoundingBox:
+     moved (смещение), isInside (все оси ВКЛЮЧИТЕЛЬНО), getYSpan =
+     maxY-minY+1, encapsulate(BlockPos) растит на месте; StructurePiece.move
+     (427-429) МУТИРУЕТ bbox НА МЕСТЕ => верхний free вычитает
+     ПОСЛЕ-ПЕРЕМЕЩЁННЫЙ bbox стартовой детали (захват лямбды — тот же
+     объект). StructureTemplatePool.getMaxSize (82-87): лениво-кэш по
+     ВЕСОВО-РАСШИРЕННОМУ списку, filter != Empty, YSpan при ZERO/NONE.
+     ChunkGenerator.getFirstFreeHeight == getBaseHeight (572-574);
+     NoiseBasedChunkGenerator.iterateNoiseColumn (157-200) сэмплирует сырую
+     колонку с DensityFunctions.BeardifierMarker (= 0 вклад бороды —
+     совпадает с Df::Beardifier = 0.0 до разъёмки) и останавливается на
+     первом NOT_AIR (WORLD_SURFACE_WG), возвращая y+1; пустая колонка ->
+     orElse(minY).
+  3) ИНКРЕМЕНТ 2b — chunk-factory/src/placer.rs (автономный, БЕЗ смены
+     поведения дерева):
+     a) точная алгебра свободного места: DBox (f64: целые и .25) + FreeShape
+        (объединение НЕПЕРЕСЕКАЮЩИХСЯ замкнутых боксов; пустой vec = нет
+        свободного места = всё коллидирует, как EMPTY-шейп Java). Семантика
+        ЯЧЕЕК объединённой сетки: ячейка [u_i,u_i+1) покрыта шейпом <=> она
+        целиком в одном из замкнутых боксов => joinIsNotEmpty(A,B,ONLY_
+        SECOND) <=> B\A имеет положительную меру (касание НЕ покрывается:
+        B'=[20,29.75], A=[10,20] -> ячейка [20,20.25) не в A -> КОЛЛИЗИЯ);
+        joinUnoptimized(ONLY_FIRST) = точное множество A\B. subtract_one:
+        до 6 плит со СТРОГИМИ условиями реза (касание ничего не снимает),
+        каждая плита с положительными спанами; вырожденный B (span < eps)
+        = EMPTY: коллизия false, вычитание no-op.
+     b) SequencedPriorityIterator — точный порт (инвариант: highest != MIN
+        => queues[highest] непуста и есть та же очередь, на которую указывает
+        Java-highestPrioQueue; next() = pop FIFO + switch на max непустых).
+     c) Placer.tryPlacingChildren (CFR 185-305) бит-в-бит: RNG-порядок —
+        getShuffledJigsawBlocks родителя (shuffle+stable sort); пул по
+        алиасу (identity в 2b) + проверки size==0/EMPTY (пул и fallback);
+        кандидаты: getShuffledTemplates пула ТОЛЬКО при depth != maxDepth +
+        fallback ВСЕГДА; на кандидата: Rotation.getShuffled (3 nextInt,
+        ОДИН вызов на кандидата — 4 ротации материализуются сразу) и
+        getShuffledJigsawBytes кандидата на КАЖДУЮ ротацию (shuffle 1
+        nextInt на 2 элемента); canAttach; геометрия i3 = i - y + stepY
+        (front РОДИТЕЛЯ), i4 = rigid&&rigid ? minY+i3 : lazy i1 - y
+        (мемо i1 на родительский джигсо), i5, bbox3, blockPos4; expansion-
+        hack i2 (useExpansionHack && YSpan <= 16: max по джигсоа кандидата
+        max(maxSize(пул), maxSize(fallback)) с orElse(0), джигсо вне bbox1
+        -> 0) -> encapsulate(minX, minY + max(i2+1, yspan), minZ); коллизия
+        B'deflate(0.25) против слота -> reject; вычитание ПОЛНОГО бокса
+        ребёнка из слота; i6 = rigid ? gld_родителя - i3 : gld_кандидата;
+        i7 = rigid ? minY+i : (rigid1 ? i4+y : lazy i1 + i3/2 — усечение
+        деления); junctions на ОБЕ детали (294-295: родителю blockPos1/
+        i7-i+gld/i3/proj_ребёнка, ребёнку blockPos/i7-y+i6/-i3/proj_родителя);
+        pieces.push; при depth+1 > maxDepth -> continue block0 БЕЗ очереди;
+        иначе placing.add(state, placement_priority) -> continue block0
+        (один ребёнок на родительский джигсо). Aliasing MutableObject =
+        Rc<RefCell<Option<FreeShape>>>: per-piece слот лениво = bbox
+        родителя (isInside), иначе унаследованный free (общий!).
+     d) addPieces (65-105 + лямбда 152-161): Rotation.getRandom (nextInt 4)
+        -> resolve(start_pool) -> getRandomTemplate (weight-expanded) ->
+        Empty => None; start_jigsaw_name: getRandomNamedJigsaw (один
+        getShuffledJigsawBlocks, скан БЕЗ RNG) -> mirror vec3i/blockPos1;
+        стартовая деталь; центр i/i1 (усечение); i2 = heightmap?
+        pos.y + firstFreeHeight(i,i1) : blockPos1.y; move(0, i2-i3, 0);
+        isStartTooClose (padding != ZERO: minY < min+bottom || maxY >
+        max-top); i4; stub (i,i4,i1); maxDepth > 0: free = AABB(i-h,
+        max(i4-v, minY+bottom), ..., min(i4+v+1, maxY+1-top)) \ bbox
+        стартовой детали (ПОСЛЕ move) -> placer.run.
+     e) heightmap-граница: трейт FirstFreeHeight (first_free_height(x,z),
+        БЕЗ потребления RNG); реальный шумовой сэмплер = инкремент 2c
+        (сэмплирование сырой колонки через плотностное дерево; Beardifier-
+        Marker => наш 0.0 уже корректен).
+     f) громкие расходжения: note_missing_pool/note_missing_template/
+        note_unsupported (Java: LOGGER.warn / crash); ListPoolElement:
+        джигсоы из elements[0], bbox = union детей; Empty: джигсоы пусты
+        БЕЗ RNG, bbox запрещён.
+  4) ТЕСТЫ (15 новых; оракул — ручной вывод из CFR): алгебра (epsilon,
+     deflate, AABB.of, касание = полузакрытая семантика), subtract_one 6
+     плит (точные границы) + касание/покрытие/дизъюнкт, only_second_nonempty
+     (внутри/равны/торчит/вырожден/пустой-A/L-форма), накопление FreeShape
+     (вычитание до пустоты => всё коллидирует), SequencedPriorityIterator
+     (fast-path, re-point, FIFO, switch, add после опустошения, ожидание
+     низких приоритетов), УСПЕШНАЯ УСТАНОВКА (геометрия (18,64,13) bbox
+     (18..20,64..66,13..15), gld 1, junctions 65/65, RNG-стрим = 6 nextInt
+     ровно), poke-out reject (6x3x6 внутри периметра -> вылет за bbox
+     родителя -> отклон; RNG 3), интерьер (per-piece слот: первый ребёнок
+     принят, второй перекрывающий отклонён вычитанием child1; RNG 10),
+     depth-границы (maxDepth 0: только fallback, RNG 0; maxDepth 1: очередь
+     при 1>1 false, depth==maxDepth без пула), expansion-hack (i2 = 5 ->
+     рост max_y до 70; reject при комнате y<69; RNG 7), addPieces полный
+     (сэмплер (13,13), stub (13,70,13), свободная форма = 6 плит
+     AABB\после-move, ребёнок (18,69,13), внук ОТПРАВЛЕН (дырка старт-бокса
+     в free — коллизия), junctions 70/70, RNG 8), start_jigsaw_name mirror
+     ((12,0,13) -> (8,0,7) -> move -> (8,-1,7); RNG 3), DimensionPadding
+     ((100,0) при y 9..12 -> None; (0,0) -> Some), громкие note (pool/
+     template missing). ИТОГ: chunk-factory lib 140 GREEN (125 + 15),
+     all-targets 140 GREEN.
+  5) ЛОКАЛЬНАЯ БАТАРЕЯ / A-B: veccheck на tectA/tectB/resid1/resid53 и
+     aquacheck на resid1/tectA — выводы ЧИСТОГО 5dd825a и дерева 2b БАЙТ-
+     ИДЕНТИЧНЫ (единственное отличие = thread-id в panic-строке). ЗАМЕЧАНИЕ
+     (инфра): локальные золотые вектора в sandbox УСТАРЕЛИ — [density]
+     barrier расхождения на ВСЕХ 4 наборах воспроизводятся и на ЧИСТОМ
+     5dd825a (tect*: java = -1e0 константа; resid*: переменные значения),
+     тогда как CI 37662316658 на том же коммите ЗЕЛЁНЫЙ по ncf-vectors/
+     ncf-density/gate-p2 (векторы в CI перезахватываются свежими) =>
+     локальный снапшот ci-server/golden не соответствует текущему
+     worldgen-extract; НЕ регрессия; следующий тик — перезахват локальных
+     векторов или сверка хешей с CI.
+  6) СМЕНА ПОВЕДЕНИЯ: НЕТ — модуль автономен; в дереве не вызывается;
+     beardifier.rs +3 метода InclusiveBox (moved/get_yspan/encapsulate_pos)
+     и jigsaw.rs +1 (Dir::step_y) — аддитивные API без изменений логики.
+СЛЕДУЮЩИЕ ИНКРЕМЕНТЫ P5.3:
+  a) 2c: реальный FirstFreeHeight (сырая колонка через плотностное дерево:
+     NOISE -> substance без surface/beard, NOT_AIR, y+1, clampToHeight-
+     Accessor) + findGenerationPoint (структурный JSON: start_height
+     absolute 0 для village_plains, biome-тег) + piece_dump бин +
+     java-оракул-захват списка боксов village_plains @ seed 3053459;
+  b) pool_aliases (PoolAliasLookup: direct/random/static);
+  c) 2d: разъёмка Df::Beardifier per-chunk (инкремент 1 готов) -> класс (а)
+     закрывается на gate-P2 terralith (5 ячеек) + vanilla I8-фолбэк сужается
+     до реального радиуса Beardifier (директива владельца 1).
+АМДАЛЬ (директива 2): таблица аддендума 26 в силе; инкремент 2b не входит
+  в горячий цикл (модуль автономен; границы под инъекцию — замер после 2c).
+КОРПУС (директива 3): без изменений (тик = оракулы + каркас + тесты).
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 7-й тик; первоисточник = этот LOG.

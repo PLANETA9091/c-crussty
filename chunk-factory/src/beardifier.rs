@@ -130,6 +130,33 @@ impl InclusiveBox {
             max_z: self.max_z + n,
         }
     }
+
+    /// BoundingBox.moved — pure offset, returns a new box.
+    pub fn moved(&self, dx: i32, dy: i32, dz: i32) -> InclusiveBox {
+        InclusiveBox {
+            min_x: self.min_x + dx,
+            min_y: self.min_y + dy,
+            min_z: self.min_z + dz,
+            max_x: self.max_x + dx,
+            max_y: self.max_y + dy,
+            max_z: self.max_z + dz,
+        }
+    }
+
+    /// BoundingBox.getYSpan = maxY - minY + 1.
+    pub fn get_yspan(&self) -> i32 {
+        self.max_y - self.min_y + 1
+    }
+
+    /// BoundingBox.encapsulate(BlockPos) — grow in place to include the point.
+    pub fn encapsulate_pos(&mut self, x: i32, y: i32, z: i32) {
+        self.min_x = self.min_x.min(x);
+        self.min_y = self.min_y.min(y);
+        self.min_z = self.min_z.min(z);
+        self.max_x = self.max_x.max(x);
+        self.max_y = self.max_y.max(y);
+        self.max_z = self.max_z.max(z);
+    }
 }
 
 /// The Beardifier density node: pieces + junctions + the affected box

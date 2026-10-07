@@ -178,6 +178,10 @@ pub mod fallback;
 pub mod random_spread;
 pub mod beardifier;
 pub mod jigsaw;
+/// P5.3 increment 2b: JigsawPlacement.addPieces + Placer.tryPlacingChildren
+/// (exact free-space box algebra, SequencedPriorityIterator, junctions,
+/// expansion hack, heightmap sampler boundary). Standalone — no tree wiring.
+pub mod placer;
 /// Status chain: NOISE -> SURFACE -> CARVERS orchestration (P2.5/P2.8).
 pub mod status_chain;
 /// P2.14 interval cutoff: sound build-time rewrites (RangeChoice/Clamp/mul-1).
