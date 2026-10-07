@@ -125,6 +125,28 @@ fn block_pos_get_z(l: i64) -> i32 {
     ((l << 26) >> 38) as i32
 }
 
+/// P5.3 increment 2c — the two DIFFERENT bases of the iterateNoiseColumn
+/// machine's aquifer (NoiseBasedChunkGenerator.iterateNoiseColumn CFR 182 ->
+/// NoiseChunk ctor CFR 132-140 -> Aquifer ctor CFR 106-111), exposed for
+/// oracle tests. Java semantics:
+///   - GRID basis = the SECTION containing the cell-aligned firstNoise:
+///     `SectionPos.blockToSectionCoord(i) = i >> 4` (arithmetic), min block
+///     = section << 4, max = min + 15;
+///   - FlatCache WINDOW = the CELL: origin `QuartPos.fromBlock(firstNoise)
+///     = firstNoise >> 2`, size `noiseSizeXZ + 1 = 1 + 1 = 2`.
+pub fn column_aquifer_grid_basis(
+    first_cell_block_x: i32,
+    first_cell_block_z: i32,
+) -> (i32, i32, i32, i32) {
+    let sx = (first_cell_block_x >> 4) << 4;
+    let sz = (first_cell_block_z >> 4) << 4;
+    (sx, sx + 15, sz, sz + 15)
+}
+
+pub fn column_flat_window(first_cell_block_x: i32, first_cell_block_z: i32) -> (i32, i32, i32) {
+    (first_cell_block_x >> 2, first_cell_block_z >> 2, 2)
+}
+
 #[inline]
 fn grid_x(x: i32) -> i32 {
     x >> 4
@@ -203,6 +225,8 @@ pub struct NoiseBasedAquifer<'a> {
 impl<'a> NoiseBasedAquifer<'a> {
     /// Aquifer.create -> new NoiseBasedAquifer(...). `min_block_x/z` are the
     /// chunk min block coords; `min_y`/`height` the (clamped) noise settings.
+    /// Grid basis AND FlatCache window both derive from the chunk bounds
+    /// (the full-chunk NoiseChunk: noiseSizeXZ = 4 quarts, window size 5).
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         bank: &'a crate::density::NoiseBank,
@@ -214,6 +238,89 @@ impl<'a> NoiseBasedAquifer<'a> {
         max_block_x: i32,
         min_block_z: i32,
         max_block_z: i32,
+        global_fluid_picker: GlobalFluidPicker,
+    ) -> Self {
+        let flat_size_xz = ((max_block_x - min_block_x + 1) >> 2) + 1;
+        let fx = min_block_x >> 2;
+        let fz = min_block_z >> 2;
+        Self::new_impl(
+            bank,
+            router,
+            aquifer_factory,
+            min_y,
+            height,
+            min_block_x,
+            max_block_x,
+            min_block_z,
+            max_block_z,
+            fx,
+            fz,
+            flat_size_xz,
+            global_fluid_picker,
+        )
+    }
+
+    /// P5.3 increment 2c — the iterateNoiseColumn 1-cell machine's aquifer
+    /// (NoiseBasedChunkGenerator.iterateNoiseColumn CFR 182 feeding the
+    /// NoiseChunk ctor CFR 132-140). Java uses TWO DIFFERENT bases here:
+    ///   - the AQUIFER GRID basis is the SECTION containing the cell-aligned
+    ///     firstNoiseX/Z: Aquifer.create(this, new ChunkPos(
+    ///     SectionPos.blockToSectionCoord(firstNoiseX), ...)) — 16-block grid
+    ///     bounds from that section (Aquifer ctor CFR 106-111);
+    ///   - the FlatCache WINDOW for the wrapped router fields (barrier,
+    ///     floodedness, erosion, depth, ... the aquifer's own bindings per
+    ///     addendum 35) is the CELL itself: noiseSizeXZ = QuartPos.fromBlock
+    ///     (1 * cellWidth) = 1, FlatCache size = 2, origin = firstNoise >> 2.
+    ///     Erosion/depth/floodedness queries at aquifer FLUID positions
+    ///     (fromGridX(g, r), r in 0..9, Aquifer CFR 155-160) can land inside
+    ///     the section quarts but OUTSIDE the cell quarts — Java's 1-cell
+    ///     machine computes those DIRECTLY (out-of-window fallback), while a
+    ///     section-sized window would quart-snap them. `first_cell_block_x/z`
+    ///     are the CELL-ALIGNED coords (i6/i7 = floorDiv(x, cw)*cw).
+    #[allow(clippy::too_many_arguments)]
+    pub fn new_for_column(
+        bank: &'a crate::density::NoiseBank,
+        router: &'a crate::router::Router,
+        aquifer_factory: XoroshiroPositionalRandomFactory,
+        min_y: i32,
+        height: i32,
+        first_cell_block_x: i32,
+        first_cell_block_z: i32,
+        global_fluid_picker: GlobalFluidPicker,
+    ) -> Self {
+        let (gx0, gx1, gz0, gz1) = column_aquifer_grid_basis(first_cell_block_x, first_cell_block_z);
+        let (fx, fz, size) = column_flat_window(first_cell_block_x, first_cell_block_z);
+        Self::new_impl(
+            bank,
+            router,
+            aquifer_factory,
+            min_y,
+            height,
+            gx0,
+            gx1,
+            gz0,
+            gz1,
+            fx, // FlatCache origin = QuartPos.fromBlock(firstNoiseX)
+            fz,
+            size, // noiseSizeXZ (1) + 1
+            global_fluid_picker,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn new_impl(
+        bank: &'a crate::density::NoiseBank,
+        router: &'a crate::router::Router,
+        aquifer_factory: XoroshiroPositionalRandomFactory,
+        min_y: i32,
+        height: i32,
+        min_block_x: i32,
+        max_block_x: i32,
+        min_block_z: i32,
+        max_block_z: i32,
+        fx: i32,
+        fz: i32,
+        flat_size_xz: i32,
         global_fluid_picker: GlobalFluidPicker,
     ) -> Self {
         let min_grid_x = grid_x(min_block_x - 5);
@@ -228,10 +335,9 @@ impl<'a> NoiseBasedAquifer<'a> {
         let cache_len = (grid_size_x as usize) * (grid_size_y as usize) * (grid_size_z as usize);
         // Addendum 35: bind every Marker::FlatCache in the aquifer-relevant
         // fields to THIS machine's window. size_xz = NoiseChunk.noiseSizeXZ+1
-        // = (chunk width in blocks >> 2) + 1 = 5 for 16-wide chunks.
-        let flat_size_xz = ((max_block_x - min_block_x + 1) >> 2) + 1;
-        let fx = min_block_x >> 2;
-        let fz = min_block_z >> 2;
+        // = (chunk width in blocks >> 2) + 1 = 5 for 16-wide chunks; the 2c
+        // column machine passes the CELL window (origin = firstNoise >> 2,
+        // size 2) via new_for_column.
         let bind = |df: &Df| {
             crate::density::with_flat_cache_windows(df, fx, fz, flat_size_xz)
         };
@@ -250,8 +356,8 @@ impl<'a> NoiseBasedAquifer<'a> {
             global_fluid_picker,
             should_schedule_fluid_update: false,
             skip_sampling_above_y: 0,
-            first_noise_x: min_block_x >> 2,
-            first_noise_z: min_block_z >> 2,
+            first_noise_x: fx,
+            first_noise_z: fz,
             min_grid_x,
             min_grid_y,
             min_grid_z,

@@ -1901,6 +1901,61 @@ impl<'a> NoiseChunkSim<'a> {
         }
         self.interpolating = false;
     }
+
+    /// P5.3 increment 2c — the iterateNoiseColumn single-column drive
+    /// (NoiseBasedChunkGenerator.iterateNoiseColumn, CFR 157-199: the
+    /// getBaseHeight machine behind Structure height sampling). Slice fills
+    /// happen ONCE (initializeForFirstCellX + advanceCellX(0), CFR 184-185),
+    /// then cells are walked TOP-DOWN (CFR 186) with ONLY the target
+    /// column's fracs applied per y: updateForY(i10, d2) / updateForX(x, d)
+    /// / updateForZ(z, d1) where d = Math.floorMod(x, cellWidth)/cellWidth
+    /// (CFR 175-183) — in_cell_x from the RAW block coords. The callback
+    /// signature matches `drive_blocks` — (bx, by, bz, sim) — and returns
+    /// true to STOP (stoppingState hit at i10 => return i10 + 1, CFR
+    /// 195-198); returning true leaves `interpolating` cleared
+    /// (stopInterpolation, CFR 199) and the machine reusable. The machine
+    /// must be the 1-cell window instantiated at cellFloor(x/cw)*cw —
+    /// exactly Java's iterateNoiseColumn NoiseChunk (CFR 182). Interpolated
+    /// values equal the full drive's at the same (x, z): fills are
+    /// order-independent and the per-block interpolation state depends only
+    /// on (cell fills, current fracs).
+    pub fn drive_column(
+        &mut self,
+        x: i32,
+        z: i32,
+        f: &mut dyn FnMut(i32, i32, i32, &mut Self) -> bool,
+    ) {
+        assert!(!self.interpolating, "Starting interpolation twice");
+        self.interpolating = true;
+        self.interpolation_counter = 0;
+        // initializeForFirstCellX + advanceCellX(0) — the two slice fills of
+        // the 1-cell machine.
+        self.fill_slice(true, self.first_cell_x);
+        self.fill_slice(false, self.first_cell_x + 1);
+        // advanceCellX leaves cell_start_block_x at the NEXT cell; the column
+        // lives in cell 0 (drive_blocks resets it the same way, CFR 187-188).
+        self.cell_start_block_x = self.first_cell_x * self.cell_width;
+        let base_z = self.first_cell_z * self.cell_width;
+        let frac_x = (x - self.cell_start_block_x) as f64 / self.cell_width as f64;
+        let frac_z = (z - base_z) as f64 / self.cell_width as f64;
+        debug_assert!((0..self.cell_width).contains(&(x - self.cell_start_block_x)));
+        debug_assert!((0..self.cell_width).contains(&(z - base_z)));
+        for cy in (0..self.cell_count_y).rev() {
+            self.select_cell_yz(cy, 0);
+            for in_y in (0..self.cell_height).rev() {
+                let by = (self.cell_noise_min_y + cy) * self.cell_height + in_y;
+                let frac_y = in_y as f64 / self.cell_height as f64;
+                self.update_for_y(by, frac_y);
+                self.update_for_x(x, frac_x);
+                self.update_for_z(z, frac_z);
+                if f(x, by, z, self) {
+                    self.interpolating = false;
+                    return;
+                }
+            }
+        }
+        self.interpolating = false;
+    }
 }
 
 impl<'a> NoiseChunkSim<'a> {

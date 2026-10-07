@@ -2899,3 +2899,115 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
   в горячий цикл (модуль автономен; границы под инъекцию — замер после 2c).
 КОРПУС (директива 3): без изменений (тик = оракулы + каркас + тесты).
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 7-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 16 (аддендум 41: Job 441690 — CI-вердикты 4 ранов; P5.3 инкремент 2c: реальный FirstFreeHeight — iterateNoiseColumn-машина целиком (1-cell NoiseChunk + section-grid/cell-window аквифер + drive_column), ffprobe кросс-валидация 10240 колонок / 0 расхождений; 4 теста; локальная A/B батарея байт-идентична чистому eeabe34) ===
+
+1) SANDBOX/CI-ВЕРДИКТЫ (порядок тика): reset --hard до eeabe34 (уже был
+   запушен прошлой сессией: 2a=5dd825a, 2b=eeabe34); cargo ОТСУТСТВОВАЛ ->
+   переустановка rustup stable. Вердикты по ранам (job-level, не run-level):
+   a) 37662316658 (5dd825a, инкремент 2a) — run-level "failure", НО на
+      уровне jobs: ВСЕ зелёные кроме ровно 5 документированных терралит
+      gate-P2 ячеек класса (а) (90210/8675309/133700/424242/3053459 ×
+      terralith); vanilla 5/5 + tectonic 5/5 gate-P2 зелёные; module/fuzz/
+      vectors/staged(surface,noise,carvers)/density×7/datapacks/mca/native/
+      golden-harness/chunk-factory — зелёные. ЧЕСТНАЯ доска, регрессий нет.
+   b) 37657858163 (dfb001a, инкремент 1) — та же картина: vanilla+tectonic
+      10/10 gate-P2 зелёные, не-зелёные = ровно 5 терралит-ячеек. Инкремент 1
+      (beardifier.rs) регрессий не дал.
+   c) 37656961383 (56b810d, hardening Ap2::Max) — ран ОТМЕНЁН (superseded
+      более поздними пушами; 4 tectonic-jobs cancelled). Завершившиеся jobs:
+      vanilla gate-P2 4/4 зелёные. Сам hardening-коммит входит в dfb001a/
+      5dd825a/eeabe34 и ПОЛНОСТЬЮ ревVerified их полными досками (b/a/2b) —
+      отдельный перезапуск отменённого рана не требуется.
+   d) 37670630345 (eeabe34, инкремент 2b) — 33 jobs, НЕ-зелёные = ровно 5
+      документированных терралит-ячеек класса (а); всё остальное зелёное
+      (вкл. vanilla 5/5 + tectonic 5/5 gate-P2). Инкремент 2b (placer.rs)
+      верифицирован полностью.
+2) P5.3 ИНКРЕМЕНТ 2c — реальный FirstFreeHeight (машина iterateNoiseColumn):
+   a) interpolator.rs: NoiseChunkSim::drive_column (CFR NoiseBasedChunk
+      Generator 157-199) — колонковый драйв: 2 заливки слайсов ОДИН раз
+      (initializeForFirstCellX + advanceCellX(0)), ячейки СВЕРХУ ВНИЗ, на
+      каждый y — ТОЛЬКО фракции целевой колонки (updateForY(i10,d2) /
+      updateForX(x,d) / updateForZ(z,d1), d = floorMod(x,cw)/cw), callback
+      (bx,by,bz,sim) -> bool «стоп» (stoppingState => i10+1); после стопа
+      interpolating сброшен, машина переиспользуема (stopInterpolation).
+      Порядок аргументов callback унифицирован с drive_blocks (bx,by,bz).
+   b) aquifer.rs: рефакторинг new -> new_impl + ДВА РАЗНЫХ базиса 1-cell
+      машины (это ключевое открытие тика): у iterateNoiseColumn-машины
+      аквифер имеет GRID-базис = СЕКЦИЯ, содержащая cell-aligned
+      firstNoise (NoiseChunk ctor CFR 132-140: Aquifer.create(this,
+      new ChunkPos(SectionPos.blockToSectionCoord(firstNoiseX), ...))), а
+      FlatCache-ОКНО = САМА ЯЧЕЙКА (noiseSizeXZ = QuartPos.fromBlock(1*cw)
+      = 1, размер окна 2, origin firstNoise>>2). Привязка аквифер-полей к
+      секционному окну (5×5, как у чанковой машины) КВАНТОВАЛА бы запросы
+      erosion/depth/floodedness на fluid-позициях (fromGridX(g,r), r 0..9,
+      Aquifer CFR 155-160 + computeSurfaceLevel CFR 371-377), которые Java
+      1-cell машины берёт НАПРЯМУЮ (out-of-window fallback) — кварт-снап
+      vs точное значение = расхождение значений. Публичные хелперы
+      column_aquifer_grid_basis / column_flat_window (+ тесты, вкл.
+      отрицательные координаты: blockToSectionCoord = арифм. >> 4).
+   c) height_feed.rs (новый модуль): ColumnHeightSource — ПРОИЗВОДСТВЕННЫЙ
+      сэмплер getBaseHeight(x, z, WORLD_SURFACE_WG, level, random) ==
+      iterateNoiseColumn с останавливающим предикатом NOT_AIR (первый
+      не-воздух сверху +1; level.getMinY() если колонка вся воздушная,
+      CFR 139 orElse). Блочное правило = MaterialRuleList
+      [aquifer.computeSubstance(ctx, cacheAllInCell(final+BeardifierMarker)),
+      oreVeins? OreVeinifier] с null -> defaultBlock (NoiseChunk ctor CFR
+      157-166 + iterateNoiseColumn CFR 191-192); aquiferRandom/oreRandom
+      как в RandomState.java 47-50 (fromHashOf("aquifer"/"ore").
+      forkPositional()); BEARD = BeardifierMarker == наш Df::Beardifier 0.0.
+      Реализует placer::FirstFreeHeight; СТРУКТУРНЫЙ RNG НЕ ТРОГАЕТ.
+   d) bin/ffprobe.rs: кросс-валидация колонковой машины против
+      CI-верифицированной чанковой (hm WorldSurfaceWg из generate_noise_
+      chunk). РЕЗУЛЬТАТ: 10240 колонок / 0 РАСХОЖДЕНИЙ — vanilla seeds
+      3053459 (чанки 0..1² и блоб-регион -10..-9 × -16..-15), 90210,
+      8675309, 424242, 133700 (16 чанков 100..103²) + TECTONIC pack
+      (minecraft:overworld @ 8675309, 4 чанка). Ноль означает: (i) 1-cell
+      машина внутренне кросс-валидирована против CI-зелёной чанковой;
+      (ii) различие FlatCache-окон НЕ наблюдаемо на корпусе (и в Java обе
+      машины совпадают — значения quart-анкоров глобально выровнены);
+      (iii) I8-аппроксимация hm была точной на этих колонках. Оба исхода
+      были честными; зафиксирован ноль.
+   е) ТЕСТЫ +4 (lib 144 = 140 + 4): grid-базис = секция ячейки (4 кейса,
+      вкл. -4/-8/-1/-16), flat-окно = ячейка (3 кейса), drive_column ==
+      drive_blocks на синтетическом шаблоне CellCache(Interpolated(
+      YClampedGradient)) — 9 ячеек (вкл. отрицательные), бит-равные
+      последовательности 384 y-значений (интерполянт + substance),
+      early-stop с продолжением работы машины. Root 417 GREEN.
+3) ЛОКАЛЬНАЯ БАТАРЕЯ / A-B (нулевое изменение поведения): чистый worktree
+   eeabe34 собран рядом; veccheck tectA/tectB/resid1 — БАЙТ-ИДЕНТИЧНЫ
+   (modulo PID в panic-строке; известный stale-barrier-артефакт
+   воспроизводится ОДИНАКОВО на обоих бинарях: panic 556, left:9/right:8);
+   aquacheck resid1 — байт-идентичен, content gate 0; stagediff A/B
+   NCF_TILE_CACHE=0/1 — vanilla 49 чанков (seed 3053459 -3..3²) и tectonic
+   169 чанков (seed 8675309 12..15 × 24..27) БАЙТ-ИДЕНТИЧНЫ. Инфра-замечание
+   аддендума 40 п.5 ЗАКРЫТО: локальные золотые вектора устарели, но это НЕ
+   регрессия (идентично на чистом дереве); CI-векторы (свежий захват)
+   авторитетны; перезахват локальных — на инфра-тик.
+4) СМЕНА ПОВЕДЕНИЯ: НЕТ — Df::Beardifier всё ещё 0.0; height_feed не
+   вызывается ни из одного производственного пути (impl FirstFreeHeight
+   существует, production-потребитель подключается в 2d); все изменения
+   аддитивны (новый модуль + новый бин + drive_column + new_impl/
+   new_for_column с сохранением семантики new()).
+АМДАЛЬ (директива 2): колонковая машина ~4.1 мс/колонка vanilla (линейно
+  по 256 колонок/чанк, замер ffprobe), tectonic ~112 мс/колонка; чанковая
+  noise-стадия: vanilla ~42 мс/чанк (фаза gen в ffprobe), tectonic 3.9
+  чанков/с = ~256 мс/чанк (stagediff gen-batch, 169 чанков) — консистентно
+  с таблицей аддендума 26. Потребление в 2d: first_free_height вызывается
+  1 раз на addPieces (проекция) + 1 раз на кандидата (tryPlacingChildren
+  i1) => сборка деревенского масштаба (десятки кандидатов) оценивается в
+  ~0.2-1 с vanilla / ~2-10 с tectonic на старт; точный замер — на разъёмке
+  2d. Java платит ту же цену за вызов iterateNoiseColumn — паритет, не
+  регресс.
+СЛЕДУЮЩИЕ ИНКРЕМЕНТЫ P5.3:
+  a) 2d-фид: findGenerationPoint (структурный JSON: start_height/
+     project_start_to_heightmap/terrain_adaptation/biome-тег) +
+     StructureSet (weighted group pick) + piece_dump бин (village_plains @
+     seed 3053459: список боксов + junctions) + java-оракул-захват через CI;
+  b) pool_aliases (PoolAliasLookup: direct/random/static);
+  c) разъёмка Df::Beardifier per-chunk -> класс (а) закрывается на gate-P2
+     terralith (5 ячеек) + vanilla I8-фолбэк сужается до реального радиуса
+     Beardifier (директива владельца 1).
+КОРПУС (директива 3): без изменений (тик = оракулы + каркас + тесты).
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 8-й тик (в задании всё ещё T38-B/T40 —
+  оба закрыты); первоисточник = этот LOG.
