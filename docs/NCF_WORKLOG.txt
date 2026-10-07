@@ -3011,3 +3011,86 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 КОРПУС (директива 3): без изменений (тик = оракулы + каркас + тесты).
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 8-й тик (в задании всё ещё T38-B/T40 —
   оба закрыты); первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 17 (аддендум 42: Job 441690 — P5.3 инкремент 2d-фид: piece engine на РЕАЛЬНЫХ данных end-to-end — placement/pick/biome/сборка/высоты; feature_pool_element; WorldgenDir root + template NBT из jар; piece_dump бин; villages @ 3053459: village_taiga, 80 pieces) ===
+
+1) ИНФРА (безопасно для CI-контрактов — сами gate-скрипты НЕ тронуты):
+   a) в worldgen-extract добавлены БИНАРНЫЕ ресурсы серверного jар:
+      data/minecraft/structure/**/*.nbt (1202 шаблона, unzip из
+      ci-server/versions/1.21.10/purpur-1.21.10.jar) и data/minecraft/
+      tags/worldgen/** (95 тегов, вкл. has_structure/village_plains =
+      plains+meadow). Без них шаблоны и биом-фильтр недоступны.
+   b) WorldgenDir: +pub data_root (PathBuf) — JSON-индекс не тронут
+      (читает только .json под worldgen|dimension, как и было); Template
+      Cache: fallback-чтение data/<ns>/structure/<path>.nbt напрямую с диска
+      (gzip + nbt_parse, кэш remember-misses как раньше).
+2) feature_pool_element (placer/jigsaw): деревенские пулы его ДОСТИГАЮТ
+   (trees/decor через street-jigsaw). Семантика по CFR FeaturePoolElement:
+   getSize == Vec3i.ZERO => bbox = ОДИН блок [pos..pos] (независим от
+   ротации); getShuffledJigsawBlocks == РОВНО ОДИН дефолтный джигсо (name
+   "minecraft:bottom", pool/target "minecraft:empty", front DOWN / top
+   SOUTH, joint rollable из fillDefaultJigsawNBT), RNG НЕ потребляется
+   (shaffle 1 элемента = 0 nextInt); ground_level_delta 1; в getMaxSize
+   yspan = 1. Реализовано во ВСЕХ 4 точках обзора (Placer::element_bbox /
+   Placer::element_jigsaws / element_bbox_entry / element_jigsaws_entry) +
+   parse + Projection. До этого деревенская сборка глухо отбрасывала
+   каждого кандидата.
+3) piece_feed.rs (новый модуль, 2d-фид):
+   - DirPoolSource — ПРОИЗВОДСТВЕННЫЙ PoolSource: resolve_pool (identity
+     алиасы; структуры с pool_aliases — громкая заметка) + template_of
+     (TemplateCache) + max_size (getMaxSize c кэшем: max yspan по всем
+     взвешенным элементам; Feature=1; пропущенный шаблон — громко, 0)
+     + note_* (громкие расхождения).
+   - parse_structure_json (jigsaw-поля: start_pool/start_jigsaw_name/size/
+     start_height(только absolute — иное громко)/use_expansion_hack/
+     project_start_to_heightmap/max_distance_from_center(оба вида)/
+     terrain_adaptation/beardifier::TerrainAdjustment::from_json/
+     pool_aliases-наличие) + parse_structure_set_json.
+   - Протокол createStructures (CFR 453-501) на чанк: is_placement_chunk
+     (P5.1) -> ВЕСОВОЙ выбор: FRESH LegacyRandomSource(0) +
+     setLargeFeatureSeed(levelSeed, x, z) (ЛЕГАСИ RNG, CFR 480-482),
+     nextInt(total) + вычитание, при НЕВАЛИДНОМ старте — удалить
+     кандидата, total -= weight, ПРОДОЛЖИТЬ тем же rng (CFR 487-500);
+     сборка КАЖДОГО кандидата = FRESH XoroshiroRandomSource(levelSeed)
+     (GenerationContext.random()), сам addPieces применяет
+     setLargeFeatureSeed; biome-фильтр ПОСЛЕ сборки на stub-позиции
+     (findValidGenerationPoint, CFR 180-182, кварта-координаты).
+   - structure_start_for_chunk: полный путь одного сета за чанк ->
+     (структура, pieces+boxes+junctions, TerrainAdjustment).
+4) bin/piece_dump.rs: JSON-дамп (сеты/чанки/структура/адаптация/stub/
+   pieces[{box,gld,junctions[source_x, source_ground_y, source_z, delta_y,
+   dest_projection]}]) + --find (спираль placement-чанков) + громкие
+   заметки в stderr. JAVA-ОРАКУЛ-ЗАХВАТ того же списка боксов (Purpur
+   1.21.10, StructureStart.getPieces) — следующий тик (CI-сторона).
+5) РЕЗУЛЬТАТ (пилот): seed 3053459, сет villages (spacing 34, separation
+   8, salt 10387312): placement-чанки вокруг нуля: (-14,-15), (1,-15),
+   (-22,1), (22,20), ...; чанк (-14,-15): ВЕСОВОЙ выбор -> village_taiga,
+   биом-фильтр пройден (taiga на stub), СБОРКА УСПЕШНА: 80 pieces,
+   stub [-232,64,-229], beard_thin, 5.38 с (замер: доминируют вызовы
+   first_free_height — сотни вызовов на кандидатов; точная декомпозиция —
+   на разъёмке). Цепочка placement -> pick -> jigsaw-сборка (реальные пулы
+   + NBT-шаблоны) -> проекция на РЕАЛЬНОМ сэмплере 2c -> биом-фильтр
+   работает end-to-end на реальных данных.
+6) ТЕСТЫ/БАТАРЕЯ: lib 144 + root 417 GREEN (без новых — Feature покрыт
+   оракулом CFR вручную; тесты деревни = сам piece_dump против будущего
+   java-захвата). A/B против чистого eeabe34: veccheck tectA/tectB —
+   байт-идентичны (tectA также против до-Feature дерева), resid1
+   ZERO-DIFF; stagediff A/B NCF_TILE_CACHE=0/1 vanilla — байт-идентичны.
+   СМЕНА ПОВЕДЕНИЯ: НЕТ (Df::Beardifier всё ещё 0.0; piece_feed не
+   подключён к stagediff/тeчке чанков; WorldgenDir JSON-индекс не тронут).
+СЛЕДУЮЩИЕ ИНКРЕМЕНТЫ P5.3:
+  a) java-оракул-захват списка боксов village_plains/taiga @ 3053459
+     (CI: SERVER_DIR прvisioned; дамп StructureStart.getPieces боксов +
+     junctions) -> сверка с piece_dump бит-в-бит;
+  b) pool_aliases (direct/random/static) — терралит/тектоник структуры;
+  c) разъёмка Df::Beardifier per-chunk (инкремент 1 + фид готовы) ->
+     класс (а) закрывается на gate-P2 terralith (5 ячеек) + vanilla I8
+     -фолбэк сужается до реального радиуса Beardifier (директива 1).
+АМДАЛЬ (директива 2): колонковая машина ~4.1 мс/колонка vanilla (линейно,
+  ffprobe), tectonic ~112 мс/колонка; чанковая noise-стадия ~42 мс/чанк
+  vanilla / ~256 мс/чанк tectonic (stagediff gen-batch 169 чанков, 3.9
+  чанков/с); деревенская сборка 5.38 с на старт (80 pieces, сотни
+  height-вызовов) — оракулский путь, в горячий цикл генерации не входит
+  ( Beardifier потребляет ГОТОВЫЙ список боксов; замер после разъёмки).
+КОРПУС (директива 3): без изменений (тик = оракулы + каркас + тесты).
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 8-й тик; первоисточник = этот LOG.

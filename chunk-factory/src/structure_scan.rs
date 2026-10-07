@@ -111,7 +111,7 @@ fn tag_file(root: &Path, ns: &str, path: &str) -> Option<String> {
     std::fs::read_to_string(p).ok()
 }
 
-fn resolve_biome_predicate(
+pub(crate) fn resolve_biome_predicate(
     root: &Path,
     value: &crate::json::Json,
     out: &mut HashSet<String>,
@@ -231,7 +231,7 @@ fn parse_start_height(v: Option<&crate::json::Json>) -> StartHeightSpec {
 /// (over-approximation). Residual false-negative risk: projected start
 /// templates wider than 24 (center beyond corner+12) — a named red chunk
 /// exposes it; P5.3 replaces this whole layer with real piece boxes.
-fn stub_samples(
+pub(crate) fn stub_samples(
     structure: &crate::json::Json,
     height_of: &dyn Fn(i32, i32) -> Option<i32>,
 ) -> (Vec<(i32, i32, i32)>, bool) {
@@ -275,7 +275,7 @@ fn stub_samples(
 
 /// Overworld climate lookup at a block coord — mirrors filler.rs's
 /// fillBiomesFromNoise path (quantize_coord on the f32 casts).
-fn biome_at(rs: &RandomState, list: &mut ParameterList, bx: i32, by: i32, bz: i32) -> String {
+pub(crate) fn biome_at(rs: &RandomState, list: &mut ParameterList, bx: i32, by: i32, bz: i32) -> String {
     let fields: [&crate::density::Df; 6] = [
         &rs.router.temperature,
         &rs.router.vegetation,

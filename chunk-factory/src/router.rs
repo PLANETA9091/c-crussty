@@ -42,6 +42,10 @@ use crate::xoroshiro::XoroshiroRandomSource;
 pub struct WorldgenDir {
     /// namespace -> kind -> relative path -> raw JSON text
     files: BTreeMap<String, BTreeMap<String, BTreeMap<String, String>>>,
+    /// The extract root (data/ lives directly under it). Kept so BINARY
+    /// resources outside the JSON index (structure template .nbt files —
+    /// P5.3 2d) can be read from disk by the template cache.
+    pub data_root: std::path::PathBuf,
 }
 
 impl WorldgenDir {
@@ -101,7 +105,10 @@ impl WorldgenDir {
                     .insert(rel_path, text);
             }
         }
-        Ok(Self { files })
+        Ok(Self {
+            files,
+            data_root: data,
+        })
     }
     pub fn namespaces(&self) -> Vec<String> {
         self.files.keys().cloned().collect()

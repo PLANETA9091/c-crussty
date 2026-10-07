@@ -30,9 +30,26 @@ impl<'d> TemplateCache<'d> {
         if let Some(hit) = self.cache.borrow().get(&key) {
             return hit.clone();
         }
-        let parsed = self.dir.get(ns, "structure", path).and_then(|bytes| {
+        // P5.3 2d: the JSON index (WorldgenDir::load) only covers .json under
+        // data/<ns>/worldgen|dimension — template NBTs are BINARY files at
+        // data/<ns>/structure/<path>.nbt, read straight from the extract
+        // root (server jar / datapack unzip layout).
+        let raw = self
+            .dir
+            .get(ns, "structure", path)
+            .map(|s| s.as_bytes().to_vec())
+            .or_else(|| {
+                let file = self
+                    .dir
+                    .data_root
+                    .join(ns)
+                    .join("structure")
+                    .join(format!("{path}.nbt"));
+                std::fs::read(&file).ok()
+            });
+        let parsed = raw.and_then(|bytes| {
             // template files are gzip-compressed NBT (vanilla .nbt)
-            crate::sections::gunzip(bytes.as_bytes())
+            crate::sections::gunzip(&bytes)
                 .ok()
                 .and_then(|raw| crate::sections::nbt_parse(&raw).ok())
         });

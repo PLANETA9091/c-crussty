@@ -44,7 +44,7 @@
 use crate::beardifier::InclusiveBox;
 use crate::jigsaw::{
     can_attach, rotation_get_random, rotation_get_shuffled, shuffled_jigsaw_blocks, util_shuffled_copy,
-    Dir, PoolElement, Projection, ResolvedPool, Rotation, TemplateData, TemplateJigsaw,
+    Dir, JointType, PoolElement, Projection, ResolvedPool, Rotation, TemplateData, TemplateJigsaw,
 };
 use crate::jrandom::RandomSource;
 use std::cell::RefCell;
@@ -410,6 +410,19 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
                 }
                 acc
             }
+            PoolElement::Feature { .. } => {
+                // FeaturePoolElement.getBoundingBox (CFR 80-85): getSize ==
+                // Vec3i.ZERO => BoundingBox(pos, pos) — the single block,
+                // rotation-independent.
+                Some(InclusiveBox {
+                    min_x: offset.0,
+                    min_y: offset.1,
+                    min_z: offset.2,
+                    max_x: offset.0,
+                    max_y: offset.1,
+                    max_z: offset.2,
+                })
+            }
             PoolElement::Unsupported { kind } => {
                 self.pools.note_unsupported(kind);
                 None
@@ -446,6 +459,24 @@ impl<'a, R: RandomSource, S: FirstFreeHeight, P: PoolSource> Placer<'a, R, S, P>
                     Vec::new()
                 }
             },
+            PoolElement::Feature { .. } => {
+                // FeaturePoolElement.getShuffledJigsawBlocks (CFR 69-73):
+                // ONE default jigsaw at pos, name "minecraft:bottom",
+                // pool/target "minecraft:empty", front DOWN / top SOUTH,
+                // joint rollable (fillDefaultJigsawNBT); the 1-element list
+                // consumes NO RNG (shuffle of size 1 = no nextInt).
+                vec![TemplateJigsaw {
+                    pos: offset,
+                    front: rot.rotate_dir(Dir::Down),
+                    top: rot.rotate_dir(Dir::South),
+                    name: "minecraft:bottom".to_string(),
+                    pool: "minecraft:empty".to_string(),
+                    target: "minecraft:empty".to_string(),
+                    placement_priority: 0,
+                    selection_priority: 0,
+                    joint: JointType::Rollable,
+                }]
+            }
             PoolElement::Unsupported { kind } => {
                 self.pools.note_unsupported(kind);
                 Vec::new()
@@ -803,6 +834,14 @@ fn element_bbox_entry<P: PoolSource>(
             }
             acc
         }
+        PoolElement::Feature { .. } => Some(InclusiveBox {
+            min_x: offset.0,
+            min_y: offset.1,
+            min_z: offset.2,
+            max_x: offset.0,
+            max_y: offset.1,
+            max_z: offset.2,
+        }),
         PoolElement::Unsupported { kind } => {
             pools.note_unsupported(kind);
             None
@@ -830,6 +869,17 @@ fn element_jigsaws_entry<R: RandomSource, P: PoolSource>(
                 Vec::new()
             }
         },
+        PoolElement::Feature { .. } => vec![TemplateJigsaw {
+            pos: offset,
+            front: rot.rotate_dir(Dir::Down),
+            top: rot.rotate_dir(Dir::South),
+            name: "minecraft:bottom".to_string(),
+            pool: "minecraft:empty".to_string(),
+            target: "minecraft:empty".to_string(),
+            placement_priority: 0,
+            selection_priority: 0,
+            joint: JointType::Rollable,
+        }],
         PoolElement::Unsupported { kind } => {
             pools.note_unsupported(kind);
             Vec::new()

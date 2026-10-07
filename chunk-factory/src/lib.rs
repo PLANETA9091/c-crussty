@@ -178,6 +178,7 @@ pub mod fallback;
 pub mod random_spread;
 pub mod beardifier;
 pub mod height_feed;
+pub mod piece_feed;
 pub mod jigsaw;
 /// P5.3 increment 2b: JigsawPlacement.addPieces + Placer.tryPlacingChildren
 /// (exact free-space box algebra, SequencedPriorityIterator, junctions,

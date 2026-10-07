@@ -367,7 +367,14 @@ pub enum PoolElement {
     Single { location: String, projection: Projection },
     /// list_pool_element — jigsaws from elements[0]; bbox = union of children.
     List { elements: Vec<PoolElement>, projection: Projection },
-    /// feature_pool_element / anything else: assembly-unsupported (loud).
+    /// feature_pool_element (CFR FeaturePoolElement): getSize == ZERO =>
+    /// bbox = the single block [pos..pos]; getShuffledJigsawBlocks == ONE
+    /// default jigsaw (name "minecraft:bottom", pool/target
+    /// "minecraft:empty", front DOWN / top SOUTH, joint rollable) and NO
+    /// RNG; ground level delta 1. The placed feature itself is placed by
+    /// the feature step, not the piece engine.
+    Feature { feature_id: String, projection: Projection },
+    /// anything else: assembly-unsupported (loud).
     Unsupported { kind: String },
 }
 
@@ -375,7 +382,7 @@ impl PoolElement {
     pub fn projection(&self) -> Projection {
         match self {
             PoolElement::Empty => Projection::Rigid,
-            PoolElement::Single { projection, .. } | PoolElement::List { projection, .. } => *projection,
+            PoolElement::Single { projection, .. } | PoolElement::List { projection, .. } | PoolElement::Feature { projection, .. } => *projection,
             PoolElement::Unsupported { .. } => Projection::Rigid,
         }
     }
@@ -399,6 +406,10 @@ impl PoolElement {
             "minecraft:single_pool_element" | "minecraft:legacy_single_pool_element" => {
                 let location = v.get("location").and_then(|x| x.as_str()).unwrap_or("").to_string();
                 PoolElement::Single { location, projection }
+            }
+            "minecraft:feature_pool_element" => {
+                let feature_id = v.get("feature").and_then(|x| x.as_str()).unwrap_or("").to_string();
+                PoolElement::Feature { feature_id, projection }
             }
             "minecraft:list_pool_element" => {
                 let elements = v
