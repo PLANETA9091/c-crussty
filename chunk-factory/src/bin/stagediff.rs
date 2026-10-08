@@ -163,13 +163,8 @@ fn real_main(args: &[String]) -> Result<i32, String> {
         for (fi, v) in vals.iter().enumerate() {
             eprintln!("BIOME-AT scalar {} f64={v:.17e} f32={:e}", names[fi], *v as f32);
         }
-        let mut list = chunk_factory::climate::ParameterList::new(match &rs.biome_points {
-            Some(pts) => pts.clone(),
-            None => chunk_factory::vanilla_biomes::overworld_points()
-                .into_iter()
-                .map(|(p, n)| (p, n.to_string()))
-                .collect(),
-        });
+        let list = rs.biome_list();
+        let mut biome_memo: Option<usize> = None;
         let target = chunk_factory::climate::TargetPoint {
             temperature: chunk_factory::climate::quantize_coord(vals[0] as f32),
             humidity: chunk_factory::climate::quantize_coord(vals[1] as f32),
@@ -186,7 +181,7 @@ fn real_main(args: &[String]) -> Result<i32, String> {
             target.erosion,
             target.depth,
             target.weirdness,
-            list.find_value(&target)
+            list.find_value(&target, &mut biome_memo)
         );
         return Ok(0);
     }

@@ -177,14 +177,16 @@ struct SubTreeNode {
     parameter_space: [Parameter; 7],
 }
 
-/// The built search tree. `last_result` replicates Java's
-/// `ThreadLocal<Leaf> lastResult` — it persists across searches on the same
-/// tree instance and seeds the next search's initial bound.
+/// The built search tree. IMMUTABLE after create: the persistent best-so-far
+/// hint (Java `ThreadLocal<Leaf> lastResult`) is owned by the CALLER and
+/// passed into search() as `&mut Option<usize>` — this keeps the tree
+/// shareable (Arc) across chunk/phase owners while each owner keeps exactly
+/// the memo-chain semantics its gates were validated with (fresh per chunk,
+/// chained within the chunk).
 pub struct RTree {
     leaves: Vec<ParameterPoint>,
     subtrees: Vec<SubTreeNode>,
     root: NodeId,
-    last_result: Option<usize>, // leaf index
 }
 
 impl RTree {
@@ -193,7 +195,7 @@ impl RTree {
     pub fn create(points: Vec<ParameterPoint>) -> Self {
         assert!(!points.is_empty(), "Need at least one value to build the search tree.");
         let leaf_count = points.len();
-        let mut tree = RTree { leaves: points, subtrees: Vec::new(), root: NodeId::Leaf(0), last_result: None };
+        let mut tree = RTree { leaves: points, subtrees: Vec::new(), root: NodeId::Leaf(0) };
         let children: Vec<NodeId> = (0..leaf_count).map(NodeId::Leaf).collect();
         tree.root = tree.build(&children);
         tree
@@ -334,13 +336,13 @@ impl RTree {
         }
     }
 
-    /// ParameterList.findValueIndex — search with the persistent state.
-    #[allow(clippy::too_many_arguments)]
-    pub fn search(&mut self, target: &TargetPoint) -> usize {
+    /// ParameterList.findValueIndex — search with the CALLER-owned persistent
+    /// best-so-far hint (`*memo` = last found leaf, None = cold).
+    pub fn search(&self, target: &TargetPoint, memo: &mut Option<usize>) -> usize {
         let values = target.to_parameter_array();
-        let got = self.search_node(self.root, self.last_result, &values);
+        let got = self.search_node(self.root, *memo, &values);
         let leaf = got.expect("RTree search always returns a leaf");
-        self.last_result = Some(leaf);
+        *memo = Some(leaf);
         leaf
     }
 
@@ -488,9 +490,11 @@ impl ParameterList {
         ParameterList { tree, names }
     }
 
-    /// findValueIndex — biome name for the target (persistent search state).
-    pub fn find_value(&mut self, target: &TargetPoint) -> &str {
-        let leaf = self.tree.search(target);
+    /// findValueIndex — biome name for the target (search hint owned by the
+    /// caller: fresh per chunk, chained within the chunk — the exact memo
+    /// semantics the bit-gates were validated with).
+    pub fn find_value(&self, target: &TargetPoint, memo: &mut Option<usize>) -> &str {
+        let leaf = self.tree.search(target, memo);
         &self.names[leaf]
     }
 
@@ -569,7 +573,8 @@ mod tests {
             depth: 0,
             weirdness: 0,
         };
-        assert_eq!(list.find_value(&t), "minecraft:test");
+        let mut memo = None;
+        assert_eq!(list.find_value(&t, &mut memo), "minecraft:test");
         assert_eq!(list.find_value_brute_force(&t), "minecraft:test");
     }
 
@@ -594,7 +599,8 @@ mod tests {
                 format!("biome_{i}"),
             ));
         }
-        let mut list = ParameterList::new(points);
+        let list = ParameterList::new(points);
+        let mut memo = None;
         for q in 0..200i64 {
             let t = TargetPoint {
                 temperature: (q * 73) % 20001 - 10000,
@@ -604,7 +610,7 @@ mod tests {
                 depth: (q * 419) % 20001 - 10000,
                 weirdness: (q * 571) % 20001 - 10000,
             };
-            let via_tree: String = list.find_value(&t).to_string();
+            let via_tree: String = list.find_value(&t, &mut memo).to_string();
             let via_bf: String = list.find_value_brute_force(&t).to_string();
             assert_eq!(via_tree, via_bf, "tree != brute force at query {q}");
         }

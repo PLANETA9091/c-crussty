@@ -39,6 +39,12 @@ pub struct StageKit {
     /// pre-wiring machine). Rides in the kit so the batch driver's
     /// long-lived &RandomState borrows (feed/sampler) can coexist.
     pub beard: crate::beardifier::Beardifier,
+    /// Job 441690 SPEED LEVER: carver refs per NEIGHBOR CHUNK (nx,nz) — the
+    /// 17x17 walk queries the same neighbors for every target chunk; the
+    /// climate sample + facts lookup + Vec<String> clone happen ONCE per
+    /// neighbor per batch instead of once per (target, neighbor) pair. Pure
+    /// cache: the biome at (nx*16>>2, 0, nz*16>>2) is a pure function.
+    pub carver_refs_cache: RefCell<HashMap<(i32, i32), std::sync::Arc<Vec<String>>>>,
 }
 
 impl StageKit {
@@ -100,6 +106,7 @@ impl StageKit {
             carver_configs,
             default_block,
             beard: crate::beardifier::Beardifier::empty(),
+            carver_refs_cache: RefCell::new(HashMap::new()),
         })
     }
 }
@@ -231,10 +238,18 @@ pub fn apply_carvers_pass(
     seed: i64,
     chunk: &mut FillerChunk,
 ) -> Result<(), String> {
+    #[cfg(ncf_profile)]
+    let prof_t = std::time::Instant::now();
     kit.rule_set.reset_caches();
+    #[cfg(ncf_profile)]
+    let prof_t_reset = prof_t.elapsed();
     let default_block = chunk.state_table.intern_canonical(&rs.settings.default_block);
     let zoom_seed = crate::biomes::biome_zoom_seed(seed);
+    #[cfg(ncf_profile)]
+    let prof_t_intern = prof_t.elapsed();
     let source = RefCell::new(BiomeSource::new(rs));
+    #[cfg(ncf_profile)]
+    let prof_t_src = prof_t.elapsed();
     let air = chunk.state_table.intern("minecraft:air", &[]);
     let water = chunk.state_table.intern("minecraft:water", &[("level", "0")]);
     let lava = chunk.state_table.intern("minecraft:lava", &[("level", "0")]);
@@ -244,6 +259,8 @@ pub fn apply_carvers_pass(
     let worldgen = base.fork_positional();
     let mut aquifer_src = worldgen.from_hash_of("minecraft:aquifer");
     let aquifer_factory = aquifer_src.fork_positional();
+    #[cfg(ncf_profile)]
+    let prof_t_xor = prof_t.elapsed();
     let picker = crate::aquifer::GlobalFluidPicker {
         sea_level: rs.settings.sea_level,
     };
@@ -263,17 +280,34 @@ pub fn apply_carvers_pass(
         max_block_z,
         picker,
     );
+    #[cfg(ncf_profile)]
+    let prof_t_aquifer = prof_t.elapsed();
     let mut ctx = SurfaceContext::new(&kit.system, rs, &kit.biome_noise, &kit.facts, &source, zoom_seed);
     ctx.default_block = default_block;
-    // biome -> carver refs for the DIRECT corner biome at y=0
+    // biome -> carver refs for the DIRECT corner biome at y=0 (StageKit-level
+    // cache: one climate sample per neighbor per batch, not per target chunk)
     let facts = &kit.facts;
-    let biome_carvers = |nx: i32, nz: i32| -> Vec<String> {
+    let refs_cache = &kit.carver_refs_cache;
+    let biome_carvers = |nx: i32, nz: i32| -> std::sync::Arc<Vec<String>> {
+        if let Some(v) = refs_cache.borrow().get(&(nx, nz)) {
+            return std::sync::Arc::clone(v);
+        }
+        #[cfg(ncf_profile)]
+        if crate::carvers::prof_flag("NCF_CARVE_NO_BIOME") {
+            let empty: std::sync::Arc<Vec<String>> = std::sync::Arc::new(Vec::new());
+            refs_cache.borrow_mut().insert((nx, nz), std::sync::Arc::clone(&empty));
+            return empty;
+        }
         let mut src = source.borrow_mut();
         let qx = nx * 16 >> 2;
         let qz = nz * 16 >> 2;
         let biome = src.get_noise_biome(qx, 0, qz).to_string();
         drop(src);
-        facts.get(&biome).map(|f| f.carvers.clone()).unwrap_or_default()
+        let refs = std::sync::Arc::new(
+            facts.get(&biome).map(|f| f.carvers.clone()).unwrap_or_default(),
+        );
+        refs_cache.borrow_mut().insert((nx, nz), std::sync::Arc::clone(&refs));
+        refs
     };
     let rule_root = &kit.rule_set.root;
     let k = CarverKit {
@@ -289,7 +323,27 @@ pub fn apply_carvers_pass(
         water,
         lava,
     };
+    #[cfg(ncf_profile)]
+    let prof_t_kit = prof_t.elapsed();
     apply_carvers(chunk, seed, &k, &mut ctx, aquifer, &biome_carvers);
+    #[cfg(ncf_profile)]
+    if std::env::var("NCF_CARVE_TIME").is_ok() {
+        static SEEN: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let n = SEEN.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        if n < 2 {
+            eprintln!(
+                "[carve-prof] chunk {n}: reset {}us | interns+zoom {}us | BiomeSource::new {}us | xoroshiro+forks {}us | aquifer_new {}us | ctx_kit {}us | apply_carvers {}us | TOTAL {}us",
+                prof_t_reset.as_micros(),
+                (prof_t_intern - prof_t_reset).as_micros(),
+                (prof_t_src - prof_t_intern).as_micros(),
+                (prof_t_xor - prof_t_src).as_micros(),
+                (prof_t_aquifer - prof_t_xor).as_micros(),
+                (prof_t_kit - prof_t_aquifer).as_micros(),
+                (prof_t.elapsed() - prof_t_kit).as_micros(),
+                prof_t.elapsed().as_micros()
+            );
+        }
+    }
     Ok(())
 }
 

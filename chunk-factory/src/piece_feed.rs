@@ -429,15 +429,10 @@ pub fn biome_tag_set(root: &Path, tag: &str) -> (std::collections::HashSet<Strin
 }
 
 /// Overworld biome parameter list for the climate lookup (structure_scan
-/// parity): the pack table when wired (T39), else vanilla.
-pub fn biome_list_for(rs: &crate::router::RandomState) -> crate::climate::ParameterList {
-    crate::climate::ParameterList::new(match &rs.biome_points {
-        Some(pts) => pts.clone(),
-        None => crate::vanilla_biomes::overworld_points()
-            .into_iter()
-            .map(|(p, n)| (p, n.to_string()))
-            .collect(),
-    })
+/// parity): the pack table when wired (T39), else vanilla. Returns the
+/// HANDLE (shared tree + owner memo) — see structure_scan::BiomeListHandle.
+pub fn biome_list_for(rs: &crate::router::RandomState) -> crate::structure_scan::BiomeListHandle {
+    crate::structure_scan::BiomeListHandle::new(rs)
 }
 
 /// Resolve the exclusion zone's other_set placement from the worldgen dir

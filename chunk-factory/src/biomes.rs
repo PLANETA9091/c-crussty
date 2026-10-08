@@ -229,22 +229,18 @@ fn get_fiddled_distance(seed: i64, x: i32, y: i32, z: i32, x_noise: f64, y_noise
 /// the RandomState climate machinery (quantize + RTree), cached per call site.
 pub struct BiomeSource<'a> {
     pub rs: &'a RandomState,
-    pub list: ParameterList,
+    /// the SHARED per-RandomState search tree (Arc) — see RandomState::biome_list
+    pub list: std::sync::Arc<crate::climate::ParameterList>,
+    /// caller-owned search hint: fresh per BiomeSource instance (per
+    /// chunk/phase), chained within — the memo semantics each phase's
+    /// bit-gates were validated with (climate::RTree::search).
+    memo: Option<usize>,
     cache: HashMap<(i32, i32, i32), String>,
 }
 
 impl<'a> BiomeSource<'a> {
     pub fn new(rs: &'a RandomState) -> Self {
-        // T39: pack worlds (dimension/overworld.json override) resolve through
-        // the pack's inline biome table, vanilla through the coded preset.
-        let list = ParameterList::new(match &rs.biome_points {
-            Some(pts) => pts.clone(),
-            None => crate::vanilla_biomes::overworld_points()
-                .into_iter()
-                .map(|(p, n)| (p, n.to_string()))
-                .collect(),
-        });
-        BiomeSource { rs, list, cache: HashMap::new() }
+        BiomeSource { rs, list: rs.biome_list(), memo: None, cache: HashMap::new() }
     }
 
     /// MultiNoiseBiomeSource.getNoiseBiome(quartX, quartY, quartZ): the
@@ -263,7 +259,7 @@ impl<'a> BiomeSource<'a> {
             depth: crate::climate::quantize_coord(r.depth.compute(&self.rs.bank, bx, by, bz) as f32),
             weirdness: crate::climate::quantize_coord(r.ridges.compute(&self.rs.bank, bx, by, bz) as f32),
         };
-        let name = self.list.find_value(&t).to_string();
+        let name = self.list.find_value(&t, &mut self.memo).to_string();
         self.cache.insert((qx, qy, qz), name.clone());
         name
     }

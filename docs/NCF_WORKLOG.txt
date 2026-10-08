@@ -4339,3 +4339,47 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    коммит). cargo test: 154 passed, 0 failed.
 6) СЛЕДУЮЩИЙ ТИК: WORK LIST п.2 — первый SPEED LEVER (P2.15), before/
    after по этому ledger; gain <5% => revert + [!].
+
+=== 2026-10-09 | аддендум 76: Job 441690 — WORK LIST п.2 SPEED LEVER:
+    ШАРАЕМАЯ БИОМ-ТАБЛИЦА + кэш carver-refs; ledger 100.4 -> 51.1 мс/чанк,
+    Amdahl 2.17x -> 3.07x (+41.5%); бит-идентичность доказана локально ===
+
+1) ПРОФИЛИРОВАНИЕ (ncf_profile-пробники NCF_CARVE_*, комилятся только с
+   RUSTFLAGS="--cfg ncf_profile", в CI отсутствуют как класс): бюджет
+   carvers-стадии 24.6 мс = 18.4 setup ВНЕ 17x17-обхода + 4.2 биом-lookup'ы
+   обхода + 1.1 RNG-симуляция туннелей + 0.9 эллипсоиды/записи. КОРЕНЬ:
+   BiomeSource::new строил RTree заново НА КАЖДЫЙ чанк (overworld_points
+   ~7500 листьев!) — 14.7 мс на вызов; этот же rebuild сидел в surface
+   (36.5) и filler/noise (39.2). Отложенная дизайн-заметка P2.15 (кэш
+   путей карверов, сегмент-дерево) после профилирования стала вторичной:
+   её потолок ~2 мс на современном дереве стадий.
+2) КОД: (а) RandomState.biome_list — OnceLock<Arc<ParameterList>>,
+   строится ОДИН раз на RandomState (как в Java: RTree живёт на
+   RandomState); RTree ИММУТАБЕЛЕН — last_result (Java ThreadLocal
+   lastResult) вынесен к ВЛАДЕЛЬЦУ поиска (BiomeSource/filler-вызов/
+   veccheck/stagediff/t40probe/структурный скан через BiomeListHandle):
+   memo-семантика по-прежнему "свежий на чанк, цепочка внутри чанка" —
+   ровно то, с чем валидированы бит-гейты; (б) StageKit.carver_refs_cache
+   — (nx,nz) -> Arc<Vec<String>> refs: один климат-сэмпл на соседа на
+   батч вместо 169 (289 lookups/чанк -> ~1.7/чанк амортизированно);
+   (в) замкнутый кэш нельзя протечь между владельцами — search() теперь
+   &self + &mut Option<usize>.
+3) ЗАМЕРЫ (ledger, 169 чанков 13x13, seed 3053459, warm, два прогона,
+   сходимость <2%): noise+biomes 38.8 -> 23.58 (11.6x к Java warm),
+   surface 36.2 -> 21.06 (0.8x), carvers 24.3 -> 5.43 (0.3x),
+   serialization 1.0 -> 1.02. PORTED TOTAL 100.4 -> 51.07 мс/чанк
+   (19.6 чанков/с/ядро). AMDAHL: 2.17x -> 3.07x pregen speedup.
+   ВЫИГРЫШ +41.5% >> порога 5% — реверта нет.
+4) БИТ-ИДЕНТИЧНОСТЬ (локально): cargo test 154 passed/0 failed;
+   stagediff --gen-batch ДО vs ПОСЛЕ (255... 256 чанков 16x16 @ 107,107)
+   по статусам noise/surface/carvers — BYTE-IDENTICAL (diff -rq, 768
+   файлов); NCF_TILE_CACHE=0/1 на дереве lever'а — BYTE-IDENTICAL.
+   Гейт-контракты veccheck/stagediff НЕ тронуты; CI перезапускает все
+   бит-гейты (ncf-vectors, ncf-staged x3, ncf-gate-p2 матрица).
+5) ДОКУМЕНТ: docs/NCF_SPEED.md — новая текущая таблица + строка истории
+   (parent 98197f6); приоритеты рычагов обновлены: noise 75.4% share
+   (P2.13 SIMD ~+0.9x), surface 0.8x (до 1x ~+0.15x), carvers остаток
+   5.4 = 2.8 aquifer build + 2.2 walk+carve (кэш путей карверов теперь
+   таргетирует долю ~1.1 мс).
+6) СЛЕДУЮЩИЙ ТИК: WORK LIST п.2 (продолжение) — следующий SPEED LEVER
+   из P2.16/P2.13 с before/after по этому ledger.

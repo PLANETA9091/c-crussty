@@ -54,7 +54,7 @@
 //!     automatically (an overworld climate lookup never lands on a nether
 //!     biome in the vanilla parameter list).
 
-use crate::climate::{quantize_coord, ParameterList, TargetPoint};
+use crate::climate::{quantize_coord, TargetPoint};
 use crate::random_spread::RandomSpreadStructurePlacement;
 use crate::router::{RandomState, WorldgenDir};
 use crate::vanilla_biomes;
@@ -290,7 +290,7 @@ pub(crate) fn stub_samples(
 /// (-160,48,252) -> depth q=112 -> river -> reject; java rejected — river is
 /// not in #has_structure/trail_ruins — and the missing BURY fill was the
 /// c_-10..-8 x 14..17 java=water rust=stone gate divergence).
-pub(crate) fn biome_at(rs: &RandomState, list: &mut ParameterList, bx: i32, by: i32, bz: i32) -> String {
+pub(crate) fn biome_at(rs: &RandomState, handle: &mut BiomeListHandle, bx: i32, by: i32, bz: i32) -> String {
     let bx = bx >> 2 << 2;
     let by = by >> 2 << 2;
     let bz = bz >> 2 << 2;
@@ -315,7 +315,26 @@ pub(crate) fn biome_at(rs: &RandomState, list: &mut ParameterList, bx: i32, by: 
         depth: quantize_coord(de),
         weirdness: quantize_coord(wi),
     };
-    list.find_value(&target).to_string()
+    handle.find_value(&target).to_string()
+}
+
+/// Owner of the SHARED biome search list (RandomState::biome_list — built
+/// once per RandomState) plus its own search memo. Memo chaining semantics
+/// are unchanged: previously the `&mut ParameterList` carried the RTree
+/// last-result hint across calls; now the handle carries it (Job 441690
+/// SPEED LEVER — the ~7500-leaf tree must not be rebuilt per chunk).
+pub struct BiomeListHandle {
+    pub list: std::sync::Arc<crate::climate::ParameterList>,
+    memo: Option<usize>,
+}
+
+impl BiomeListHandle {
+    pub fn new(rs: &RandomState) -> Self {
+        BiomeListHandle { list: rs.biome_list(), memo: None }
+    }
+    pub fn find_value(&mut self, target: &TargetPoint) -> &str {
+        self.list.find_value(target, &mut self.memo)
+    }
 }
 
 /// Scan one batch for I8-fallback chunks — v2 (P5.3 increment 5): the

@@ -25,18 +25,18 @@ NCF_WG=<worldgen extract> NCF_DATA_ROOT=<same> ./target/release/bench 3053459 16
 
 Repeatability: two back-to-back runs agree within 2% on every stage.
 
-## Current table (SPEED-LEDGER-introducing commit, 2026-10-09)
+## Current table (shared-biome-tree lever, 2026-10-09)
 
-Measured: noise 38.8, surface 36.2, carvers 24.3, serialization 1.0 (averages
-of two runs; singles 38.49-39.10 / 36.12-36.42 / 24.27-24.37 / 0.99-1.01).
+Measured: noise 23.58, surface 21.06, carvers 5.43, serialization 1.02 (averages
+of two runs; singles 23.48-23.67 / 21.04-21.07 / 5.42-5.44 / 1.01-1.02).
 
 | stage         | Rust ms/chunk | Java warm (P0.1) | speedup | share of Java budget |
 |---------------|--------------:|-----------------:|--------:|---------------------:|
-| noise+biomes  | 38.8          | 273.8            | 7.1x    | 75.4%                |
-| surface       | 36.2          | 16.8             | **0.5x**| 4.6%                 |
-| carvers       | 24.3          | 1.6              | **0.1x**| 0.4%                 |
-| serialization | 1.0           | 2.6              | 2.6x    | 0.7%                 |
-| PORTED TOTAL  | 100.4         | 294.8            | 2.9x    | 81.1%                |
+| noise+biomes  | 23.6          | 273.8            | 11.6x   | 75.4%                |
+| surface       | 21.1          | 16.8             | **0.8x**| 4.6%                 |
+| carvers       | 5.4           | 1.6              | **0.3x**| 0.4%                 |
+| serialization | 1.0           | 2.6              | 2.5x    | 0.7%                 |
+| PORTED TOTAL  | 51.1          | 294.8            | 5.8x    | 81.1%                |
 
 Stage-to-stage mapping honesty:
 - Rust "noise+biomes" = filler (density + aquifer + ore veins + biome fill +
@@ -58,16 +58,16 @@ jvm_other 48.9 = 67.1 CPU-ms = 18.48% at 1x.
 Current state:
 
 ```
-sum = 75.4%/7.1 + 4.6%/0.5 + 0.4%/0.1 + 0.7%/2.6 + 18.48% = 0.4611
-pregen speedup = 1 / 0.4611 = 2.17x  (vs Java warm 363.0 CPU-ms/chunk)
+sum = 75.4%/11.6 + 4.6%/0.8 + 0.4%/0.3 + 0.7%/2.5 + 18.48% = 0.3275
+pregen speedup = 1 / 0.3275 = 3.07x  (vs Java warm 363.0 CPU-ms/chunk)
 ```
 
-The projection makes the lever priorities brutally clear: surface (0.5x) and
-carvers (0.1x) are NEGATIVE levers today — they subtract from the 7.1x noise
-win. Bringing carvers alone to 1x raises the projection to ~2.55x; to the
-noise-stage parity (~5x feasible per P2.13 path-caching plan) raises it to
-~3.1x. Fixing surface to 1x adds ~+0.5x more. The noise cluster remains the
-biggest single prize (75.4% share).
+Lever priorities after the shared-biome-tree win: the noise cluster is still
+the biggest prize (75.4% share, 11.6x). Surface (0.8x) is now the biggest
+NEGATIVE lever — reaching 1x adds ~+0.15x; the P2.13 SIMD path toward ~5x on
+noise adds ~+0.9x; carvers to 1x adds ~+0.03x (P2.15 path cache /aquifer share
+diminished after this commit: the remaining 5.4 ms is ~2.8 aquifer build +
+~2.2 walk+carve).
 
 ## Vanilla Java warm reference (P0.1, measured)
 
@@ -91,4 +91,5 @@ chunks, 2 vCPU, -Xmx1536m; warm = 2nd burst of the same JVM:
 
 | commit | date | noise+biomes | surface | carvers | serialization | ported total | Amdahl |
 |--------|------|-------------:|--------:|--------:|--------------:|-------------:|-------:|
-| (this commit: ledger introduced, baseline) | 2026-10-09 | 38.8 | 36.2 | 24.3 | 1.0 | 100.4 | 2.17x |
+| 98197f6 (ledger introduced, baseline) | 2026-10-09 | 38.8 | 36.2 | 24.3 | 1.0 | 100.4 | 2.17x |
+| this commit (shared biome tree + carver refs cache; parent 98197f6) | 2026-10-09 | 23.6 | 21.1 | 5.4 | 1.0 | 51.1 | 3.07x |

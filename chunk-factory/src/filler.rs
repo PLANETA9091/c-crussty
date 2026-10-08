@@ -431,13 +431,10 @@ pub fn generate_noise_chunk_with_beardifier(
     // T39: the table comes from the world — the hardcoded vanilla preset for
     // vanilla worlds, the PACK dimension override's inline table when the
     // extract carries data/minecraft/dimension/overworld.json (Terralith & co).
-    let mut list = crate::climate::ParameterList::new(match &rs.biome_points {
-        Some(pts) => pts.clone(),
-        None => crate::vanilla_biomes::overworld_points()
-            .into_iter()
-            .map(|(p, n)| (p, n.to_string()))
-            .collect(),
-    });
+    // Job 441690 SPEED LEVER: the tree is SHARED (built once per RandomState);
+    // the search memo is per-call (per chunk) — unchanged memo semantics.
+    let list = rs.biome_list();
+    let mut biome_memo = None;
     let q_min_x = min_block_x.div_euclid(4);
     let q_min_z = min_block_z.div_euclid(4);
 
@@ -509,7 +506,7 @@ pub fn generate_noise_chunk_with_beardifier(
                         depth: crate::climate::quantize_coord(de),
                         weirdness: crate::climate::quantize_coord(wi),
                     };
-                    let biome = list.find_value(&target).to_string();
+                    let biome = list.find_value(&target, &mut biome_memo).to_string();
                     let id = biomes_tbl.intern(&biome);
                     sections[sy as usize].biomes[SectionData::biome_index(ix, iy, iz)] = id as u16;
                 }

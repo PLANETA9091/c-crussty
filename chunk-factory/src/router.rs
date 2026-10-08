@@ -738,9 +738,31 @@ pub struct RandomState {
     /// inject their biomes; vanilla resolve_biomes would otherwise return
     /// vanilla names for every quart and every pack chunk diverges).
     pub biome_points: Option<Vec<(crate::climate::ParameterPoint, String)>>,
+    /// Job 441690 SPEED LEVER: the multi-noise search tree built ONCE per
+    /// RandomState and shared across every chunk/phase (Java builds its
+    /// ParameterList.RTree once per RandomState too). The tree is immutable;
+    /// the search memo is caller-owned (see RTree::search) so sharing cannot
+    /// leak search state between owners.
+    pub biome_list: std::sync::OnceLock<std::sync::Arc<crate::climate::ParameterList>>,
 }
 
 impl RandomState {
+    /// The shared biome search list (built once, lazily): the vanilla
+    /// hardcoded preset or the pack's inline table. Memo semantics stay with
+    /// each per-chunk owner — see climate::RTree::search.
+    pub fn biome_list(&self) -> std::sync::Arc<crate::climate::ParameterList> {
+        self.biome_list
+            .get_or_init(|| {
+                std::sync::Arc::new(crate::climate::ParameterList::new(match &self.biome_points {
+                    Some(pts) => pts.clone(),
+                    None => crate::vanilla_biomes::overworld_points()
+                        .into_iter()
+                        .map(|(p, n)| (p, n.to_string()))
+                        .collect(),
+                }))
+            })
+            .clone()
+    }
     /// RandomState.create equivalent: parse noise_settings JSON -> raw router
     /// -> wire with level_seed.
     pub fn build(dir: &WorldgenDir, settings_ns: &str, settings_name: &str, level_seed: i64) -> Result<Self, String> {
@@ -947,6 +969,7 @@ impl RandomState {
             tile_epoch: crate::tile::tile_epoch(spec_hash, level_seed),
             sim_template,
             biome_points: None,
+            biome_list: std::sync::OnceLock::new(),
         })
     }
 

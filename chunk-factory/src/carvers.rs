@@ -27,6 +27,29 @@ use crate::surface_rules::{top_material, ChunkColumns, SurfaceContext, SurfaceSy
 use std::collections::{HashMap, HashSet};
 
 // ---------------------------------------------------------------------------
+// ncf_profile diagnostics (Job 441690 SPEED LEDGER): decompose the carver
+// stage budget. Compiled ONLY with RUSTFLAGS="--cfg ncf_profile" — absent
+// from CI/gate builds as a class (same pattern as filler.rs skip-probes).
+// ---------------------------------------------------------------------------
+pub(crate) fn prof_flag(var: &str) -> bool {
+    static CACHE: std::sync::OnceLock<HashMap<&'static str, bool>> = std::sync::OnceLock::new();
+    CACHE
+        .get_or_init(|| {
+            let mut m = HashMap::new();
+            for k in [
+                "NCF_CARVE_NO_SUBSTANCE",
+                "NCF_CARVE_NO_WRITE",
+                "NCF_CARVE_NO_ELLIPSOID",
+                "NCF_CARVE_NO_SIM",
+                "NCF_CARVE_NO_BIOME",
+            ] {
+                m.insert(k, std::env::var(k).is_ok());
+            }
+            m
+        })[var]
+}
+
+// ---------------------------------------------------------------------------
 // Config IR (parsed configured_carver JSON)
 // ---------------------------------------------------------------------------
 
@@ -555,6 +578,10 @@ impl<'a> CarverKit<'a> {
         if (x - d).abs() > d2 || (z - d1).abs() > d2 {
             return false;
         }
+        #[cfg(ncf_profile)]
+        if prof_flag("NCF_CARVE_NO_ELLIPSOID") {
+            return false;
+        }
         let max = std::cmp::max(mth::floor(x - horizontal_radius) - pos_x - 1, 0);
         let min = std::cmp::min(mth::floor(x + horizontal_radius) - pos_x, 15);
         let max1 = std::cmp::max(mth::floor(y - vertical_radius) - 1, self.min_gen_y + 1);
@@ -611,10 +638,16 @@ impl<'a> CarverKit<'a> {
         if !config.replaceable.contains(&name) {
             return false;
         }
+        #[cfg(ncf_profile)]
+        if prof_flag("NCF_CARVE_NO_WRITE") {
+            return true;
+        }
         let carve_state = {
             let lava_y = config.lava_level.resolve(self.min_gen_y, self.gen_depth);
             if y <= lava_y {
                 Some(self.lava)
+            } else if cfg!(ncf_profile) && prof_flag("NCF_CARVE_NO_SUBSTANCE") {
+                Some(self.air)
             } else {
                 state.aquifer.compute_substance(x, y, z, 0.0, self.air, self.water, self.lava)
             }
@@ -951,9 +984,11 @@ pub fn apply_carvers(
     kit: &CarverKit,
     ctx: &mut SurfaceContext,
     center_aquifer: NoiseBasedAquifer,
-    biome_carvers: &dyn Fn(i32, i32) -> Vec<String>,
+    biome_carvers: &dyn Fn(i32, i32) -> std::sync::Arc<Vec<String>>,
 ) {
     let mut state = CarveState::new(chunk, center_aquifer);
+    #[cfg(ncf_profile)]
+    let prof_state = std::time::Instant::now();
     // WorldgenRandom over LegacyRandomSource(RandomSupport.generateUniqueSeed())
     // — the unique seed is irrelevant: setLargeFeatureSeed reseeds per carver.
     let mut worldgen_random = LegacyRandomSource::new(0);
@@ -972,16 +1007,36 @@ pub fn apply_carvers(
                 match config.kind {
                     CarverKind::Cave => {
                         if worldgen_random.next_f32() <= config.probability {
+                            #[cfg(ncf_profile)]
+                            if prof_flag("NCF_CARVE_NO_SIM") {
+                                continue;
+                            }
                             kit.carve_cave(config, ctx, &mut state, &mut worldgen_random, neighbor_x, neighbor_z);
                         }
                     }
                     CarverKind::Canyon => {
                         if worldgen_random.next_f32() <= config.probability {
+                            #[cfg(ncf_profile)]
+                            if prof_flag("NCF_CARVE_NO_SIM") {
+                                continue;
+                            }
                             kit.carve_canyon(config, ctx, &mut state, &mut worldgen_random, neighbor_x, neighbor_z);
                         }
                     }
                 }
             }
+        }
+    }
+    #[cfg(ncf_profile)]
+    if std::env::var("NCF_CARVE_TIME").is_ok() {
+        static SEEN: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let n = SEEN.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        if n < 2 {
+            eprintln!(
+                "[carve-prof] chunk {n}: carve_state_new {}us | walk17x17 {}us",
+                prof_state.elapsed().as_micros(),
+                (std::time::Instant::now() - prof_state).as_micros()
+            );
         }
     }
 }

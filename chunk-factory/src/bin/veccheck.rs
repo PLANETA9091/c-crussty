@@ -606,12 +606,13 @@ fn main() {
     // ------------------------------------------------------------------
     let climate_path = vec_dir.join("climate.csv");
     if run_climate && climate_path.exists() {
-        let mut list = chunk_factory::climate::ParameterList::new(
+        let list = std::sync::Arc::new(chunk_factory::climate::ParameterList::new(
             chunk_factory::vanilla_biomes::overworld_points()
                 .into_iter()
                 .map(|(p, n)| (p, n.to_string()))
                 .collect(),
-        );
+        ));
+        let mut memo: Option<usize> = None;
         let rows = load_csv(&climate_path).expect("climate.csv");
         let mut mm = Mismatches::new("climate", 12);
         let mut checked = 0usize;
@@ -624,7 +625,7 @@ fn main() {
                 depth: row.i64(7).unwrap(),
                 weirdness: row.i64(8).unwrap(),
             };
-            let got = list.find_value(&target).to_string();
+            let got = list.find_value(&target, &mut memo).to_string();
             let expect = row.c(9).to_string();
             checked += 1;
             if got != expect {

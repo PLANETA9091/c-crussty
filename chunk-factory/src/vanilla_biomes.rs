@@ -641,16 +641,17 @@ mod tests {
         // seed decide which of the tied leaves comes back). So the tree is
         // validated on FITNESS VALUE (must equal the linear minimum), and on
         // the biome name ONLY when that minimum is unique.
-        let mut list = ParameterList::new(
+        let list = ParameterList::new(
             overworld_points().into_iter().map(|(p, n)| (p, n.to_string())).collect(),
         );
+        let mut memo: Option<usize> = None;
         let points = overworld_points();
         let mut checked = 0usize;
         let mut unique_checked = 0usize;
         for qx in [-40i32, -13, -3, 0, 3, 13, 40] {
             for qy in [-8i32, 0, 8, 24, 48] {
                 let t = TargetPoint_of(qx * 137, qy * 91, qx * 53 + 7);
-                let leaf = list.tree.search(&t);
+                let leaf = list.tree.search(&t, &mut memo);
                 let got_fit = points[leaf].0.fitness(&t);
                 // linear minimum
                 let mut min_fit = i64::MAX;

@@ -55,13 +55,8 @@ fn main() {
 
     // --- 2. build_overworld + evaluate ------------------------------------
     let rs = RandomState::build_overworld(&dir, seed).expect("build_overworld");
-    let mut list = ParameterList::new(match &rs.biome_points {
-        Some(p) => p.clone(),
-        None => vanilla_biomes::overworld_points()
-            .into_iter()
-            .map(|(pt, n)| (pt, n.to_string()))
-            .collect(),
-    });
+    let list = rs.biome_list();
+    let mut memo: Option<usize> = None;
     let names: std::collections::BTreeSet<&String> = match &rs.biome_points {
         Some(p) => p.iter().map(|(_, n)| n).collect(),
         None => std::collections::BTreeSet::new(),
@@ -88,7 +83,7 @@ fn main() {
             depth: quantize_coord(r.depth.compute(&rs.bank, bx, by, bz) as f32),
             weirdness: quantize_coord(r.ridges.compute(&rs.bank, bx, by, bz) as f32),
         };
-        let winner = list.find_value(&t).to_string();
+        let winner = list.find_value(&t, &mut memo).to_string();
         println!(
             "quart ({qx},{qy},{qz}) block ({bx},{by},{bz}): temp={} hum={} cont={} ero={} dep={} weird={} -> {winner}",
             t.temperature, t.humidity, t.continentalness, t.erosion, t.depth, t.weirdness
