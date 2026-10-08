@@ -3665,3 +3665,68 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
   b) extract-provisioning для pack-ячеек (missing_templates 51/545 -> 0);
   c) multi-start ячейки (аддендум 48 п.3) остаются громкими.
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 15-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 25 (аддендум 50: Job 441690 — КОРЕНЬ PACK-ЯЧЕЕК НАЙДЕН И ЗАКРЫТ: --extract-only экстрактор ci_datapacks.sh имел 'tags' ОТСУТСТВУЮЩИМ в фильтре неймспейсов ('worldgen','dimension' вместо ('worldgen','dimension','tags')) — 233 biome-tag json'а терралита (вкл. has_structure/rubble_forest.json с minecraft:dark_forest) не попадали в экстракт -> "#terralith:has_structure/*" разрешались как unknown -> ВСЕ pack адаптирующие старты biome-отклонялись -> beardifier pack-структур отсутствовал; ФИКС = одна строка; ЛОКАЛЬНАЯ ВЕРИФИКАЦИЯ: terralith 424242 169 чанков: feed 0 -> 8, equal=144/169, ВСЕ 25 расходящихся = spawn 5x5 bedrock-артефакт (исключаются CI-протоколом) ===
+
+1) CI-СТАТУС 3bf5774 (run 37714042630): in_progress на момент тика (gate-p2
+   ячейки ~30 мин) — вердикт (ожидание vanilla 5/5 зелёные) читает следующий
+   тик; CI этого коммита собран СТАРЫМ скриптом (tags-фикс ещё не в нём),
+   поэтому terralith/tectonic ячейки ожидаются красными, vanilla — зелёными.
+2) РАССЛЕДОВАНИЕ TECTONIC-ЭКСТРАКТА (продолжение аддендума 49 п.6):
+   a) локальный tectonic-extract: 0 .nbt, data/tectonic/worldgen БЕЗ
+      structure/structure_set/template_pool — САМ tectonic.zip (3.0.25)
+      НЕ СОДЕРЖИТ слоя структур (только noise/density json) И НЕ ИМЕЕТ
+      dimension/overworld.json: мир tectonic = vanilla-измерение (vanilla
+      preset таблица биомов) + pack-оврайд noise_settings (2 файла) ->
+      роутер = tectonic (свои шумы), биом-таблица = vanilla preset;
+   b) veccheck tectA/tectB (941511/0) уже доказал бит-точность tectonic
+      роутера на blob-колонках; 178 расходящихся блоков 8675309 в CI
+      (глубина -18..-22, java=stone rust=water) — колонки НЕ из blob-набора;
+   c) feed tectonic после tags-фикса: 0/49 на -3..3, missing_templates 0,
+      pillager_outpost @ (6,11) REJECT=biome dark_forest — отказ похоже
+      ЧЕСТНЫЙ (та же таблица+скаляры с обеих сторон) -> 178 расходждений
+      НЕ объясняются нашими пропущенными структурами; гипотезы: (i) java
+      разместил vanilla структуру, которую мы biome-отклонили ИНАЧЕ
+      (нужен goldenrefs на локальном tectonic-сервере), (ii) реальное
+      расхождение шума tectonic вне blob-колонок (плотность/interp);
+      СЛЕДУЮЩИЙ ТИК: boot tectonic + goldenrefs на (-20..-22,-1..2).
+3) ТЕРАЛИТ: ЭМПИРИКА ЛОКАЛЬНОГО СЕРВЕРА (fresh world + terralith.zip как
+   world datapack, seed 424242):
+   a) ВАЖНЫЙ УРОК: datapack dimension/overworld.json применяется ТОЛЬКО при
+      создании мира — первый "terralith" бут (boot5) использовал СТАРЫЙ
+      level.dat (vanilla генератор из бута #4) + регион с vanilla чанками:
+      сравнение было vanilla-java vs terralith-rust — биом-дивергенции
+      (deep_dark vs mantle_caves) = АРТЕФАКТ ЗАГРЯЗНЁННОЙ УСТАНОВКИ;
+      clean-бут (полное удаление world_pieces) снял их;
+   b) после tags-фикса (extract rebuild: 91 terralith tags + 65 c: tags):
+      feed 8/169 (rubble_forest @ (5,1) размещён, BEARD_THIN, /goldenrefs
+      4 0 подтверждает java-ссылку с box [64,72,0..92,100,...]);
+   c) ИТОГ 169 чанков: equal=144 diverged=25, все 25 = spawn 5x5 bedrock
+      (0,-64,0) — известный артефакт полностью сгенерированных spawn-чанков,
+      исключаемый CI-протоколом (gate-цель = все не-spawn чанки);
+   d) биом-проверка структур теперь честная: наш pick dark_forest @ rubble
+      stub (78,85,14) подтверждён pack-таблицей (dark_forest боксы содержат
+      точку) — python-пересчёт метрики (quantize=truncate, 7 dim с offset)
+      над 1713 записями согласен с rust-lookup.
+4) КЛАРИФИКАЦИЯ КОРНЯ ИНКРЕМЕНТА 6 (не ошибка, но уточнение): mineshaft в
+   refs_4_0 goldenrefs — КРАСНАЯ СЕЛЁДКА для beardifier: minecraft:mineshaft
+   terrain_adaptation=none -> startsForStructure(adj!=NONE) сам java его
+   фильтрует (в beardifier_starts его нет) -> non-jigsaw адаптирующих
+   структур в vanilla -24..24 НЕ оказалось (все 2401 локально равны при
+   пустом non-jigsaw вкладе). Mineshaft-фид НЕ нужен.
+5) ПАМЯТКА ПО ИНСТРУМЕНТАМ ЭТОГО ТИКА: python-скрипт scripts/nearest_biome.py
+   (пересчёт multi_noise nearest-point по pack-таблице, метрика и
+   квантизация идентичны rust) — пригодится для tectonic-биом споров.
+АМДАЛЬ (директива 2): фикс = shell-строка фильтра (0 рантайм-цены);
+  gen-batch terralith 169 = 6.6 c (25.5 ч/с); extract rebuild ~30 c;
+  lib 153 + root 417 GREEN (13.4 c root).
+КОРПУС (директива 3): terralith 424242 — структурные чанки (rubble_forest
+  beard_thin) в сравнении, 144/169 не-spawn равны; tectonic — после
+  goldenrefs-расследования.
+СЛЕДУЮЩИЕ ШАГИ:
+  a) прочитать CI-вердикт 3bf5774 (vanilla 5/5 ожидание);
+  b) этот коммит (tags-фикс) -> CI пересоберёт экстракты -> terralith
+     ячейки должны позеленеть;
+  c) tectonic: локальный boot + goldenrefs на (-20..-22, -1..2) @ 8675309
+     — выяснить, какая структура/шум даёт 178 расходждений.
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 16-й тик; первоисточник = этот LOG.

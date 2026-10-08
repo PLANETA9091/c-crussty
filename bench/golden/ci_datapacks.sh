@@ -349,7 +349,14 @@ def extract_worldgen(prefix):
         parts = name[len(prefix) + len('data/'):].split('/')
         if len(parts) < 3:
             continue
-        if parts[1] not in ('worldgen', 'dimension'):
+        # P5.3 increment 6 FIX (pack-cell beardifier feed): 'tags' was missing
+        # here — the pack's data/<ns>/tags/worldgen/biome/has_structure/*.json
+        # files never reached the extract, so "#terralith:has_structure/*"
+        # candidate biome predicates resolved as unknown and EVERY pack
+        # adapting start was biome-rejected (feed 0/N for pack structures;
+        # java placed them -> missing beard_thin/bury fill -> block flips).
+        # The main run_pack extractor above already carries the 3-tuple.
+        if parts[1] not in ('worldgen', 'dimension', 'tags'):
             continue
         if parts[1] == 'worldgen' and len(parts) < 4:
             continue
