@@ -4316,3 +4316,26 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    директиву — старый шаблон гонял рутинные подтверждения).
 4) Статус gate-p2: 15/15 ЗЕЛЁНЫЙ, закрыт; на ветке не трогаем.
 ПРИМЕЧАНИЕ: следующий тик = WORK LIST п.1 (SPEED LEDGER), не рутина.
+
+=== 2026-10-09 | аддендум 75: Job 441690 — WORK LIST п.1 SPEED LEDGER
+    ВЫПОЛНЕН: bench ledger-режим + docs/NCF_SPEED.md + первые измерения ===
+
+1) КОД: chunk-factory/src/bin/bench.rs — режим `ledger`: цепочка
+   generate_noise_chunk_with_beardifier -> apply_surface_pass ->
+   apply_carvers_pass -> full_chunk_nbt, per-stage тайминги, warm (3
+   прогревных чанка), фиксированный корпус 13x13 = 169 чанков, seed
+   3053459, single-core. Гейт-контракты veccheck/stagediff НЕ тронуты.
+2) ЗАМЕРЫ (два прогона, сходимость <2%): noise+biomes 38.5-39.1 мс/чанк
+   (7.0-7.1x к Java warm 273.8), surface 36.1-36.4 (0.5x к 16.8!),
+   carvers 24.3-24.4 (0.1x к 1.6!), serialization 0.99-1.01 (2.6x к 2.6,
+   NBT build only без zlib). PORTED TOTAL ~100.4 мс/чанк (10 чанков/с/ядро).
+3) ЧЕСТНОЕ ОТКРЫТИЕ: surface и carvers — ОТРИЦАТЕЛЬНЫЕ рычаги (медленнее
+   Java). Это целевое пространство для P2.15/P2.16/P2.13: carvers до 1x
+   даёт Amdahl ~2.55x, surface до 1x — ещё ~+0.5x.
+4) AMDAHL (доля Java warm 363.0; непортировано 67.1 CPU-ms = 18.48% при
+   1x): pregen speedup = 1 / sum(share_i/speedup_i) = 2.17x.
+5) ДОКУМЕНТ: docs/NCF_SPEED.md — метод, текущая таблица, Java P0.1
+   справочник, Amdahl, история (строка на коммит; базовая строка = этот
+   коммит). cargo test: 154 passed, 0 failed.
+6) СЛЕДУЮЩИЙ ТИК: WORK LIST п.2 — первый SPEED LEVER (P2.15), before/
+   after по этому ledger; gain <5% => revert + [!].
