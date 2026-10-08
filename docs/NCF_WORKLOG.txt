@@ -3567,3 +3567,101 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
   — структурные чанки вернулись (директива 1 исполнена в полном объёме:
   I8-остаток = unfaithful/multi только).
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 14-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 24 (аддендум 49: Job 441690 — КОРЕНЬ ОСТАТКА gate-p2 НАЙДЕН И ЗАКРЫТ: createReferences тестирует СТАРТОВУЮ КОРОБКУ, НАДУТУЮ НА 12 (Structure.adjustBoundingBox, CFR Structure.java:98-100 / StructureStart.java:90), а не сырой union pieces; наш feed ссылался на сырой union -> недобор ссылок -> пропавшие beard-вклады; ФИКС = inflate_by(12) в reference-проверке; ЛОКАЛЬНАЯ ПОЛНАЯ КОРПУС-ВЕРИФИКАЦИЯ 424242: 2376/2401 equal (25 spawn-артефакт, исключаются в CI по протоколу) ===
+
+1) CI-ВЕРДИКТ 4dc962f (run 37702109435, прочитан при завершении): 33 jobs,
+   chunk-factory/golden-harness/ncf-staged(surface+noise+carvers)/ncf-vectors/
+   ncf-mca/ncf-density(7)/native/module/fuzz/datapacks ЗЕЛЁНЫЕ; ВСЕ 15
+   gate-p2 ячеек КРАСНЫЕ: vanilla 3053459 diverged=16 (было 64..192 в эру
+   T38-B), vanilla 424242 diverged=5, tectonic 8675309 diverged=178
+   (feed 0/2401 adapting starts, missing_templates 51), terralith 424242
+   diverged=126 (feed 0/2401, missing_templates 545). Честное сравнение
+   2376/ячейку вскрыло РЕАЛЬНЫЕ расхождения — v1-скан их раньше исключал.
+2) ЛОКАЛЬНАЯ КАМПАНИЯ ФИКСАЦИИ (seed 424242, локальный purpur + GoldenDumper):
+   a) goldendensity на расходящихся колонках (resid17a/17b/20a/23a/24a):
+      ВСЁ bit-exact (50k+786k значений на колонку) — НО final_density в
+      density.csv берётся на ГРУБОЙ сетке (y шаг 8), точный блок НЕ покрыт;
+   b) goldenpieces перечисление ±8 origin'ов: для (17,-22) касающийся
+      старт = mineshaft @ (13,-25) (non-jigsaw!); у нас feed пуст => вопрос;
+   c) VectorCapture.writeDensityBlob РАСШИРЕН: final_density в bandFields
+      (КАЖДЫЙ блок полосы) — resid23b: 48839 значений bit-exact, точный
+      блок (-361,-27,128) покрыт: java final_density = -0x1.4c6431a6bea4cp-6
+      (ОТРИЦАТЕЛЬНАЯ) -> rust=air ВЕРЕН по сырому дереву, java=stone
+      требует ПОЛОЖИТЕЛЬНОЙ добавки => beardifier java НЕ пуст;
+   d) aquifer.csv (свежая машина с beardifierMarker=0): substance на
+      (-361,-27,128) = -0x1.c48cdf046fcap-8 (air) — свежая машина СОГЛАСНА
+      с rust => реальная генерация java имела НЕПУСТОЙ beardifier;
+   e) /goldenrefs (НОВАЯ команда плагина): сыплет ссылки чанка И точный
+      вход Beardifier (startsForStructure с фильтром adj!=NONE).
+      ЭМПИРИКА: refs(-23,8) = {trial_chambers origin (-23,6)}; box старта
+      = [-438,-63,3..-309,9,133] = union pieces [-426,-51,15..-321,-3,121]
+      НАДУТЫЙ НА 12 (все оси). Сырой union НЕ касается колонки (-23,8)
+      (z: 121 < 128), надутый КАСАЕТСЯ => java ссылается, мы нет.
+3) КОРЕНЬ (оракул-цепочка):
+   - Structure.adjustBoundingBox (CFR Structure.java:98-100):
+     terrainAdaptation() != NONE  ->  boundingBox.inflatedBy(12);
+   - StructureStart.getBoundingBox (CFR StructureStart.java:90):
+     cachedBoundingBox = structure.adjustBoundingBox(pieceContainer
+     .calculateBoundingBox()) — СТАРТОВАЯ КОРОБКА = union pieces,
+     НАДУТЫЙ НА 12 для каждого адаптирующего старта;
+   - ChunkGenerator.createReferences (CFR ChunkGenerator.java:543-546):
+     touch-тест = СТАРТОВАЯ (надутая) коробка X/Z vs колонка 16x16;
+   - Beardifier.forStructuresInChunk: старты = startsForStructure
+     (ссылки) -> pieces isCloseToChunk(12). Радиус 12 в adjustBoundingBox
+     и isCloseToChunk(12) — ОДИН И ТОТ ЖЕ радиус: ссылка ставится iff
+     хоть один piece в 12 блоках по X/Z (Y-компонента надутия на touch
+     не влияет).
+   ФИКС: piece_feed.rs build_for_chunk_diag — reference-проверка теперь
+   start_box.inflated_by(12) перед 4-арг X/Z intersect. Комментарием
+   закреплена вся оракул-цепочка + эмпирика goldenrefs.
+4) ВЕРИФИКАЦИЯ ФИКСА (локально, seed 424242):
+   a) c_-23_8 (trial_chambers, java=stone rust=air @ (7,-27,0)): после
+      фикса regen -> equal=1 diverged=0 (ENCAPSULATE bury +0.333 вернулся);
+   b) c_17_-22 (ancient_city @ (25,-24), java=air rust=stone @ (15,-44,0)):
+      equal=1 diverged=0 (beard_box carve вернулся);
+   c) ПОЛНЫЙ КОРПУС -24..24 (2401 чанк): java goldendump staged_noise
+      (fresh boot, n=2401 failed=0) vs rust gen-batch (98.46 с, 24.4 ч/с,
+      feed: 80/2401 adapting starts, missing_pools 0, missing_templates
+      473 — те же цифры, что в CI): equal=2376 diverged=25, причём ВСЕ 25
+      = spawn 5x5 bedrock-низ (@ (0,-64,0) java=bedrock) — известный
+      spawn-артефакт полностью сгенерированных чанков, который CI-протокол
+      ИСКЛЮЧАЕТ (target equal=2376 ДОСТИГНУТ локально);
+   d) lib 153 + root 417 GREEN; TILE_CACHE 0/1 байт-идентичны (диапазон
+      -6..-20 x -16..-20, feed включён); veccheck resid1 843207/0
+      ZERO-DIFF (контракт veccheck не тронут).
+5) ИНСТРУМЕНТАРИЙ (этот же коммит):
+   - chunk-factory/src/bin/beard_audit.rs (инкремент 6, новый бин):
+     атрибуция расхождений — adapting-set перечисление, PICK-диагностика
+     per (set,P) в ±8 (placement hit -> структура/adj/pieces или
+     biome-reject/assembly-none), START-детали (boxes/gld/junctions),
+     per-piece вклад в точке (beardifier_piece_contribution),
+     missing_templates/unsupported списки; --only <set> (nether_fossils
+     spacing 4 флудит ±8), --block X Y Z (chunk-local -> absolute),
+     --biome X Y Z (6 скаляров + квант + биом в точке);
+   - beardifier.rs: beardifier_piece_contribution (вынесен из compute
+     без изменения арифметики — бит-в-бит), jigsaw.rs PoolElement::kind();
+   - NCF_START_TRACE (env) в piece_feed: причины отклонения старта
+     (biome=... stub=... / assembly-none);
+   - GoldenDumper: /goldenrefs <cx> <cz> (ссылки + beardifier-входы с
+     isCloseToChunk(12) фильтром), writeDensityBlob: final_density в
+     bandFields (каждый блок полосы) — закрыл слепую зону грубой сетки.
+6) ПАК-ЯЧЕЙКИ (tectonic/terralith, feed 0/2401 + missing_templates 51/545):
+   pack-структуры не собираются в CI-экстракте — ЭТО ОТДЕЛЬНЫЙ КОРЕНЬ
+   (extract/template provisioning), vanilla-ячейки от него не зависят;
+   следующий шаг: ci_datapacks.sh --extract-only audit (локальный
+   терралит-экстракт имел 1375 nbt — CI-построенный, видимо, нет).
+АМДАЛЬ (директива 2): фикс = одна арифметическая операция на
+  (set,P) в reference-проверке — 0 мс/chunk сверх инкремента 5;
+  gen-batch 424242 полный: 2401/98.46с = 24.4 ч/с (было 22.7 в CI,
+  разница = локальный CPU), feed-препроход 80 стартов ~1.1 с;
+  java goldendump 2401 = 2:14; stagediff compare 2401 = ~60 с.
+КОРПУС (директива 3): структурные чанки в сравнении честно, ПОЛНОСТЬЮ
+  — гейт-цель 2376/2401 достигнута локально на vanilla 424242; после
+  CI-вердикта этого коммита vanilla-ячейки всех сидов должны быть
+  зелёными; terralith/tectonic — после фикса extract-provisioning.
+СЛЕДУЮЩИЕ ШАГИ:
+  a) CI-вердикт этого коммита: ожидание vanilla 5/5 зелёные;
+  b) extract-provisioning для pack-ячеек (missing_templates 51/545 -> 0);
+  c) multi-start ячейки (аддендум 48 п.3) остаются громкими.
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 15-й тик; первоисточник = этот LOG.

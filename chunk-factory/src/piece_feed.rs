@@ -612,6 +612,12 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
         let generated = add_pieces(&params, pools, &mut assembly_rng, sampler);
         diag.missing_pool += pools.missing_pools.len() - mp_before;
         let Some(assembly) = generated else {
+            if std::env::var_os("NCF_START_TRACE").is_some() {
+                eprintln!(
+                    "[start-trace] set={set_key} chunk=({chunk_x},{chunk_z}) structure={} REJECT=assembly-none",
+                    entry.structure_key
+                );
+            }
             list.remove(i1);
             total -= entry.weight;
             continue;
@@ -624,6 +630,12 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
             .cloned()
             .unwrap_or_default();
         if !names.contains(&biome) {
+            if std::env::var_os("NCF_START_TRACE").is_some() {
+                eprintln!(
+                    "[start-trace] set={set_key} chunk=({chunk_x},{chunk_z}) structure={} REJECT=biome biome={biome} stub=({sx},{sy},{sz})",
+                    entry.structure_key
+                );
+            }
             list.remove(i1);
             total -= entry.weight;
             continue;
@@ -847,6 +859,20 @@ impl<'d, 'r> BeardFeed<'d, 'r> {
                         });
                     }
                     let Some(start_box) = union else { continue }; // invalid start (no pieces)
+                    // P5.3 inc6 ROOT FIX (gate-p2 honest-compare resid blobs):
+                    // StructureStart.getBoundingBox (CFR StructureStart.java:90)
+                    // = pieceContainer.calculateBoundingBox() passed through
+                    // Structure.adjustBoundingBox (CFR Structure.java:98-100):
+                    //   terrainAdaptation != NONE  ->  box.inflatedBy(12)
+                    // The createReferences touch test runs against the
+                    // INFLATED start box, not the raw pieces union. Verified
+                    // empirically (goldenrefs -23 8 @ 424242: trial_chambers
+                    // start box [-438,-63,3..-309,9,133] = union [-426,-51,
+                    // 15..-321,-3,121] inflated by 12, referenced from a
+                    // column 7 blocks beyond the raw box). Every adapting
+                    // start reaching this point has adj != None (None
+                    // continues above), so inflate unconditionally here.
+                    let start_box = start_box.inflated_by(12);
                     let touches = start_box.max_x >= min_block_x
                         && start_box.min_x <= min_block_x + 15
                         && start_box.max_z >= min_block_z

@@ -390,6 +390,17 @@ pub enum PoolElement {
 }
 
 impl PoolElement {
+    /// Short kind tag for diagnostics (increment 6 attribution tool).
+    pub fn kind(&self) -> &'static str {
+        match self {
+            PoolElement::Empty => "empty",
+            PoolElement::Single { .. } => "single",
+            PoolElement::List { .. } => "list",
+            PoolElement::Feature { .. } => "feature",
+            PoolElement::Unsupported { .. } => "unsupported",
+        }
+    }
+
     pub fn projection(&self) -> Projection {
         match self {
             PoolElement::Empty => Projection::Rigid,

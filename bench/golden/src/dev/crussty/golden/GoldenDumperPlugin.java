@@ -309,6 +309,24 @@ public final class GoldenDumperPlugin extends JavaPlugin implements CommandExecu
             }
             return true;
         }
+        // P5.3 inc6: /goldenrefs <chunkX> <chunkZ> — the chunk's reference map
+        // + the exact Beardifier input starts (references semantics oracle).
+        if (command.getName().equals("goldenrefs")) {
+            getLogger().info("goldenrefs invoked args=" + java.util.Arrays.toString(args));
+            if (args.length != 2) {
+                sender.sendMessage("usage: /goldenrefs <chunkX> <chunkZ>");
+                return true;
+            }
+            try {
+                VectorCapture.captureRefs(this,
+                        Integer.parseInt(args[0]), Integer.parseInt(args[1]), sender);
+            } catch (Throwable t) {
+                getLogger().warning("GOLDENREFS FAILED: " + t);
+                t.printStackTrace();
+                sender.sendMessage("goldenrefs: FAILED: " + t);
+            }
+            return true;
+        }
         // T38-B bisect rig: /goldendensity <blockX> <blockZ> <y0> <y1> <label>
         // — dump interp/aquifer/density vector families at an ARBITRARY chunk
         // column (negative coords fine, no JVM flags: coords are args).

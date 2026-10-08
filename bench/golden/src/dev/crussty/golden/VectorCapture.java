@@ -1423,8 +1423,11 @@ public final class VectorCapture {
 
         java.util.LinkedHashMap<String, DensityFunction> dfs = routerFields(level);
         // the aquifer-relevant subset sampled at EVERY block in the band
+        // (+ final_density since P5.3 inc6: the coarse cell-corner lattice
+        // does NOT cover per-block divergence inside a cell — the gate-p2
+        // resid blobs diverge at blocks the coarse grid never samples)
         String[] bandFields = {"barrier", "fluid_level_floodedness", "fluid_level_spread",
-                "lava", "erosion", "depth"};
+                "lava", "erosion", "depth", "final_density"};
 
         int rows = 0;
         try (BufferedWriter w = newWriter(path)) {
@@ -1653,6 +1656,102 @@ public final class VectorCapture {
             plugin.getLogger().warning("GOLDENPIECES FAILED: " + t);
             t.printStackTrace();
             ack.sendMessage("goldenpieces: FAILED: " + t);
+        }
+    }
+
+    /**
+     * P5.3 inc6 diagnostics: /goldenrefs <chunkX> <chunkZ> — dump the chunk's
+     * STRUCTURE_REFERENCES map (structure -> origin chunk set) AND the exact
+     * Beardifier input list (StructureManager.startsForStructure with the
+     * terrainAdaptation != NONE filter), each start's bounding box and the
+     * pieces that pass isCloseToChunk(12). This settles reference-set
+     * semantics empirically (the createReferences box-touch scan).
+     */
+    public static void captureRefs(JavaPlugin plugin, int cx, int cz, CommandSender ack) {
+        ServerLevel level = ((CraftWorld) plugin.getServer().getWorlds().get(0)).getHandle();
+        Path root;
+        String prop = System.getProperty("goldendump.out");
+        if (prop != null && !prop.isBlank()) {
+            root = Paths.get(prop);
+        } else {
+            Path pluginsDir = plugin.getDataFolder().getAbsoluteFile().toPath().getParent();
+            Path serverDir = pluginsDir == null ? null : pluginsDir.getParent();
+            if (serverDir == null) {
+                ack.sendMessage("goldenrefs: cannot resolve server dir — set -Dgoldendump.out=<dir>");
+                return;
+            }
+            root = serverDir.resolve("golden");
+        }
+        Path out = root.resolve("refs_" + cx + "_" + cz + ".json");
+        try {
+            // force STRUCTURE_REFERENCES so the createReferences scan ran
+            ChunkAccess chunk = level.getChunkSource().getChunk(cx, cz, ChunkStatus.STRUCTURE_REFERENCES, true);
+            java.util.IdentityHashMap<Structure, String> names = new java.util.IdentityHashMap<>();
+            level.registryAccess().lookupOrThrow(Registries.STRUCTURE).listElements()
+                    .forEach(h -> h.unwrapKey().ifPresent(k ->
+                            names.put(h.value(), String.valueOf(k.location()))));
+            StringBuilder sb = new StringBuilder();
+            sb.append("{\n \"chunk\": [").append(cx).append(", ").append(cz).append("],\n");
+            sb.append(" \"seed\": ").append(level.getSeed()).append(",\n");
+            // 1. raw references map
+            sb.append(" \"references\": [\n");
+            var refs = chunk.getAllReferences();
+            boolean firstRef = true;
+            for (var e : refs.entrySet()) {
+                Structure st = e.getKey();
+                if (!firstRef) sb.append(",\n");
+                firstRef = false;
+                sb.append("  {\"structure\": \"").append(names.getOrDefault(st, "?")).append("\", \"origins\": [");
+                boolean firstLong = true;
+                for (java.util.Iterator<Long> it = e.getValue().iterator(); it.hasNext(); ) {
+                    long l = it.next();
+                    net.minecraft.world.level.ChunkPos p = new net.minecraft.world.level.ChunkPos(l);
+                    if (!firstLong) sb.append(", ");
+                    sb.append("[").append(p.x).append(", ").append(p.z).append("]");
+                    firstLong = false;
+                }
+                sb.append("]}");
+            }
+            sb.append("\n ],\n");
+            // 2. the EXACT Beardifier input: startsForStructure with the
+            // terrainAdaptation != NONE predicate
+            net.minecraft.world.level.StructureManager sm = level.structureManager();
+            var beardStarts = sm.startsForStructure(
+                    new net.minecraft.world.level.ChunkPos(cx, cz),
+                    st -> st.terrainAdaptation() != net.minecraft.world.level.levelgen.structure.TerrainAdjustment.NONE);
+            sb.append(" \"beardifier_starts\": [\n");
+            boolean firstStart = true;
+            for (var start : beardStarts) {
+                if (!firstStart) sb.append(",\n");
+                firstStart = false;
+                sb.append("  {\"structure\": \"").append(names.getOrDefault(start.getStructure(), "?"))
+                        .append("\", \"chunkPos\": [").append(start.getChunkPos().x).append(", ").append(start.getChunkPos().z)
+                        .append("], \"adjustment\": \"").append(start.getStructure().terrainAdaptation())
+                        .append("\", \"box\": [").append(start.getBoundingBox().minX()).append(", ").append(start.getBoundingBox().minY())
+                        .append(", ").append(start.getBoundingBox().minZ()).append(", ").append(start.getBoundingBox().maxX())
+                        .append(", ").append(start.getBoundingBox().maxY()).append(", ").append(start.getBoundingBox().maxZ())
+                        .append("], \"pieces\": [\n");
+                boolean firstPiece = true;
+                for (var piece : start.getPieces()) {
+                    if (!piece.isCloseToChunk(new net.minecraft.world.level.ChunkPos(cx, cz), 12)) continue;
+                    if (!firstPiece) sb.append(",\n");
+                    firstPiece = false;
+                    var b = piece.getBoundingBox();
+                    sb.append("   [").append(b.minX()).append(", ").append(b.minY()).append(", ").append(b.minZ())
+                            .append(", ").append(b.maxX()).append(", ").append(b.maxY()).append(", ").append(b.maxZ()).append("]");
+                }
+                sb.append("\n  ]}");
+            }
+            sb.append("\n ]}\n");
+            Files.createDirectories(out.getParent());
+            Files.writeString(out, sb.toString());
+            String msg = "goldenrefs: wrote " + out + " (" + sb.length() + " bytes)";
+            plugin.getLogger().info(msg);
+            ack.sendMessage(msg);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("GOLDENREFS FAILED: " + t);
+            t.printStackTrace();
+            ack.sendMessage("goldenrefs: FAILED: " + t);
         }
     }
 }

@@ -207,25 +207,7 @@ impl Beardifier {
         }
         let mut d = 0.0f64;
         for rigid in &self.pieces {
-            let max0 = 0.max((rigid.min_x - x).max(x - rigid.max_x));
-            let max1 = 0.max((rigid.min_z - z).max(z - rigid.max_z));
-            let i3 = rigid.min_y + rigid.ground_level_delta;
-            let i4 = y - i3;
-            let i5 = match rigid.adjustment {
-                TerrainAdjustment::None | TerrainAdjustment::Bury | TerrainAdjustment::BeardThin => i4,
-                TerrainAdjustment::BeardBox => 0.max((i3 - y).max(y - rigid.max_y)),
-                TerrainAdjustment::Encapsulate => 0.max((rigid.min_y - y).max(y - rigid.max_y)),
-            };
-            d += match rigid.adjustment {
-                TerrainAdjustment::None => 0.0,
-                TerrainAdjustment::Bury => get_bury_contribution(max0 as f64, i5 as f64 / 2.0, max1 as f64),
-                TerrainAdjustment::BeardThin | TerrainAdjustment::BeardBox => {
-                    get_beard_contribution(max0, i5, max1, i4) * 0.8
-                }
-                TerrainAdjustment::Encapsulate => {
-                    get_bury_contribution(max0 as f64 / 2.0, i5 as f64 / 2.0, max1 as f64 / 2.0) * 0.8
-                }
-            };
+            d += beardifier_piece_contribution(rigid, x, y, z);
         }
         for junction in &self.junctions {
             let dx = x - junction.source_x;
@@ -234,6 +216,33 @@ impl Beardifier {
             d += get_beard_contribution(dx, dy, dz, dy) * 0.4;
         }
         d
+    }
+}
+
+/// Single-rigid piece contribution at (x,y,z) — the exact body of the
+/// Beardifier.compute per-piece loop (increment 6 attribution tool uses it
+/// to name the responsible pieces at a divergent block). Bit-identical to
+/// the inline loop it was factored out of.
+#[inline]
+pub fn beardifier_piece_contribution(rigid: &BeardRigid, x: i32, y: i32, z: i32) -> f64 {
+    let max0 = 0.max((rigid.min_x - x).max(x - rigid.max_x));
+    let max1 = 0.max((rigid.min_z - z).max(z - rigid.max_z));
+    let i3 = rigid.min_y + rigid.ground_level_delta;
+    let i4 = y - i3;
+    let i5 = match rigid.adjustment {
+        TerrainAdjustment::None | TerrainAdjustment::Bury | TerrainAdjustment::BeardThin => i4,
+        TerrainAdjustment::BeardBox => 0.max((i3 - y).max(y - rigid.max_y)),
+        TerrainAdjustment::Encapsulate => 0.max((rigid.min_y - y).max(y - rigid.max_y)),
+    };
+    match rigid.adjustment {
+        TerrainAdjustment::None => 0.0,
+        TerrainAdjustment::Bury => get_bury_contribution(max0 as f64, i5 as f64 / 2.0, max1 as f64),
+        TerrainAdjustment::BeardThin | TerrainAdjustment::BeardBox => {
+            get_beard_contribution(max0, i5, max1, i4) * 0.8
+        }
+        TerrainAdjustment::Encapsulate => {
+            get_bury_contribution(max0 as f64 / 2.0, i5 as f64 / 2.0, max1 as f64 / 2.0) * 0.8
+        }
     }
 }
 
