@@ -25,7 +25,17 @@ name: ci
 on:
   push:
     branches: [master]
+    # owner directive 2026-10-09 (Job 441690): docs/worklog-only commits must
+    # not burn CI runners — every run exists to test CODE or measured numbers.
+    paths-ignore:
+      - 'docs/**'
+      - 'worklog.md'
+      - '**/*.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'worklog.md'
+      - '**/*.md'
 
 permissions:
   contents: read
