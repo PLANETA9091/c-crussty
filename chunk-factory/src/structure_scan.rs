@@ -273,9 +273,27 @@ pub(crate) fn stub_samples(
     (out, unknown)
 }
 
-/// Overworld climate lookup at a block coord — mirrors filler.rs's
-/// fillBiomesFromNoise path (quantize_coord on the f32 casts).
+/// Overworld climate lookup for a STRUCTURE biome check — the stub position
+/// must be QUART-SNAPPED before the climate fields are evaluated.
+///
+/// Oracle chain (addendum 51): Java's Structure.isValidBiome (CFR
+/// Structure.java 199-202) calls
+/// `getNoiseBiome(QuartPos.fromBlock(stub.x), QuartPos.fromBlock(stub.y),
+/// QuartPos.fromBlock(stub.z), sampler)` — QUART coords; and the
+/// Climate.Sampler evaluates the density functions at QuartPos.toBlock(quart)
+/// = quart*4 (see the filler.rs quart-fill comment — that path validated
+/// bit-exact against java's saved chunk biomes). Net effect: the climate
+/// scalars are sampled at the stub block coords SNAPPED DOWN to the 4-block
+/// quart grid, NOT at the raw stub block. Evaluating at the raw stub diverges
+/// from java near biome near-ties (seed 3053459 trail_ruins @ (-10,16):
+/// raw stub (-158,48,254) -> depth q=210 -> taiga -> accept; snapped
+/// (-160,48,252) -> depth q=112 -> river -> reject; java rejected — river is
+/// not in #has_structure/trail_ruins — and the missing BURY fill was the
+/// c_-10..-8 x 14..17 java=water rust=stone gate divergence).
 pub(crate) fn biome_at(rs: &RandomState, list: &mut ParameterList, bx: i32, by: i32, bz: i32) -> String {
+    let bx = bx >> 2 << 2;
+    let by = by >> 2 << 2;
+    let bz = bz >> 2 << 2;
     let fields: [&crate::density::Df; 6] = [
         &rs.router.temperature,
         &rs.router.vegetation,
@@ -444,6 +462,9 @@ mod tests {
             separation: 8,
             salt: 10387312,
             spread_type: crate::random_spread::SpreadType::Linear,
+            frequency: 1.0,
+            frequency_reduction_method: crate::random_spread::FrequencyReductionMethod::Default,
+            exclusion_zone: None,
         };
         let (cx, cz) = v.potential_chunk(3053459, -1, -1).unwrap();
         assert_eq!((cx, cz), (-14, -15));

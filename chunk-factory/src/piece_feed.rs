@@ -440,6 +440,23 @@ pub fn biome_list_for(rs: &crate::router::RandomState) -> crate::climate::Parame
     })
 }
 
+/// Resolve the exclusion zone's other_set placement from the worldgen dir
+/// (java: the Holder<StructureSet> in ExclusionZone resolves against the
+/// structure set registry — same source). None = set missing/unparseable
+/// (the caller's gate then cannot fire the exclusion — matches java, where a
+/// missing other set would hard-fail the world instead).
+/// (pub for the beard_audit diagnostics; same resolution as the feed gate.)
+pub fn exclusion_other_placement(
+    dir: &WorldgenDir,
+    placement: &crate::random_spread::RandomSpreadStructurePlacement,
+) -> Option<crate::random_spread::RandomSpreadStructurePlacement> {
+    let zone = placement.exclusion_zone.as_ref()?;
+    let (ons, opath) = zone.other_set.split_once(':')?;
+    let otext = dir.get(ons, "structure_set", opath)?;
+    let (other, _) = parse_structure_set_json(&otext).ok()?;
+    Some(other)
+}
+
 /// Per-chunk piece feed for ONE structure set (the 2d wiring entry):
 /// placement check + weighted pick + assembly + biome filter. Returns the
 /// generated structure (key, pieces, terrain adaptation) for this chunk.
@@ -462,7 +479,22 @@ pub fn structure_start_for_chunk<S: FirstFreeHeight>(
         .get(ns, "structure_set", path)
         .ok_or_else(|| format!("set json missing: {set_key}"))?;
     let (placement, entries) = parse_structure_set_json(&text)?;
-    if !placement.is_placement_chunk(level_seed, chunk_x, chunk_z) {
+    let exclusion_other = exclusion_other_placement(dir, &placement);
+    if !placement.is_structure_chunk(
+        level_seed,
+        chunk_x,
+        chunk_z,
+        exclusion_other.as_ref(),
+    ) {
+        // Loud when the prescreen PASSED but a frequency/exclusion layer
+        // rejected — the pre-increment-8 feed placed here (addendum 51).
+        if placement.is_placement_chunk(level_seed, chunk_x, chunk_z)
+            && std::env::var_os("NCF_START_TRACE").is_some()
+        {
+            eprintln!(
+                "[start-trace] set={set_key} chunk=({chunk_x},{chunk_z}) REJECT=frequency-or-exclusion"
+            );
+        }
         return Ok(None);
     }
     // Load the set's structure JSONs (jigsaw only; others are skipped the

@@ -3730,3 +3730,125 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
   c) tectonic: локальный boot + goldenrefs на (-20..-22, -1..2) @ 8675309
      — выяснить, какая структура/шум даёт 178 расходждений.
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 16-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 26 (аддендум 51: Job 441690 — VANILLA-ОСТАТКИ 3053459/90210: ДВА КОРНЯ НАЙДЕНЫ И ЗАКРЫТЫ — (а) biome-check структуры БЕЗ quart-snap; (б) frequency-редукция + exclusion_zone отсутствовали в feed-гейте. ЛОКАЛЬНО: обе кластер-зоны 49/49 EQUAL; полный корпус 424242 2376/2401 (25 = spawn-артефакт, без изменений) ===
+
+1) CI-СТАТУС 3bf5774 (run 37714042630, инкремент 6, прочитан при завершении):
+   vanilla 424242 ✅ 133700 ✅ (inflate-фикс работает); vanilla 3053459 ❌
+   (diverged=10), vanilla 90210 ❌ (diverged=16); terralith/tectonic — ожидаемо
+   красные (CI собран старым скриптом без tags-фикса; фикс в 44427dc).
+   CI 44427dc (run 37717943043) — in_progress на момент тика.
+
+2) КОРЕНЬ (а) — 3053459, кластер c_-10..-8 x 14..17, java=water rust=stone
+   (y 43-56): rust-assembled trail_ruins @ (-10,16), adj=Bury (вНИМАНИЕ:
+   terrain_adaptation=bury, не beard_box), 19 pieces, BURY-fill положителен
+   вокруг boxes; java стороны структура ОТСУТСТВУЕТ (goldenrefs -9 15 и
+   -10 16: references=[], beardifier_starts=[] — локальный vanilla boot
+   seed 3053459, скрипт scripts/boot_goldenrefs.sh).
+   ДВОЙНАЯ ОРАКУЛ-ЦЕПЬ:
+   a) java Structure.isValidBiome (CFR Structure.java:199-202) сэмплирует
+      biome source в QUART-координатах: getNoiseBiome(QuartPos.fromBlock(stub)...);
+      Climate.Sampler вычисляет df в QuartPos.toBlock(quart)=quart*4 (эталон
+      — filler.rs quart-fill, 2401 чанк биом-точность) => ТОЧКА СНИМАЕТСЯ В
+      QUART-SNAP координатах stub-блока, не в raw stub;
+   b) jigsaw-stub: JigsawStructure.findGenerationPoint (CFR) +
+      JigsawPlacement.addPieces (CFR 69-111): stub = (i, i4, i1), i/i1 =
+      центр START-piece bbox (округление вниз), i4 = start_height +
+      getFirstFreeHeight(WORLD_SURFACE_WG в центре); trail_ruins:
+      start_height absolute -15, project WORLD_SURFACE_WG.
+   ЧИСЛА (stub=(-158,48,254), post-move box minY 47 + gld 1 => i2=48):
+     raw      (-158,48,254): depth f32=0.0210189819 => q=210 -> taiga
+     quart    (-160,48,252): depth f32=0.01122613996 => q=112 -> river
+   (java-скаляры (-160,48,252) сняты из goldendensity t51stub density.csv —
+   veccheck t51stub ZERO-DIFF 914119/0: наш шум bit-точен); metric над
+   ЖИВОЙ java-таблицей (goldenvec t51canon climate_points.csv, 7593 точки):
+   raw -> taiga (dist 923521, river 924482 — near-tie!), snap -> river
+   (12544) — river НЕ в #has_structure/trail_ruins (taiga/snowy_taiga/
+   old_growth_pine/spruce/birch/jungle) => java reject, rust accept.
+   ФИКС (а): structure_scan::biome_at — quart-snap (bx>>2<<2, by>>2<<2,
+   bz>>2<<2) перед вычислением 6 скаляров; beard_audit --biome — тем же
+   образом (печатает snap-строку).
+
+3) КОРЕНЬ (б) — 90210, кластер c_5..9 x -7..-10, java=air rust=stone
+   (y 119-127): rust-assembled pillager_outpost @ (8,-9), adj=BeardThin
+   (12 pieces, TerrainMatching/Rigid), BEARD_THIN-fill под boxes; java
+   стороны outpost НЕТ (goldenrefs 7 -8 / 8 -9: references=[mineshaft
+   (none-adj, отфильтрован)], beardifier_starts=[]; biome-колонки —
+   plains... grove? stub уже quart-выровнен (120,128,-136), наш снап не
+   меняет биом — НЕ biome).
+   ДВОЙНАЯ ОРАКУЛ-ЦЕПЬ:
+   a) StructurePlacement.isStructureChunk (CFR StructurePlacement.java:
+      89-107) = isPlacementChunk && applyAdditionalChunkRestrictions
+      (frequency) && applyInteractionsWithOtherStructures (exclusion_zone);
+      наш feed знал ТОЛЬКО prescreen (isPlacementChunk);
+   b) legacy_type_1 = legacyPillagerOutpostReducer (CFR :138-146):
+      setSeed((long)(regionX>>4 ^ (regionZ>>4)<<4) ^ levelSeed), nextInt()
+      в мусор, nextInt((int)(1.0f/frequency))==0; для (8,-9)@90210:
+      python-репликация java.util.Random (scripts/freq_probe.py) => draw
+      FALSE (0.2 частота = 80% отказ) => java НЕ ставит outpost.
+   ФИКС (б): random_spread.rs — FrequencyReductionMethod (default/
+   legacy_type_1/2/3 с точными редьюсерами: probabilityReducer
+   setLargeFeatureWithSalt+nextFloat; legacyPillagerOutpostReducer;
+   legacyArbitrarySaltProbabilityReducer saltOverride??10387320;
+   legacyProbabilityReducerWithDouble setLargeFeatureSeed+nextDouble) +
+   ExclusionZone (other_set, chunk_count) + is_structure_chunk = полный
+   гейт (prescreen && frequency && exclusion-скан [-r..r]^2 включительно,
+   other-set = placement+frequency); piece_feed::structure_start_for_chunk
+   переключён на полный гейт (NCF_START_TRACE печатает
+   REJECT=frequency-or-exclusion, если prescreen прошёл); exclusion_other
+   резолвится из worldgen dir (piece_feed::exclusion_other_placement,
+   pub для beard_audit).
+   ПРОВЕРКИ: oracle-тест outpost_frequency_rejects_90210_8_9 (pytest —
+   нет, cargo-test) — legacy_type_1(90210,(8,-9)) == FALSE; villages без
+   frequency => поведение прочих set НЕИЗМЕННО.
+
+4) ВЕРИФИКАЦИЯ (локально, оба фикса):
+   a) 90210: fresh boot + /goldendump 7 -8 3 status noise (49 чанков) vs
+      gen-batch 4..10 x -11..-5 => pairs=49 equal=49 diverged=0 (feed 0/49
+      adapting starts — outpost отвергнут frequency-слоем);
+   b) 3053459: fresh boot + /goldendump -9 15 3 status noise (49) vs
+      gen-batch -12..-6 x 12..18 => pairs=49 equal=49 diverged=0 (feed
+      0/49 — trail_ruins отвергнут quart-snap биом-слоем);
+   c) ПОЛНЫЙ КОРПУС 424242 (-24..24, 2401): equal=2376 diverged=25, ВСЕ 25
+      = spawn 5x5 bedrock-низ (исключается CI-протоколом) — ноль регрессии
+      от обоих фиксов (feed 80/2401 adapting starts — без изменений);
+   d) lib 154 (+1 oracle-тест) + root 417 GREEN;
+   e) TILE_CACHE 0/1 байт-идентичны (81 чанк, диапазон -6..2 x -20..-12);
+   f) veccheck: resid1 843207/0, tectA_8675309 941511/0, tectB_424242
+      941511/0 — контракты veccheck не тронуты; t51stub 914119/0.
+
+5) ИНСТРУМЕНТАРИЙ (этот же коммит):
+   - scripts/boot_goldenrefs.sh — локальный vanilla boot (протокол
+     ci_gate_p2.sh: RCON, watchdog off, wipe/KEEP_WORLD) + goldenrefs/
+     goldendensity/goldenvec/goldendump команды;
+   - scripts/chunk_biomes.py — биомы/палитры чанка из anvil (java-сторона);
+   - scripts/nearest_biome2.py — метрика Climate.RTree над ЖИВОЙ java
+     climate_points.csv (7 dims, offset target=0);
+   - scripts/freq_probe.py — независимая репликация java.util.Random для
+     frequency-редьюсеров;
+   - beard_audit: START-строка печатает stub=(x,y,z); --biome печатает
+     quart-snap; PICK печатает слой отказа (frequency/exclusion).
+
+6) СТАТУС ГЕЙТА: vanilla 424242/133700 зелёные (CI 3bf5774); 3053459/90210
+   локально 49/49 в кластерах + ноль регрессии на полном корпусе 424242;
+   ожидаются зелёными в CI этого коммита. terralith/tectonic — CI 44427dc
+   (tags-фикс) строит экстракты заново; tectonic 178-расхождения (8675309,
+   глубина) — следующий тик: локальный tectonic boot + goldenrefs.
+
+АМДАЛЬ (директива 2): фикс (а) = 3 сдвига на biome-check кандидата —
+  0 мс/чанк; фикс (б) = frequency ~3 int-операции (только set'ы с
+  frequency<1.0), exclusion-скан 441 prescreen'ов ТОЛЬКО для outpost-
+  кандидатов (~1/1024 чанков) ≈ 0.1-0.2 мс/кандидат — 0 мс/чанк в среднем;
+  gen-batch 424242 полный: 2401/98.14с = 24.5 ч/с (= инкремент 6: 98.46с);
+  stagediff-сравнения: ~1-2 с на 49 чанков; veccheck t51stub 914119 точек
+  — 0 расхождений (шум bit-точен и вокруг stub-колонок).
+КОРПУС (директива 3): структурные чанки сравниваются честно; обе
+  кластер-зоны — 49/49; gate-цель (vanilla equal=2376 при 25 spawn-чанках)
+  удержана на 424242 и подтверждена локально для 3053459/90210.
+СЛЕДУЮЩИЕ ШАГИ:
+  a) CI-вердикт этого коммита: vanilla 5/5 (ожидание);
+  b) CI 44427dc: terralith-ячейки должны позеленеть (tags-фикс);
+  c) tectonic 8675309 (глубина, 178 расхождений в CI 3bf5774): локальный
+     boot + goldenrefs на (-20..-22, -1..2) — гипотеза та же, что п.2/п.3
+     (структурный фид/частота), т.к. шум bit-точен (veccheck tectA/B).
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 17-й тик; первоисточник = этот LOG.

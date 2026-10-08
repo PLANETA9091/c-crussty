@@ -102,6 +102,27 @@ fn main() {
                 if !_placement.is_placement_chunk(seed, px, pz) {
                     continue;
                 }
+                // The full isStructureChunk gate (frequency + exclusion) —
+                // the prescreen alone over-places (addendum 51, seed 90210
+                // outpost: legacy_type_1 rejected it on java's side).
+                if !_placement.is_structure_chunk(
+                    seed,
+                    px,
+                    pz,
+                    chunk_factory::piece_feed::exclusion_other_placement(&dir, &_placement).as_ref(),
+                ) {
+                    if _placement.frequency < 1.0 {
+                        println!(
+                            "PICK set {set_key} @ ({px},{pz}) -> None (frequency {} < 1.0 rejected)",
+                            _placement.frequency
+                        );
+                    } else {
+                        println!(
+                            "PICK set {set_key} @ ({px},{pz}) -> None (exclusion zone rejected)"
+                        );
+                    }
+                    continue;
+                }
                 let hit = structure_start_for_chunk(
                     &dir, &root, &rs, seed, px, pz, set_key, &mut sampler, &mut pools, &mut diag,
                 )
@@ -150,10 +171,11 @@ fn main() {
                     continue;
                 }
                 println!(
-                    "START {structure_key} set {set_key} @ ({px},{pz}) adj={adj:?} pieces={} junctions={} union=[{},{},{} .. {},{},{}]",
+                    "START {structure_key} set {set_key} @ ({px},{pz}) adj={adj:?} pieces={} junctions={} union=[{},{},{} .. {},{},{}] stub=({}, {}, {})",
                     assembly.pieces.len(),
                     assembly.pieces.iter().map(|p| p.junctions.len()).sum::<usize>(),
                     sb.min_x, sb.min_y, sb.min_z, sb.max_x, sb.max_y, sb.max_z,
+                    assembly.stub_position.0, assembly.stub_position.1, assembly.stub_position.2,
                 );
                 for (i, p) in assembly.pieces.iter().enumerate() {
                     let b = &p.bounding_box;
@@ -238,11 +260,20 @@ fn main() {
 
     // --biome X Y Z: dump the 6 climate scalars (f64 + quantized) and the
     // selected biome at an ABSOLUTE block coordinate — the stub-position
-    // biome oracle probe (increment 6).
+    // biome oracle probe. Mirrors production structure_scan::biome_at: the
+    // coords are QUART-SNAPPED before evaluation (java isValidBiome samples
+    // the biome source in quart coords; addendum 51).
     if let Some(i) = args.iter().position(|a| a == "--biome") {
         let px: i32 = args[i + 1].parse().unwrap();
         let py: i32 = args[i + 2].parse().unwrap();
         let pz: i32 = args[i + 3].parse().unwrap();
+        let (qx, qy, qz) = (px >> 2 << 2, py >> 2 << 2, pz >> 2 << 2);
+        if (qx, qy, qz) != (px, py, pz) {
+            println!("  quart-snap ({px},{py},{pz}) -> ({qx},{qy},{qz})");
+        }
+        let px = qx;
+        let py = qy;
+        let pz = qz;
         let fields: [&chunk_factory::density::Df; 6] = [
             &rs.router.temperature,
             &rs.router.vegetation,
