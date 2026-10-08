@@ -210,6 +210,25 @@ def extract_worldgen(prefix):
             continue
         dest = os.path.join(dest_root, "data", *parts)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
+        # P5.3 increment 9 FIX: tag files MERGE (java TagLoader) — see the
+        # --extract-only extractor below for the rationale (terralith
+        # overwrites vanilla biome tags with reference-only lists).
+        if parts[1] == 'tags' and os.path.exists(dest):
+            try:
+                base = json.loads(open(dest).read())
+                packf = json.loads(z.read(name))
+                if packf.get('replace', False):
+                    vals = packf.get('values', [])
+                else:
+                    vals = (base.get('values') or []) + (packf.get('values') or [])
+                merged = dict(base)
+                merged.pop('replace', None)
+                merged['values'] = vals
+                open(dest, 'w').write(json.dumps(merged))
+                n += 1
+                continue
+            except Exception:
+                pass
         open(dest, 'wb').write(z.read(name))
         n += 1
     return n
@@ -362,6 +381,31 @@ def extract_worldgen(prefix):
             continue
         dest = os.path.join(dest_root, 'data', *parts)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
+        # P5.3 increment 9 FIX (terralith c_-24_10 trail_ruins): tag files
+        # MERGE in java (TagLoader): the pack's values append to the base
+        # unless the pack file sets "replace": true. The plain overwrite
+        # dropped the vanilla half of overridden tags — terralith rewrites
+        # data/minecraft/tags/worldgen/biome/has_structure/trail_ruins.json
+        # to ["#terralith:reference/taiga", "#terralith:reference/jungle"]
+        # ONLY, so the merged extract lost minecraft:old_growth_spruce_taiga
+        # and the feed biome-rejected the trail_ruins start java placed
+        # (java BURY fill at y45 = stone, rust stayed aquifer water).
+        if parts[1] == 'tags' and os.path.exists(dest):
+            try:
+                base = json.loads(open(dest).read())
+                packf = json.loads(z.read(name))
+                if packf.get('replace', False):
+                    vals = packf.get('values', [])
+                else:
+                    vals = (base.get('values') or []) + (packf.get('values') or [])
+                merged = dict(base)
+                merged.pop('replace', None)
+                merged['values'] = vals
+                open(dest, 'w').write(json.dumps(merged))
+                n += 1
+                continue
+            except Exception:
+                pass  # unreadable pair — fall through to plain overwrite
         open(dest, 'wb').write(z.read(name))
         n += 1
     return n

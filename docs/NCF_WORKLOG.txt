@@ -3889,3 +3889,81 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    vanilla+tectonic ЧЕСТНО (CI); veccheck/stagediff-контракты не тронуты;
    T35 не переоткрывался.
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 18-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 27 (аддендум 53: Job 441690 — TERRALITH 4 ОСТАВШИХСЯ ЯЧЕЕК: ДВА КОРНЯ НАЙДЕНЫ И ЗАКРЫТЫ — (а) TemplateCache разрешал шаблон ЧЕРЕЗ JSON-индекс и ловил ОПРЕДЕЛЕНИЕ структуры (коллизия ключа kind="structure") -> шаблон "missing" -> pick сдвигался; (б) экстрактор pack-экстракта ПЕРЕЗАПИСЫВАЛ vanilla-TAG'и вместо слияния (java TagLoader: values добавляются) -> old_growth_spruce_taiga выпал из #has_structure/trail_ruins. ЛОКАЛЬНО: terralith 424242 полный корпус 2401 => equal=2376 diverged=25 (ВСЕ 25 = spawn-артефакт) — gate-цель достигнута; vanilla полный корпус equal=2376 (без регрессии) ===
+
+1) АТРИБУЦИЯ (локальные terralith boot'ы 424242 + goldendump 5 кластеров по
+   49 чанков + goldenrefs + beard_audit; скрипт scripts/boot_pack_probe.sh —
+   pack-вариант boot_goldenrefs.sh с datapack-инъекцией world/datapacks):
+   ВСЕ 5 кластеров — адаптирующие структуры:
+   a) c_-10..-12 x 22..24 (9 div, sec=4, java=air/water rust=stone) +
+      c_-19..-21 x 20..22 (9 div, sec=2) + c_-1..1 x 15..17 (9 div, sec=3) +
+      c_-6..-8 x -8..-10 (9 div, sec=3, СМЕШАННЫЕ знаки):
+      java ставил terralith:underground/sunken_tower (BEARD_BOX) в стартовых
+      чанках (-11,24), (-19,22), (1,16), (-7,-9) — rust ВЫБИРАЛ ДРУГУЮ
+      структуру из того же сета (oak_cabin, giant_bee_hive adj=Bury) или
+      пусто;
+   b) c_-16..-18 x -22..-24 (7 div, sec=4): java terralith:underground/
+      old_refinery @ (-16,-22) — rust None (skip);
+   c) c_-24_10 (sec=6, y45, java=stone rust=water): vanilla trail_ruins @
+      (-25,10) adj=BURY — rust biome-REJECT (п.3б).
+2) КОРЕНЬ (а) — КОЛЛИЗИЯ КЛЮЧЕЙ ИНДЕКСА: WorldgenDir::load индексирует
+   data/<ns>/worldgen/structure/<path>.json как kind="structure"
+   (ОПРЕДЕЛЕНИЯ структур), а TemplateCache::get использовал тот же kind
+   для ШАБЛОНОВ data/<ns>/structure/<path>.nbt -> dir.get() возвращал
+   ТЕКСТ ОПРЕДЕЛЕНИЯ, gunzip падал, шаблон кэшировался как missing ->
+   weighted pick (CFR 487-500) пропускал кандидата и ДОРИСОВЫВАЛ до
+   другого (sunken_tower -> oak_cabin/giant_bee_hive; old_refinery ->
+   skip). У vanilla коллизии нет (определение "trail_ruins" не равно
+   шаблону "trail_ruins/trail_ruins1"), поэтому vanilla был зелёным.
+   Терралит совпадает по id: worldgen/structure/underground/sunken_tower.json
+   vs structure/underground/sunken_tower.nbt. ФИКС: TemplateCache::get
+   читает ТОЛЬКО бинарный .nbt из data/<ns>/structure/ (java
+   StructureTemplateManager читает только .nbt; ветка dir.get удалена).
+   Оракул-цепочка: nbt_probe (examples/nbt_probe.rs) — parse_template OK
+   size=(14,17,15) для файла, который feed считал missing.
+3) КОРЕНЬ (б) — TAG-СЛИЯНИЕ ВМЕСТО ПЕРЕЗАПИСИ: terralith переопределяет 78
+   vanilla tag-файлов (data/minecraft/tags/worldgen/biome/...), в т.ч.
+   has_structure/trail_ruins.json => ["#terralith:reference/taiga",
+   "#terralith:reference/jungle"] (без "replace": true). Java TagLoader
+   ДОБАВЛЯЕТ values к базовому тегу (replace:true только сброс); наш
+   экстрактор (ci_datapacks.sh, оба: run_pack и --extract-only) ПЕРЕЗАПИСЫВАЛ
+   файл => vanilla-половина (taiga, snowy_taiga, old_growth_pine/spruce/
+   birch, jungle) выпала => наш biome-check на stub (-398,52,162) с
+   quart-snap биомом minecraft:old_growth_spruce_taiga (в ВАНИЛЬНОМ теге
+   он ЕСТЬ) вернул reject, а java принял (goldenrefs: 10 показанных pieces,
+   union+12 == java box [-423,33,138..-376,79,211] — наша сборка 17 pieces
+   union [-411,45,150..-388,67,199]+12 совпадает ТОЧНО). ФИКС: экстракторы
+   сливают /tags/ json (base values + pack values; "replace" обработан;
+   0 файлов с replace:true в терралите, 146 вложенных #ref — резолвятся
+   рекурсивно как раньше). Экстракт перестроен: merged tag подтверждён.
+4) ВЕРИФИКАЦИЯ (локально, оба фикса вместе):
+   a) 5 кластеров 49/49 EQUAL каждый (было 9/9/9/7/9 diverged);
+   b) terralith 424242 ПОЛНЫЙ КОРПУС (-24..24, 2401): equal=2376 diverged=25,
+      ВСЕ 25 = spawn 5x5 bedrock-низ (CI-протокол исключает) => пары 2376
+      equal=2376 — gate-цель для terralith 424242 достигнута честно;
+      feed 228/2401 (было 199), missing_templates 520 -> 473;
+   c) vanilla 424242 полный корпус: equal=2376 diverged=25 (spawn) — НОЛЬ
+      регрессии, feed 80/2401 без изменений;
+   d) lib 154 + root 417 GREEN; TILE_CACHE 0/1 byte-identical (81 чанк);
+   e) veccheck resid1 843207/0, tectA_8675309 941511/0, tectB_424242
+      941511/0 — контракты не тронуты.
+5) ОЖИДАНИЕ CI: terralith 3053459/8675309/90210/424242 должны позеленеть
+   (фиксы упаковочные — действуют на весь pack-слой); tectonic 5/5 и vanilla
+   5/5 — регрессии не ожидается (vanilla полный корпус подтверждён locally).
+   Вердикт читает следующий тик.
+АМДАЛЬ (директива 2): фикс (а) = чтение .nbt вместо index-hit — 0 мс/чанк
+  (тот же fs::read, что был fallback'ом); фикс (б) = shell/python-шаг
+  экстракции (0 рантайм-цены); gen-batch terralith 2401 = 90.0с (26.7 ч/с),
+  vanilla 2401 = 100.5с (23.9 ч/с); boot+dump 2401 java-стороны ~5 мин
+  (генерация чанков на лету); beard_audit ~10-20с/чанк-кластер.
+КОРПУС (директива 3): структурные чанки сравнены честно на полном корпусе
+  424242 в ОБОИХ мирах (vanilla+terralith); 25 spawn-чанков — известный
+  артефакт полностью сгенерированных spawn-чанков, исключается CI-протоколом.
+СЛЕДУЮЩИЕ ШАГИ:
+  a) CI-вердикт этого коммита: terralith 5/5 (ожидание) + отсутствие
+     регрессий vanilla/tectonic;
+  b) если какой-то из 3053459/8675309/90210 terralith останется красным —
+     локальный boot + кластер-дампы по его сигнатуре (метод п.1);
+  c) закрыть gate-p2 финально (все 15 ячеек зелёные) и обновить 板面.
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 19-й тик; первоисточник = этот LOG.

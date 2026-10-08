@@ -25,28 +25,31 @@ impl<'d> TemplateCache<'d> {
 
     /// Parse (minecraft:structure/<ns>/<path>.nbt) once; None = missing or
     /// undecodable (remembered to avoid re-reading every chunk).
+    ///
+    /// ADDENDUM 53 ROOT FIX: the WorldgenDir JSON index keys files under
+    /// data/<ns>/worldgen/structure/<path>.json as kind="structure" —
+    /// STRUCTURE DEFINITIONS, not templates. Terralith's underground set
+    /// collides exactly (definition worldgen/structure/underground/
+    /// sunken_tower.json vs template structure/underground/sunken_tower.nbt):
+    /// feeding the definition JSON text through gunzip failed => the template
+    /// was reported missing => the pick skipped the structure and the retry
+    /// shifted the weighted draw (java places sunken_tower, rust degraded to
+    /// oak_cabin/giant_bee_hive or rejected the whole set). Java's
+    /// StructureTemplateManager reads ONLY the binary .nbt from structure/
+    /// dirs, so read data/<ns>/structure/<path>.nbt directly.
     pub fn get(&self, ns: &str, path: &str) -> Option<Nbt> {
         let key = format!("{ns}:{path}");
         if let Some(hit) = self.cache.borrow().get(&key) {
             return hit.clone();
         }
-        // P5.3 2d: the JSON index (WorldgenDir::load) only covers .json under
-        // data/<ns>/worldgen|dimension — template NBTs are BINARY files at
-        // data/<ns>/structure/<path>.nbt, read straight from the extract
-        // root (server jar / datapack unzip layout).
-        let raw = self
-            .dir
-            .get(ns, "structure", path)
-            .map(|s| s.as_bytes().to_vec())
-            .or_else(|| {
-                let file = self
-                    .dir
-                    .data_root
-                    .join(ns)
-                    .join("structure")
-                    .join(format!("{path}.nbt"));
-                std::fs::read(&file).ok()
-            });
+        let raw = std::fs::read(
+            self.dir
+                .data_root
+                .join(ns)
+                .join("structure")
+                .join(format!("{path}.nbt")),
+        )
+        .ok();
         let parsed = raw.and_then(|bytes| {
             // template files are gzip-compressed NBT (vanilla .nbt)
             crate::sections::gunzip(&bytes)
