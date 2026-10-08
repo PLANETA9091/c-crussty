@@ -8,6 +8,9 @@
 //! Usage: bench [seed] [chunks] [--surface] [--carvers]
 //!        bench [seed] [chunks] ledger   (SPEED LEDGER: per-stage ms/chunk,
 //!         warm, fixed sqrt-N chunk corpus -> docs/NCF_SPEED.md history row)
+//!        bench [seed] region            (P3.2/P3.4 END-TO-END REGION: I8
+//!         prescan -> decide_chunk -> native chain -> .mca writer; coverage %
+//!         + ms/chunk for the native lane, projected pregen vs pure-Java)
 
 use chunk_factory::filler::generate_noise_chunk;
 use chunk_factory::fullchunk::{full_chunk_nbt, DATA_VERSION_1_21_10};
@@ -136,6 +139,205 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
     println!("  wall sanity: {n} chunks in {wall:.1} ms (sum-of-stages {:.1} ms)", ported_total * n as f64);
 }
 
+/// P3.2/P3.4 END-TO-END REGION (owner work list item 3): one fixed region
+/// file — 32x32 = 1024 chunks, seed 3053459 — driven through the I8 fallback
+/// law: structure_scan prescan -> decide_chunk (THE decision point) ->
+/// native chain (noise -> surface -> carvers -> FULL NBT -> gzip) ->
+/// region.rs .mca writer. Fallback chunks are NOT generated here (deployment
+/// shape: Moonrise NO_DATA -> Java generates them whole). Reports the
+/// mandatory coverage % (I8), per-stage + end-to-end ms/chunk for the native
+/// lane, and the projected pregen time vs pure-Java P0.1 warm numbers
+/// (unported stages at 1x — the same Amdahl model as the ledger).
+fn run_region(seed: i64, dir: &WorldgenDir, root: &Path) {
+    const REGION_SIDE: i32 = 32; // one .mca: 32x32 chunk columns
+    // Region origin in chunk coords (NCF_REGION_BASE, both axes; default 0
+    // = r.0.0.mca). -32 -> r.-1.-1.mca (chunk coords -32..-1).
+    let base = std::env::var("NCF_REGION_BASE")
+        .ok()
+        .and_then(|s| s.parse::<i32>().ok())
+        .unwrap_or(0);
+    let (rx, rz) = (base >> 5, base >> 5);
+    let t0 = Instant::now();
+    let mut rs = RandomState::build(dir, "minecraft", "overworld", seed).expect("random state");
+    let mut kit = StageKit::build(&mut rs, dir).expect("stage kit");
+    let setup = t0.elapsed();
+
+    // I8 prescan (the gate-p2 honest-exclusion mechanism): chunks the unported
+    // Beardifier could touch are Java's, not ours.
+    let scan_t0 = Instant::now();
+    let scan = chunk_factory::structure_scan::scan_batch(
+        dir,
+        &rs,
+        seed,
+        root,
+        base,
+        base + REGION_SIDE - 1,
+        base,
+        base + REGION_SIDE - 1,
+    )
+    .expect("fallback prescan");
+    let scan_ms = scan_t0.elapsed().as_secs_f64() * 1e3;
+
+    // warmup: full chain incl. gzip on throwaway coords outside the corpus
+    for i in 0..3i32 {
+        let mut c = chunk_factory::filler::generate_noise_chunk_with_beardifier(
+            &rs,
+            seed,
+            500 + i,
+            500,
+            kit.beard.clone(),
+        )
+        .expect("warm noise");
+        apply_surface_pass(&mut rs, &mut kit, dir, seed, &mut c).expect("warm surface");
+        apply_carvers_pass(&mut rs, &mut kit, dir, seed, &mut c).expect("warm carvers");
+        let gz =
+            chunk_factory::sections::write_gzipped_nbt(&full_chunk_nbt(&c, DATA_VERSION_1_21_10));
+        std::hint::black_box(&gz);
+    }
+
+    let ts = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as u32)
+        .unwrap_or(0);
+    let mut acc = [0f64; 5]; // noise, surface, carvers, nbt, gzip
+    let mut region_chunks: Vec<chunk_factory::region::RegionChunk> = Vec::new();
+    let mut ledger = chunk_factory::fallback::CoverageLedger::default();
+    let t_all = Instant::now();
+    for cx in base..base + REGION_SIDE {
+        for cz in base..base + REGION_SIDE {
+            let has_structures = scan.chunks.contains(&(cx, cz));
+            // THE decision point (fallback.rs): the only lawful switch.
+            let d =
+                chunk_factory::fallback::decide_chunk(false, has_structures, false, false, false, false);
+            if !d.native {
+                // deployment shape: Moonrise NO_DATA -> Java generates the
+                // chunk whole; we neither time nor write it here.
+                ledger.record_fallback(d.reason);
+                continue;
+            }
+            ledger.record_native();
+            let t_n0 = Instant::now();
+            let mut chunk = chunk_factory::filler::generate_noise_chunk_with_beardifier(
+                &rs,
+                seed,
+                cx,
+                cz,
+                kit.beard.clone(),
+            )
+            .expect("noise");
+            let t_n1 = Instant::now();
+            apply_surface_pass(&mut rs, &mut kit, dir, seed, &mut chunk).expect("surface");
+            let t_s1 = Instant::now();
+            apply_carvers_pass(&mut rs, &mut kit, dir, seed, &mut chunk).expect("carvers");
+            let t_c1 = Instant::now();
+            let nbt = full_chunk_nbt(&chunk, DATA_VERSION_1_21_10);
+            let t_s1b = Instant::now();
+            let gz = chunk_factory::sections::write_gzipped_nbt(&nbt);
+            let t_s2 = Instant::now();
+            region_chunks.push(chunk_factory::region::RegionChunk {
+                x_in_region: (cx - base) as u8,
+                z_in_region: (cz - base) as u8,
+                timestamp: ts,
+                format: 1, // gzip (NbtIo.writeCompressed stream, verbatim)
+                data: gz,
+            });
+            acc[0] += (t_n1 - t_n0).as_secs_f64() * 1e3;
+            acc[1] += (t_s1 - t_n1).as_secs_f64() * 1e3;
+            acc[2] += (t_c1 - t_s1).as_secs_f64() * 1e3;
+            acc[3] += (t_s1b - t_c1).as_secs_f64() * 1e3;
+            acc[4] += (t_s2 - t_s1b).as_secs_f64() * 1e3;
+        }
+    }
+    let gen_wall = t_all.elapsed().as_secs_f64() * 1e3;
+    let t_w0 = Instant::now();
+    let bytes = chunk_factory::region::write_region(&region_chunks).expect("write region");
+    let write_ms = t_w0.elapsed().as_secs_f64() * 1e3;
+    let parsed = chunk_factory::region::parse_region(&bytes).expect("parse region");
+    let roundtrip = parsed.chunks.len();
+
+    let native = ledger.report.native_chunks as f64;
+    let fallback = ledger.report.java_fallback_chunks as f64;
+    // reporter invariant (coverage.rs): native + fallback == total
+    ledger.report.total_chunks = ledger.report.native_chunks + ledger.report.java_fallback_chunks;
+    ledger.report.by_step = vec![("carvers-native", ledger.report.native_chunks, ledger.report.java_fallback_chunks)];
+    assert!(native > 0.0, "no native chunks in corpus — nothing to measure");
+    let per: Vec<f64> = acc.iter().map(|a| a / native).collect();
+    let write_amort = write_ms / native;
+    let e2e: f64 = per.iter().sum::<f64>() + write_amort;
+    let java_ported = JAVA_WARM_NOISE_CLUSTER + JAVA_WARM_SURFACE + JAVA_WARM_CARVERS + JAVA_WARM_NBT;
+
+    // persist the region so a server boot can consume it (P3.1 ladder)
+    let out_dir =
+        std::env::var("NCF_REGION_OUT").unwrap_or_else(|_| "region-bench-out".to_string());
+    std::fs::create_dir_all(&out_dir).expect("out dir");
+    let out_path = format!("{out_dir}/r.{rx}.{rz}.mca");
+    std::fs::write(&out_path, &bytes).expect("write .mca");
+
+    println!(
+        "region[seed={seed} r.{rx}.{rz}.mca chunks {base}..{}x{base}..{} = 1024, warm, single-core, setup {setup:.3?}, prescan {scan_ms:.0} ms]:",
+        base + REGION_SIDE - 1,
+        base + REGION_SIDE - 1,
+    );
+    println!(
+        "  I8 prescan: {} start(s) -> {} fallback chunk(s) (Beardifier law, Java lane)",
+        scan.starts.len(),
+        ledger.report.java_fallback_chunks
+    );
+    for s in scan.starts.iter().take(8) {
+        println!(
+            "    fallback start: {} ({}) cx={} cz={}{}",
+            s.structure,
+            s.set,
+            s.cx,
+            s.cz,
+            if s.unknown_validity { " unknown-validity" } else { "" }
+        );
+    }
+    for (k, v) in &ledger.reasons {
+        println!("    fallback[{k}] = {v}");
+    }
+    println!("  coverage: {}", ledger.report.summary());
+    println!("  native stage        ms/chunk");
+    println!("    noise+biomes      {:8.2}", per[0]);
+    println!("    surface           {:8.2}", per[1]);
+    println!("    carvers           {:8.2}", per[2]);
+    println!("    serialization     {:8.2}  (FULL NBT build)", per[3]);
+    println!("    gzip payload      {:8.2}  (writeCompressed form)", per[4]);
+    println!(
+        "    region write      {write_amort:8.2}  (amortized, {} chunks)",
+        region_chunks.len()
+    );
+    println!(
+        "  NATIVE E2E        {e2e:8.2} ms/chunk ({:.1} chunks/s/core) vs Java warm ported stages {java_ported:.1} CPU-ms: {:.1}x",
+        1000.0 / e2e,
+        java_ported / e2e,
+    );
+    // Honest pregen projection (P0.1 CPU-ms shares, Purpur 2535, 2 vCPU):
+    //   native chunk = Rust e2e (measured) + Java completion of unported
+    //                  stages at 1x (features+light+scheduler+jvm_other)
+    //   fallback     = Java's full pipeline (P0.1 warm total)
+    let hybrid_ms = native * (e2e + JAVA_WARM_UNPORTED) + fallback * JAVA_WARM_TOTAL;
+    let pure_java_ms = (native + fallback) * JAVA_WARM_TOTAL;
+    println!(
+        "  projected pregen (P0.1 shares; unported {:.1} CPU-ms at 1x on Java):",
+        JAVA_WARM_UNPORTED
+    );
+    println!(
+        "    hybrid {:.0} s vs pure-Java {:.0} s -> {:.2}x end-to-end pregen speedup",
+        hybrid_ms / 1e3,
+        pure_java_ms / 1e3,
+        pure_java_ms / hybrid_ms,
+    );
+    println!(
+        "  wall sanity: {} native chunks in {gen_wall:.1} ms (sum-of-stages {:.1} ms); region {} bytes, parse roundtrip {roundtrip}/{} -> {}",
+        region_chunks.len(),
+        e2e * native,
+        bytes.len(),
+        region_chunks.len(),
+        out_path,
+    );
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let seed: i64 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(3053459);
@@ -145,9 +347,21 @@ fn main() {
     // a single 8x8 chunk block (the Java bench uses 128-chunk bursts)
     let side = (chunks as f64).sqrt().ceil() as i32;
     let wg = std::env::var("NCF_WG").unwrap_or_else(|_| "/tmp/wg-extract".to_string());
+    // carver-tag expansion (StageKit) and the structure prescan read files
+    // relative to the extract root via NCF_DATA_ROOT (same pattern as
+    // stagediff): default it to the NCF_WG extract.
+    if std::env::var_os("NCF_DATA_ROOT").is_none() {
+        std::env::set_var("NCF_DATA_ROOT", &wg);
+    }
     let dir = WorldgenDir::load(Path::new(&wg)).expect("worldgen extract");
     if status == "ledger" {
         run_ledger(seed, chunks, &dir);
+        return;
+    }
+    // `bench <seed> region` (two-arg form) or `bench <seed> <chunks> region`:
+    // "region" may sit in the chunks slot, so match it by position OR value.
+    if status == "region" || args.get(2).map(|s| s.as_str()) == Some("region") {
+        run_region(seed, &dir, Path::new(&wg));
         return;
     }
     let t0 = Instant::now();

@@ -98,6 +98,55 @@ chunks, 2 vCPU, -Xmx1536m; warm = 2nd burst of the same JVM:
 | jvm_other (GC/JIT+unmatched)| 48.9              | 13.5% |
 | TOTAL                       | 363.0             | 100%  |
 
+## End-to-end region (P3.2/P3.4, 2026-10-09)
+
+Owner WORK LIST item 3: one fixed `.mca` region (32x32 = 1024 chunks) driven
+through the I8 fallback law — `structure_scan` prescan (the gate-p2
+honest-exclusion mechanism) -> `decide_chunk` (the only lawful switch) ->
+native chain (noise -> surface -> carvers -> FULL NBT -> gzip) -> the P3.1
+region writer; fallback chunks are NOT generated (deployment shape:
+Moonrise NO_DATA -> Java generates them whole). Coverage % is mandatory (I8).
+
+```
+NCF_WG=<extract> NCF_DATA_ROOT=<same> NCF_REGION_OUT=<dir> \
+  ./target/release/bench 3053459 region                # region r.0.0.mca
+NCF_REGION_BASE=-32 ...                                # region r.-1.-1.mca
+```
+
+- warm (3 throwaway full-chain chunks), single core, seed 3053459;
+- corpus note: the extract MUST be jar-fresh (ci_gate_p2.sh protocol:
+  worldgen + tags + `data/minecraft/structure/*.nbt`); a stale hand-made
+  extract marks every chunk `unfaithful` in the prescan (loud over-marking,
+  conservative direction) — this tick's first run caught exactly that and
+  the extract was rebuilt from the mapped jar;
+- gzip payload ~0.07 ms/chunk and region write ~0.01 ms/chunk amortized —
+  the P3.1 writer is not a bottleneck at 1024 chunks/23.3 MB.
+
+| region (seed 3053459) | chunks | fallback (I8) | coverage | native E2E ms/chunk | vs Java ported 294.8 | hybrid pregen | pure-Java pregen | speedup |
+|-----------------------|-------:|--------------:|---------:|--------------------:|---------------------:|--------------:|-----------------:|--------:|
+| r.0.0.mca (0..32 x 0..32)    | 1024 | 0  | 100.00% | 43.1 | 6.8x | ~113 s | ~372 s | 3.30x |
+| r.-1.-1.mca (-32..-1 x -32..-1) | 1024 | 4 (structures) | 99.61% | 50.6 | 5.8x | ~122 s | ~372 s | 3.06x |
+
+- r.-1.-1.mca contains the SAME 4 Beardifier chunks that the gate-p2
+  vanilla/3053459 cell (radius 24) excluded in CI run 37842664447
+  ("I8 structure-fallback: 4 chunk pairs excluded") — the offline prescan
+  and the CI gate agree chunk-for-chunk (c_-18_-13 .. c_-15_-13, multi-start
+  feeds of 3..11 pieces).
+- projection honesty: native chunk = measured Rust E2E + Java completion of
+  unported stages at 1x (features+light+scheduler+jvm_other = 67.1 CPU-ms,
+  the ledger's Amdahl model); fallback chunk = Java's full 363.0 CPU-ms
+  (P0.1 warm). Second run's higher noise/surface (22.9/25.0 vs 19.1/21.2)
+  is VM noise on the shared 2-vCPU rig — the clean-run numbers stand.
+- serialization+gzip included in E2E: the FULL NBT (DataVersion 4556,
+  isLightOn=false) is the P3.4 payload — one Rust call returns it gzipped.
+
+History (end-to-end rows):
+
+| commit | date | region | coverage | native E2E | e2e speedup |
+|--------|------|--------|---------:|-----------:|------------:|
+| this commit (bench region mode introduced, baseline) | 2026-10-09 | r.0.0 | 100.00% | 43.1 | 3.30x |
+| this commit (same run series) | 2026-10-09 | r.-1.-1 | 99.61% | 50.6 | 3.06x |
+
 ## History (one row per commit that moves a number)
 
 | commit | date | noise+biomes | surface | carvers | serialization | ported total | Amdahl |

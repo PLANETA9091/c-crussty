@@ -4476,3 +4476,62 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    левер-3 = P2.13 [!] этот тик).
 ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
 (тик 05:04 — Т38-B/T40) — первоисточник = этот LOG; gate-P2 закрыт.
+
+=== 2026-10-09 | аддендум 79: Job 441690 — WORK LIST п.3 P3.2/P3.4 END-TO-END
+    REGION: bench region-режим; coverage 100.00% (r.0.0) / 99.61% (r.-1.-1,
+    ровно 4 I8-чанка — совпадение с CI gate-p2); E2E 43.1 мс/чанк, pregen
+    3.30x; пилот-находка: stale extract даёт 100% unfaithful-маркировку ===
+
+0) CI-ПОДТВЕРЖДЕНИЕ ПРЕДЫДУЩЕГО КОММИТА (ride-along): run 37842664447
+   (ef0c68d, аддендум 77) — SUCCESS 33/33 (учтено в аддендуме 78). Cron-
+   шаблон тика 06:02 опять старый (T38-B/T40) — исполнен НОВЫЙ work list
+   п.3, не рутина.
+1) КОД: chunk-factory/src/bin/bench.rs — режим `region`: I8-prescan
+   (structure_scan::scan_batch — тот же механизм честного исключения, что в
+   gate-p2) -> decide_chunk (ЕДИНСТВЕННАЯ законная точка переключения
+   Java/Rust) -> нативная цепочка (noise -> surface -> carvers ->
+   full_chunk_nbt -> write_gzipped_nbt) -> region.rs write_region +
+   parse_region roundtrip; корпус = ОДИН регион 32x32 = 1024 чанков,
+   NCF_REGION_BASE (0 -> r.0.0.mca, -32 -> r.-1.-1.mca), NCF_REGION_OUT;
+   fallback-чанки НЕ генерируются (deployment-форма: Moonrise NO_DATA ->
+   Java генерирует целиком); обязательная строка coverage через
+   CoverageLedger/CoverageReport (I8: native + fallback == total);
+   NCF_DATA_ROOT по умолчанию = NCF_WG (паттерн stagediff). Гейт-контракты
+   veccheck/stagediff НЕ тронуты (изменён только bench).
+2) ПИЛОТ-НАХОДКА (извлечения worldgen): старый hand-made /tmp/wg-extract
+   (без data/minecraft/structure/*.nbt и с неполными JSON) давал
+   1024/1024 unfaithful-pick "0 pieces" — КРИЧАЩЕЕ перемаркирование в
+   консервативную сторону; после jar-fresh извлечения по протоколу
+   ci_gate_p2.sh (2452 файла: worldgen + tags + structure-шаблоны из
+   мапнутого jar) — 0/1024 в окне 0..32. УРОК: I8-prescan требует
+   jar-fresh extract; признак деградации = "unfaithful-pick, 0 pieces" на
+   каждом чанке + скан за миллисекунды.
+3) ЗАМЕРЫ (1024 чанка, warm, single-core, seed 3053459; NCF_SPEED.md
+   обновлён, раздел "End-to-end region"):
+   - r.0.0.mca (чанки 0..32 x 0..32): fallback 0 -> coverage 100.00%;
+     noise 19.09 / surface 21.18 / carvers 1.13 / serialization 1.01 /
+     gzip 0.07 / write 0.01 (амортиз.) -> E2E 43.06 мс/чанк
+     (23.2 чанков/с/ядро), 6.8x к Java ported 294.8; проекция pregen:
+     hybrid ~113 с vs pure-Java ~372 с -> 3.30x; регион 23,293,952 байт,
+     parse roundtrip 1024/1024.
+   - r.-1.-1.mca (чанки -32..-1 x -32..-1): 4 старта (multi-start, фиды
+     3/6/9/11 pieces) -> fallback[structures] = 4 -> coverage 99.61%
+     (1020/1024); E2E 50.64 мс/чанк (VM-шум: noise 22.85 / surface 24.99 —
+     общий 2-vCPU риг); hybrid ~122 с -> 3.06x; roundtrip 1020/1020.
+   - КРОСС-ВАЛИДАЦИЯ С CI: те же 4 чанка (c_-18_-13 .. c_-15_-13), что
+     ячейка gate-p2 vanilla/3053459 (радиус 24) исключила в run
+     37842664447 ("I8 structure-fallback: 4 chunk pairs excluded") —
+     офлайн-prescan и CI-гейт согласованы ПОЧАНКОВО.
+4) ЧЕСТНОСТЬ ПРОЕКЦИИ: нативный чанк = измеренный Rust E2E + Java-достройка
+   непортированных стадий при 1x (features+light+scheduler+jvm_other =
+   67.1 CPU-ms — та же модель Amdahl, что в ledger); fallback-чанк = полные
+   Java 363.0 CPU-ms (P0.1 warm). Gzip+запись региона ~0.08 мс/чанк —
+   писатель P3.1 не узкое место (23.3 МБ на 1024 чанков).
+5) cargo test: 154/154 GREEN. Коммит = код (bench region-режим) + измеренные
+   числа (NCF_SPEED.md + этот LOG) — не worklog-only.
+6) СЛЕДУЮЩИЙ ТИК: WORK LIST п.4 — P4.1-P4.3 tier-1 фичи (gated, zero-diff,
+   default-off). Хвосты P3.2 (CI-этап mcamatch: серверный регион против
+   Rust-региона тех же чанков) и P3.4 (cdylib+ecj-CI-шаг, прогон на риге)
+   остаются [~] — измерение сделано, ступени доставки закрытся отдельно.
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+(тик 06:02 — Т38-B/T40) — первоисточник = этот LOG; gate-P2 закрыт.
