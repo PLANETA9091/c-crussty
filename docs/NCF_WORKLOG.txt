@@ -3852,3 +3852,40 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
      boot + goldenrefs на (-20..-22, -1..2) — гипотеза та же, что п.2/п.3
      (структурный фид/частота), т.к. шум bit-точен (veccheck tectA/B).
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 17-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | сессия 26-б (аддендум 52: Job 441690 — CI-ВЕРДИКТЫ: a38fd30 (инкремент 8) = vanilla 5/5 ЗЕЛЁНЫЕ + tectonic 5/5 ЗЕЛЁНЫЕ; terralith 1/5 (133700 ✅) — следующий корень; 44427dc (инкремент 7) промежуточно: tectonic 4/5, terralith 1/5, vanilla 2/5 ===
+
+1) CI a38fd30 (run 37724775015, инкремент 8 — quart-snap + frequency/exclusion):
+   gate-p2 МАТРИЦА: vanilla 424242 ✅ 133700 ✅ 3053459 ✅ 8675309 ✅ 90210 ✅
+   (5/5 — оба фикса инкремента 8 подтверждены CI); tectonic ВСЕ 5 ✅
+   (вкл. 424242 — глубокие trial-chambers дивергенции -19..-54 из 44427dc
+   сняты quart-snap'ом: tectonic-шум меняет firstFreeHeight в stub =>
+   биом-check попадает в другой quart, снап выравнивает с java);
+   terralith: 133700 ✅, 424242 ❌ 3053459 ❌ 8675309 ❌ 90210 ❌.
+   ИТОГ 11/15 (было 6/15 в 44427dc, 0/15 двумя тиками ранее).
+
+2) TERRALITH 424242 (Job-лог a38fd30): pairs=2376 equal=2326 diverged=50,
+   feed 199/2401 adapting starts. СИГНАТУРА НЕОДНОРОДНАЯ (не один корень):
+   a) кластер c_-10..-12 x 22..24, y 3..10, java=air/water rust=stone
+      (36 из 50 — rust OVER-fill, близко к поверхности);
+   b) c_-24_10 y 45 java=stone rust=water (обратный знак);
+   c) c_-6..-7 x -10 y -10..-16 java=stone rust=air (rust UNDER-fill).
+   ЛОКАЛЬНАЯ terralith-проверка 44427dc была 169-чанковым окном
+   (equal=144/169, все 25 = spawn-артефакт) — эти кластеры за его
+   пределами; следующий тик: локальный terralith boot 424242 + goldendump
+   кластеров + beard_audit-атрибуция (pack-структуры теперь собираются
+   после tags-фикса — подозреваемые: pack-pick/biome near-tie на pack-таблице,
+   unsupported alias/pool в pack-пулах, VANILLA-структуры в pack-мирах).
+
+3) ЧИСТЫЕ ЗАДАЧИ ЗАКРЫТЫ (оба корня инкремента 8 имеют CI-подтверждение):
+   [x] vanilla 3053459 trail_ruins (quart-snap) — CI ✅
+   [x] vanilla 90210 pillager_outpost (frequency/exclusion) — CI ✅
+   [x] vanilla 8675309 — CI ✅ (та же механика)
+   [x] tectonic 5/5 — CI ✅
+   ОТКРЫТО: terralith 4 ячейки (мульти-корень, п.2) — единственный
+   оставшийся элемент gate-p2.
+
+4) ПРИМЕЧАНИЕ О ГЕЙТЕ: цель "vanilla и packs equal=2376" достигнута для
+   vanilla+tectonic ЧЕСТНО (CI); veccheck/stagediff-контракты не тронуты;
+   T35 не переоткрывался.
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 18-й тик; первоисточник = этот LOG.
