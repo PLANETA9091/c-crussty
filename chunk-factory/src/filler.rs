@@ -346,6 +346,7 @@ pub fn generate_noise_chunk_with_beardifier(
     let mut aquifer = NoiseBasedAquifer::new(
         &rs.bank,
         &rs.router,
+        &rs.prelim_surface_cache,
         aquifer_factory,
         min_y,
         height,

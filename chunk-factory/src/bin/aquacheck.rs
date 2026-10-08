@@ -155,6 +155,7 @@ fn run(csv_path: &str, meta_path: &str, wg: &str, seed: i64) -> Result<i32, Stri
     let mut aquifer = NoiseBasedAquifer::new(
         &rs.bank,
         &rs.router,
+        &rs.prelim_surface_cache,
         aquifer_factory,
         rs.settings.min_y,
         rs.settings.height,

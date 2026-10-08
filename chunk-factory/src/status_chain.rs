@@ -271,6 +271,7 @@ pub fn apply_carvers_pass(
     let aquifer = crate::aquifer::NoiseBasedAquifer::new(
         &rs.bank,
         &rs.router,
+        &rs.prelim_surface_cache,
         aquifer_factory,
         rs.settings.min_y,
         rs.settings.height,

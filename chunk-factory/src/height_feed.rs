@@ -103,6 +103,7 @@ impl<'a> ColumnHeightSource<'a> {
         let mut aquifer = NoiseBasedAquifer::new_for_column(
             &self.rs.bank,
             &self.rs.router,
+            &self.rs.prelim_surface_cache,
             self.aquifer_factory,
             min_y,
             height,

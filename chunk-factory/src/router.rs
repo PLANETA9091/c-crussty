@@ -744,6 +744,11 @@ pub struct RandomState {
     /// the search memo is caller-owned (see RTree::search) so sharing cannot
     /// leak search state between owners.
     pub biome_list: std::sync::OnceLock<std::sync::Arc<crate::climate::ParameterList>>,
+    /// Job 441690 P2.16 SPEED LEVER: the cross-machine
+    /// preliminarySurfaceLevel memo (pure per absolute quart (x,z); keyed
+    /// implicitly by (seed, spec) like tile_cache per I5). Shared by the
+    /// filler, carvers and 1-cell column aquifers.
+    pub prelim_surface_cache: crate::aquifer::PrelimSurfaceCache,
 }
 
 impl RandomState {
@@ -970,6 +975,7 @@ impl RandomState {
             sim_template,
             biome_points: None,
             biome_list: std::sync::OnceLock::new(),
+            prelim_surface_cache: std::sync::Mutex::new(std::collections::HashMap::new()),
         })
     }
 

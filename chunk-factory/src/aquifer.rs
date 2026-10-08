@@ -218,9 +218,19 @@ pub struct NoiseBasedAquifer<'a> {
     min_grid_z: i32,
     grid_size_x: i32,
     grid_size_z: i32,
-    /// NoiseChunk.preliminarySurfaceLevelCache (Long2IntOpenHashMap).
-    prelim_cache: HashMap<(i32, i32), i32>,
+    /// NoiseChunk.preliminarySurfaceLevelCache — SHARED per RandomState
+    /// (Job 441690 P2.16 SPEED LEVER): the field is a pure function of the
+    /// absolute quart-snapped (x,z), so every aquifer machine (full-chunk,
+    /// 1-cell column, filler, carvers) deduplicates identical samples across
+    /// chunks through one map. Keyed implicitly by (seed, world spec): the
+    /// map lives on the RandomState (same reasoning as tile_cache, I5).
+    prelim_shared: &'a PrelimSurfaceCache,
 }
+
+/// The cross-machine preliminarySurfaceLevel memo (see NoiseBasedAquifer
+/// prelim_shared). Values are spec+seed-deterministic; the RandomState owns
+/// the map so different worlds/specs never mix.
+pub type PrelimSurfaceCache = std::sync::Mutex<HashMap<(i32, i32), i32>>;
 
 impl<'a> NoiseBasedAquifer<'a> {
     /// Aquifer.create -> new NoiseBasedAquifer(...). `min_block_x/z` are the
@@ -231,6 +241,7 @@ impl<'a> NoiseBasedAquifer<'a> {
     pub fn new(
         bank: &'a crate::density::NoiseBank,
         router: &'a crate::router::Router,
+        prelim_shared: &'a PrelimSurfaceCache,
         aquifer_factory: XoroshiroPositionalRandomFactory,
         min_y: i32,
         height: i32,
@@ -246,6 +257,7 @@ impl<'a> NoiseBasedAquifer<'a> {
         Self::new_impl(
             bank,
             router,
+            prelim_shared,
             aquifer_factory,
             min_y,
             height,
@@ -281,6 +293,7 @@ impl<'a> NoiseBasedAquifer<'a> {
     pub fn new_for_column(
         bank: &'a crate::density::NoiseBank,
         router: &'a crate::router::Router,
+        prelim_shared: &'a PrelimSurfaceCache,
         aquifer_factory: XoroshiroPositionalRandomFactory,
         min_y: i32,
         height: i32,
@@ -293,6 +306,7 @@ impl<'a> NoiseBasedAquifer<'a> {
         Self::new_impl(
             bank,
             router,
+            prelim_shared,
             aquifer_factory,
             min_y,
             height,
@@ -311,6 +325,7 @@ impl<'a> NoiseBasedAquifer<'a> {
     fn new_impl(
         bank: &'a crate::density::NoiseBank,
         router: &'a crate::router::Router,
+        prelim_shared: &'a PrelimSurfaceCache,
         aquifer_factory: XoroshiroPositionalRandomFactory,
         min_y: i32,
         height: i32,
@@ -341,6 +356,8 @@ impl<'a> NoiseBasedAquifer<'a> {
         let bind = |df: &Df| {
             crate::density::with_flat_cache_windows(df, fx, fz, flat_size_xz)
         };
+        #[cfg(ncf_profile)]
+        let prof_t0 = std::time::Instant::now();
         let mut aquifer = NoiseBasedAquifer {
             bank,
             barrier_noise: bind(&router.barrier),
@@ -363,8 +380,10 @@ impl<'a> NoiseBasedAquifer<'a> {
             min_grid_z,
             grid_size_x,
             grid_size_z,
-            prelim_cache: HashMap::new(),
+            prelim_shared,
         };
+        #[cfg(ncf_profile)]
+        let prof_bind = std::time::Instant::now();
         let i5 = {
             let max_prelim = aquifer.max_preliminary_surface_level(
                 from_grid_x(min_grid_x, 0),
@@ -376,6 +395,22 @@ impl<'a> NoiseBasedAquifer<'a> {
         };
         let i6 = grid_y(i5 + 12) + 1; // `gridY(i5 + 12) - -1`
         aquifer.skip_sampling_above_y = from_grid_y(i6, 11) - 1;
+        #[cfg(ncf_profile)]
+        if std::env::var("NCF_AQUIFER_TIME").is_ok() {
+            static SEEN: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+            let n = SEEN.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            if n < 4 {
+                eprintln!(
+                    "[aquifer-prof] ctor {n}: bind+alloc {}us | max_prelim_scan {}us | grid {}x{}x{} (len {})",
+                    (prof_bind - prof_t0).as_micros(),
+                    prof_bind.elapsed().as_micros(),
+                    grid_size_x,
+                    grid_size_y,
+                    grid_size_z,
+                    cache_len
+                );
+            }
+        }
         aquifer
     }
 
@@ -405,20 +440,23 @@ impl<'a> NoiseBasedAquifer<'a> {
         i
     }
 
-    /// NoiseChunk.preliminarySurfaceLevel — quantize to quarts, cache, compute
-    /// the (unbound == bound) prelim field at y=0 and Mth.floor it.
+    /// NoiseChunk.preliminarySurfaceLevel — quantize to quarts, memoise in
+    /// the SHARED per-RandomState cache, compute the (unbound == bound)
+    /// prelim field at y=0 and Mth.floor it. Pure per (x,z) — sharing is
+    /// invisible to results (P2.16).
     pub fn preliminary_surface_level(&mut self, x: i32, z: i32) -> i32 {
         // QuartPos.toBlock(QuartPos.fromBlock(x)) = x & !3 (round down to 4).
         let x = x & !3;
         let z = z & !3;
-        if let Some(&v) = self.prelim_cache.get(&(x, z)) {
+        let mut shared = self.prelim_shared.lock().unwrap();
+        if let Some(&v) = shared.get(&(x, z)) {
             return v;
         }
         let raw = self
             .preliminary_surface_level
             .compute(self.bank, x, 0, z);
         let v = mth::floor(raw);
-        self.prelim_cache.insert((x, z), v);
+        shared.insert((x, z), v);
         v
     }
 

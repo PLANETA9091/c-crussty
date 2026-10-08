@@ -4383,3 +4383,47 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    таргетирует долю ~1.1 мс).
 6) СЛЕДУЮЩИЙ ТИК: WORK LIST п.2 (продолжение) — следующий SPEED LEVER
    из P2.16/P2.13 с before/after по этому ledger.
+
+=== 2026-10-09 | аддендум 77: Job 441690 — CI-подтверждение 937fbab + WORK
+    LIST п.2 (продолжение) SPEED LEVER P2.16: шАРАЕМАЯ prelim-surface
+    мемо (RandomState); ledger 51.1 -> 42.3 мс/чанк, Amdahl 3.07x ->
+    3.32x (+8.1%); carvers ПЕРЕСЕКЛИ паритет с Java (0.3x -> 1.3x) ===
+
+0) CI-ПОДТВЕРЖДЕНИЕ ПРЕДЫДУЩЕГО КОММИТА (ride-along, не отдельный пуш):
+   run 37837584263 (937fbab, аддендум 76) completed SUCCESS — 33/33 jobs
+   (ncf-vectors зелёный, ncf-staged noise/surface/carvers zero-diff,
+   gate-p2 матрица 12/12). Пункт 2 (первый рычаг) ЗАКРЫТ полностью.
+1) ПРОФИЛИРОВАНИЕ (ncf_profile-пробник NCF_AQUIFER_TIME в new_impl):
+   NoiseBasedAquifer::new = 2.8-4.4 мс, из них bind+alloc 0.15-0.44,
+   maxPreliminarySurfaceLevel scan 2.6-4.0 мс (сетка всего 3x35x3=315).
+   Скан сэмплит preliminarySurfaceLevel(x,z) — ЧИСТАЯ функция
+   кварти-снапнутых абсолютных координат; (а) соседи перекрываются по
+   границам, (б) filler И carvers строят аквифер ОДНОГО и того же чанка —
+   один и тот же скан делается дважды, (в) computeSubstance тоже ходит в
+   preliminarySurfaceLevel на каждый запрос.
+2) КОД (P2.16, дизайн-заметка "аквифер-грид кросс-чанк"): тип
+   PrelimSurfaceCache = Mutex<HashMap<(i32,i32),i32>>; поле
+   RandomState.prelim_surface_cache (кеying неявно (seed, spec) — тот же
+   аргумент, что tile_cache/I5); NoiseBasedAquifer хранит &PrelimSurfaceCache
+   вместо локальной HashMap (prelim_cache удалён); new/new_for_column/
+   new_impl приняли параметр; калаши filler.rs/status_chain.rs/
+   height_feed.rs (1-cell колонные машины!)/aquacheck.rs переведены.
+   Локи наносекундные, contention в однопоточном конвейере нет.
+3) ЗАМЕРЫ (ledger, 169 чанков, seed 3053459, warm, два прогона, <2%):
+   noise+biomes 23.58 -> 19.03 (14.4x — computeSubstance-запросы тоже
+   дедуплицируются), surface 21.06 -> 21.04 (без изменений — санити),
+   carvers 5.43 -> 1.22 (1.3x к Java warm 1.6 — ВЫШЕ паритета),
+   serialization 1.00. PORTED TOTAL 51.07 -> 42.28 мс/чанк (23.6
+   чанков/с/ядро). AMDAHL 3.07x -> 3.32x. ВЫИГРЫШ -17.3% ported total /
+   +8.1% pregen >> порога 5% — реверта нет. Пробник: скан ctor'ов на
+   уже пройденных чанках = 10-11 мкс (полное попадание в мемо).
+4) БИТ-ИДЕНТИЧНОСТЬ (локально): cargo test 154/154; stagediff
+   --gen-batch ДО (937fbab) vs ПОСЛЕ — BYTE-IDENTICAL по noise/surface/
+   carvers (256 чанков каждый, diff -rq); NCF_TILE_CACHE=0/1 на дереве
+   lever'а — BYTE-IDENTICAL. Гейт-контракты не тронуты.
+5) ДОКУМЕНТ: docs/NCF_SPEED.md — таблица (carvers 1.2, 1.3x), строка
+   истории (parent 937fbab), приоритеты: noise 19.0 (P2.13 SIMD ~+0.9x),
+   surface 21.0/0.8x (главный отрицательный рычаг, ~+0.13x до 1x),
+   carvers-остаток 1.2 мс (путь P2.15 сжался до ~0.5).
+6) СЛЕДУЮЩИЙ ТИК: WORK LIST п.2 (продолжение) — следующий SPEED LEVER
+   (P2.13 SIMD по плотностному ядру — самый крупный оставшийся приз).
