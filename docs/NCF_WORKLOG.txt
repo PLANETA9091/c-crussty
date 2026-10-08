@@ -238,7 +238,7 @@ JNI-ядра в расчёте на x100, включение чего-либо �
           колонкам (ключ = (spec,seed,структура-хэш узла,x,z), I5 соблюдён);
           консервативный is-y-free анализ WNode (любое сомнение => y-зависим);
           A/B NCF_TILE_CACHE=0/1 + до/после рефактора — БАЙТ-ИДЕНТИЧНО)
-[ ] P2.13 SIMD по независимым колонкам (AVX2, AVX-512, NEON), без FMA
+[!] P2.13 SIMD по независимым колонкам (AVX2, AVX-512, NEON), без FMA — ПОПЫТКА 2026-10-09 ОТМЕНЕНА (аддендум 78): AVX2 4-lane perlin + compute4 дали РЕГРЕССИЮ noise 19.4-20.6 -> 24.9-25.1 мс/чанк (-20..-28%), бит-идентичность NCF_SIMD 0/1 доказана (256 чанков x noise/surface/carvers BYTE-IDENTICAL, тесты 154/154); revert по правилу <5%, код НЕ коммитился; диагноз: KVM-VM Xeon 2 vCPU — vpgather микрокодовые; retry только после профиля perlin-vs-walk (патч: scripts/p2_13_simd_gather_attempt.diff)
 [x] P2.14 Интервальная отсечка (сессия 7: optimize.rs — build-time переписывания
           по ТОМ ЖЕ bounds, что строит сам Java (TwoArgumentSimpleFunction.create):
           RangeChoice с доказанной ветвью => ветвь, Clamp с bounds внутри окна =>
@@ -4427,3 +4427,52 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    carvers-остаток 1.2 мс (путь P2.15 сжался до ~0.5).
 6) СЛЕДУЮЩИЙ ТИК: WORK LIST п.2 (продолжение) — следующий SPEED LEVER
    (P2.13 SIMD по плотностному ядру — самый крупный оставшийся приз).
+
+=== 2026-10-09 | аддендум 78: Job 441690 — WORK LIST п.2 SPEED LEVER P2.13
+    (SIMD): ПОПЫТКА 1 ОТМЕНЕНА [!]: AVX2 4-lane perlin + compute4 дали
+    РЕГРЕССИЮ noise 19.4-20.6 -> 24.9-25.1 мс/чанк; revert по правилу <5%;
+    бит-идентичность ДОКАЗАНА (NCF_SIMD 0/1, 256 чанков x 3 статуса) ===
+
+0) CI-ПОДТВЕРЖДЕНИЕ ПРЕДЫДУЩЕГО КОММИТА (ride-along): run 37842664447
+   (ef0c68d, аддендум 77) completed SUCCESS — 33/33 jobs. P2.16 закрыт
+   полностью (код+гейты+ledger-строка).
+1) ЧТО СДЕЛАНО (working tree, НЕ закоммичено): (а) noise_simd.rs — AVX2
+   4-lane f64 реплики perlin-ядра op-for-op: perm32-таблица (i32-вид p[],
+   тест simd_perm32_matches_p), gathers по perm/GRADIENT-f64, lerp/lerp2/
+   lerp3/smoothstep/wrap 4-lane, NormalNoise::get_value_4 (октавный цикл
+   скалярный, константы uniform); (б) interpolator.rs — compute4: 4-lane
+   обход ТОЛЬКО структурно чистых поддеревьев (simd_pure-флаг в SimTemplate:
+   W-обёртки/Cache2D/CacheOnce/Blended/Beardifier/EndIslands/FindTopSurface
+   => impure — попытка не может касаться состояния => отброшенная попытка
+   не оставляет следа); spline-координаты батчатся с per-group memo (tag без
+   очистки); интеграция: provider_fill_all_directly (Slice: 4 y-индекса,
+   Cell: 4 z-индекса, cell_width=4 => выровнено) + fill_array per-index
+   циклы RangeChoice/Ap2-Mul/Min/Max; touch_index_state — счётчики/
+   array_index воспроизводятся per-lane после успешного батча; kill-switch
+   NCF_SIMD=0.
+2) БИТ-ИДЕНТИЧНОСТЬ (локально): stagediff --gen-batch 3053459 256 чанков
+   16x16 @ 107,107, NCF_SIMD=1 vs NCF_SIMD=0 — BYTE-IDENTICAL по noise,
+   surface, carvers (diff -rq, 768 файлов); cargo test 154/154.
+3) ЗАМЕРЫ (ledger, 169 чанков 13x13, seed 3053459, warm, по 2 прогона):
+   SIMD ON: noise+biomes 24.90/25.09, surface 21.13, carvers 1.22-1.36,
+   PORTED TOTAL 48.25-48.89, Amdahl 3.13-3.15x. SIMD OFF (тот же коммит):
+   noise 19.40/20.64, Amdahl 3.21-3.29x (база ef0c68d: 19.03/3.32x).
+   РЕГРЕССИЯ -20..-28% по noise-стадии — ПОРОГ 5% НЕ ДОСТИГНУТ =>
+   REVERT по правилу владельца; статус P2.13 => [!].
+4) ДИАГНОЗ (для будущей попытки): риг = KVM VM (2 vCPU, Xeon) —
+   vpgatherdd/vpgatherdq микрокодовые и медленные; perlin-ядро шлёт ~30
+   gathers на 4-lane батч (6+8 perm + 24 gradient) — throughput gather'ов
+   съедает 4x-амортизацию walk'а. Гипотезы retry: (а) убрать 24
+   gradient-gathers (скалярные L1-загрузки по 4 индексам), (б) SoA-transpose
+   по y-слоям вместо горизонтального батча, (в) СНАЧАЛА ncf_profile-пробник
+   доли perlin-vs-walk в noise-стадии. Патч попытки сохранён ВНЕ репо:
+   scripts/p2_13_simd_gather_attempt.diff (921 строка).
+5) ЧЕСТНЫЙ СЧЁТ: код откачен ДО коммита (git checkout --); история коммитов
+   чиста (HEAD = ef0c68d); строка в NCF_SPEED.md помечена "REVERTED, no
+   commit". Числа в п.3 — реальные замеры этого тика.
+6) СЛЕДУЮЩИЙ ТИК: WORK LIST п.3 — P3.2/P3.4 (end-to-end region, coverage %
+   и ms/chunk против vanilla Paper), т.к. все три рычага п.2 разобраны
+   (левер-1 = биом-таблица+carver-refs 937fbab, левер-2 = P2.16 ef0c68d,
+   левер-3 = P2.13 [!] этот тик).
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+(тик 05:04 — Т38-B/T40) — первоисточник = этот LOG; gate-P2 закрыт.

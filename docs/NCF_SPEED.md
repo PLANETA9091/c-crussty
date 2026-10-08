@@ -68,6 +68,15 @@ and surface (21.0 ms, 0.8x — now the biggest NEGATIVE lever; to 1x adds
 path-cache share shrank to ~0.5 ms of the 1.2 ms stage. P2.13 SIMD on the
 density drive (~5x on noise) remains ~+0.9x.
 
+P2.13 attempt 1 (2026-10-09, REVERTED as a negative lever, see history row):
+AVX2 4-lane perlin (gather-based) + 4-index pure-subtree walk (`compute4`)
+was bit-identical (NCF_SIMD 0/1 byte-identical on 256 chunks x noise/surface/
+carvers; 154/154 tests) but SLOWER: noise 24.9-25.1 vs 19.4-20.6 ms/chunk on
+the same tree (-20..-28%). Working hypothesis: vpgatherdd/vpgatherdq are
+microcoded and slow on this KVM-virtualized Xeon (2 vCPU); the perlin core
+issues ~30 gathers per 4-lane batch. Any retry must first profile the
+perlin-vs-walk split and try scalar-gradient / SoA-transpose variants.
+
 Carvers-stage budget after P2.16 (probes): ~0.4 aquifer ctor (bind+alloc,
 scan now memo-hits) + ~0.3 biome refs + ~0.3 RNG sim + ~0.2 carve writes.
 
@@ -96,3 +105,4 @@ chunks, 2 vCPU, -Xmx1536m; warm = 2nd burst of the same JVM:
 | 98197f6 (ledger introduced, baseline) | 2026-10-09 | 38.8 | 36.2 | 24.3 | 1.0 | 100.4 | 2.17x |
 | 937fbab (shared biome tree + carver refs cache) | 2026-10-09 | 23.6 | 21.1 | 5.4 | 1.0 | 51.1 | 3.07x |
 | this commit (P2.16: RandomState-level prelim-surface memo; parent 937fbab) | 2026-10-09 | 19.0 | 21.0 | 1.2 | 1.0 | 42.3 | 3.32x |
+| P2.13 attempt 1 — REVERTED, no commit [!] (AVX2 4-lane perlin + compute4 on tree ef0c68d; SIMD ON numbers; SIMD OFF control on the same tree: 19.4-20.6 / 3.21-3.29x) | 2026-10-09 | 24.9-25.1 | 21.1 | 1.2 | 1.0 | 48.3-48.9 | 3.13-3.15x |
