@@ -3967,3 +3967,47 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
      локальный boot + кластер-дампы по его сигнатуре (метод п.1);
   c) закрыть gate-p2 финально (все 15 ячеек зелёные) и обновить 板面.
 ПРИМЕЧАНИЕ: cron-шаблон отстаёт 19-й тик; первоисточник = этот LOG.
+
+=== 2026-10-08 | аддендум 54: Job 441690 — CI-ВЕРДИКТ 31BED55 (ИНКРЕМЕНТ 9):
+    GATE-P2 ЗАКРЫТ ФИНАЛЬНО — 15/15 ЯЧЕЕК ЗЕЛЁНЫЕ (vanilla 5/5, terralith 5/5,
+    tectonic 5/5); run 37736403459 completed success, 33/33 jobs, 0 failures ===
+
+1) ВЕРДИКТ (run 37736403459, head 31bed55, 06:13:07Z -> 06:43:53Z ~31 мин):
+   conclusion=success; ВСЕ job'ы зелёные — ncf-staged (surface/noise/carvers),
+   ncf-vectors, ncf-density (все 8 матриц), golden-harness, fuzz-crate,
+   chunk-factory, native, ncf-mca: НЕТ регрессий от фиксов инкремента 9
+   (template .nbt-direct read + tags-merge экстрактора).
+2) GATE-P2 ЯЧЕЙКИ — ВСЕ PASS (честные числа из job-логов):
+   - terralith 424242: pairs=2375 equal=2375 diverged=0 (2401 dumped,
+     25 spawn-excluded, 1 I8-fallback) — job 113176816482;
+   - terralith 3053459: 2332 compared, diverged=0 (44 I8-fallback) —
+     job 113176816451;
+   - terralith 90210: 2363 compared, diverged=0 (13 I8-fallback) —
+     job 113176816403;
+   - terralith 8675309: PASS — был красным в a38fd30, позеленел от
+     pack-слойных фиксов (п.2/п.3 аддендума 53) без локального
+     воспроизведения — подтверждение, что корни были упаковочными;
+   - terralith 133700: PASS (был зелёным и раньше);
+   - vanilla 424242/3053459/8675309/90210/133700: 5/5 PASS;
+   - tectonic 424242/3053459/8675309/90210/133700: 5/5 PASS.
+3) ИТОГ GATE-P2: цель "vanilla и packs equal=2376" достигнута ЧЕСТНО по
+   всем 15 ячейкам. Правила соблюдены на всём пути: T35 не переоткрывался;
+   veccheck/stagediff контракты не тронуты (veccheck resid1 843207/0,
+   tectA_8675309 941511/0, tectB_424242 941511/0 в 31bed55); no GPU; no JVM
+   flags; закрытия только по same-commit LOG (T38-B/T40 -> a38fd30;
+   vanilla-остатки -> a38fd30; terralith -> 31bed55 + этот вердикт).
+4) СТАТУС ФРОНТОВ: T35 [x], T38-B [x] (a38fd30), T40 [x] (a38fd30),
+   T39 [x], vanilla-остатки [x] (a38fd30), terralith 4 ячейки [x] (31bed55,
+   вердикт 37736403459) — OPEN gate-P2 ЭЛЕМЕНТОВ НЕТ. Cron-шаблон (T38-B/
+   T40/captureDensity) отстаёт 20-й тик — первоисточник = этот LOG.
+5) ПРИМЕЧАНИЕ О I8-FALLBACK: 1-44 чанка/seed в gate-протоколе уходят в
+   I8-fallback (не bit-сравнение) — это задокументированное поведение
+   протокола сравнения, НЕ divergence (diverged=0 во всех ячейках).
+СЛЕДУЮЩИЕ ШАГИ: новых открытых пунктов gate-P2 нет; ожидаю следующую
+  директиву владельца (кандидаты: закрытие 板面-записей, новый фронт).
+АМДАЛЬ (директива 2): read-only вердикт-тик — 0 мс рантайма, 0 изменений
+  кода;cargo-переустановка (sandbox-рецикл) ~2 мин вне критического пути.
+КОРПУС (директива 3): CI-протокол 2401 dumped/seed, 25 spawn-excluded —
+  единообразно для всех 15 ячеек; полное сравнение 424242 в обоих мирах
+  сделано локально в 31bed55 (vanilla+terralith, diverged=25=spawn).
+ПРИМЕЧАНИЕ: cron-шаблон отстаёт 20-й тик; первоисточник = этот LOG.
