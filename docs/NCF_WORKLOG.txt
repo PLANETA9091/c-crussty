@@ -6088,3 +6088,104 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 93, собственный run): run 37910797481
 (d75cd21) completed SUCCESS. Правило «код-commit ждёт свой run»
 выполнено — тик ЗАВЕРШЁН.
+
+
+=== 2026-10-09 | аддендум 94: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 15):
+    block_column (FeatureDef::BlockColumn + StateProvider::RandomizedInt);
+    configured 138 -> 140, placed 137 -> 145 (+8: cave_vines + cactus/
+    sugar_cane цепи), биомы 4 -> 4 (честный ноль — 44 биома
+    мульти-блокированы); 194/194 ===
+
+0) САНДБОКС: fetch+reset -> HEAD 3ecaab0 (аддендум 93, подтверждён).
+   cargo жив (2-й тик без рекализации); корпус и decomp_p4 целы
+   (224/258/65). База-ценз = аддендум 93, воспроизведён ДО правок
+   бит-в-бит (138/224, 137/258, 4/65, pf 0, head weighted_state_provider
+   39/65, probe population=351934174475927443 first_draw=12).
+
+1) ОРАКУЛ (decomp_p4, 1.21.10):
+   (а) BlockColumnConfiguration.CODEC — порядок полей layers -> direction
+       -> allowed_placement -> prioritize_tip, ВСЕ fieldOf REQUIRED; слой
+       = height (IntProvider.NON_NEGATIVE_CODEC = codec(0, i32::MAX))
+       fieldOf + provider (BlockStateProvider.CODEC — ПОЛНОЕ семейство)
+       fieldOf;
+   (б) BlockColumnFeature.place (хвост исполнения задокументирован на
+       варианте, реализация — на этапе stagediff features-status):
+       высоты сэмплируются В ПОРЯДКЕ СЛОЁВ (по одному height.sample на
+       слой), total==0 -> false БЕЗ размещения; allowed_placement идёт по
+       direction от origin+1 до total, ПЕРВЫЙ отказ обрезает массив
+       высот (prioritize_tip ? с сохранением кончика : с сохранением
+       основания — truncate()) и ломает цикл; затем по слоям по блоку:
+       setBlock(provider.getState(random, pos)) с шагом по direction;
+   (в) RandomizedIntStateProvider.CODEC — property STRING -> source
+       BlockStateProvider -> values IntProvider (все fieldOf REQUIRED);
+       хвост: getState = source.getState(...), затем trySetValue ТОЛЬКО
+       если свойство есть (сэмпл values — на hasProperty-ветке);
+   (г) обход корпуса: block_column живёт в 5 файлах — как type:
+       cave_vine, cave_vine_in_moss (оба direction=down, prioritize_tip=
+       true, WeightedList-высоты, randomized_int_state_provider во 2-м
+       слое); как инлайн-тела: patch_cactus, patch_sugar_cane
+       (random_patch inner) и 4 элемента dripleaf (simple_random_
+       selector, allowed_placement matching_blocks со СПИСКОМ блоков
+       air+water — parse_predicate уже держит обе формы).
+
+2) КОД (этот коммит): features.rs — FeatureDef::BlockColumn {layers:
+   Vec<(IntProvider, StateProvider)>, direction, allowed_placement,
+   prioritize_tip} + парсер в порядке кодека (первый сбойный владелец
+   честной Err-метки; direction = белый список 6 канонических имён;
+   height = зеркало NON_NEGATIVE через int_provider_in_range 0..=i32::MAX);
+   StateProvider::RandomizedInt {property, source, values} + рука в
+   parse_state_provider; parse_simple_state_provider: честный Err
+   "randomized_int_state_provider in simple context" (компактный
+   simple_block-контекст его не держит); вердикт = лист (_ => true) —
+   честность несёт парс (noise-семейства провайдеров остаются честными
+   Err через parse_state_provider).
+
+3) ТЕСТЫ 192 -> 194:
+   - block_column_verbatim_patch_cactus (вербатим двух слоёв: biased_to_
+     bottom 1..3 cactus[age=0] + WeightedList [0w3,1w1] cactus_flower;
+     allowed matching_blocks air; + 6 честных Err в порядке кодека:
+     prioritize_tip отсутствует, direction отсутствует, "sideways",
+     allowed_placement отсутствует, height -1 (зеркало NON_NEGATIVE),
+     noise_provider в слое);
+   - block_column_verbatim_cave_vine_randomized_int (вербатим cave_vine:
+     WeightedList высоты [(2,uniform 0..19),(3,uniform 0..2),(10,uniform
+     0..6)], weighted провайдер cave_vines_plant, RandomizedInt age/
+     uniform 23..25; строгий инлайн-вердикт на пустом реестре = честный
+     TRUE без метки).
+
+4) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, корпус тот же, diff списков бит-в-бит; база
+   = аддендум 93):
+   configured: 138/224 -> 140/224 (+2: cave_vine, cave_vine_in_moss;
+       строка "unsupported type block_column 0/2" ИСЧЕЗЛА);
+   placed: 137/258 -> 145/258 (+8: cave_vines; patch_cactus,
+       patch_cactus_decorated, patch_cactus_desert; patch_sugar_cane,
+       patch_sugar_cane_badlands, patch_sugar_cane_desert,
+       patch_sugar_cane_swamp);
+   parse-провалы placed: 0 -> 0 (stderr пуст);
+   биомы fully-supported: 4/65 -> 4/65 (ЧЕСТНЫЙ НОЛЬ: строка гистограммы
+       "block_column blocks 44/65" ИСЧЕЗЛА, но ни один биом не
+       перевернулся — все 44 мульти-блокированы следующими блокерами;
+       множество 4 биомов бит-в-бит то же, порядок в списке — шум
+       итерации фактов);
+   ГИСТОГРАММА: block_column 44/65 ИСЧЕЗЛА; новый head = weighted_state_
+       provider in simple context 39/65; fancy_trunk_placer 7,
+       glowstone_blob 5, vines 4 — бит-в-бит прежние; decor-seed probe
+       идентичен базе.
+
+5) ЧЕСТНОСТЬ: cave_vine_in_moss НЕ имеет placed-обёртки (нессылаемый
+   configured — считается только в configured-цензе, отмечено);
+   прирост +8 placed = ровно cave_vines + cactus/sugar_cane цепи
+   (предсказание аддендума 93 «7 placed» не учло cave_vines — измеренная
+   правда 8); биомный де-каунт аддендума 93 НЕ откатывается — он был
+   честен: цепи держались ещё и на weighted-провайдерах; гейт-контракты
+   veccheck/stagediff НЕ тронуты; ценз не раздут (+2/+8 — измеренные
+   флипы, биомы без изменений).
+
+6) СЛЕДУЮЩИЙ ТИК: по гистограмме head = weighted_state_provider как
+   to_place в компактном simple_block (39 биомов; вернёт grass/flower/
+   wildflowers цепи), затем fancy_trunk_placer (7), glowstone_blob (5) /
+   vines (4); затем stagediff features-status на спец-корпусе (3x3-replay
+   spiral GoldenDumper).
+
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+  (тик 17:32 — Т38-B/T40; 19-й stale-тик) — первоисточник = этот LOG.

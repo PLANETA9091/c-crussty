@@ -1256,6 +1256,32 @@ pub enum FeatureDef {
     SimpleRandomSelector {
         features: Vec<Box<PlacedFeatureDef>>,
     },
+    /// BlockColumnConfiguration ("block_column", inc. 15): CODEC field
+    /// order layers -> direction -> allowed_placement -> prioritize_tip,
+    /// ALL fieldOf REQUIRED; layer codec order height -> provider, height =
+    /// IntProvider.NON_NEGATIVE_CODEC (codec(0, i32::MAX) — the range
+    /// mirror owns the honest Err), provider = BlockStateProvider.CODEC
+    /// (FULL family path: simple/weighted/rule_based/randomized_int; the
+    /// noise families stay honest Err via parse_state_provider); direction
+    /// = Direction.CODEC (the 6 canonical names, honest Err otherwise);
+    /// allowed_placement = BlockPredicate.CODEC; prioritize_tip =
+    /// Codec.BOOL (missing key = honest codec error). Execution tail
+    /// (documented like Disk/Spring, implemented at the stagediff
+    /// features-status step): heights sampled IN LAYER ORDER (one
+    /// height.sample per layer — WeightedList entries ride the
+    /// inc. 10 semantics), total==0 -> false with NO placement; then
+    /// allowed_placement walks the direction from origin+1 up to total,
+    /// the FIRST failure truncates the height array (prioritize_tip ?
+    /// tip layers kept first : base layers kept first — truncate()) and
+    /// breaks; then per layer in order, per block:
+    /// setBlock(provider.getState(random, pos)) moving along the
+    /// direction; returns true.
+    BlockColumn {
+        layers: Vec<(IntProvider, StateProvider)>,
+        direction: String,
+        allowed_placement: BlockPredicate,
+        prioritize_tip: bool,
+    },
     /// DiskConfiguration: "target" is a SINGLE block predicate and the
     /// state comes from "state_provider" (inc. 6: FULL RuleBased
     /// BlockStateProvider — first matching rule wins, else the fallback;
@@ -1732,6 +1758,48 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
             }
             FeatureDef::SimpleRandomSelector { features }
         }
+        "block_column" => {
+            let cfg = j.get("config").ok_or("block_column.config")?;
+            // codec field order: layers -> direction -> allowed_placement
+            // -> prioritize_tip (the first failing field owns the honest
+            // Err label).
+            let layers_j = cfg
+                .get("layers")
+                .and_then(|l| l.as_arr())
+                .ok_or("block_column.layers")?;
+            let mut layers = Vec::new();
+            for l in layers_j {
+                // Layer codec order: height -> provider.
+                let height = int_provider_in_range(l, "height", 0, i32::MAX)?;
+                let provider = parse_state_provider(l.get("provider").ok_or("layer.provider")?)?;
+                layers.push((height, provider));
+            }
+            let dir = cfg
+                .get("direction")
+                .and_then(|d| d.as_str())
+                .ok_or("block_column.direction")?;
+            let direction = dir.strip_prefix("minecraft:").unwrap_or(dir).to_string();
+            if !matches!(
+                direction.as_str(),
+                "up" | "down" | "north" | "south" | "west" | "east"
+            ) {
+                return Err(format!("unsupported direction {direction}"));
+            }
+            let allowed_placement = parse_predicate(
+                cfg.get("allowed_placement")
+                    .ok_or("block_column.allowed_placement")?,
+            )?;
+            let prioritize_tip = match cfg.get("prioritize_tip") {
+                Some(Json::Bool(b)) => *b,
+                _ => return Err("block_column.prioritize_tip".into()),
+            };
+            FeatureDef::BlockColumn {
+                layers,
+                direction,
+                allowed_placement,
+                prioritize_tip,
+            }
+        }
         "disk" => {
             let cfg = j.get("config").ok_or("disk.config")?;
             let radius = IntProvider::parse(cfg.get("radius").ok_or("radius")?)?;
@@ -2199,6 +2267,18 @@ pub enum StateProvider {
     /// weightedList.getRandomOrThrow(random) — nextInt(totalWeight) +
     /// in-order accumulated walk (WeightedListInt semantics, inc. 10).
     Weighted(Vec<(String, i64)>),
+    /// randomized_int_state_provider (inc. 15) —
+    /// RandomizedIntStateProvider.CODEC field order: property (Codec.STRING
+    /// fieldOf) -> source (BlockStateProvider.CODEC fieldOf, FULL provider
+    /// path) -> values (IntProvider.CODEC fieldOf). Execution tail:
+    /// getState = source.getState(random, pos), then — ONLY if the state
+    /// has the property — trySetValue(property, values.sample(random))
+    /// (the sample happens on the hasProperty branch only).
+    RandomizedInt {
+        property: String,
+        source: Box<StateProvider>,
+        values: IntProvider,
+    },
 }
 
 pub fn parse_state_provider(j: &Json) -> Result<StateProvider, String> {
@@ -2249,6 +2329,23 @@ pub fn parse_state_provider(j: &Json) -> Result<StateProvider, String> {
                 items.push((state, weight));
             }
             Ok(StateProvider::Weighted(items))
+        }
+        "randomized_int_state_provider" => {
+            // RandomizedIntStateProvider.CODEC field order: property ->
+            // source -> values (all fieldOf REQUIRED).
+            let property = j
+                .get("property")
+                .and_then(|p| p.as_str())
+                .ok_or("randomized_int.property")?
+                .to_string();
+            let source =
+                Box::new(parse_state_provider(j.get("source").ok_or("randomized_int.source")?)?);
+            let values = IntProvider::parse(j.get("values").ok_or("randomized_int.values")?)?;
+            Ok(StateProvider::RandomizedInt {
+                property,
+                source,
+                values,
+            })
         }
         other => Err(format!("unsupported state provider {other}")),
     }
@@ -2589,6 +2686,9 @@ fn parse_simple_state_provider(j: &Json) -> Result<String, String> {
         StateProvider::Simple(s) => Ok(s),
         StateProvider::RuleBased { .. } => Err("rule_based_state_provider with rules".into()),
         StateProvider::Weighted(_) => Err("weighted_state_provider in simple context".into()),
+        StateProvider::RandomizedInt { .. } => {
+            Err("randomized_int_state_provider in simple context".into())
+        }
     }
 }
 
@@ -4313,6 +4413,198 @@ mod tests {
         let def3 = parse_placed_feature(&plain).unwrap();
         assert!(is_placed_supported(&def3, &registry));
         assert!(placed_blocker_label(&def3, &registry).is_none());
+    }
+
+    #[test]
+    fn block_column_verbatim_patch_cactus() {
+        // verbatim inner body of configured_feature/patch_cactus.json (two
+        // layers: biased_to_bottom 1..3 cactus[age=0], weighted_list
+        // [0w3,1w1] cactus_flower) + honest codec errors in field order.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:block_column\",\"config\":\
+             {\"allowed_placement\":{\"type\":\"minecraft:matching_blocks\",\"blocks\":\"minecraft:air\"},\
+             \"direction\":\"up\",\
+             \"layers\":[\
+              {\"height\":{\"type\":\"minecraft:biased_to_bottom\",\"max_inclusive\":3,\"min_inclusive\":1},\
+               \"provider\":{\"type\":\"minecraft:simple_state_provider\",\
+                 \"state\":{\"Name\":\"minecraft:cactus\",\"Properties\":{\"age\":\"0\"}}}},\
+              {\"height\":{\"type\":\"minecraft:weighted_list\",\"distribution\":[\
+                 {\"data\":0,\"weight\":3},{\"data\":1,\"weight\":1}]},\
+               \"provider\":{\"type\":\"minecraft:simple_state_provider\",\
+                 \"state\":{\"Name\":\"minecraft:cactus_flower\"}}}],\
+             \"prioritize_tip\":false}}",
+        )
+        .unwrap();
+        let def = parse_configured_def(&j, "block_column").unwrap();
+        let FeatureDef::BlockColumn {
+            layers,
+            direction,
+            allowed_placement,
+            prioritize_tip,
+        } = &def
+        else {
+            panic!("expected BlockColumn");
+        };
+        assert_eq!(direction, "up");
+        assert!(!prioritize_tip);
+        assert_eq!(layers.len(), 2);
+        assert!(matches!(layers[0].0, IntProvider::BiasedToBottom(1, 3)));
+        assert!(matches!(
+            layers[0].1,
+            StateProvider::Simple(ref s) if s == "minecraft:cactus[age=0]"
+        ));
+        assert!(matches!(
+            &layers[1].0,
+            IntProvider::WeightedList(w)
+                if w[0] == (3, IntProvider::Constant(0)) && w[1] == (1, IntProvider::Constant(1))
+        ));
+        assert!(matches!(
+            layers[1].1,
+            StateProvider::Simple(ref s) if s == "minecraft:cactus_flower"
+        ));
+        // allowed_placement: matching_blocks air (single-string form).
+        let BlockPredicate::MatchingBlocks { blocks, .. } = allowed_placement else {
+            panic!("expected MatchingBlocks");
+        };
+        assert_eq!(blocks, &["minecraft:air".to_string()]);
+
+        // honest codec errors — the first failing field owns the label.
+        let err =
+            |body: &str| {
+                parse_configured_def(&crate::json::parse(body).unwrap(), "block_column")
+                    .unwrap_err()
+            };
+        assert_eq!(
+            err("{\"type\":\"minecraft:block_column\",\"config\":{\"direction\":\"up\",\
+                 \"layers\":[],\"allowed_placement\":{\"type\":\"minecraft:true\"}}}",
+            ),
+            "block_column.prioritize_tip"
+        );
+        assert_eq!(
+            err("{\"type\":\"minecraft:block_column\",\"config\":{\"layers\":[],\
+                 \"allowed_placement\":{\"type\":\"minecraft:true\"},\"prioritize_tip\":false}}",
+            ),
+            "block_column.direction"
+        );
+        assert_eq!(
+            err("{\"type\":\"minecraft:block_column\",\"config\":{\"direction\":\"sideways\",\
+                 \"layers\":[],\"allowed_placement\":{\"type\":\"minecraft:true\"},\
+                 \"prioritize_tip\":false}}",
+            ),
+            "unsupported direction sideways"
+        );
+        assert_eq!(
+            err("{\"type\":\"minecraft:block_column\",\"config\":{\"direction\":\"up\",\
+                 \"layers\":[],\"prioritize_tip\":false}}",
+            ),
+            "block_column.allowed_placement"
+        );
+        // NON_NEGATIVE height range mirror: a bare -1 is honest Err.
+        assert_eq!(
+            err("{\"type\":\"minecraft:block_column\",\"config\":{\"direction\":\"up\",\
+                 \"layers\":[{\"height\":-1,\"provider\":{\"type\":\"minecraft:simple_state_provider\",\
+                 \"state\":{\"Name\":\"minecraft:stone\"}}}],\
+                 \"allowed_placement\":{\"type\":\"minecraft:true\"},\"prioritize_tip\":false}}",
+            ),
+            "height 0..=2147483647, got -1..-1"
+        );
+        // unsupported provider family inside a layer.
+        assert_eq!(
+            err("{\"type\":\"minecraft:block_column\",\"config\":{\"direction\":\"up\",\
+                 \"layers\":[{\"height\":1,\"provider\":{\"type\":\"minecraft:noise_provider\",\
+                 \"input\":\"minecraft:temperature\",\"scale\":0.1}}],\
+                 \"allowed_placement\":{\"type\":\"minecraft:true\"},\"prioritize_tip\":false}}",
+            ),
+            "unsupported state provider noise_provider"
+        );
+    }
+
+    #[test]
+    fn block_column_verbatim_cave_vine_randomized_int() {
+        // verbatim shape of configured_feature/cave_vine.json — direction
+        // down, prioritize_tip true, WeightedList heights, and the
+        // randomized_int_state_provider family (inc. 15). On an EMPTY
+        // registry the strict inline verdict is honest TRUE (leaf body).
+        let body = "{\"type\":\"minecraft:block_column\",\"config\":\
+             {\"allowed_placement\":{\"type\":\"minecraft:matching_blocks\",\"blocks\":\"minecraft:air\"},\
+             \"direction\":\"down\",\
+             \"layers\":[\
+              {\"height\":{\"type\":\"minecraft:weighted_list\",\"distribution\":[\
+                 {\"data\":{\"type\":\"minecraft:uniform\",\"max_inclusive\":19,\"min_inclusive\":0},\"weight\":2},\
+                 {\"data\":{\"type\":\"minecraft:uniform\",\"max_inclusive\":2,\"min_inclusive\":0},\"weight\":3},\
+                 {\"data\":{\"type\":\"minecraft:uniform\",\"max_inclusive\":6,\"min_inclusive\":0},\"weight\":10}]},\
+               \"provider\":{\"type\":\"minecraft:weighted_state_provider\",\"entries\":[\
+                 {\"data\":{\"Name\":\"minecraft:cave_vines_plant\",\"Properties\":{\"berries\":\"false\"}},\"weight\":4},\
+                 {\"data\":{\"Name\":\"minecraft:cave_vines_plant\",\"Properties\":{\"berries\":\"true\"}},\"weight\":1}]}},\
+              {\"height\":1,\
+               \"provider\":{\"type\":\"minecraft:randomized_int_state_provider\",\
+                 \"property\":\"age\",\
+                 \"source\":{\"type\":\"minecraft:weighted_state_provider\",\"entries\":[\
+                   {\"data\":{\"Name\":\"minecraft:cave_vines\",\"Properties\":{\"age\":\"0\",\"berries\":\"false\"}},\"weight\":4},\
+                   {\"data\":{\"Name\":\"minecraft:cave_vines\",\"Properties\":{\"age\":\"0\",\"berries\":\"true\"}},\"weight\":1}]},\
+                 \"values\":{\"type\":\"minecraft:uniform\",\"max_inclusive\":25,\"min_inclusive\":23}}}],\
+             \"prioritize_tip\":true}}";
+        let j = crate::json::parse(body).unwrap();
+        let def = parse_configured_def(&j, "block_column").unwrap();
+        let FeatureDef::BlockColumn {
+            layers,
+            direction,
+            prioritize_tip,
+            ..
+        } = &def
+        else {
+            panic!("expected BlockColumn");
+        };
+        assert_eq!(direction, "down");
+        assert!(*prioritize_tip);
+        assert_eq!(layers.len(), 2);
+        assert!(matches!(
+            &layers[0].0,
+            IntProvider::WeightedList(w)
+                if w.len() == 3 && w[0] == (2, IntProvider::Uniform(0, 19))
+                    && w[1] == (3, IntProvider::Uniform(0, 2))
+                    && w[2] == (10, IntProvider::Uniform(0, 6))
+        ));
+        assert!(matches!(
+            &layers[0].1,
+            StateProvider::Weighted(w)
+                if w.len() == 2
+                    && w[0].0 == "minecraft:cave_vines_plant[berries=false]"
+                    && w[1].0 == "minecraft:cave_vines_plant[berries=true]"
+        ));
+        assert!(matches!(layers[1].0, IntProvider::Constant(1)));
+        let StateProvider::RandomizedInt {
+            property,
+            source,
+            values,
+        } = &layers[1].1
+        else {
+            panic!("expected RandomizedInt");
+        };
+        assert_eq!(property, "age");
+        assert!(matches!(values, IntProvider::Uniform(23, 25)));
+        assert!(matches!(
+            source.as_ref(),
+            StateProvider::Weighted(w) if w.len() == 2
+        ));
+
+        // the strict inline verdict (empty registry, inline path only).
+        let tmp = std::env::temp_dir().join(format!("ncf_p4_bcol_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&tmp);
+        std::fs::create_dir_all(tmp.join("data/minecraft/worldgen")).unwrap();
+        let dir = crate::router::WorldgenDir::load(&tmp).unwrap();
+        let registry = FeatureRegistry {
+            configured: HashMap::new(),
+            placed: HashMap::new(),
+            dir: &dir,
+        };
+        let _ = std::fs::remove_dir_all(&tmp);
+        assert!(is_def_supported(&def, &registry));
+        let wrapped = crate::json::parse(&format!("{{\"feature\":{body},\"placement\":[]}}"))
+            .unwrap();
+        let placed = parse_placed_feature(&wrapped).unwrap();
+        assert!(is_placed_supported(&placed, &registry));
+        assert!(placed_blocker_label(&placed, &registry).is_none());
     }
 
     #[test]
