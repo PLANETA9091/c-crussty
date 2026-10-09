@@ -36,3 +36,9 @@ path = "src/bin/aquacheck.rs"
 name = "bench"
 path = "src/bin/bench.rs"
 
+# ncf_profile probe class (NCF_CARVE_*, NCF_AQUIFER_TIME, NCF_S1_PROBE, ...):
+# register the cfg name so rustc 1.99+ unexpected_cfgs stays quiet on BOTH
+# probe builds (RUSTFLAGS="--cfg ncf_profile") and normal CI builds.
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(ncf_profile)'] }
+

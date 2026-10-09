@@ -328,6 +328,13 @@ pub fn stored_quart_y(y: i32, min_section: i32, section_count: i32) -> i32 {
     }
 }
 
+/// S1 probe (owner standing order 2026-10-09, item S1): running total of
+/// get_biome_voted_region calls; bench ledger prints calls/chunk under
+/// NCF_S1_PROBE. Compiled ONLY under --cfg ncf_profile — absent from
+/// CI/release builds as a class (see worklog addenda on ncf_profile probes).
+#[cfg(ncf_profile)]
+pub static S1_VOTE_CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
 /// BiomeManager.getBiome over the WorldGenRegion NoiseBiomeSource
 /// (SurfaceRules$Context.biomeGetter = biomeManager::getBiome where
 /// biomeManager = new BiomeManager((NoiseBiomeSource)this, obfuscateSeed(seed))
@@ -346,6 +353,8 @@ pub fn get_biome_voted_region(
     min_section: i32,
     section_count: i32,
 ) -> String {
+    #[cfg(ncf_profile)]
+    S1_VOTE_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let (qx, qy, qz) = vote_best_corner(zoom_seed, x, y, z);
     let qy = stored_quart_y(qy, min_section, section_count);
     source.get_noise_biome(qx, qy, qz).to_string()

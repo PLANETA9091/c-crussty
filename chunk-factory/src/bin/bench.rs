@@ -53,6 +53,10 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         std::hint::black_box(&nbt);
     }
 
+    #[cfg(ncf_profile)]
+    let s1_before =
+        chunk_factory::biomes::S1_VOTE_CALLS.load(std::sync::atomic::Ordering::Relaxed);
+
     let mut acc = [0f64; 4]; // noise, surface, carvers, serialization
     let mut n = 0usize;
     let t_all = Instant::now();
@@ -87,6 +91,18 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
     }
     let wall = t_all.elapsed().as_secs_f64() * 1e3;
     let per: Vec<f64> = acc.iter().map(|a| a / n as f64).collect();
+
+    // S1 probe (standing order): biome-vote calls over the ledger corpus.
+    #[cfg(ncf_profile)]
+    if std::env::var("NCF_S1_PROBE").is_ok() {
+        let calls = chunk_factory::biomes::S1_VOTE_CALLS
+            .load(std::sync::atomic::Ordering::Relaxed)
+            - s1_before;
+        eprintln!(
+            "[S1-probe] get_biome_voted_region: {calls} calls / {n} ledger chunks = {} per chunk (Java memoizes: <= 256 needed)",
+            calls / (n as u64).max(1)
+        );
+    }
     let ported_total: f64 = per.iter().sum();
 
     // stage speedups vs the Java warm P0.1 budget (stage-to-stage)

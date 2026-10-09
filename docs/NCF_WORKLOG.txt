@@ -5342,3 +5342,29 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 
 4) NEXT (первый открытый item = S1): ПРОБА R5 — счётчик get_biome_voted_
    region под --cfg ncf_profile / NCF_S1_PROBE, ledger 169 чанков s=3053459.
+
+
+=== 2026-10-09 | аддендум 96: S1-ПРОБА — 30,274 вызова get_biome_voted_
+    region/чанк против <=256 нужных (118x); ГИПОТЕЗА S1 ПОДТВЕРЖДЕНА ===
+
+0) САНДБОКС: HEAD = a83228d (аддендум 95). Ledger-база воспроизведена ДО
+   правок: 19.32/21.21/1.29/1.02 = 42.84 мс, Amdahl 3.30x — все стадии в 2%
+   от строки P2.16 (19.0/21.0/1.2/1.0/42.3/3.32x). Корпус цел.
+
+1) КОД (этот коммит): biomes.rs — static S1_VOTE_CALLS: AtomicU64 под
+   cfg(ncf_profile) + fetch_add в get_biome_voted_region; bench.rs —
+   снапшот после warmup + eprint при NCF_S1_PROBE=1 (warm-чанки
+   исключены). Cargo.toml: [lints.rust] unexpected_cfgs check-cfg
+   'cfg(ncf_profile)' — rustc 1.99 warning на весь класс пробников;
+   cfg-off сборка чиста от cfg-ворнингов, 36 прочих = прежние unused-
+   import warnings (класс пробников в CI-сборках отсутствует).
+
+2) ИЗМЕРЕНО (--cfg ncf_profile, release, ledger 169 чанков s=3053459):
+   5,116,468 вызовов / 169 = 30,274 на чанк при <=256 нужных (голосование
+   на КАЖДЫЙ твёрдый блок; Java — ленивый memoize; каждый вызов = String-
+   аллокация). Повтор счётчика бит-в-бит. Счётчик доказал HYP.
+
+3) NEXT: S1-ФИКС — update_y хранит pending (x,y,z); биом считается при
+   первом чтении ctx.biome (~857/~905), кэш до следующего update_y.
+   Таргет surface <= 12 мс; R2: ledger x2 в 2%, stagediff 0/1 байт-идентичен,
+   gate-p2 15/15.
