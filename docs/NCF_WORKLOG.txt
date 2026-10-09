@@ -4993,3 +4993,109 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 83, собственный run): run 37873108876
 (e4c3581) completed SUCCESS — 33/33 job'ов (~12 мин). Правило «код-commit
 ждёт свой run» выполнено — тик ЗАВЕРШЁН.
+=== 2026-10-09 | аддендум 84: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 5):
+    порт geode (54 биома — бывший топ гистограммы после inc.4); ценз
+    84->85 configured, 116->117 placed (+1: amethyst_geode); 174/174
+    тестов ===
+
+0) CI-ПОДТВЕРЖДЕНИЕ ПРЕДЫДУЩЕГО КОММИТА (собственный run): run
+   37873108876 (e4c3581, аддендум 83) completed SUCCESS — 33/33 job'ов
+   (~12 мин); подтверждение внесено docs-коммитом bce442c — 0 run'ов.
+   Правило «код-commit ждёт свой run» выполнено. Тик 10:32 — 8-й stale
+   cron (старый gate-P2 текст, Job ID 441690) — НЕ исполнялся; работа по
+   НОВОМУ work list (п.4, инкремент 5) из этого LOG.
+
+1) ОРАКУЛ: decomp_p4 (GeodeFeature + GeodeConfiguration) + decomp441b
+   (GeodeBlockSettings / GeodeLayerSettings / GeodeCrackSettings — уже
+   были декомпилированы ранее, файлы найдены в
+   /tmp/my-project/downloads/decomp441b/.../levelgen/); worldgen-корпус
+   /home/z/my-project/ci-server/worldgen-extract цел (258+224+200).
+   amethyst_geode.json — ЕДИНСТВЕННЫЙ geode-шейп в корпусе (1 configured,
+   1 placed с цепочкой rarity_filter(24)/in_square/height_range(uniform
+   above_bottom 6 .. absolute 30)/biome — все 4 модификатора уже
+   портированы ранее).
+
+2) ФАКТЫ ИЗ ДЕКОМПИЛА (1.21.10 CFR):
+   (а) GeodeConfiguration.CODEC = 13 полей: blocks/layers/crack/
+       invalid_blocks_threshold — fieldOf (ОБЯЗАТЕЛЬНЫЕ);
+       use_potential_placements_chance CHANCE_RANGE(0,1) orElse(0.35);
+       use_alternate_layer0_chance orElse(0.0);
+       placements_require_layer0_alternate BOOL orElse(true);
+       outer_wall_distance IntProvider.codec(1,20) orElse UniformInt.of(4,5);
+       distribution_points IntProvider.codec(1,20) orElse UniformInt.of(3,4);
+       point_offset IntProvider.codec(0,10) orElse UniformInt.of(1,2);
+       min_gen_offset INT orElse(-16); max_gen_offset INT orElse(16);
+       noise_multiplier CHANCE_RANGE orElse(0.05).
+   (б) GeodeBlockSettings.CODEC = 8 полей, ВСЕ fieldOf: 5
+       BlockStateProvider'ов (filling/inner/alternate_inner/middle/outer),
+       inner_placements = ExtraCodecs.nonEmptyList(BlockState list) —
+       [] = codec error, cannot_replace + invalid_blocks = TagKey
+       hashedCodec ("#minecraft:features_cannot_replace" /
+       "#minecraft:geode_invalid_blocks" в корпусе).
+   (в) GeodeLayerSettings: LAYER_RANGE = Codec.doubleRange(0.01, 50.0),
+       orElse 1.7/2.2/3.2/4.2. GeodeCrackSettings:
+       generate_crack_chance orElse(1.0) 0..1; base_crack_size
+       doubleRange(0,5) orElse(2.0); crack_point_offset intRange(0,10)
+       orElse(2).
+   (г) ТЕЛО (хвост выполнения, задокументирован на варианте):
+       place() строит geode-приватный NormalNoise.create(
+       WorldgenRandom(new LegacyRandomSource(level.getSeed())), -4,
+       [1.0]) — детерминирован по WORLD-сиду, рисуется на place;
+       distribution_points.sample; радиусы слоёв 1/sqrt(filling|inner+d|
+       middle+d|outer+d), d = points/max(outerWallDistance); трещины по
+       generate_crack_chance (nextInt(4) выбор оси); per-position сумма
+       invSqrt(distSqr+pointOffset) + noise*noise_multiplier против
+       порогов; budding amethyst с записью FACING/WATERLOGGED +
+       scheduleTick соседних флюидов. Проводка — при stagediff
+       features-статусе (как FluidState pin у Spring).
+
+3) КОД (этот коммит):
+   (а) features.rs: FeatureDef::Geode — 25 полей, полный зеркальный
+       codec (8 блок-полей + 4 слоя + 3 crack + 10 скаляров/провайдеров);
+       честные range-check'и: слои 0.01..=50.0, crack 0..1 / 0..5 /
+       0..10, CHANCE_RANGE-скаляры 0..=1, IntProvider-границы
+       (outer/distribution 1..=20, point_offset 0..=10) — вне диапазона
+       = Err (honest codec error, БЕЗ clamp, как underwater_magma);
+       nonEmptyList inner_placements — [] = Err; провайдеры через
+       parse_simple_state_provider (RuleBased-обёртка с rules => Err —
+       это и есть следующий блокер, см. п.5).
+   (б) IntProvider получил derive PartialEq/Eq (тестам нужно сравнение
+       uniform-границ; на семантику выборки не влияет).
+   (в) тесты 171->174 (3 новых: geode_amethyst_verbatim — ВСЕ скаляры
+       verbatim из корпуса, включая 4 inner_placements с сортировкой
+       Properties; geode_codec_defaults — все orElse-дефолты при пустых
+       layers/crack; geode_codec_bounds_honest_reject — границы
+       0.01/50.0/5.0/10/1.0/20 = Ok, 0.009/50.01/5.5/11/1.2/1.5/-0.1/21/
+       -1 = Err, nonEmptyList [] = Err, пропажа blocks/threshold = Err).
+
+4) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, corpus тот же, diff списков бит-в-бит):
+   configured: 84/224 -> 85/224 (+1: amethyst_geode);
+   placed: 116/258 -> 117/258 (+1: amethyst_geode — placed-цепочка из
+       4 уже-портированных модификаторов парсилась и раньше, вердикт
+       держался только на configured-теле);
+   parse-провалы placed: 69 -> 69 (stderr-списки base/new ИДЕНТИЧНЫ —
+       geode не был parse-fail'ом);
+   биомы fully-supported: 0/65 (без изменений — lake 53 / rbwp 53 /
+       would_survive 43 / random_patch-pf 43 остаются универсальными);
+   ГИСТОГРАММА: geode 54 -> ИСЧЕЗЛА (и configured-строка «0/1», и
+       биомная «54/65»). НОВЫЙ ТОП: rule_based_state_provider-with-rules
+       53; lake 53; would_survive 43; random_patch (parse fail) 43;
+       random_selector (parse fail) 36; noise_threshold_count 7;
+       simple_random_selector 6; glowstone_blob 5+5; vines 4;
+       fossil 3; forest_rock/iceberg/random_boolean_selector 2.
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсер + тесты + ценз), не
+   worklog-only; гейт-контракты veccheck/stagediff НЕ тронуты; хвост
+   выполнения (geode-приватный NormalNoise по world-сиду, invSqrt-пороги,
+   crack-оси, budding-кластеры) задокументирован на варианте и будет
+   проводиться при stagediff features-статусе. Единственный перевёрнутый ключ
+   amethyst_geode подтверждён списком PLACED-- -> PLACED OK (никакой
+   другой placed/configured не двинулся).
+
+6) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — порт rule_based_state_provider
+   (53 биома, новый СО-топ; открывает disk-семейство: disk_sand/clay/
+   gravel/grass УЖЕ парсятся, их тела ждут именно этот провайдер) и/или
+   lake (53) по декомпилу; затем stagediff features-статус на
+   спец-корпусе (3x3-replay по spiral-порядку GoldenDumper).
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+(тик 10:32 — Т38-B/T40; 8-й stale-тик) — первоисточник = этот LOG.

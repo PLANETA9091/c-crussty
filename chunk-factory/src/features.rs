@@ -23,6 +23,16 @@
 //!     execution tails documented on the variants (spawner/chest block
 //!     entities; Column.scan + per-position rng; recursive multiface
 //!     spreading).
+//!   - GeodeFeature (inc. 5): the widest REMAINING histogram blocker (54
+//!     biomes first-blocked). Full GeodeConfiguration codec (13 fields) over
+//!     the three nested settings records (GeodeBlockSettings 8 REQUIRED
+//!     fields, GeodeLayerSettings doubleRange(0.01,50) orElse 1.7/2.2/3.2/
+//!     4.2, GeodeCrackSettings orElse 1.0/2.0/2 — decomp441b) with honest
+//!     range-checks (IntProvider.codec(1,20)/(0,10) bounds, CHANCE_RANGE
+//!     0..1, nonEmptyList inner_placements). Execution tail documented:
+//!     geode-private NormalNoise.create(new LegacyRandomSource(seed), -4,
+//!     [1.0]) keyed by the WORLD seed, invSqrt layer radii, crack offsets,
+//!     budding-amethyst FACING/WATERLOGGED writes.
 //!   - SnowAndFreezeFeature ("freeze_top_layer", inc. 2) — see the
 //!     FeatureDef::FreezeTopLayer doc.
 //!   - SpringFeature ("spring_feature", inc. 2) — DETERMINISTIC, no draws.
@@ -45,8 +55,8 @@
 
 use crate::feature_sorter::WorldgenDraws;
 use crate::filler::{FillerChunk, StateTable};
-use crate::json::Json;
 use crate::jrandom::RandomSource;
+use crate::json::Json;
 use crate::mth;
 use std::collections::HashMap;
 
@@ -61,14 +71,24 @@ pub enum BlockPredicate {
     False,
     /// StateTestingPredicate family: the test runs at pos.offset(offset),
     /// NOT at pos itself (Vec3i.offsetCodec(16), optional, default ZERO).
-    MatchingBlocks { offset: [i32; 3], blocks: Vec<String> }, // full names or "#tag"
-    Replaceable { offset: [i32; 3] },
+    MatchingBlocks {
+        offset: [i32; 3],
+        blocks: Vec<String>,
+    }, // full names or "#tag"
+    Replaceable {
+        offset: [i32; 3],
+    },
     /// SolidPredicate (deprecated but present in 1.21.10) — state.isSolid().
-    Solid { offset: [i32; 3] },
+    Solid {
+        offset: [i32; 3],
+    },
     /// MatchingFluidsPredicate — the fluid of the state at pos+offset
     /// (worldgen fluids are water/lava; flowing_* are levels of the same
     /// block, so the block base name identifies the fluid).
-    MatchingFluids { offset: [i32; 3], fluids: Vec<String> },
+    MatchingFluids {
+        offset: [i32; 3],
+        fluids: Vec<String>,
+    },
     Not(Box<BlockPredicate>),
     AllOf(Vec<BlockPredicate>),
     AnyOf(Vec<BlockPredicate>),
@@ -79,11 +99,16 @@ pub enum BlockPredicate {
     /// blocks are sturdy on every face, air/water/lava are not) — the
     /// direction is parsed verbatim and kept for the honest eval when the
     /// property tables land.
-    HasSturdyFace { offset: [i32; 3], direction: String },
+    HasSturdyFace {
+        offset: [i32; 3],
+        direction: String,
+    },
     /// InsideWorldBoundsPredicate (inc. 3) — !level.isOutsideBuildHeight(
     /// pos.offset(offset)). Eval: block_at answers None exactly outside
     /// the readable region (= build height), so Some(_) == inside bounds.
-    InsideWorldBounds { offset: [i32; 3] },
+    InsideWorldBounds {
+        offset: [i32; 3],
+    },
 }
 
 /// Vec3i.offsetCodec(16): optional "offset": [x,y,z], each component
@@ -108,7 +133,10 @@ fn parse_offset(j: &Json) -> [i32; 3] {
 }
 
 pub fn parse_predicate(j: &Json) -> Result<BlockPredicate, String> {
-    let ty = j.get("type").and_then(|t| t.as_str()).ok_or("predicate type")?;
+    let ty = j
+        .get("type")
+        .and_then(|t| t.as_str())
+        .ok_or("predicate type")?;
     let ty = ty.strip_prefix("minecraft:").unwrap_or(ty);
     Ok(match ty {
         "true" => BlockPredicate::True,
@@ -122,10 +150,17 @@ pub fn parse_predicate(j: &Json) -> Result<BlockPredicate, String> {
             } else if let Some(b) = j.get("blocks").and_then(|b| b.as_str()) {
                 blocks.push(b.to_string());
             }
-            BlockPredicate::MatchingBlocks { offset: parse_offset(j), blocks }
+            BlockPredicate::MatchingBlocks {
+                offset: parse_offset(j),
+                blocks,
+            }
         }
-        "replaceable" => BlockPredicate::Replaceable { offset: parse_offset(j) },
-        "solid" => BlockPredicate::Solid { offset: parse_offset(j) },
+        "replaceable" => BlockPredicate::Replaceable {
+            offset: parse_offset(j),
+        },
+        "solid" => BlockPredicate::Solid {
+            offset: parse_offset(j),
+        },
         "matching_fluids" => {
             let mut fluids = Vec::new();
             if let Some(Json::Arr(a)) = j.get("fluids") {
@@ -135,7 +170,10 @@ pub fn parse_predicate(j: &Json) -> Result<BlockPredicate, String> {
             } else if let Some(f) = j.get("fluids").and_then(|f| f.as_str()) {
                 fluids.push(f.to_string());
             }
-            BlockPredicate::MatchingFluids { offset: parse_offset(j), fluids }
+            BlockPredicate::MatchingFluids {
+                offset: parse_offset(j),
+                fluids,
+            }
         }
         "has_sturdy_face" => BlockPredicate::HasSturdyFace {
             offset: parse_offset(j),
@@ -145,23 +183,31 @@ pub fn parse_predicate(j: &Json) -> Result<BlockPredicate, String> {
                 .ok_or("has_sturdy_face.direction")?
                 .to_string(),
         },
-        "inside_world_bounds" => {
-            BlockPredicate::InsideWorldBounds { offset: parse_offset(j) }
-        }
+        "inside_world_bounds" => BlockPredicate::InsideWorldBounds {
+            offset: parse_offset(j),
+        },
         "not" => {
             let inner = j.get("predicate").ok_or("not.predicate")?;
             BlockPredicate::Not(Box::new(parse_predicate(inner)?))
         }
         "all_of" => {
             let mut v = Vec::new();
-            for p in j.get("predicates").and_then(|p| p.as_arr()).ok_or("all_of.predicates")? {
+            for p in j
+                .get("predicates")
+                .and_then(|p| p.as_arr())
+                .ok_or("all_of.predicates")?
+            {
                 v.push(parse_predicate(p)?);
             }
             BlockPredicate::AllOf(v)
         }
         "any_of" => {
             let mut v = Vec::new();
-            for p in j.get("predicates").and_then(|p| p.as_arr()).ok_or("any_of.predicates")? {
+            for p in j
+                .get("predicates")
+                .and_then(|p| p.as_arr())
+                .ok_or("any_of.predicates")?
+            {
                 v.push(parse_predicate(p)?);
             }
             BlockPredicate::AnyOf(v)
@@ -251,7 +297,10 @@ pub fn eval_predicate(
                 .as_deref()
                 .and_then(fluid_of_block);
             match fluid {
-                Some(f) => fluids.iter().filter_map(|id| fluid_block_of(id)).any(|b| b == f),
+                Some(f) => fluids
+                    .iter()
+                    .filter_map(|id| fluid_block_of(id))
+                    .any(|b| b == f),
                 None => false,
             }
         }
@@ -300,7 +349,10 @@ pub struct FeatureWorld<'a> {
 
 impl<'a> FeatureWorld<'a> {
     pub fn new(chunk: &'a mut FillerChunk) -> Self {
-        FeatureWorld { chunk, height_kinds: HashMap::new() }
+        FeatureWorld {
+            chunk,
+            height_kinds: HashMap::new(),
+        }
     }
 
     pub fn set_block(&mut self, x: i32, y: i32, z: i32, state: u32) -> bool {
@@ -328,8 +380,10 @@ impl<'a> FeatureWorld<'a> {
         if sec >= self.chunk.sections.len() {
             return None;
         }
-        Some(self.chunk.sections[sec].states
-            [crate::filler::SectionData::block_index(x & 15, y & 15, z & 15)])
+        Some(
+            self.chunk.sections[sec].states
+                [crate::filler::SectionData::block_index(x & 15, y & 15, z & 15)],
+        )
     }
 
     pub fn name_of(&self, state: u32) -> &str {
@@ -343,9 +397,11 @@ impl<'a> FeatureWorld<'a> {
         // ChunkStatus.heightmapsAfter semantics) — look up by index if the
         // kind exists, else min_y.
         match self.height_kinds.get(kind) {
-            Some(&i) => self.chunk.heightmaps[i].first_available[(x & 15) as usize
-                + ((z & 15) as usize) * 16]
-                - 1,
+            Some(&i) => {
+                self.chunk.heightmaps[i].first_available
+                    [(x & 15) as usize + ((z & 15) as usize) * 16]
+                    - 1
+            }
             None => self.chunk.min_y,
         }
     }
@@ -401,7 +457,11 @@ pub fn parse_rule_test(j: &Json) -> RuleTest {
                 .to_string(),
         },
         "tag_match" => RuleTest::TagMatch {
-            tag: j.get("tag").and_then(|t| t.as_str()).unwrap_or("").to_string(),
+            tag: j
+                .get("tag")
+                .and_then(|t| t.as_str())
+                .unwrap_or("")
+                .to_string(),
         },
         "random_block_match" => RuleTest::RandomBlockMatch {
             block: j
@@ -446,9 +506,20 @@ pub fn eval_rule_test(
 #[derive(Debug, Clone)]
 pub enum HeightProvider {
     Constant(HeightAnchor),
-    Uniform { min: HeightAnchor, max: HeightAnchor },
-    Trapezoid { min: HeightAnchor, max: HeightAnchor, plateau: i32 },
-    VeryBiasedToBottom { min: HeightAnchor, max: HeightAnchor, inner: i32 },
+    Uniform {
+        min: HeightAnchor,
+        max: HeightAnchor,
+    },
+    Trapezoid {
+        min: HeightAnchor,
+        max: HeightAnchor,
+        plateau: i32,
+    },
+    VeryBiasedToBottom {
+        min: HeightAnchor,
+        max: HeightAnchor,
+        inner: i32,
+    },
     Unsupported(String),
 }
 
@@ -495,7 +566,10 @@ pub fn parse_height_provider(j: &Json) -> Result<HeightProvider, String> {
         "constant" => Ok(HeightProvider::Constant(parse_anchor(
             j.get("value").ok_or("constant.value")?,
         )?)),
-        "uniform" => Ok(HeightProvider::Uniform { min: min()?, max: max()? }),
+        "uniform" => Ok(HeightProvider::Uniform {
+            min: min()?,
+            max: max()?,
+        }),
         "trapezoid" => Ok(HeightProvider::Trapezoid {
             min: min()?,
             max: max()?,
@@ -517,7 +591,12 @@ impl HeightProvider {
         rng.next_int_bound_wg(max - min + 1).wrapping_add(min)
     }
 
-    pub fn sample(&self, rng: &mut dyn crate::feature_sorter::WorldgenDraws, min_y: i32, gen_depth: i32) -> i32 {
+    pub fn sample(
+        &self,
+        rng: &mut dyn crate::feature_sorter::WorldgenDraws,
+        min_y: i32,
+        gen_depth: i32,
+    ) -> i32 {
         match self {
             HeightProvider::Constant(a) => a.resolve(min_y, gen_depth),
             HeightProvider::Uniform { min, max } => {
@@ -559,7 +638,7 @@ impl HeightProvider {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum IntProvider {
     Constant(i32),
     Uniform(i32, i32),
@@ -577,8 +656,12 @@ impl IntProvider {
         }
         let (min, max) = if let Some(val) = j.get("value") {
             (
-                val.get("min_inclusive").and_then(|v| v.as_i64()).ok_or("intprovider min")?,
-                val.get("max_inclusive").and_then(|v| v.as_i64()).ok_or("intprovider max")?,
+                val.get("min_inclusive")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("intprovider min")?,
+                val.get("max_inclusive")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("intprovider max")?,
             )
         } else {
             match (
@@ -589,10 +672,15 @@ impl IntProvider {
                 _ => return Err("intprovider shape".into()),
             }
         };
-        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("minecraft:uniform");
+        let ty = j
+            .get("type")
+            .and_then(|t| t.as_str())
+            .unwrap_or("minecraft:uniform");
         match ty.strip_prefix("minecraft:").unwrap_or(ty) {
             "uniform" => Ok(IntProvider::Uniform(min as i32, max as i32)),
-            other => Err(format!("unsupported int provider {other} (triangle pending decompile)")),
+            other => Err(format!(
+                "unsupported int provider {other} (triangle pending decompile)"
+            )),
         }
     }
 
@@ -615,7 +703,10 @@ pub enum PlacementMod {
     InSquare,
     Heightmap(String), // Heightmap.Types name
     HeightRange(HeightProvider),
-    RandomOffset { xz: IntProvider, y: IntProvider },
+    RandomOffset {
+        xz: IntProvider,
+        y: IntProvider,
+    },
     BiomeFilter,
     BlockPredicateFilter(BlockPredicate),
     /// noise_based_count (kelp_cold uses it) — density+dx/dz, ported with
@@ -627,7 +718,9 @@ pub enum PlacementMod {
     },
     /// surface_water_depth_filter (trees_water) — depth check against the
     /// OCEAN_FLOORWG heightmap at the position (no rng).
-    SurfaceWaterDepthFilter { max_water_depth: i32 },
+    SurfaceWaterDepthFilter {
+        max_water_depth: i32,
+    },
     /// surface_relative_threshold_filter (glow_lichen, underwater_magma,
     /// lake_lava_underground; inc. 3) — PlacementFilter: shouldPlace =
     /// getHeight(heightmap,x,z)+minInclusive <= y <= +maxInclusive (codec
@@ -664,16 +757,22 @@ pub enum ScanDir {
 }
 
 pub fn parse_placement_mod(j: &Json) -> Result<PlacementMod, String> {
-    let ty = j.get("type").and_then(|t| t.as_str()).ok_or("placement type")?;
+    let ty = j
+        .get("type")
+        .and_then(|t| t.as_str())
+        .ok_or("placement type")?;
     let ty = ty.strip_prefix("minecraft:").unwrap_or(ty);
     Ok(match ty {
         "count" => PlacementMod::Count(IntProvider::parse(j.get("count").ok_or("count")?)?),
-        "rarity_filter" => {
-            PlacementMod::RarityFilter(j.get("chance").and_then(|c| c.as_i64()).ok_or("chance")? as i32)
-        }
+        "rarity_filter" => PlacementMod::RarityFilter(
+            j.get("chance").and_then(|c| c.as_i64()).ok_or("chance")? as i32,
+        ),
         "in_square" => PlacementMod::InSquare,
         "heightmap" => PlacementMod::Heightmap(
-            j.get("heightmap").and_then(|h| h.as_str()).ok_or("heightmap")?.to_string(),
+            j.get("heightmap")
+                .and_then(|h| h.as_str())
+                .ok_or("heightmap")?
+                .to_string(),
         ),
         "height_range" => {
             // CFR HeightRangePlacement: the WHOLE HeightProvider (uniform /
@@ -687,15 +786,18 @@ pub fn parse_placement_mod(j: &Json) -> Result<PlacementMod, String> {
             y: IntProvider::parse(j.get("y_spread").ok_or("y_spread")?)?,
         },
         "biome" => PlacementMod::BiomeFilter,
-        "block_predicate_filter" => {
-            PlacementMod::BlockPredicateFilter(parse_predicate(j.get("predicate").ok_or("predicate")?)?)
-        }
+        "block_predicate_filter" => PlacementMod::BlockPredicateFilter(parse_predicate(
+            j.get("predicate").ok_or("predicate")?,
+        )?),
         "noise_based_count" => PlacementMod::NoiseBasedCount {
             noise_to_count_ratio: j
                 .get("noise_to_count_ratio")
                 .and_then(|v| v.as_f64())
                 .unwrap_or(0.0) as f32,
-            noise_offset: j.get("noise_offset").and_then(|v| v.as_f64()).unwrap_or(0.0),
+            noise_offset: j
+                .get("noise_offset")
+                .and_then(|v| v.as_f64())
+                .unwrap_or(0.0),
             noise_scale: j.get("noise_scale").and_then(|v| v.as_f64()).unwrap_or(0.0),
         },
         "surface_water_depth_filter" => PlacementMod::SurfaceWaterDepthFilter {
@@ -734,8 +836,9 @@ pub fn parse_placement_mod(j: &Json) -> Result<PlacementMod, String> {
                     ))
                 }
             };
-            let target =
-                Box::new(parse_predicate(j.get("target_condition").ok_or("target_condition")?)?);
+            let target = Box::new(parse_predicate(
+                j.get("target_condition").ok_or("target_condition")?,
+            )?);
             // optionalFieldOf("allowed_search_condition", alwaysTrue()).
             let allowed = match j.get("allowed_search_condition") {
                 Some(p) => parse_predicate(p)?,
@@ -748,9 +851,16 @@ pub fn parse_placement_mod(j: &Json) -> Result<PlacementMod, String> {
                 .and_then(|v| v.as_i64())
                 .ok_or("environment_scan.max_steps")? as i32;
             if !(1..=32).contains(&max_steps) {
-                return Err(format!("environment_scan max_steps 1..=32, got {max_steps}"));
+                return Err(format!(
+                    "environment_scan max_steps 1..=32, got {max_steps}"
+                ));
             }
-            PlacementMod::EnvironmentScan { direction, target, allowed, max_steps }
+            PlacementMod::EnvironmentScan {
+                direction,
+                target,
+                allowed,
+                max_steps,
+            }
         }
         _ => PlacementMod::Unsupported(ty.to_string()),
     })
@@ -773,7 +883,11 @@ pub fn parse_placed_feature(j: &Json) -> Result<PlacedFeatureDef, String> {
         Some(f) if f.get("type").is_some() => {
             // inline configured feature: parse the body here and park it on
             // the def (execution resolves it without a registry lookup).
-            let ty = f.get("type").and_then(|t| t.as_str()).unwrap_or("").to_string();
+            let ty = f
+                .get("type")
+                .and_then(|t| t.as_str())
+                .unwrap_or("")
+                .to_string();
             let short = ty.strip_prefix("minecraft:").unwrap_or(&ty).to_string();
             let cfg = f.get("config").cloned().ok_or("inline.config")?;
             (String::new(), Some((short, cfg)))
@@ -786,7 +900,11 @@ pub fn parse_placed_feature(j: &Json) -> Result<PlacedFeatureDef, String> {
             placement.push(parse_placement_mod(m)?);
         }
     }
-    Ok(PlacedFeatureDef { feature_ref, placement, inline })
+    Ok(PlacedFeatureDef {
+        feature_ref,
+        placement,
+        inline,
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -803,7 +921,11 @@ pub enum FeatureDef {
         targets: Vec<(RuleTest, String)>,
         scattered: bool,
     },
-    SimpleBlock { to_place_name: String, props: Vec<(String, String)>, schedule_tick: bool },
+    SimpleBlock {
+        to_place_name: String,
+        props: Vec<(String, String)>,
+        schedule_tick: bool,
+    },
     /// RandomPatchConfiguration: the INNER feature is an INLINE placed
     /// feature (feature+placement object) or a registry ref string.
     RandomPatch {
@@ -822,7 +944,9 @@ pub enum FeatureDef {
         state: String,
     },
     Kelp,
-    Seagrass { probability: f32 },
+    Seagrass {
+        probability: f32,
+    },
     /// SnowAndFreezeFeature — the registry name is "freeze_top_layer"
     /// (Feature.java registration), body class SnowAndFreezeFeature,
     /// NoneFeatureConfiguration ({}). 16x16 column scan at the
@@ -879,6 +1003,55 @@ pub enum FeatureDef {
         chance_of_spreading: f32,
         can_be_placed_on: Vec<String>,
     },
+    /// GeodeFeature (inc. 5) — "minecraft:geode" (amethyst_geode.json is the
+    /// only corpus shape). PARSE-true; the codec is fully mirrored so parse
+    /// results are decompile-exact: GeodeBlockSettings 8 REQUIRED fields
+    /// (5 simple providers, nonEmptyList inner_placements, 2 TagKey
+    /// hashedCodec strings); GeodeLayerSettings doubleRange(0.01,50.0)
+    /// orElse 1.7/2.2/3.2/4.2; GeodeCrackSettings orElse 1.0/2.0/2 with
+    /// ranges 0..1 / 0..5 / 0..10; CHANCE_RANGE(0,1) scalars orElse
+    /// 0.35/0.0/0.05; placements_require_layer0_alternate orElse(true);
+    /// IntProvider.codec(1,20) outer_wall_distance orElse uniform(4,5),
+    /// distribution_points orElse uniform(3,4), IntProvider.codec(0,10)
+    /// point_offset orElse uniform(1,2); min/max_gen_offset orElse -16/16;
+    /// invalid_blocks_threshold Codec.INT REQUIRED. Out-of-range = honest
+    /// codec error (no clamp), like underwater_magma.
+    /// Execution tail (documented honestly): place() builds a geode-private
+    /// NormalNoise.create(WorldgenRandom(new LegacyRandomSource(level
+    /// .getSeed())), -4, [1.0]) — DETERMINISTIC per world seed but drawn at
+    /// place time; distribution_points.sample draws; layer radii are
+    /// 1/sqrt(filling|inner+d|...) with d = points/maxOuterWall; crack
+    /// boxes from generate_crack_chance; per-position noise*noise_multiplier
+    /// sum of invSqrt(distSqr+pointOffset) vs thresholds; budding amethyst
+    /// clusters with FACING/WATERLOGGED property writes + fluid schedule
+    /// ticks. Wired at execution like the Spring FluidState pin.
+    Geode {
+        filling_provider: String,
+        inner_layer_provider: String,
+        alternate_inner_layer_provider: String,
+        middle_layer_provider: String,
+        outer_layer_provider: String,
+        inner_placements: Vec<String>,
+        cannot_replace: String,
+        invalid_blocks: String,
+        filling: f32,
+        inner_layer: f32,
+        middle_layer: f32,
+        outer_layer: f32,
+        generate_crack_chance: f32,
+        base_crack_size: f32,
+        crack_point_offset: i32,
+        use_potential_placements_chance: f32,
+        use_alternate_layer0_chance: f32,
+        placements_require_layer0_alternate: bool,
+        outer_wall_distance: IntProvider,
+        distribution_points: IntProvider,
+        point_offset: IntProvider,
+        min_gen_offset: i32,
+        max_gen_offset: i32,
+        noise_multiplier: f32,
+        invalid_blocks_threshold: i32,
+    },
     Unsupported(String),
 }
 
@@ -904,7 +1077,11 @@ impl<'d> FeatureRegistry<'d> {
                 continue; // missing ref => Unsupported via dispatch lookup miss
             };
             let j = crate::json::parse(text).map_err(|e| e.to_string())?;
-            let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("").to_string();
+            let ty = j
+                .get("type")
+                .and_then(|t| t.as_str())
+                .unwrap_or("")
+                .to_string();
             let short = ty.strip_prefix("minecraft:").unwrap_or(&ty).to_string();
             let def = match parse_configured_def(&j, &short) {
                 Ok(d) => d,
@@ -930,10 +1107,13 @@ impl<'d> FeatureRegistry<'d> {
                 }
             }
         }
-        Ok(FeatureRegistry { configured, placed, dir })
+        Ok(FeatureRegistry {
+            configured,
+            placed,
+            dir,
+        })
     }
 }
-
 
 /// Parse one configured-feature JSON (type short name known) into the IR.
 /// Err = an unsupported/unknowable shape (callers degrade to Unsupported).
@@ -946,236 +1126,430 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
         other => other,
     };
     Ok(match short {
-            "ore" | "scattered_ore" => {
-                let cfg = j.get("config").ok_or("ore.config")?;
-                let size = cfg.get("size").and_then(|s| s.as_i64()).unwrap_or(0) as i32;
-                let discard = cfg
-                    .get("discard_chance_on_air_exposure")
-                    .and_then(|s| s.as_f64())
-                    .unwrap_or(0.0) as f32;
-                let mut targets = Vec::new();
-                if let Some(Json::Arr(ts)) = cfg.get("targets") {
-                    for t in ts {
-                        let rt = parse_rule_test(t.get("target").ok_or("target")?);
-                        let st = t.get("state").ok_or("state")?;
+        "ore" | "scattered_ore" => {
+            let cfg = j.get("config").ok_or("ore.config")?;
+            let size = cfg.get("size").and_then(|s| s.as_i64()).unwrap_or(0) as i32;
+            let discard = cfg
+                .get("discard_chance_on_air_exposure")
+                .and_then(|s| s.as_f64())
+                .unwrap_or(0.0) as f32;
+            let mut targets = Vec::new();
+            if let Some(Json::Arr(ts)) = cfg.get("targets") {
+                for t in ts {
+                    let rt = parse_rule_test(t.get("target").ok_or("target")?);
+                    let st = t.get("state").ok_or("state")?;
+                    let name = st
+                        .get("Name")
+                        .and_then(|n| n.as_str())
+                        .ok_or("state.Name")?
+                        .to_string();
+                    targets.push((rt, name));
+                }
+            }
+            FeatureDef::Ore {
+                size,
+                discard_chance: discard,
+                targets,
+                scattered: short == "scattered_ore",
+            }
+        }
+        "simple_block" => {
+            let cfg = j.get("config").ok_or("simple.config")?;
+            // SimpleBlockConfiguration.to_place = a BlockStateProvider
+            // (simple_state_provider {state: {Name, Properties}}).
+            let state = parse_simple_state_provider(cfg.get("to_place").ok_or("to_place")?)?;
+            let (name, props) = match state.split_once('[') {
+                Some((n, ps)) => (
+                    n.to_string(),
+                    ps.trim_end_matches(']')
+                        .split(',')
+                        .filter(|s| !s.is_empty())
+                        .map(|kv| {
+                            let (k, v) = kv.split_once('=').unwrap_or((kv, ""));
+                            (k.to_string(), v.to_string())
+                        })
+                        .collect(),
+                ),
+                None => (state, Vec::new()),
+            };
+            FeatureDef::SimpleBlock {
+                to_place_name: name,
+                props,
+                schedule_tick: cfg
+                    .get("schedule_tick")
+                    .and_then(|s| match s {
+                        Json::Bool(b) => Some(*b),
+                        _ => None,
+                    })
+                    .unwrap_or(false),
+            }
+        }
+        "random_patch" => {
+            let cfg = j.get("config").ok_or("patch.config")?;
+            // inner placed feature: INLINE object {feature, placement}
+            // or a registry ref string (resolved at eval time).
+            let inner_j = cfg.get("feature").ok_or("patch.feature")?;
+            let inner = if let Some(s) = inner_j.as_str() {
+                PlacedFeatureDef {
+                    feature_ref: expand_rl(s),
+                    placement: Vec::new(),
+                    inline: None,
+                }
+            } else {
+                parse_placed_feature(inner_j)?
+            };
+            FeatureDef::RandomPatch {
+                tries: cfg.get("tries").and_then(|t| t.as_i64()).unwrap_or(32) as i32,
+                xz_spread: cfg.get("xz_spread").and_then(|t| t.as_i64()).unwrap_or(0) as i32,
+                y_spread: cfg.get("y_spread").and_then(|t| t.as_i64()).unwrap_or(0) as i32,
+                inner: Box::new(inner),
+            }
+        }
+        "disk" => {
+            let cfg = j.get("config").ok_or("disk.config")?;
+            let radius = IntProvider::parse(cfg.get("radius").ok_or("radius")?)?;
+            let half = cfg.get("half_height").and_then(|h| h.as_i64()).unwrap_or(0) as i32;
+            // DiskConfiguration: target = SINGLE block predicate;
+            // state_provider = {fallback: simple_state_provider, rules}
+            let target = parse_predicate(cfg.get("target").ok_or("disk.target")?)?;
+            let sp = cfg.get("state_provider").ok_or("disk.state_provider")?;
+            let state = parse_simple_state_provider(sp)?;
+            FeatureDef::Disk {
+                half_height: half,
+                radius,
+                target,
+                state,
+            }
+        }
+        "kelp" => FeatureDef::Kelp,
+        "seagrass" => FeatureDef::Seagrass {
+            probability: j
+                .get("config")
+                .and_then(|c| c.get("probability"))
+                .and_then(|p| p.as_f64())
+                .unwrap_or(0.0) as f32,
+        },
+        "freeze_top_layer" => FeatureDef::FreezeTopLayer,
+        "monster_room" => FeatureDef::MonsterRoom,
+        "underwater_magma" => {
+            let cfg = j.get("config").ok_or("underwater_magma.config")?;
+            // intRange / floatRange codecs: REQUIRED fields, out-of-range
+            // = codec error (honest reject, no silent clamp).
+            let fsr = cfg
+                .get("floor_search_range")
+                .and_then(|v| v.as_i64())
+                .ok_or("underwater_magma.floor_search_range")? as i32;
+            if !(0..=512).contains(&fsr) {
+                return Err(format!(
+                    "underwater_magma floor_search_range 0..=512, got {fsr}"
+                ));
+            }
+            let radius = cfg
+                .get("placement_radius_around_floor")
+                .and_then(|v| v.as_i64())
+                .ok_or("underwater_magma.placement_radius_around_floor")?
+                as i32;
+            if !(0..=64).contains(&radius) {
+                return Err(format!(
+                    "underwater_magma placement_radius_around_floor 0..=64, got {radius}"
+                ));
+            }
+            let prob = cfg
+                .get("placement_probability_per_valid_position")
+                .and_then(|v| v.as_f64())
+                .ok_or("underwater_magma.placement_probability_per_valid_position")?
+                as f32;
+            if !(0.0..=1.0).contains(&prob) {
+                return Err(format!(
+                    "underwater_magma placement_probability 0..=1, got {prob}"
+                ));
+            }
+            FeatureDef::UnderwaterMagma {
+                floor_search_range: fsr,
+                placement_radius_around_floor: radius,
+                placement_probability_per_valid_position: prob,
+            }
+        }
+        "multiface_growth" => {
+            let cfg = j.get("config").ok_or("multiface_growth.config")?;
+            // byNameCodec().orElse(GLOW_LICHEN): optional field, default
+            // glow_lichen (the flatXmap MultifaceSpreadeableBlock check
+            // narrows the registry to lichen-like blocks).
+            let block = cfg
+                .get("block")
+                .and_then(|b| b.as_str())
+                .unwrap_or("minecraft:glow_lichen")
+                .to_string();
+            let mut can_be_placed_on = Vec::new();
+            match cfg
+                .get("can_be_placed_on")
+                .ok_or("multiface.can_be_placed_on")?
+            {
+                Json::Str(s) => can_be_placed_on.push(s.clone()), // "#tag" HolderSet
+                Json::Arr(a) => {
+                    for e in a {
+                        can_be_placed_on
+                            .push(e.as_str().ok_or("multiface.holder entry")?.to_string());
+                    }
+                }
+                _ => return Err("multiface.can_be_placed_on shape".into()),
+            }
+            FeatureDef::MultifaceGrowth {
+                block,
+                search_range: cfg
+                    .get("search_range")
+                    .and_then(|v| v.as_i64())
+                    .unwrap_or(10) as i32,
+                can_place_on_floor: cfg
+                    .get("can_place_on_floor")
+                    .and_then(|v| match v {
+                        Json::Bool(b) => Some(*b),
+                        _ => None,
+                    })
+                    .unwrap_or(false),
+                can_place_on_ceiling: cfg
+                    .get("can_place_on_ceiling")
+                    .and_then(|v| match v {
+                        Json::Bool(b) => Some(*b),
+                        _ => None,
+                    })
+                    .unwrap_or(false),
+                can_place_on_wall: cfg
+                    .get("can_place_on_wall")
+                    .and_then(|v| match v {
+                        Json::Bool(b) => Some(*b),
+                        _ => None,
+                    })
+                    .unwrap_or(false),
+                chance_of_spreading: cfg
+                    .get("chance_of_spreading")
+                    .and_then(|v| v.as_f64())
+                    .unwrap_or(0.5) as f32,
+                can_be_placed_on,
+            }
+        }
+        "geode" => {
+            let cfg = j.get("config").ok_or("geode.config")?;
+            // GeodeBlockSettings: ALL 8 fields are fieldOf (REQUIRED).
+            let blocks = cfg.get("blocks").ok_or("geode.blocks")?;
+            let provider = |key: &str| -> Result<String, String> {
+                parse_simple_state_provider(blocks.get(key).ok_or_else(|| format!("geode.{key}"))?)
+            };
+            let filling_provider = provider("filling_provider")?;
+            let inner_layer_provider = provider("inner_layer_provider")?;
+            let alternate_inner_layer_provider = provider("alternate_inner_layer_provider")?;
+            let middle_layer_provider = provider("middle_layer_provider")?;
+            let outer_layer_provider = provider("outer_layer_provider")?;
+            // inner_placements = ExtraCodecs.nonEmptyList(BlockState list)
+            // — [] is a codec error (honest).
+            let mut inner_placements = Vec::new();
+            match blocks
+                .get("inner_placements")
+                .ok_or("geode.inner_placements")?
+            {
+                Json::Arr(a) => {
+                    for st in a {
                         let name = st
                             .get("Name")
                             .and_then(|n| n.as_str())
-                            .ok_or("state.Name")?
+                            .ok_or("geode.inner_placements.Name")?
                             .to_string();
-                        targets.push((rt, name));
-                    }
-                }
-                FeatureDef::Ore {
-                    size,
-                    discard_chance: discard,
-                    targets,
-                    scattered: short == "scattered_ore",
-                }
-            }
-            "simple_block" => {
-                let cfg = j.get("config").ok_or("simple.config")?;
-                // SimpleBlockConfiguration.to_place = a BlockStateProvider
-                // (simple_state_provider {state: {Name, Properties}}).
-                let state = parse_simple_state_provider(cfg.get("to_place").ok_or("to_place")?)?;
-                let (name, props) = match state.split_once('[') {
-                    Some((n, ps)) => (
-                        n.to_string(),
-                        ps.trim_end_matches(']')
-                            .split(',')
-                            .filter(|s| !s.is_empty())
-                            .map(|kv| {
-                                let (k, v) = kv.split_once('=').unwrap_or((kv, ""));
-                                (k.to_string(), v.to_string())
-                            })
-                            .collect(),
-                    ),
-                    None => (state, Vec::new()),
-                };
-                FeatureDef::SimpleBlock {
-                    to_place_name: name,
-                    props,
-                    schedule_tick: cfg
-                        .get("schedule_tick")
-                        .and_then(|s| match s {
-                            Json::Bool(b) => Some(*b),
-                            _ => None,
-                        })
-                        .unwrap_or(false),
-                }
-            }
-            "random_patch" => {
-                let cfg = j.get("config").ok_or("patch.config")?;
-                // inner placed feature: INLINE object {feature, placement}
-                // or a registry ref string (resolved at eval time).
-                let inner_j = cfg.get("feature").ok_or("patch.feature")?;
-                let inner = if let Some(s) = inner_j.as_str() {
-                    PlacedFeatureDef {
-                        feature_ref: expand_rl(s),
-                        placement: Vec::new(),
-                        inline: None,
-                    }
-                } else {
-                    parse_placed_feature(inner_j)?
-                };
-                FeatureDef::RandomPatch {
-                    tries: cfg.get("tries").and_then(|t| t.as_i64()).unwrap_or(32) as i32,
-                    xz_spread: cfg.get("xz_spread").and_then(|t| t.as_i64()).unwrap_or(0) as i32,
-                    y_spread: cfg.get("y_spread").and_then(|t| t.as_i64()).unwrap_or(0) as i32,
-                    inner: Box::new(inner),
-                }
-            }
-            "disk" => {
-                let cfg = j.get("config").ok_or("disk.config")?;
-                let radius = IntProvider::parse(cfg.get("radius").ok_or("radius")?)?;
-                let half = cfg.get("half_height").and_then(|h| h.as_i64()).unwrap_or(0) as i32;
-                // DiskConfiguration: target = SINGLE block predicate;
-                // state_provider = {fallback: simple_state_provider, rules}
-                let target = parse_predicate(cfg.get("target").ok_or("disk.target")?)?;
-                let sp = cfg.get("state_provider").ok_or("disk.state_provider")?;
-                let state = parse_simple_state_provider(sp)?;
-                FeatureDef::Disk { half_height: half, radius, target, state }
-            }
-            "kelp" => FeatureDef::Kelp,
-            "seagrass" => FeatureDef::Seagrass {
-                probability: j
-                    .get("config")
-                    .and_then(|c| c.get("probability"))
-                    .and_then(|p| p.as_f64())
-                    .unwrap_or(0.0) as f32,
-            },
-            "freeze_top_layer" => FeatureDef::FreezeTopLayer,
-            "monster_room" => FeatureDef::MonsterRoom,
-            "underwater_magma" => {
-                let cfg = j.get("config").ok_or("underwater_magma.config")?;
-                // intRange / floatRange codecs: REQUIRED fields, out-of-range
-                // = codec error (honest reject, no silent clamp).
-                let fsr = cfg
-                    .get("floor_search_range")
-                    .and_then(|v| v.as_i64())
-                    .ok_or("underwater_magma.floor_search_range")? as i32;
-                if !(0..=512).contains(&fsr) {
-                    return Err(format!("underwater_magma floor_search_range 0..=512, got {fsr}"));
-                }
-                let radius = cfg
-                    .get("placement_radius_around_floor")
-                    .and_then(|v| v.as_i64())
-                    .ok_or("underwater_magma.placement_radius_around_floor")? as i32;
-                if !(0..=64).contains(&radius) {
-                    return Err(format!(
-                        "underwater_magma placement_radius_around_floor 0..=64, got {radius}"
-                    ));
-                }
-                let prob = cfg
-                    .get("placement_probability_per_valid_position")
-                    .and_then(|v| v.as_f64())
-                    .ok_or("underwater_magma.placement_probability_per_valid_position")?
-                    as f32;
-                if !(0.0..=1.0).contains(&prob) {
-                    return Err(format!(
-                        "underwater_magma placement_probability 0..=1, got {prob}"
-                    ));
-                }
-                FeatureDef::UnderwaterMagma {
-                    floor_search_range: fsr,
-                    placement_radius_around_floor: radius,
-                    placement_probability_per_valid_position: prob,
-                }
-            }
-            "multiface_growth" => {
-                let cfg = j.get("config").ok_or("multiface_growth.config")?;
-                // byNameCodec().orElse(GLOW_LICHEN): optional field, default
-                // glow_lichen (the flatXmap MultifaceSpreadeableBlock check
-                // narrows the registry to lichen-like blocks).
-                let block = cfg
-                    .get("block")
-                    .and_then(|b| b.as_str())
-                    .unwrap_or("minecraft:glow_lichen")
-                    .to_string();
-                let mut can_be_placed_on = Vec::new();
-                match cfg.get("can_be_placed_on").ok_or("multiface.can_be_placed_on")? {
-                    Json::Str(s) => can_be_placed_on.push(s.clone()), // "#tag" HolderSet
-                    Json::Arr(a) => {
-                        for e in a {
-                            can_be_placed_on
-                                .push(e.as_str().ok_or("multiface.holder entry")?.to_string());
+                        let mut props = Vec::new();
+                        if let Some(Json::Obj(po)) = st.get("Properties") {
+                            for (k, v) in po {
+                                props.push(format!("{}={}", k, v.as_str().unwrap_or("")));
+                            }
                         }
+                        props.sort();
+                        inner_placements.push(if props.is_empty() {
+                            expand_rl(&name)
+                        } else {
+                            format!("{}[{}]", expand_rl(&name), props.join(","))
+                        });
                     }
-                    _ => return Err("multiface.can_be_placed_on shape".into()),
                 }
-                FeatureDef::MultifaceGrowth {
-                    block,
-                    search_range: cfg.get("search_range").and_then(|v| v.as_i64()).unwrap_or(10)
-                        as i32,
-                    can_place_on_floor: cfg
-                        .get("can_place_on_floor")
-                        .and_then(|v| match v {
-                            Json::Bool(b) => Some(*b),
-                            _ => None,
-                        })
-                        .unwrap_or(false),
-                    can_place_on_ceiling: cfg
-                        .get("can_place_on_ceiling")
-                        .and_then(|v| match v {
-                            Json::Bool(b) => Some(*b),
-                            _ => None,
-                        })
-                        .unwrap_or(false),
-                    can_place_on_wall: cfg
-                        .get("can_place_on_wall")
-                        .and_then(|v| match v {
-                            Json::Bool(b) => Some(*b),
-                            _ => None,
-                        })
-                        .unwrap_or(false),
-                    chance_of_spreading: cfg
-                        .get("chance_of_spreading")
-                        .and_then(|v| v.as_f64())
-                        .unwrap_or(0.5) as f32,
-                    can_be_placed_on,
-                }
+                _ => return Err("geode.inner_placements shape".into()),
             }
-            "spring_feature" => {
-                let cfg = j.get("config").ok_or("spring.config")?;
-                let st = cfg.get("state").ok_or("spring.state")?;
-                let state_name = st
-                    .get("Name")
-                    .and_then(|n| n.as_str())
-                    .ok_or("spring.state.Name")?
-                    .to_string();
-                let mut state_props = Vec::new();
-                if let Some(Json::Obj(po)) = st.get("Properties") {
-                    for (k, v) in po {
-                        state_props.push((k.clone(), v.as_str().unwrap_or("").to_string()));
-                    }
+            if inner_placements.is_empty() {
+                return Err("geode.inner_placements nonEmptyList, got []".into());
+            }
+            let cannot_replace = blocks
+                .get("cannot_replace")
+                .and_then(|t| t.as_str())
+                .ok_or("geode.cannot_replace")?
+                .to_string();
+            let invalid_blocks = blocks
+                .get("invalid_blocks")
+                .and_then(|t| t.as_str())
+                .ok_or("geode.invalid_blocks")?
+                .to_string();
+            // GeodeLayerSettings: LAYER_RANGE = Codec.doubleRange(0.01, 50),
+            // all four orElse (1.7 / 2.2 / 3.2 / 4.2). "layers" itself is
+            // REQUIRED (fieldOf).
+            let layers = cfg.get("layers").ok_or("geode.layers")?;
+            let layer = |key: &str, def: f64| -> Result<f32, String> {
+                let v = layers.get(key).and_then(|v| v.as_f64()).unwrap_or(def);
+                if !(0.01..=50.0).contains(&v) {
+                    return Err(format!("geode layer {key} 0.01..=50.0, got {v}"));
                 }
-                state_props.sort();
-                let mut valid_blocks = Vec::new();
-                match cfg.get("valid_blocks").ok_or("spring.valid_blocks")? {
-                    Json::Str(s) => valid_blocks.push(s.clone()),
-                    Json::Arr(a) => {
-                        for b in a {
-                            valid_blocks.push(b.as_str().ok_or("spring.block")?.to_string());
+                Ok(v as f32)
+            };
+            let filling = layer("filling", 1.7)?;
+            let inner_layer = layer("inner_layer", 2.2)?;
+            let middle_layer = layer("middle_layer", 3.2)?;
+            let outer_layer = layer("outer_layer", 4.2)?;
+            // GeodeCrackSettings: all three orElse (1.0 / 2.0 / 2) with
+            // ranges CHANCE_RANGE(0,1) / 0..5 / intRange(0,10).
+            let crack = cfg.get("crack").ok_or("geode.crack")?;
+            let generate_crack_chance = crack
+                .get("generate_crack_chance")
+                .and_then(|v| v.as_f64())
+                .unwrap_or(1.0);
+            if !(0.0..=1.0).contains(&generate_crack_chance) {
+                return Err(format!(
+                    "geode generate_crack_chance 0..=1, got {generate_crack_chance}"
+                ));
+            }
+            let base_crack_size = crack
+                .get("base_crack_size")
+                .and_then(|v| v.as_f64())
+                .unwrap_or(2.0);
+            if !(0.0..=5.0).contains(&base_crack_size) {
+                return Err(format!(
+                    "geode base_crack_size 0..=5.0, got {base_crack_size}"
+                ));
+            }
+            let crack_point_offset = crack
+                .get("crack_point_offset")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(2) as i32;
+            if !(0..=10).contains(&crack_point_offset) {
+                return Err(format!(
+                    "geode crack_point_offset 0..=10, got {crack_point_offset}"
+                ));
+            }
+            // Top-level scalars: CHANCE_RANGE = Codec.doubleRange(0,1).
+            let chance = |key: &str, def: f64| -> Result<f32, String> {
+                let v = cfg.get(key).and_then(|v| v.as_f64()).unwrap_or(def);
+                if !(0.0..=1.0).contains(&v) {
+                    return Err(format!("geode {key} 0..=1, got {v}"));
+                }
+                Ok(v as f32)
+            };
+            let use_potential_placements_chance = chance("use_potential_placements_chance", 0.35)?;
+            let use_alternate_layer0_chance = chance("use_alternate_layer0_chance", 0.0)?;
+            let noise_multiplier = chance("noise_multiplier", 0.05)?;
+            let placements_require_layer0_alternate =
+                match cfg.get("placements_require_layer0_alternate") {
+                    Some(Json::Bool(b)) => *b,
+                    None => true, // orElse(true)
+                    _ => return Err("geode.placements_require_layer0_alternate".into()),
+                };
+            // IntProvider.codec(lo,hi): out-of-bounds = honest codec
+            // error; the orElse defaults are UniformInt.of(a,b).
+            let intprov =
+                |key: &str, lo: i32, hi: i32, da: i32, db: i32| -> Result<IntProvider, String> {
+                    let parsed = match cfg.get(key) {
+                        Some(v) => IntProvider::parse(v)?,
+                        None => IntProvider::Uniform(da, db),
+                    };
+                    let (a, b) = match parsed {
+                        IntProvider::Constant(c) => (c, c),
+                        IntProvider::Uniform(a, b) => (a, b),
+                        IntProvider::Triangle(..) => {
+                            return Err(format!("geode {key}: triangle provider"))
                         }
+                    };
+                    if a < lo || b > hi {
+                        return Err(format!("geode {key} {lo}..={hi}, got {a}..{b}"));
                     }
-                    _ => return Err("spring.valid_blocks shape".into()),
-                }
-                FeatureDef::Spring {
-                    state_name,
-                    state_props,
-                    requires_block_below: cfg
-                        .get("requires_block_below")
-                        .and_then(|v| match v {
-                            Json::Bool(b) => Some(*b),
-                            _ => None,
-                        })
-                        .unwrap_or(true),
-                    rock_count: cfg.get("rock_count").and_then(|v| v.as_i64()).unwrap_or(4) as i32,
-                    hole_count: cfg.get("hole_count").and_then(|v| v.as_i64()).unwrap_or(1) as i32,
-                    valid_blocks,
+                    Ok(parsed)
+                };
+            let outer_wall_distance = intprov("outer_wall_distance", 1, 20, 4, 5)?;
+            let distribution_points = intprov("distribution_points", 1, 20, 3, 4)?;
+            let point_offset = intprov("point_offset", 0, 10, 1, 2)?;
+            let min_gen_offset = cfg
+                .get("min_gen_offset")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(-16) as i32;
+            let max_gen_offset = cfg
+                .get("max_gen_offset")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(16) as i32;
+            // Codec.INT, fieldOf — REQUIRED, any int value accepted.
+            let invalid_blocks_threshold =
+                cfg.get("invalid_blocks_threshold")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("geode.invalid_blocks_threshold")? as i32;
+            FeatureDef::Geode {
+                filling_provider,
+                inner_layer_provider,
+                alternate_inner_layer_provider,
+                middle_layer_provider,
+                outer_layer_provider,
+                inner_placements,
+                cannot_replace,
+                invalid_blocks,
+                filling,
+                inner_layer,
+                middle_layer,
+                outer_layer,
+                generate_crack_chance: generate_crack_chance as f32,
+                base_crack_size: base_crack_size as f32,
+                crack_point_offset,
+                use_potential_placements_chance,
+                use_alternate_layer0_chance,
+                placements_require_layer0_alternate,
+                outer_wall_distance,
+                distribution_points,
+                point_offset,
+                min_gen_offset,
+                max_gen_offset,
+                noise_multiplier,
+                invalid_blocks_threshold,
+            }
+        }
+        "spring_feature" => {
+            let cfg = j.get("config").ok_or("spring.config")?;
+            let st = cfg.get("state").ok_or("spring.state")?;
+            let state_name = st
+                .get("Name")
+                .and_then(|n| n.as_str())
+                .ok_or("spring.state.Name")?
+                .to_string();
+            let mut state_props = Vec::new();
+            if let Some(Json::Obj(po)) = st.get("Properties") {
+                for (k, v) in po {
+                    state_props.push((k.clone(), v.as_str().unwrap_or("").to_string()));
                 }
             }
-            other => FeatureDef::Unsupported(other.to_string()),
+            state_props.sort();
+            let mut valid_blocks = Vec::new();
+            match cfg.get("valid_blocks").ok_or("spring.valid_blocks")? {
+                Json::Str(s) => valid_blocks.push(s.clone()),
+                Json::Arr(a) => {
+                    for b in a {
+                        valid_blocks.push(b.as_str().ok_or("spring.block")?.to_string());
+                    }
+                }
+                _ => return Err("spring.valid_blocks shape".into()),
+            }
+            FeatureDef::Spring {
+                state_name,
+                state_props,
+                requires_block_below: cfg
+                    .get("requires_block_below")
+                    .and_then(|v| match v {
+                        Json::Bool(b) => Some(*b),
+                        _ => None,
+                    })
+                    .unwrap_or(true),
+                rock_count: cfg.get("rock_count").and_then(|v| v.as_i64()).unwrap_or(4) as i32,
+                hole_count: cfg.get("hole_count").and_then(|v| v.as_i64()).unwrap_or(1) as i32,
+                valid_blocks,
+            }
+        }
+        other => FeatureDef::Unsupported(other.to_string()),
     })
 }
 
@@ -1225,11 +1599,7 @@ fn parse_simple_state_provider(j: &Json) -> Result<String, String> {
     let mut props = Vec::new();
     if let Some(Json::Obj(po)) = st.get("Properties") {
         for (k, v) in po {
-            props.push(format!(
-                "{}={}",
-                k,
-                v.as_str().unwrap_or("")
-            ));
+            props.push(format!("{}={}", k, v.as_str().unwrap_or("")));
         }
     }
     props.sort();
@@ -1242,9 +1612,16 @@ fn parse_simple_state_provider(j: &Json) -> Result<String, String> {
 
 /// The tier-3 dispatch verdict (P4.5): which features this chunk needs vs
 /// what the native lane supports — falls back (I8) on the first unsupported.
-pub fn decoration_supported(features_needed: &[usize], registry: &FeatureRegistry, placed_ids: &[String]) -> bool {
+pub fn decoration_supported(
+    features_needed: &[usize],
+    registry: &FeatureRegistry,
+    placed_ids: &[String],
+) -> bool {
     for &pf in features_needed {
-        let Some(def) = placed_ids.get(pf).and_then(|k| registry.placed.get(k.as_str())) else {
+        let Some(def) = placed_ids
+            .get(pf)
+            .and_then(|k| registry.placed.get(k.as_str()))
+        else {
             return false;
         };
         if is_placed_supported(def, registry) {
@@ -1268,8 +1645,10 @@ pub fn is_placed_supported(def: &PlacedFeatureDef, registry: &FeatureRegistry) -
     // INLINE configured body (random_patch inner shape).
     let body = match &def.inline {
         Some((short, _)) => {
-            return !matches!(short.as_str(), "tree" | "random_selector"
-                | "simple_random_selector" | "random_boolean_selector");
+            return !matches!(
+                short.as_str(),
+                "tree" | "random_selector" | "simple_random_selector" | "random_boolean_selector"
+            );
         }
         None => match registry.configured.get(&def.feature_ref) {
             Some(cfg) => cfg,
@@ -1282,7 +1661,6 @@ pub fn is_placed_supported(def: &PlacedFeatureDef, registry: &FeatureRegistry) -
         _ => true,
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -1305,17 +1683,15 @@ mod tests {
         let cfg = j.get("config").unwrap();
         assert_eq!(cfg.get("size").and_then(|s| s.as_i64()), Some(9));
         let rt = parse_rule_test(
-            cfg.get("targets")
-                .and_then(|t| t.as_arr())
-                .unwrap()[1]
+            cfg.get("targets").and_then(|t| t.as_arr()).unwrap()[1]
                 .get("target")
                 .unwrap(),
         );
-        assert!(matches!(rt, RuleTest::TagMatch { ref tag } if tag == "minecraft:stone_ore_replaceables"));
+        assert!(
+            matches!(rt, RuleTest::TagMatch { ref tag } if tag == "minecraft:stone_ore_replaceables")
+        );
         let rt2 = parse_rule_test(
-            cfg.get("targets")
-                .and_then(|t| t.as_arr())
-                .unwrap()[0]
+            cfg.get("targets").and_then(|t| t.as_arr()).unwrap()[0]
                 .get("target")
                 .unwrap(),
         );
@@ -1462,10 +1838,8 @@ mod tests {
     #[test]
     fn freeze_top_layer_real_shape() {
         // configured_feature/freeze_top_layer.json + placed_feature wrapper
-        let j = crate::json::parse(
-            "{\"type\":\"minecraft:freeze_top_layer\",\"config\":{}}",
-        )
-        .unwrap();
+        let j =
+            crate::json::parse("{\"type\":\"minecraft:freeze_top_layer\",\"config\":{}}").unwrap();
         let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
         let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
         let def = parse_configured_def(&j, short).unwrap();
@@ -1508,7 +1882,10 @@ mod tests {
             panic!("expected Spring");
         };
         assert_eq!(state_name, "minecraft:water");
-        assert_eq!(state_props, vec![("falling".to_string(), "true".to_string())]);
+        assert_eq!(
+            state_props,
+            vec![("falling".to_string(), "true".to_string())]
+        );
         assert!(requires_block_below);
         assert_eq!(rock_count, 4);
         assert_eq!(hole_count, 1);
@@ -1539,8 +1916,11 @@ mod tests {
         .unwrap();
         let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
         let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
-        let FeatureDef::Spring { requires_block_below, valid_blocks, .. } =
-            parse_configured_def(&j, short).unwrap()
+        let FeatureDef::Spring {
+            requires_block_below,
+            valid_blocks,
+            ..
+        } = parse_configured_def(&j, short).unwrap()
         else {
             panic!("expected Spring");
         };
@@ -1589,10 +1969,7 @@ mod tests {
     fn offset_clamp_and_solid_predicate() {
         // offsetCodec(16): components clamp to ±16 (tolerant parse); the
         // test probes [17,-20,0] -> [16,-16,0].
-        let j = crate::json::parse(
-            "{\"type\":\"minecraft:solid\",\"offset\":[17,-20,0]}",
-        )
-        .unwrap();
+        let j = crate::json::parse("{\"type\":\"minecraft:solid\",\"offset\":[17,-20,0]}").unwrap();
         let p = parse_predicate(&j).unwrap();
         match &p {
             BlockPredicate::Solid { offset } => assert_eq!(offset, &[16, -16, 0]),
@@ -1644,8 +2021,11 @@ mod tests {
             panic!("expected 5 mods");
         };
         assert!(matches!(last, PlacementMod::BiomeFilter));
-        let PlacementMod::SurfaceRelativeThresholdFilter { heightmap, min_inclusive, max_inclusive } =
-            srtf
+        let PlacementMod::SurfaceRelativeThresholdFilter {
+            heightmap,
+            min_inclusive,
+            max_inclusive,
+        } = srtf
         else {
             panic!("expected srtf, got {srtf:?}");
         };
@@ -1691,8 +2071,12 @@ mod tests {
              {\"type\":\"minecraft:inside_world_bounds\",\"offset\":[0,-5,0]}]}}",
         )
         .unwrap();
-        let PlacementMod::EnvironmentScan { direction, target, allowed, max_steps } =
-            parse_placement_mod(&j).unwrap()
+        let PlacementMod::EnvironmentScan {
+            direction,
+            target,
+            allowed,
+            max_steps,
+        } = parse_placement_mod(&j).unwrap()
         else {
             panic!("expected EnvironmentScan");
         };
@@ -1703,7 +2087,9 @@ mod tests {
             panic!("expected all_of target");
         };
         assert_eq!(v.len(), 2);
-        assert!(matches!(&v[1], BlockPredicate::InsideWorldBounds { offset } if *offset == [0, -5, 0]));
+        assert!(
+            matches!(&v[1], BlockPredicate::InsideWorldBounds { offset } if *offset == [0, -5, 0])
+        );
     }
 
     #[test]
@@ -1718,15 +2104,23 @@ mod tests {
              \"direction\":\"down\"}}",
         )
         .unwrap();
-        let PlacementMod::EnvironmentScan { direction, target, allowed, max_steps } =
-            parse_placement_mod(&j).unwrap()
+        let PlacementMod::EnvironmentScan {
+            direction,
+            target,
+            allowed,
+            max_steps,
+        } = parse_placement_mod(&j).unwrap()
         else {
             panic!("expected EnvironmentScan");
         };
         assert_eq!(direction, ScanDir::Up);
         assert_eq!(max_steps, 12);
-        assert!(matches!(&allowed, BlockPredicate::MatchingBlocks { blocks, .. } if blocks == &vec!["minecraft:air".to_string()]));
-        assert!(matches!(&*target, BlockPredicate::HasSturdyFace { direction: d, .. } if d == "down"));
+        assert!(
+            matches!(&allowed, BlockPredicate::MatchingBlocks { blocks, .. } if blocks == &vec!["minecraft:air".to_string()])
+        );
+        assert!(
+            matches!(&*target, BlockPredicate::HasSturdyFace { direction: d, .. } if d == "down")
+        );
     }
 
     #[test]
@@ -1754,18 +2148,13 @@ mod tests {
         // has_sturdy_face down at the probe position: stone => sturdy,
         // water => not, unreadable => false (honest).
         let sf = parse_predicate(
-            &crate::json::parse(
-                "{\"type\":\"minecraft:has_sturdy_face\",\"direction\":\"down\"}",
-            )
-            .unwrap(),
+            &crate::json::parse("{\"type\":\"minecraft:has_sturdy_face\",\"direction\":\"down\"}")
+                .unwrap(),
         )
         .unwrap();
-        let stone = |_: i32, _: i32, _: i32| -> Option<String> {
-            Some("minecraft:stone".into())
-        };
-        let water = |_: i32, _: i32, _: i32| -> Option<String> {
-            Some("minecraft:water[level=0]".into())
-        };
+        let stone = |_: i32, _: i32, _: i32| -> Option<String> { Some("minecraft:stone".into()) };
+        let water =
+            |_: i32, _: i32, _: i32| -> Option<String> { Some("minecraft:water[level=0]".into()) };
         let none = |_: i32, _: i32, _: i32| -> Option<String> { None };
         assert!(eval_predicate(&sf, 0, 64, 0, &stone, &repl, &tag_of));
         assert!(!eval_predicate(&sf, 0, 64, 0, &water, &repl, &tag_of));
@@ -1773,10 +2162,8 @@ mod tests {
         // inside_world_bounds offset [0,-5,0]: tests (0,59,0) — readable =>
         // inside build height; the offset position unreadable => false.
         let iwb = parse_predicate(
-            &crate::json::parse(
-                "{\"type\":\"minecraft:inside_world_bounds\",\"offset\":[0,-5,0]}",
-            )
-            .unwrap(),
+            &crate::json::parse("{\"type\":\"minecraft:inside_world_bounds\",\"offset\":[0,-5,0]}")
+                .unwrap(),
         )
         .unwrap();
         let at = |_: i32, y: i32, _: i32| -> Option<String> {
@@ -1797,10 +2184,7 @@ mod tests {
         // configured_feature/monster_room.json — NoneFeatureConfiguration
         // ({}); the placed chain (count 10 / in_square / height_range
         // below_top 0 .. absolute 0 / biome) must parse fully too.
-        let j = crate::json::parse(
-            "{\"type\":\"minecraft:monster_room\",\"config\":{}}",
-        )
-        .unwrap();
+        let j = crate::json::parse("{\"type\":\"minecraft:monster_room\",\"config\":{}}").unwrap();
         let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
         let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
         assert!(matches!(
@@ -1920,8 +2304,11 @@ mod tests {
         .unwrap();
         let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
         let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
-        let FeatureDef::MultifaceGrowth { block, chance_of_spreading, .. } =
-            parse_configured_def(&j, short).unwrap()
+        let FeatureDef::MultifaceGrowth {
+            block,
+            chance_of_spreading,
+            ..
+        } = parse_configured_def(&j, short).unwrap()
         else {
             panic!("expected MultifaceGrowth");
         };
@@ -1951,5 +2338,313 @@ mod tests {
         assert!(!can_place_on_floor && !can_place_on_ceiling && !can_place_on_wall);
         assert_eq!(chance_of_spreading, 0.5);
         assert_eq!(can_be_placed_on, vec!["#minecraft:base_stone_overworld"]);
+    }
+
+    #[test]
+    fn geode_amethyst_verbatim() {
+        // configured_feature/amethyst_geode.json — the ONLY corpus geode
+        // shape; every scalar verbatim from the extract.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:geode\",\"config\":\
+             {\"blocks\":{\"alternate_inner_layer_provider\":\
+             {\"type\":\"minecraft:simple_state_provider\",\"state\":\
+             {\"Name\":\"minecraft:budding_amethyst\"}},\
+             \"cannot_replace\":\"#minecraft:features_cannot_replace\",\
+             \"filling_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:air\"}},\
+             \"inner_layer_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:amethyst_block\"}},\
+             \"inner_placements\":[\
+             {\"Name\":\"minecraft:small_amethyst_bud\",\"Properties\":\
+             {\"facing\":\"up\",\"waterlogged\":\"false\"}},\
+             {\"Name\":\"minecraft:medium_amethyst_bud\",\"Properties\":\
+             {\"facing\":\"up\",\"waterlogged\":\"false\"}},\
+             {\"Name\":\"minecraft:large_amethyst_bud\",\"Properties\":\
+             {\"facing\":\"up\",\"waterlogged\":\"false\"}},\
+             {\"Name\":\"minecraft:amethyst_cluster\",\"Properties\":\
+             {\"facing\":\"up\",\"waterlogged\":\"false\"}}],\
+             \"invalid_blocks\":\"#minecraft:geode_invalid_blocks\",\
+             \"middle_layer_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:calcite\"}},\
+             \"outer_layer_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:smooth_basalt\"}}},\
+             \"crack\":{\"base_crack_size\":2.0,\"crack_point_offset\":2,\
+             \"generate_crack_chance\":0.95},\
+             \"distribution_points\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":4,\"min_inclusive\":3},\
+             \"invalid_blocks_threshold\":1,\
+             \"layers\":{\"filling\":1.7,\"inner_layer\":2.2,\
+             \"middle_layer\":3.2,\"outer_layer\":4.2},\
+             \"max_gen_offset\":16,\"min_gen_offset\":-16,\
+             \"noise_multiplier\":0.05,\
+             \"outer_wall_distance\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":6,\"min_inclusive\":4},\
+             \"placements_require_layer0_alternate\":true,\
+             \"point_offset\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":2,\"min_inclusive\":1},\
+             \"use_alternate_layer0_chance\":0.083,\
+             \"use_potential_placements_chance\":0.35}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::Geode {
+            filling_provider,
+            inner_layer_provider,
+            alternate_inner_layer_provider,
+            middle_layer_provider,
+            outer_layer_provider,
+            inner_placements,
+            cannot_replace,
+            invalid_blocks,
+            filling,
+            inner_layer,
+            middle_layer,
+            outer_layer,
+            generate_crack_chance,
+            base_crack_size,
+            crack_point_offset,
+            use_potential_placements_chance,
+            use_alternate_layer0_chance,
+            placements_require_layer0_alternate,
+            outer_wall_distance,
+            distribution_points,
+            point_offset,
+            min_gen_offset,
+            max_gen_offset,
+            noise_multiplier,
+            invalid_blocks_threshold,
+        } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected Geode");
+        };
+        assert_eq!(filling_provider, "minecraft:air");
+        assert_eq!(inner_layer_provider, "minecraft:amethyst_block");
+        assert_eq!(alternate_inner_layer_provider, "minecraft:budding_amethyst");
+        assert_eq!(middle_layer_provider, "minecraft:calcite");
+        assert_eq!(outer_layer_provider, "minecraft:smooth_basalt");
+        assert_eq!(inner_placements.len(), 4);
+        // BlockState codec: Properties sorted by key (facing < waterlogged).
+        assert_eq!(
+            inner_placements[0],
+            "minecraft:small_amethyst_bud[facing=up,waterlogged=false]"
+        );
+        assert_eq!(
+            inner_placements[3],
+            "minecraft:amethyst_cluster[facing=up,waterlogged=false]"
+        );
+        assert_eq!(cannot_replace, "#minecraft:features_cannot_replace");
+        assert_eq!(invalid_blocks, "#minecraft:geode_invalid_blocks");
+        assert_eq!(filling, 1.7);
+        assert_eq!(inner_layer, 2.2);
+        assert_eq!(middle_layer, 3.2);
+        assert_eq!(outer_layer, 4.2);
+        assert_eq!(generate_crack_chance, 0.95);
+        assert_eq!(base_crack_size, 2.0);
+        assert_eq!(crack_point_offset, 2);
+        assert_eq!(use_potential_placements_chance, 0.35);
+        assert_eq!(use_alternate_layer0_chance, 0.083);
+        assert!(placements_require_layer0_alternate);
+        assert_eq!(outer_wall_distance, IntProvider::Uniform(4, 6));
+        assert_eq!(distribution_points, IntProvider::Uniform(3, 4));
+        assert_eq!(point_offset, IntProvider::Uniform(1, 2));
+        assert_eq!(min_gen_offset, -16);
+        assert_eq!(max_gen_offset, 16);
+        assert_eq!(noise_multiplier, 0.05);
+        assert_eq!(invalid_blocks_threshold, 1);
+    }
+
+    #[test]
+    fn geode_codec_defaults() {
+        // orElse defaults from the CFR codec: layers 1.7/2.2/3.2/4.2, crack
+        // 1.0/2.0/2, chances 0.35/0.0, placements_require... true, providers
+        // uniform(4,5)/uniform(3,4)/uniform(1,2), offsets -16/16, noise 0.05.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:geode\",\"config\":\
+             {\"blocks\":{\"alternate_inner_layer_provider\":\
+             {\"type\":\"minecraft:simple_state_provider\",\"state\":\
+             {\"Name\":\"minecraft:budding_amethyst\"}},\
+             \"cannot_replace\":\"#minecraft:features_cannot_replace\",\
+             \"filling_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:air\"}},\
+             \"inner_layer_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:amethyst_block\"}},\
+             \"inner_placements\":[{\"Name\":\"minecraft:amethyst_cluster\"}],\
+             \"invalid_blocks\":\"#minecraft:geode_invalid_blocks\",\
+             \"middle_layer_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:calcite\"}},\
+             \"outer_layer_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:smooth_basalt\"}}},\
+             \"crack\":{},\"layers\":{},\"invalid_blocks_threshold\":1}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::Geode {
+            filling,
+            inner_layer,
+            middle_layer,
+            outer_layer,
+            generate_crack_chance,
+            base_crack_size,
+            crack_point_offset,
+            use_potential_placements_chance,
+            use_alternate_layer0_chance,
+            placements_require_layer0_alternate,
+            outer_wall_distance,
+            distribution_points,
+            point_offset,
+            min_gen_offset,
+            max_gen_offset,
+            noise_multiplier,
+            ..
+        } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected Geode");
+        };
+        assert_eq!(
+            (filling, inner_layer, middle_layer, outer_layer),
+            (1.7, 2.2, 3.2, 4.2)
+        );
+        assert_eq!(
+            (generate_crack_chance, base_crack_size, crack_point_offset),
+            (1.0, 2.0, 2)
+        );
+        assert_eq!(use_potential_placements_chance, 0.35);
+        assert_eq!(use_alternate_layer0_chance, 0.0);
+        assert!(placements_require_layer0_alternate);
+        assert_eq!(outer_wall_distance, IntProvider::Uniform(4, 5));
+        assert_eq!(distribution_points, IntProvider::Uniform(3, 4));
+        assert_eq!(point_offset, IntProvider::Uniform(1, 2));
+        assert_eq!(min_gen_offset, -16);
+        assert_eq!(max_gen_offset, 16);
+        assert_eq!(noise_multiplier, 0.05);
+    }
+
+    #[test]
+    fn geode_codec_bounds_honest_reject() {
+        // Required fields missing = codec error; every codec range is an
+        // honest reject (no clamp); boundary values pass. The %X% slot
+        // carries per-case top-level scalars, %F% the layer filling.
+        const BASE: &str = concat!(
+            "{\"type\":\"minecraft:geode\",\"config\":{\"blocks\":",
+            "{\"alternate_inner_layer_provider\":{\"type\":\"minecraft:",
+            "simple_state_provider\",\"state\":{\"Name\":\"minecraft:",
+            "budding_amethyst\"}},\"cannot_replace\":\"#minecraft:features",
+            "_cannot_replace\",\"filling_provider\":{\"type\":\"minecraft:",
+            "simple_state_provider\",\"state\":{\"Name\":\"minecraft:air\"}},",
+            "\"inner_layer_provider\":{\"type\":\"minecraft:simple_state",
+            "_provider\",\"state\":{\"Name\":\"minecraft:amethyst_block\"}},",
+            "\"inner_placements\":[{\"Name\":\"minecraft:amethyst_cluster\"}],",
+            "\"invalid_blocks\":\"#minecraft:geode_invalid_blocks\",",
+            "\"middle_layer_provider\":{\"type\":\"minecraft:simple_state",
+            "_provider\",\"state\":{\"Name\":\"minecraft:calcite\"}},",
+            "\"outer_layer_provider\":{\"type\":\"minecraft:simple_state",
+            "_provider\",\"state\":{\"Name\":\"minecraft:smooth_basalt\"}}},",
+            "\"crack\":{},\"layers\":{\"filling\":%F%,\"inner_layer\":2.2,",
+            "\"middle_layer\":3.2,\"outer_layer\":4.2},%X%,",
+            "\"invalid_blocks_threshold\":1}}"
+        );
+        let short = "geode";
+        let mk = |x: &str, filling: &str| BASE.replace("%F%", filling).replace("%X%", x);
+        let parse = |x: &str, filling: &str| crate::json::parse(&mk(x, filling)).unwrap();
+        // boundary values inside every range: OK.
+        let ok = parse(
+            "\"use_potential_placements_chance\":0.0,\
+             \"use_alternate_layer0_chance\":1.0,\"noise_multiplier\":1.0,\
+             \"outer_wall_distance\":{\"type\":\"minecraft:uniform\",\
+             \"min_inclusive\":1,\"max_inclusive\":20},\
+             \"point_offset\":{\"type\":\"minecraft:uniform\",\
+             \"min_inclusive\":0,\"max_inclusive\":10},\
+             \"crack\":{\"base_crack_size\":5.0,\"crack_point_offset\":0,\
+             \"generate_crack_chance\":0.0}",
+            "50.0",
+        );
+        assert!(parse_configured_def(&ok, short).is_ok());
+        // layer LAYER_RANGE 0.01..=50: both out-of-range ends rejected.
+        for bad_filling in ["50.01", "0.009"] {
+            let j = parse(
+                "\"use_potential_placements_chance\":0.35,\
+                 \"use_alternate_layer0_chance\":0.0",
+                bad_filling,
+            );
+            assert!(
+                parse_configured_def(&j, short).is_err(),
+                "filling {bad_filling}"
+            );
+        }
+        // GeodeCrackSettings ranges: base 0..=5, offset 0..=10, chance 0..=1.
+        let with_crack = |crack_obj: &str| {
+            crate::json::parse(
+                &mk(
+                    "\"use_potential_placements_chance\":0.35,\
+                     \"use_alternate_layer0_chance\":0.0",
+                    "1.7",
+                )
+                .replace("\"crack\":{}", crack_obj),
+            )
+            .unwrap()
+        };
+        for bad in [
+            "\"crack\":{\"base_crack_size\":5.5}",
+            "\"crack\":{\"crack_point_offset\":11}",
+            "\"crack\":{\"generate_crack_chance\":1.2}",
+        ] {
+            let j = with_crack(bad);
+            assert!(parse_configured_def(&j, short).is_err(), "crack {bad}");
+        }
+        let bounds_ok = with_crack(
+            "\"crack\":{\"base_crack_size\":0.0,\"crack_point_offset\":10,\
+             \"generate_crack_chance\":1.0}",
+        );
+        assert!(parse_configured_def(&bounds_ok, short).is_ok());
+        // CHANCE_RANGE scalars 0..=1.
+        let j = parse(
+            "\"use_potential_placements_chance\":1.5,\
+             \"use_alternate_layer0_chance\":0.0",
+            "1.7",
+        );
+        assert!(parse_configured_def(&j, short).is_err());
+        let j = parse(
+            "\"use_potential_placements_chance\":0.35,\"noise_multiplier\":-0.1,\
+             \"use_alternate_layer0_chance\":0.0",
+            "1.7",
+        );
+        assert!(parse_configured_def(&j, short).is_err());
+        // IntProvider.codec bounds: outer_wall_distance 1..=20, point_offset 0..=10.
+        let j = parse(
+            "\"outer_wall_distance\":{\"type\":\"minecraft:uniform\",\
+             \"min_inclusive\":4,\"max_inclusive\":21},\
+             \"use_alternate_layer0_chance\":0.0",
+            "1.7",
+        );
+        assert!(parse_configured_def(&j, short).is_err());
+        let j = parse(
+            "\"point_offset\":{\"type\":\"minecraft:uniform\",\
+             \"min_inclusive\":-1,\"max_inclusive\":2},\
+             \"use_alternate_layer0_chance\":0.0",
+            "1.7",
+        );
+        assert!(parse_configured_def(&j, short).is_err());
+        // nonEmptyList inner_placements: [] = codec error.
+        let j = crate::json::parse(&mk("\"use_alternate_layer0_chance\":0.0", "1.7").replace(
+            "\"inner_placements\":[{\"Name\":\"minecraft:amethyst_cluster\"}]",
+            "\"inner_placements\":[]",
+        ))
+        .unwrap();
+        assert!(parse_configured_def(&j, short).is_err());
+        // REQUIRED scalars missing = codec error.
+        let j = crate::json::parse(
+            &mk("\"use_alternate_layer0_chance\":0.0", "1.7")
+                .replace(",\"invalid_blocks_threshold\":1}", "}"),
+        )
+        .unwrap();
+        assert!(parse_configured_def(&j, short).is_err());
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:geode\",\"config\":{\"crack\":{},\"layers\":{},\
+             \"invalid_blocks_threshold\":1}}",
+        )
+        .unwrap();
+        assert!(parse_configured_def(&j, short).is_err());
     }
 }
