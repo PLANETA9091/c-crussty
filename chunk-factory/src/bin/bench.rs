@@ -56,6 +56,22 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
     #[cfg(ncf_profile)]
     let s1_before =
         chunk_factory::biomes::S1_VOTE_CALLS.load(std::sync::atomic::Ordering::Relaxed);
+    // S2 probe snapshot (after warmup, before the corpus)
+    #[cfg(ncf_profile)]
+    let s2_before = (
+        chunk_factory::surface_rules::S2_NANOS_PASS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_NANOS_TOTAL.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_NANOS_VOTE.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_NANOS_BADLANDS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_NANOS_YLOOP.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_NANOS_RULE.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_NANOS_FROZEN.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_AIR_CALLS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_FLUID_CALLS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_STONE_CALLS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_TRY_APPLIES.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2_SET_BLOCKS.load(std::sync::atomic::Ordering::Relaxed),
+    );
 
     let mut acc = [0f64; 4]; // noise, surface, carvers, serialization
     let mut n = 0usize;
@@ -101,6 +117,39 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         eprintln!(
             "[S1-probe] get_biome_voted_region: {calls} calls / {n} ledger chunks = {} per chunk (Java memoizes: <= 256 needed)",
             calls / (n as u64).max(1)
+        );
+    }
+    // S2 probe (standing order R5): surface-stage phase split over the corpus.
+    #[cfg(ncf_profile)]
+    if std::env::var("NCF_S2_PROBE").is_ok() {
+        use std::sync::atomic::Ordering::Relaxed as R;
+        use chunk_factory::surface_rules as s;
+        let (
+            p_pass, p_total, p_vote, p_bad, p_yloop, p_rule, p_frozen,
+            c_air, c_fluid, c_stone, c_try, c_set,
+        ) = s2_before;
+        let g = |a: &std::sync::atomic::AtomicU64, b: u64| a.load(R) - b;
+        let ms = |a: u64| a as f64 / n as f64 / 1e6;
+        let pass_ms = ms(g(&s::S2_NANOS_PASS, p_pass));
+        let total_ms = ms(g(&s::S2_NANOS_TOTAL, p_total));
+        let vote = ms(g(&s::S2_NANOS_VOTE, p_vote));
+        let bad = ms(g(&s::S2_NANOS_BADLANDS, p_bad));
+        let yloop = ms(g(&s::S2_NANOS_YLOOP, p_yloop));
+        let rule = ms(g(&s::S2_NANOS_RULE, p_rule));
+        let frozen = ms(g(&s::S2_NANOS_FROZEN, p_frozen));
+        eprintln!(
+            "[S2-probe] surface split ms/chunk: pass={pass_ms:.3} build={total_ms:.3} \
+             vote={vote:.3} badlands={bad:.3} yloop={yloop:.3} (rule nested={rule:.3}) frozen={frozen:.3} \
+             | yloop_excl={:.3} other={:.3} kit_prep={:.3} \
+             | counts/chunk: air={} fluid={} stone={} try_apply={} set_block={}",
+            yloop - rule,
+            total_ms - vote - bad - yloop - frozen,
+            pass_ms - total_ms,
+            (g(&s::S2_AIR_CALLS, c_air)) / (n as u64).max(1),
+            (g(&s::S2_FLUID_CALLS, c_fluid)) / (n as u64).max(1),
+            (g(&s::S2_STONE_CALLS, c_stone)) / (n as u64).max(1),
+            (g(&s::S2_TRY_APPLIES, c_try)) / (n as u64).max(1),
+            (g(&s::S2_SET_BLOCKS, c_set)) / (n as u64).max(1),
         );
     }
     let ported_total: f64 = per.iter().sum();

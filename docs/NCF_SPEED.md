@@ -81,6 +81,17 @@ perlin-vs-walk split and try scalar-gradient / SoA-transpose variants.
 Carvers-stage budget after P2.16 (probes): ~0.4 aquifer ctor (bind+alloc,
 scan now memo-hits) + ~0.3 biome refs + ~0.3 RNG sim + ~0.2 carve writes.
 
+S2 probe (2026-10-09, NCF_S2_PROBE=1, cfg(ncf_profile), probe-build overhead
+noted): surface split per chunk — rule.apply NESTED 8.86 ms of build 11.39
+(≈78% of the clean 8.46-8.58 ms stage), yloop excl 2.08, per-column biome
+vote 0.35, badlands/frozen extensions 0.00 on the corpus, kit prep 0.01.
+Counts: try_apply 29,976, set_block 16,974, classify calls 188,047/chunk
+(air 96,230 + fluid 61,526 + stone 30,291) — yet the flags A/B above proves
+ALL classify String work costs ~0.05-0.1 ms total: the interned, cache-hot
+names make each memcmp reject a few cycles. The next surface lever is inside
+rule.apply itself (worklist S4: intern_canonical per-hit allocations,
+Cond::BiomeIs String compares — probe the inner split FIRST, R5).
+
 ## Vanilla Java warm reference (P0.1, measured)
 
 jcmd+JFR shares x cpu_burst; Purpur 1.21.10-2535, seed 3053459, burst 128
@@ -157,3 +168,4 @@ History (end-to-end rows):
 | this commit (P2.16: RandomState-level prelim-surface memo; parent 937fbab) | 2026-10-09 | 19.0 | 21.0 | 1.2 | 1.0 | 42.3 | 3.32x |
 | P2.13 attempt 1 — REVERTED, no commit [!] (AVX2 4-lane perlin + compute4 on tree ef0c68d; SIMD ON numbers; SIMD OFF control on the same tree: 19.4-20.6 / 3.21-3.29x) | 2026-10-09 | 24.9-25.1 | 21.1 | 1.2 | 1.0 | 48.3-48.9 | 3.13-3.15x |
 | this commit (S1 lazy biome: update_y stores pending (x,y,z), Suppliers.memoize parity, &str read path; parent b986eecd probe = 30,274 votes/chunk, after = 4,822; byte-identical stagediff surface+carvers 256/256 vs parent; gate-p2 vanilla/3053459 2376/2376 EQUAL; ci_staged surface 225/225 EQUAL; 194/194 tests) | 2026-10-09 | 19.2 | 8.6 | 1.2 | 1.0 | 30.0 | 3.74x |
+| S2 attempt 1 — REVERTED per R2 (gain < 5%), no commit [!] (StateTable intern-time class flags AIR/FLUID/BLOCKS_MOTION/NOT_AIR replacing the per-block String compares in is_air/fluid/stone_id + HeightmapKind::is_opaque_state + filler skip-write + set_block PP check; stagediff surface+carvers 256+256 byte-identical vs parent 08e1aa1; 197/197 tests; parent baseline 8.51/8.53 reproduced) | 2026-10-09 | 19.1 | 8.42-8.46 (-0.6..-1.3%) | 1.09-1.13 | 1.00 | 29.46-29.76 | 3.75-3.76x |

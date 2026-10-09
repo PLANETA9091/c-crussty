@@ -199,6 +199,8 @@ pub fn apply_surface_pass(
     seed: i64,
     chunk: &mut FillerChunk,
 ) -> Result<(), String> {
+    #[cfg(ncf_profile)]
+    let prof_p0 = std::time::Instant::now();
     // fresh condition instances per chunk (Java ruleSource.apply(context))
     kit.rule_set.reset_caches();
     let default_block = chunk.state_table.intern_canonical(&rs.settings.default_block);
@@ -210,6 +212,11 @@ pub fn apply_surface_pass(
         let mut cols = ChunkColumns { chunk };
         build_surface(&mut ctx, &kit.rule_set.root, &mut cols, default_block);
     }
+    #[cfg(ncf_profile)]
+    crate::surface_rules::S2_NANOS_PASS.fetch_add(
+        prof_p0.elapsed().as_nanos() as u64,
+        std::sync::atomic::Ordering::Relaxed,
+    );
     Ok(())
 }
 

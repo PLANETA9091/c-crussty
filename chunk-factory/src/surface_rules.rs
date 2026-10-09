@@ -1046,6 +1046,36 @@ impl Rule {
 // SurfaceSystem.buildSurface
 // ---------------------------------------------------------------------------
 
+/// S2 probe (standing order R5, cfg(ncf_profile) only): WHERE does the
+/// ~8.4 ms surface stage go? Per-phase nanos (Instant around per-column
+/// boundaries — column granularity ~30 us vs ~25 ns clock overhead) plus
+/// classify/apply call counts. Default builds carry ZERO of this code.
+/// Sampled by `bench ... ledger` under NCF_S2_PROBE=1.
+#[cfg(ncf_profile)]
+pub static S2_NANOS_PASS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_NANOS_TOTAL: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_NANOS_VOTE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_NANOS_BADLANDS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_NANOS_YLOOP: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_NANOS_RULE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_NANOS_FROZEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_AIR_CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_FLUID_CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_STONE_CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_TRY_APPLIES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2_SET_BLOCKS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
 /// SurfaceSystem.buildSurface — full column walk. `probe_biome` semantics:
 /// biomeManager.getBiome(pos.set(x, useLegacy ? 0 : height+1, z)).
 #[allow(clippy::too_many_arguments)]
@@ -1055,6 +1085,8 @@ pub fn build_surface(
     chunk: &mut ChunkColumns,
     default_block: u32,
 ) {
+    #[cfg(ncf_profile)]
+    let prof_t0 = std::time::Instant::now();
     let min_block_x = chunk.chunk.min_y; // placeholder, real X/Z from chunk pos
     let _ = min_block_x;
     for i in 0..16i32 {
@@ -1066,6 +1098,8 @@ pub fn build_surface(
             // biome probe at (x, useLegacy ? 0 : i4, z) — overworld: i4.
             // biomeManager here is the WorldGenRegion's — vote over STORED
             // quarts with the section y-clamp (T35 addendum 4).
+            #[cfg(ncf_profile)]
+            let prof_v0 = std::time::Instant::now();
             let probe = get_biome_voted_region(
                 &mut ctx.source.borrow_mut(),
                 ctx.zoom_seed,
@@ -1075,10 +1109,22 @@ pub fn build_surface(
                 ctx.min_y >> 4,
                 ctx.height >> 4,
             );
+            #[cfg(ncf_profile)]
+            S2_NANOS_VOTE.fetch_add(
+                prof_v0.elapsed().as_nanos() as u64,
+                std::sync::atomic::Ordering::Relaxed,
+            );
             let probe_frozen = matches!(probe.as_str(), "minecraft:frozen_ocean" | "minecraft:deep_frozen_ocean");
             let probe_badlands = probe == "minecraft:eroded_badlands";
             if probe_badlands {
+                #[cfg(ncf_profile)]
+                let prof_b0 = std::time::Instant::now();
                 eroded_badlands_extension(ctx, chunk, x, z, i4, default_block);
+                #[cfg(ncf_profile)]
+                S2_NANOS_BADLANDS.fetch_add(
+                    prof_b0.elapsed().as_nanos() as u64,
+                    std::sync::atomic::Ordering::Relaxed,
+                );
             }
             // int i5 = chunk.getHeight(WORLD_SURFACE_WG, i, i1) + 1; (re-read!)
             let i5 = chunk.height_wg(i, i1) + 1;
@@ -1087,6 +1133,8 @@ pub fn build_surface(
             let mut i7 = i32::MIN;
             let mut i8 = i32::MAX;
             let min_y = chunk.chunk.min_y;
+            #[cfg(ncf_profile)]
+            let prof_y0 = std::time::Instant::now();
             let mut y = i5;
             while y >= min_y {
                 let block = chunk.get_block(x, y, z);
@@ -1122,20 +1170,48 @@ pub fn build_surface(
                 let stone_depth_below = y - i8 + 1;
                 i6 += 1;
                 ctx.update_y(i6, stone_depth_below, i7, x, y, z);
+                #[cfg(ncf_profile)]
+                let prof_r0 = std::time::Instant::now();
                 if block == default_block {
+                    #[cfg(ncf_profile)]
+                    S2_TRY_APPLIES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                     if let Some(new_state) = rule.try_apply(ctx, chunk) {
                         let id = chunk.chunk.state_table.intern_canonical(&new_state);
                         chunk.set_block(x, y, z, id);
+                        #[cfg(ncf_profile)]
+                        S2_SET_BLOCKS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                     }
                 }
+                #[cfg(ncf_profile)]
+                S2_NANOS_RULE.fetch_add(
+                    prof_r0.elapsed().as_nanos() as u64,
+                    std::sync::atomic::Ordering::Relaxed,
+                );
                 y -= 1;
             }
+            #[cfg(ncf_profile)]
+            S2_NANOS_YLOOP.fetch_add(
+                prof_y0.elapsed().as_nanos() as u64,
+                std::sync::atomic::Ordering::Relaxed,
+            );
             if probe_frozen {
+                #[cfg(ncf_profile)]
+                let prof_f0 = std::time::Instant::now();
                 let min_surface = ctx.get_min_surface_level();
                 frozen_ocean_extension(ctx, chunk, &probe, x, z, i4, min_surface, default_block);
+                #[cfg(ncf_profile)]
+                S2_NANOS_FROZEN.fetch_add(
+                    prof_f0.elapsed().as_nanos() as u64,
+                    std::sync::atomic::Ordering::Relaxed,
+                );
             }
         }
     }
+    #[cfg(ncf_profile)]
+    S2_NANOS_TOTAL.fetch_add(
+        prof_t0.elapsed().as_nanos() as u64,
+        std::sync::atomic::Ordering::Relaxed,
+    );
 }
 
 #[inline]
@@ -1155,6 +1231,8 @@ pub fn is_stone_state(state: u32, table: &StateTable) -> bool {
 
 #[inline]
 fn is_air_id(state: u32, table: &StateTable) -> bool {
+    #[cfg(ncf_profile)]
+    S2_AIR_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     matches!(
         table.get(state).name.as_str(),
         "minecraft:air" | "minecraft:cave_air" | "minecraft:void_air"
@@ -1163,11 +1241,15 @@ fn is_air_id(state: u32, table: &StateTable) -> bool {
 
 #[inline]
 fn is_fluid_id(state: u32, table: &StateTable) -> bool {
+    #[cfg(ncf_profile)]
+    S2_FLUID_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     matches!(table.get(state).name.as_str(), "minecraft:water" | "minecraft:lava")
 }
 
 #[inline]
 fn is_stone_id(state: u32, table: &StateTable) -> bool {
+    #[cfg(ncf_profile)]
+    S2_STONE_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     // SurfaceSystem.isStone: !isAir && fluidState.isEmpty()
     !is_air_id(state, table) && !is_fluid_id(state, table)
 }
