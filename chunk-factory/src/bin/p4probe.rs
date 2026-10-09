@@ -188,33 +188,13 @@ fn blocker_label(
     def: &chunk_factory::features::PlacedFeatureDef,
     registry: &FeatureRegistry,
 ) -> Option<String> {
-    use chunk_factory::features::{FeatureDef, PlacementMod};
-    for m in &def.placement {
-        if let PlacementMod::Unsupported(t) = m {
-            return Some(t.clone());
-        }
-    }
-    if let Some((short, _)) = &def.inline {
-        return Some(short.clone());
-    }
-    // inc. 9: RECURSE into composite bodies — a parsed RandomSelector /
-    // RandomBooleanSelector / RandomPatch whose inner chain is blocked
-    // must surface the DEEPEST unsupported label, otherwise the biome
-    // drops out of the histogram entirely (labeling blind spot).
-    match registry.configured.get(&def.feature_ref) {
-        Some(FeatureDef::Unsupported(t)) => Some(format!("unsupported type {t}")),
-        Some(FeatureDef::RandomSelector { features, default }) => features
-            .iter()
-            .find_map(|(_, f)| blocker_label(f, registry))
-            .or_else(|| blocker_label(default, registry)),
-        Some(FeatureDef::RandomBooleanSelector {
-            feature_true,
-            feature_false,
-        }) => blocker_label(feature_true, registry)
-            .or_else(|| blocker_label(feature_false, registry)),
-        Some(FeatureDef::RandomPatch { inner, .. }) => blocker_label(inner, registry),
-        _ => None,
-    }
+    use chunk_factory::features::placed_blocker_label;
+    // inc. 13: delegated to the IR layer so the simple_random_selector
+    // recursion (strict element labels) lives next to the verdict code.
+    // Label behavior is preserved byte-for-byte: unsupported placement
+    // modifier type (bare), inline parked short (bare), named dispatch
+    // miss ("unsupported type X"), composite recursion (deepest label).
+    placed_blocker_label(def, registry)
 }
 
 /// Type label of a placed feature whose IR parse failed: re-read the JSON

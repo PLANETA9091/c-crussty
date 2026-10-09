@@ -5867,3 +5867,119 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 91, собственный run): run 37901565862
 (a530e9b) completed SUCCESS. Правило «код-commit ждёт свой run»
 выполнено — тик ЗАВЕРШЁН.
+
+
+=== 2026-10-09 | аддендум 92: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 13):
+    noise_threshold_count + simple_random_selector (строгие вердикты
+    элементов); configured 134 -> 138, placed 152 -> 160, биомы
+    10 -> 12 (+birch_forest, +old_growth_birch_forest); 191/191 ===
+
+0) САНДБОКС: fetch+reset -> HEAD 20b4861 (аддендум 91, подтверждён).
+   cargo переустановлен (6-я рекализация подряд); корпус и decomp_p4
+   целы (224/258/65). База-ценз = аддендум 91, воспроизведён ДО правок
+   бит-в-бит (134/224, 152/258, 10/65, pf 0, head 3x ничья 7/7/7,
+   probe population=351934174475927443 first_draw=12).
+
+1) ОРАКУЛ (decomp_p4, 1.21.10):
+   (а) NoiseThresholdCountPlacement extends RepeatingPlacement: count()
+       = Biome.BIOME_INFO_NOISE (ПАРАМЕТР ШУМА temperature) в x/200.0,
+       z/200.0; value < noiseLevel -> belowNoise, иначе aboveNoise
+       (IntStream.range(0,count) ниже по цепочке — НОЛЬ rng-дров);
+       КОДЕК: noise_level DOUBLE fieldOf + below_noise/above_noise
+       ПРОСТОЙ Codec.INT fieldOf — БЕЗ intRange в 1.21.10 (любой int
+       кодек-легален; честная ошибка только на ОТСУТСТВУЮЩЕМ ключе);
+   (б) SimpleRandomSelectorFeature.place: ОДИН nextInt(features.size())
+       равномерный дров по HolderSet В ПОРЯДКЕ, делегация в
+       placedFeature.place с ТЕМИ ЖЕ random/origin (draw-exact хвост —
+       на этап stagediff features-status);
+   (в) SimpleRandomFeatureConfiguration.CODEC = ExtraCodecs.
+       nonEmptyHolderSet(PlacedFeature.LIST_CODEC).fieldOf("features") —
+       формы HolderSet: СПИСОК (корпусная), одиночный ref-стринг,
+       одиночный инлайн-объект; ПУСТОЙ список = ошибка кодека; каждый
+       элемент = PlacedFeature.CODEC (ref | инлайн {feature,placement});
+       "#tag"-форма — честный unsupported (в корпусе ноль экземпляров).
+
+2) КОД (этот коммит):
+   (а) PlacementMod::NoiseThresholdCount {noise_level, below_noise,
+       above_noise} + парсер: три fieldOf REQUIRED, БЕЗ range-проверок
+       (зеркало простого Codec.INT);
+   (б) FeatureDef::SimpleRandomSelector {features: Vec<Box<PlacedFeatureDef>>}
+       + парсер всех форм HolderSet (список/одиночный ref/одиночный
+       инлайн; пустой = Err; "#tag" = честный Err с меткой);
+   (в) СТРОГИЙ вердикт ЭЛЕМЕНТОВ (is_selector_element_supported):
+       инлайн-тело элемента проходит ТОТ ЖЕ parse_configured_def
+       диспатч, что и именованные фичи — dispatch-miss типы (coral_*,
+       pointed_dripstone) и parse-Err формы (weighted to_place в
+       компактном simple_block-листе) = ЧЕСТНЫЙ false; инлайн-паркинг
+       теперь несёт ПОЛНОЕ тело {type, config} (было: только config);
+   (г) is_placed_supported отрефакторен на is_def_supported (вердикт
+       разрешённого тела) — поведение СТАРых композитов сохранено
+       бит-в-бит (инлайн-trust-правило inc. 8/9 НЕ тронуто, см. п.5);
+   (д) p4probe blocker_label делегирован в features::placed_blocker_
+       label (+ def_blocker_label / selector_element_blocker_label) —
+       метки старых путей бит-в-бит прежние; новые: dispatch-miss ->
+       "unsupported type X", parse-Err -> текст ошибки, композит ->
+       рекурсия в глубочайший блокер.
+
+3) ТЕСТЫ 188 -> 191:
+   - simple_random_selector_verbatim_warm_ocean (вербатим 3 инлайн
+     коралла + честные Err: пустой список, нет ключа, "#tag");
+   - simple_random_selector_strict_element_verdicts (пустой реестр на
+     temp-дире: коралл -> false/"unsupported type coral_tree";
+     weighted simple_block -> false/"weighted_state_provider in simple
+     context"; простой simple_block -> true/без метки);
+   - noise_threshold_count_verbatim_flower_cherry (вербатим -0.8/5/10 +
+     3 честных Err на отсутствующих ключах + легальность отрицательных
+     int — зеркало кодека без intRange).
+
+4) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, корпус тот же, diff списков бит-в-бит;
+   база = аддендум 91):
+   configured: 134/224 -> 138/224 (+4: ВСЕ 4 simple_random_selector —
+       dripleaf, forest_flowers, pointed_dripstone,
+       warm_ocean_vegetation — теперь разбираются в типизированный IR;
+       строка "unsupported type simple_random_selector 0/4" ИСЧЕЗЛА);
+   placed: 152/258 -> 160/258 (+8: patch_grass_meadow, patch_grass_
+       plain, patch_tall_grass_2 — случайные patch-цепи с простыми
+       провайдерами; forest_flowers — строгий селектор; flower_cherry,
+       flower_plains, wildflowers_meadow, flower_forest_flowers —
+       flower->random_patch нормализация (7d2e56c, аддендум 80) теперь
+       не прикрыта ntc-модифаером; четыре последних держат OK через
+       инлайн-trust-правило inc. 8/9 — см. ЧЕСТНОСТЬ);
+   parse-провалы placed: 0 -> 0 (stderr пуст);
+   биомы fully-supported: 10/65 -> 12/65 (+birch_forest,
+       +old_growth_birch_forest — их цепи держались только на
+       simple_random_selector);
+   ГИСТОГРАММА: "noise_threshold_count 7/65" ИСЧЕЗЛА; "unsupported
+       type simple_random_selector 7/65" ИСЧЕЗЛА; НОВЫЕ строки
+       "unsupported type coral_tree 1/65" и "unsupported type
+       pointed_dripstone 1/65" (строгие метки элементов); остальные
+       строки бит-в-бит; HEAD = fancy_trunk_placer 7 (единоличный),
+       glowstone_blob 5, vines 4;
+   decor-seed probe: population=351934174475927443 first_draw=12 —
+       идентичен базе.
+
+5) ЧЕСТНОСТЬ (важно): строгий путь — НОВЫЙ СТАНДАРТ для
+   simple_random_selector; он ПОМЕШАЛ двум ложным OK: warm_ocean_
+   vegetation и pointed_dripstone остались PLACED -- с точными
+   метками (со старым trust-правилом было бы +2 фальшивых placed и
+   +2 фальшивых биома). Инлайн-trust-правило inc. 8/9 для СТАРЫХ
+   композитов НЕ тронуто (прецедент аддендумов 90-91); НО впервые
+   ИЗМЕРЕН его ценз (pre-scan этого тика): ложные OK — patch_cactus/
+   patch_sugar_cane (+их placed-варианты, инлайн block_column) и
+   patch_dry_grass/patch_grass_jungle/patch_leaf_litter/patch_taiga_
+   grass (инлайн weighted simple_block); плюс ЭТИМ тиком
+   ЭКСПОНИРОВАНО: flower_cherry/flower_plains/wildflowers_meadow/
+   flower_forest_flowers (внутренние weighted/noise-провайдеры
+   компактный simple_block-лист не держит). ПРЕДЛОЖЕНИЕ НА СЛЕД.
+   ТИК: равномерный строгий вердикт (снять trust-правило целиком —
+   инфраструктура готова: паркинг несёт полное тело) с измеренным
+   де-каунтом в аддендуме 93.
+
+6) СЛЕДУЮЩИЙ ТИК: (1) снятие инлайн-trust-правила с измеренным
+   де-каунтом (честная коррекция базы ценза), затем (2) по
+   гистограмме fancy_trunk_placer (7 биомов; min_clipped_height уже
+   в IR), затем glowstone_blob (5) / vines (4); затем stagediff
+   features-status на спец-корпусе (3x3-replay spiral GoldenDumper).
+
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2
+  текст (тик 16:02 — Т38-B/T40; 17-й stale-тик) — первоисточник = этот LOG.

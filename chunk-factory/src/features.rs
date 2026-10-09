@@ -997,6 +997,20 @@ pub enum PlacementMod {
         allowed: BlockPredicate,
         max_steps: i32,
     },
+    /// noise_threshold_count (flower_cherry, flower_plains, patch_grass_meadow,
+    /// patch_grass, patch_tall_grass_2, wildflowers_meadow; inc. 13) —
+    /// RepeatingPlacement: count() = Biome.BIOME_INFO_NOISE (the TEMPERATURE
+    /// noise parameter) sampled at x/200.0, z/200.0; value < noiseLevel ->
+    /// belowNoise, else aboveNoise (IntStream.range(0, count) downstream —
+    /// NO rng draws). Codec (CFR): noise_level DOUBLE fieldOf +
+    /// below_noise/above_noise PLAIN Codec.INT fieldOf — NO intRange
+    /// validation in 1.21.10 (any int is codec-legal; only MISSING keys are
+    /// codec errors).
+    NoiseThresholdCount {
+        noise_level: f64,
+        below_noise: i32,
+        above_noise: i32,
+    },
     /// any modifier the native lane has not proven bit-exact yet
     Unsupported(String),
 }
@@ -1114,6 +1128,25 @@ pub fn parse_placement_mod(j: &Json) -> Result<PlacementMod, String> {
                 max_steps,
             }
         }
+        "noise_threshold_count" => {
+            // CFR NoiseThresholdCountPlacement.CODEC: three fieldOf REQUIRED
+            // fields; below/above via PLAIN Codec.INT (no intRange — an
+            // out-of-range value is codec-legal, only a missing key errs).
+            PlacementMod::NoiseThresholdCount {
+                noise_level: j
+                    .get("noise_level")
+                    .and_then(|v| v.as_f64())
+                    .ok_or("noise_threshold_count.noise_level")?,
+                below_noise: j
+                    .get("below_noise")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("noise_threshold_count.below_noise")? as i32,
+                above_noise: j
+                    .get("above_noise")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("noise_threshold_count.above_noise")? as i32,
+            }
+        }
         _ => PlacementMod::Unsupported(ty.to_string()),
     })
 }
@@ -1123,8 +1156,8 @@ pub fn parse_placement_mod(j: &Json) -> Result<PlacementMod, String> {
 pub struct PlacedFeatureDef {
     pub feature_ref: String,
     pub placement: Vec<PlacementMod>,
-    /// INLINE configured feature (random_patch inner shape): (type short,
-    /// config JSON) — resolved without a registry lookup.
+    /// INLINE configured feature body (random_patch inner shape): the FULL
+    /// {type, config} object — resolved without a registry lookup.
     pub inline: Option<(String, Json)>,
 }
 
@@ -1133,16 +1166,16 @@ pub fn parse_placed_feature(j: &Json) -> Result<PlacedFeatureDef, String> {
     let (feature_ref, inline) = match j.get("feature") {
         Some(Json::Str(s)) => (expand_rl(s), None),
         Some(f) if f.get("type").is_some() => {
-            // inline configured feature: parse the body here and park it on
-            // the def (execution resolves it without a registry lookup).
+            // inline configured feature: park the WHOLE body {type, config}
+            // (inc. 13: the strict selector-element verdict re-parses it
+            // through the same dispatch as named features).
             let ty = f
                 .get("type")
                 .and_then(|t| t.as_str())
                 .unwrap_or("")
                 .to_string();
             let short = ty.strip_prefix("minecraft:").unwrap_or(&ty).to_string();
-            let cfg = f.get("config").cloned().ok_or("inline.config")?;
-            (String::new(), Some((short, cfg)))
+            (String::new(), Some((short, f.clone())))
         }
         _ => return Err("placed.feature".into()),
     };
@@ -1205,6 +1238,22 @@ pub enum FeatureDef {
     RandomBooleanSelector {
         feature_true: Box<PlacedFeatureDef>,
         feature_false: Box<PlacedFeatureDef>,
+    },
+    /// SimpleRandomFeatureConfiguration ("simple_random_selector", inc. 13):
+    /// features = ExtraCodecs.nonEmptyHolderSet(PlacedFeature.LIST_CODEC)
+    /// fieldOf REQUIRED — a LIST of placed features (each = registry string
+    /// ref OR inline {feature, placement} object); a single ref/object is
+    /// also a legal HolderSet shape; an EMPTY list = codec error. Execution
+    /// tail: ONE nextInt(features.size()) uniform draw over the set IN
+    /// ORDER, then the chosen placed feature places with the SAME random
+    /// source and origin (draw-exact port at the stagediff features-status
+    /// step). Verdict honesty (inc. 13): every element is verdicted
+    /// STRICTLY — an inline element body goes through the SAME
+    /// parse_configured_def dispatch as named features (the inc.8/9 inline
+    /// blacklist trust-hole is NOT extended to this composite); a "#tag"
+    /// holder-set is an honest unsupported (zero corpus instances).
+    SimpleRandomSelector {
+        features: Vec<Box<PlacedFeatureDef>>,
     },
     /// DiskConfiguration: "target" is a SINGLE block predicate and the
     /// state comes from "state_provider" (inc. 6: FULL RuleBased
@@ -1640,6 +1689,47 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
                 feature_true,
                 feature_false,
             }
+        }
+        "simple_random_selector" => {
+            let cfg = j.get("config").ok_or("simple_random_selector.config")?;
+            let fj = cfg
+                .get("features")
+                .ok_or("simple_random_selector.features")?;
+            // "#tag" holder-set: honest unsupported (corpus carries none).
+            if fj.as_str().is_some() && fj.as_str().unwrap_or("").starts_with('#') {
+                return Err(format!(
+                    "simple_random_selector tag holder-set unsupported: {}",
+                    fj.as_str().unwrap_or("")
+                ));
+            }
+            // HolderSet shapes: a LIST (the corpus form), a single ref
+            // string, or a single inline object. nonEmptyHolderSet: an
+            // empty list = codec error.
+            let items: Vec<&Json> = match fj.as_arr() {
+                Some(a) => {
+                    if a.is_empty() {
+                        return Err("simple_random_selector features non-empty".into());
+                    }
+                    a.iter().collect()
+                }
+                None => vec![fj],
+            };
+            let mut features = Vec::new();
+            for it in items {
+                // PlacedFeature.CODEC dual form (same shapes the
+                // random_selector weighted entries use).
+                let f = if let Some(s) = it.as_str() {
+                    PlacedFeatureDef {
+                        feature_ref: expand_rl(s),
+                        placement: Vec::new(),
+                        inline: None,
+                    }
+                } else {
+                    parse_placed_feature(it)?
+                };
+                features.push(Box::new(f));
+            }
+            FeatureDef::SimpleRandomSelector { features }
         }
         "disk" => {
             let cfg = j.get("config").ok_or("disk.config")?;
@@ -2523,29 +2613,13 @@ pub fn decoration_supported(
     true
 }
 
-/// Full support verdict for one placed feature (modifiers + configured body
-/// + the bodies reachable through random_patch nesting).
-pub fn is_placed_supported(def: &PlacedFeatureDef, registry: &FeatureRegistry) -> bool {
-    if def
-        .placement
-        .iter()
-        .any(|m| matches!(m, PlacementMod::Unsupported(_)))
-    {
-        return false;
-    }
-    // INLINE configured body (random_patch inner shape).
-    let body = match &def.inline {
-        Some((short, _)) => {
-            return !matches!(
-                short.as_str(),
-                "tree" | "random_selector" | "simple_random_selector" | "random_boolean_selector"
-            );
-        }
-        None => match registry.configured.get(&def.feature_ref) {
-            Some(cfg) => cfg,
-            None => return false,
-        },
-    };
+/// Composite/leaf support verdict for a RESOLVED configured body (named
+/// lookup or strict inline re-parse). Composites recurse through
+/// is_placed_supported / is_selector_element_supported; the inline
+/// trust-hole of the OLD composites (inc. 8/9: only the 4 composite names
+/// conservatively false, everything else trusted — corpus-zero tree/selector
+/// inline bodies, addendum 91 §1(ж)) is intentionally untouched there.
+fn is_def_supported(body: &FeatureDef, registry: &FeatureRegistry) -> bool {
     match body {
         FeatureDef::Unsupported(_) => false,
         FeatureDef::RandomPatch { inner, .. } => is_placed_supported(inner, registry),
@@ -2560,7 +2634,109 @@ pub fn is_placed_supported(def: &PlacedFeatureDef, registry: &FeatureRegistry) -
             is_placed_supported(feature_true, registry)
                 && is_placed_supported(feature_false, registry)
         }
+        FeatureDef::SimpleRandomSelector { features } => features
+            .iter()
+            .all(|f| is_selector_element_supported(f, registry)),
         _ => true,
+    }
+}
+
+/// STRICT element verdict (inc. 13): an INLINE element body is re-parsed
+/// through the same parse_configured_def dispatch as named features —
+/// dispatch-miss types (coral_*, pointed_dripstone) and parse-err shapes
+/// (weighted to_place in the compact simple_block leaf) are honest false;
+/// a ref element resolves through the regular named path.
+fn is_selector_element_supported(f: &PlacedFeatureDef, registry: &FeatureRegistry) -> bool {
+    match &f.inline {
+        Some((short, body)) => match parse_configured_def(body, short) {
+            Ok(d) => is_def_supported(&d, registry),
+            Err(_) => false,
+        },
+        None => is_placed_supported(f, registry),
+    }
+}
+
+/// Full support verdict for one placed feature (modifiers + configured body
+/// + the bodies reachable through random_patch nesting).
+pub fn is_placed_supported(def: &PlacedFeatureDef, registry: &FeatureRegistry) -> bool {
+    if def
+        .placement
+        .iter()
+        .any(|m| matches!(m, PlacementMod::Unsupported(_)))
+    {
+        return false;
+    }
+    // INLINE configured body (random_patch inner shape) — the OLD trust
+    // rule (inc. 8/9): only the 4 composite names are conservatively false;
+    // everything else is trusted. NOT extended to simple_random_selector
+    // (see is_selector_element_supported); corpus-zero tree/selector inline
+    // bodies (addendum 91 §1(ж)).
+    if let Some((short, _)) = &def.inline {
+        return !matches!(
+            short.as_str(),
+            "tree" | "random_selector" | "simple_random_selector" | "random_boolean_selector"
+        );
+    }
+    match registry.configured.get(&def.feature_ref) {
+        Some(cfg) => is_def_supported(cfg, registry),
+        None => false,
+    }
+}
+
+/// Blocker label of one placed def (modifier arm + inline arm + named arm).
+pub fn placed_blocker_label(def: &PlacedFeatureDef, registry: &FeatureRegistry) -> Option<String> {
+    for m in &def.placement {
+        if let PlacementMod::Unsupported(t) = m {
+            return Some(t.clone());
+        }
+    }
+    if let Some((short, _)) = &def.inline {
+        // OLD trust-rule labels (inc. 8/9): the bare parked short.
+        return Some(short.clone());
+    }
+    registry
+        .configured
+        .get(&def.feature_ref)
+        .and_then(|cfg| def_blocker_label(cfg, registry))
+}
+
+/// Blocker label of a RESOLVED configured body (composite recursion shared
+/// by the named and strict-inline label paths).
+pub fn def_blocker_label(body: &FeatureDef, registry: &FeatureRegistry) -> Option<String> {
+    match body {
+        FeatureDef::Unsupported(t) => Some(format!("unsupported type {t}")),
+        FeatureDef::RandomPatch { inner, .. } => placed_blocker_label(inner, registry),
+        FeatureDef::RandomSelector { features, default } => features
+            .iter()
+            .find_map(|(_, f)| placed_blocker_label(f, registry))
+            .or_else(|| placed_blocker_label(default, registry)),
+        FeatureDef::RandomBooleanSelector {
+            feature_true,
+            feature_false,
+        } => placed_blocker_label(feature_true, registry)
+            .or_else(|| placed_blocker_label(feature_false, registry)),
+        FeatureDef::SimpleRandomSelector { features } => features
+            .iter()
+            .find_map(|f| selector_element_blocker_label(f, registry)),
+        _ => None,
+    }
+}
+
+/// Blocker label for one STRICT selector element (inc. 13) — mirrors
+/// is_selector_element_supported: the deepest unsupported label of the
+/// element's body (dispatch-miss -> "unsupported type X", parse-err -> the
+/// error text, composite -> recursion), None when fully supported.
+pub fn selector_element_blocker_label(
+    f: &PlacedFeatureDef,
+    registry: &FeatureRegistry,
+) -> Option<String> {
+    match &f.inline {
+        Some((short, body)) => match parse_configured_def(body, short) {
+            Err(e) => Some(e),
+            Ok(FeatureDef::Unsupported(t)) => Some(format!("unsupported type {t}")),
+            Ok(d) => def_blocker_label(&d, registry),
+        },
+        None => placed_blocker_label(f, registry),
     }
 }
 
@@ -3979,6 +4155,169 @@ mod tests {
         )
         .unwrap();
         assert!(parse_configured_def(&j2, "random_boolean_selector").is_err());
+    }
+
+    #[test]
+    fn simple_random_selector_verbatim_warm_ocean() {
+        // verbatim from configured_feature/warm_ocean_vegetation.json — the
+        // HolderSet LIST form with three INLINE placed elements.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:simple_random_selector\",\"config\":{\"features\":[\
+             {\"feature\":{\"type\":\"minecraft:coral_tree\",\"config\":{}},\"placement\":[]},\
+             {\"feature\":{\"type\":\"minecraft:coral_claw\",\"config\":{}},\"placement\":[]},\
+             {\"feature\":{\"type\":\"minecraft:coral_mushroom\",\"config\":{}},\"placement\":[]}]}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::SimpleRandomSelector { features } =
+            parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected SimpleRandomSelector");
+        };
+        assert_eq!(features.len(), 3);
+        for f in &features {
+            assert_eq!(f.feature_ref, "");
+            assert!(f.placement.is_empty());
+            assert!(f.inline.is_some());
+        }
+        let (s0, _) = features[0].inline.as_ref().unwrap();
+        assert_eq!(s0, "coral_tree");
+
+        // codec honesty: nonEmptyHolderSet — an EMPTY list = codec error;
+        // a missing features key = codec error; a "#tag" holder-set = honest
+        // unsupported (zero corpus instances, label documents the shape).
+        let j2 = crate::json::parse(
+            "{\"type\":\"minecraft:simple_random_selector\",\"config\":{\"features\":[]}}",
+        )
+        .unwrap();
+        assert!(parse_configured_def(&j2, "simple_random_selector").is_err());
+        let j3 = crate::json::parse(
+            "{\"type\":\"minecraft:simple_random_selector\",\"config\":{}}",
+        )
+        .unwrap();
+        assert!(parse_configured_def(&j3, "simple_random_selector").is_err());
+        let j4 = crate::json::parse(
+            "{\"type\":\"minecraft:simple_random_selector\",\"config\":\
+             {\"features\":\"#minecraft:corals\"}}",
+        )
+        .unwrap();
+        assert!(parse_configured_def(&j4, "simple_random_selector")
+            .unwrap_err()
+            .contains("tag holder-set unsupported"));
+    }
+
+    #[test]
+    fn simple_random_selector_strict_element_verdicts() {
+        // STRICT element verdicts (inc. 13): dispatch-miss inner types and
+        // parse-err shapes are honest FALSE with precise labels; a fully
+        // supported inline body is honest TRUE. The registry is EMPTY (temp
+        // dir) — every verdict below rides the inline strict path, no named
+        // lookup is involved.
+        let tmp = std::env::temp_dir().join(format!("ncf_p4_sel_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&tmp);
+        std::fs::create_dir_all(tmp.join("data/minecraft/worldgen")).unwrap();
+        let dir = crate::router::WorldgenDir::load(&tmp).unwrap();
+        let registry = FeatureRegistry {
+            configured: HashMap::new(),
+            placed: HashMap::new(),
+            dir: &dir,
+        };
+        let _ = std::fs::remove_dir_all(&tmp);
+
+        // coral dispatch-miss -> Unsupported -> honest false.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:simple_random_selector\",\"config\":{\"features\":[\
+             {\"feature\":{\"type\":\"minecraft:coral_tree\",\"config\":{}},\"placement\":[]}]}}",
+        )
+        .unwrap();
+        let def = parse_configured_def(&j, "simple_random_selector").unwrap();
+        assert!(!is_def_supported(&def, &registry));
+        assert_eq!(
+            def_blocker_label(&def, &registry).as_deref(),
+            Some("unsupported type coral_tree")
+        );
+
+        // parse-err shape (weighted to_place in the compact simple_block
+        // leaf, verbatim dripleaf.json element shape) -> honest false with
+        // the parse-err text as the label.
+        let j2 = crate::json::parse(
+            "{\"type\":\"minecraft:simple_random_selector\",\"config\":{\"features\":[\
+             {\"feature\":{\"type\":\"minecraft:simple_block\",\"config\":\
+             {\"to_place\":{\"type\":\"minecraft:weighted_state_provider\",\"entries\":[\
+             {\"data\":{\"Name\":\"minecraft:stone\"},\"weight\":1}]}}},\
+             \"placement\":[]}]}}",
+        )
+        .unwrap();
+        let def2 = parse_configured_def(&j2, "simple_random_selector").unwrap();
+        assert!(!is_def_supported(&def2, &registry));
+        assert_eq!(
+            def_blocker_label(&def2, &registry).as_deref(),
+            Some("weighted_state_provider in simple context")
+        );
+
+        // fully supported inline element body (plain simple_block) ->
+        // honest true, no label.
+        let j3 = crate::json::parse(
+            "{\"type\":\"minecraft:simple_random_selector\",\"config\":{\"features\":[\
+             {\"feature\":{\"type\":\"minecraft:simple_block\",\"config\":\
+             {\"to_place\":{\"type\":\"minecraft:simple_state_provider\",\"state\":\
+             {\"Name\":\"minecraft:stone\"}}}},\"placement\":[]}]}}",
+        )
+        .unwrap();
+        let def3 = parse_configured_def(&j3, "simple_random_selector").unwrap();
+        assert!(is_def_supported(&def3, &registry));
+        assert!(def_blocker_label(&def3, &registry).is_none());
+    }
+
+    #[test]
+    fn noise_threshold_count_verbatim_flower_cherry() {
+        // verbatim from placed_feature/flower_cherry.json — plain Codec.INT
+        // for below/above (NO range validation), DOUBLE noise_level.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:noise_threshold_count\",\"noise_level\":-0.8,\
+             \"below_noise\":5,\"above_noise\":10}",
+        )
+        .unwrap();
+        match parse_placement_mod(&j).unwrap() {
+            PlacementMod::NoiseThresholdCount {
+                noise_level,
+                below_noise,
+                above_noise,
+            } => {
+                assert_eq!(noise_level, -0.8);
+                assert_eq!(below_noise, 5);
+                assert_eq!(above_noise, 10);
+            }
+            other => panic!("expected NoiseThresholdCount, got {other:?}"),
+        }
+        // honest codec errors: each of the three keys is fieldOf REQUIRED.
+        let j2 = crate::json::parse(
+            "{\"type\":\"minecraft:noise_threshold_count\",\"below_noise\":5,\"above_noise\":10}",
+        )
+        .unwrap();
+        assert!(parse_placement_mod(&j2).is_err());
+        let j3 = crate::json::parse(
+            "{\"type\":\"minecraft:noise_threshold_count\",\"noise_level\":-0.8,\"above_noise\":10}",
+        )
+        .unwrap();
+        assert!(parse_placement_mod(&j3).is_err());
+        let j4 = crate::json::parse(
+            "{\"type\":\"minecraft:noise_threshold_count\",\"noise_level\":-0.8,\"below_noise\":5}",
+        )
+        .unwrap();
+        assert!(parse_placement_mod(&j4).is_err());
+        // plain Codec.INT: a negative count is codec-legal (honest mirror of
+        // the 1.21.10 codec — no intRange anywhere on this modifier).
+        let j5 = crate::json::parse(
+            "{\"type\":\"minecraft:noise_threshold_count\",\"noise_level\":0.0,\
+             \"below_noise\":-3,\"above_noise\":-7}",
+        )
+        .unwrap();
+        assert!(matches!(
+            parse_placement_mod(&j5).unwrap(),
+            PlacementMod::NoiseThresholdCount { .. }
+        ));
     }
 
     #[test]
