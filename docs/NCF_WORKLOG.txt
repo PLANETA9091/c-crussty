@@ -4896,3 +4896,96 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 82, собственный run): run 37871431885
 (3cefffd) completed SUCCESS — 33/33 job'ов (~11 мин). Правило «код-commit
 ждёт свой run» выполнено — тик ЗАВЕРШЁН.
+
+=== 2026-10-09 | аддендум 83: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 4):
+    порты monster_room + underwater_magma + multiface_growth (топ
+    гистограммы 54/54/54 биомов, тело configured); ценз 80->84 configured,
+    111->116 placed (+5: glow_lichen, monster_room, monster_room_deep,
+    sculk_vein, underwater_magma); 171/171 тестов ===
+
+0) CI-ПОДТВЕРЖДЕНИЕ ПРЕДЫДУЩЕГО КОММИТА (собственный run): run 37871431885
+   (3cefffd, аддендум 82) completed SUCCESS — 33/33 job'ов (~11 мин);
+   подтверждение внесено docs-коммитом 7c5ecf2 — 0 run'ов (paths-ignore
+   из STEP 0 проверен в бою). Правило «код-commit ждёт свой run»
+   выполнено. Тик 10:02 — 7-й stale cron (старый gate-P2 текст) — не
+   исполнялся, работа по НОВОМУ work list из этого LOG.
+
+1) ОРАКУЛ: decomp_p4 выжил вне репо; worldgen-корпус
+   /home/z/my-project/ci-server/worldgen-extract цел (258+224+200).
+   Decomp прочитан по источникам: MonsterRoomFeature,
+   UnderwaterMagmaFeature + UnderwaterMagmaConfiguration,
+   MultifaceGrowthFeature + MultifaceGrowthConfiguration. База ценза
+   воспроизведена (список inc.3 сохранён: 84/224 база = 80/224 + 4 новых
+   тела).
+
+2) ФАКТЫ ИЗ ДЕКОМПИЛА (1.21.10 CFR):
+   (а) monster_room = NoneFeatureConfiguration. Тело: nextInt(2)+2 радиусы
+       x/z; оболочка isSolid-проверки (y=-1 и y=4 обязаны solid иначе
+       false); счётчик пустых позиций 1..=5; раскопка (3..-1) с
+       mossy/cobble по nextInt(4); СУНДУК (reorient + SIMPLE_DUNGEON loot)
+       и СПАВНЕР (SpawnerBlockEntity.setEntityId over
+       skeleton/zombie/zombie/spider) — НУЖЕН block-entity слой при
+       проводке выполнения (честный хвост, задокументирован на варианте).
+   (б) underwater_magma: UnderwaterMagmaConfiguration = 3 поля
+       intRange(0,512) floor_search_range / intRange(0,64)
+       placement_radius_around_floor / floatRange(0,1)
+       placement_probability_per_valid_position (все REQUIRED, вне
+       диапазона = codec error). Тело: Column.scan до водного пола +
+       per-position nextFloat() < prob по бэксу radius-куба.
+   (в) multiface_growth: MultifaceGrowthConfiguration — block
+       byNameCodec().orElse(GLOW_LICHEN) (опционально! дефолт
+       glow_lichen; flatXmap требует MultifaceSpreadeableBlock),
+       search_range intRange(1,64) orElse(10), can_place_on_floor/
+       ceiling/wall bool дефолт false, chance_of_spreading floatRange(0,1)
+       orElse(0.5), can_be_placed_on = HolderSet<Block> (id-массив в
+       корпусе, "#tag" принят). Тело: рекурсивное расползание с
+       shuffled-directions rng — хвост выполнения.
+       КОРПУС: glow_lichen (ceiling+wall) и sculk_vein (все флаги,
+       chance 1.0).
+
+3) КОД (этот коммит):
+   (а) features.rs: FeatureDef::MonsterRoom (NoneFeatureConfiguration) +
+       FeatureDef::UnderwaterMagma {3 поля с честными range-check'ами
+       0..=512 / 0..=64 / 0..=1, отсутствие поля = Err} +
+       FeatureDef::MultifaceGrowth {block (дефолт glow_lichen),
+       search_range (дефолт 10), три флага (дефолт false),
+       chance_of_spreading (дефолт 0.5), can_be_placed_on (Str=#tag /
+       Arr=id)}; хвосты выполнения задокументированы на вариантах.
+   (б) тесты 167->171 (4 новых на вербатимных формах: monster_room {}
+       + его placed-цепочка below_top; underwater_magma вербатим +
+       range-reject'ы 513/65/1.5 + missing-field + граничные 0/64/1.0;
+       glow_lichen 8-id массив + флаги; sculk_vein chance 1.0 +
+       синтетический дефолт-шейп (block/search/flags/chance) + "#tag"
+       форма can_be_placed_on).
+
+4) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, corpus тот же, diff списков бит-в-бит):
+   configured: 80/224 -> 84/224 (+4: monster_room 1, underwater_magma 1,
+       multiface_growth 2 = glow_lichen+sculk_vein);
+   placed: 111/258 -> 116/258 (+5: glow_lichen, monster_room,
+       MONSTER_ROOM_DEEP (второй placed! предсказан был 4, факт 5 —
+       список-дифф ловит), sculk_vein, underwater_magma);
+   parse-провалы placed: 69 -> 69 (тела были Unsupported-вердиктами, не
+       parse-fail'ами — счётчик честно не двинулся);
+   биомы fully-supported: 0/65 (без изменений — geode/lake/деревья
+       остаются универсальными блокерами);
+   ГИСТОГРАММА: monster_room 54 -> ИСЧЕЗЛА; multiface_growth 54 ->
+       ИСЧЕЗЛА; underwater_magma 54 -> ИСЧЕЗЛА. НОВЫЙ ТОП:
+       geode 54; lake 53; rule_based_state_provider-with-rules 53;
+       random_patch (parse fail) 43; would_survive 43; random_selector
+       (parse fail) 36; noise_threshold_count 7;
+       simple_random_selector 6; glowstone_blob 5; vines 4.
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсеры + тесты + ценз), не
+   worklog-only; гейт-контракты veccheck/stagediff НЕ тронуты; хвосты
+   выполнения (block-entity слой monster_room, Column.scan+rng
+   underwater_magma, рекурсивное расползание multiface_growth)
+   задокументированы на IR-вариантах и будут проводиться при stagediff
+   features-статусе.
+
+6) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — порт geode (54 биома, новый топ) и/
+   или lake (53) / rule_based_state_provider-with-rules (53, открывает
+   disk-семейство: disk_sand уже парсится, тело ждёт именно этот
+   провайдер) по декомпилу; затем stagediff features-статус на
+   спец-корпусе (3x3-replay по spiral-порядку GoldenDumper).
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+(тик 10:02 — Т38-B/T40; 7-й stale-тик) — первоисточник = этот LOG.

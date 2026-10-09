@@ -18,6 +18,11 @@
 //!     semantics (the first NOT-allowed position is still tested).
 //!   - HasSturdyFacePredicate + InsideWorldBoundsPredicate (inc. 3): the
 //!     two remaining nested targets of the corpus environment_scan shapes.
+//!   - MonsterRoomFeature + UnderwaterMagmaFeature + MultifaceGrowthFeature
+//!     (inc. 4): the body-type histogram top (54/54/54 biomes). PARSE-true;
+//!     execution tails documented on the variants (spawner/chest block
+//!     entities; Column.scan + per-position rng; recursive multiface
+//!     spreading).
 //!   - SnowAndFreezeFeature ("freeze_top_layer", inc. 2) — see the
 //!     FeatureDef::FreezeTopLayer doc.
 //!   - SpringFeature ("spring_feature", inc. 2) — DETERMINISTIC, no draws.
@@ -841,6 +846,39 @@ pub enum FeatureDef {
         hole_count: i32,
         valid_blocks: Vec<String>,
     },
+    /// MonsterRoomFeature (inc. 4) — NoneFeatureConfiguration ({}).
+    /// PARSE-true. Execution tail (documented honestly): the body needs the
+    /// block-entity layer — SPAWNER NBT (randomEntityId draw over
+    /// skeleton/zombie/zombie/spider) + CHEST with SIMPLE_DUNGEON loot
+    /// table (StructurePiece.reorient) — wired at execution, like the
+    /// FluidState.createLegacyBlock pin of Spring.
+    MonsterRoom,
+    /// UnderwaterMagmaFeature (inc. 4) — Column.scan(floor_search_range)
+    /// for the water floor, then a radius box with per-position
+    /// nextFloat() < probability draws and a water/air-neighbour validity
+    /// check. Codec ranges honest-checked at parse: intRange(0,512) /
+    /// intRange(0,64) / floatRange(0,1).
+    UnderwaterMagma {
+        floor_search_range: i32,
+        placement_radius_around_floor: i32,
+        placement_probability_per_valid_position: f32,
+    },
+    /// MultifaceGrowthFeature (inc. 4) — glow_lichen / sculk_vein. Codec:
+    /// block is byNameCodec().orElse(GLOW_LICHEN) (optional, default
+    /// glow_lichen); search_range intRange(1,64) orElse(10); the three
+    /// can_place_on_* bools default false; chance_of_spreading
+    /// floatRange(0,1) orElse(0.5); can_be_placed_on = HolderSet<Block>
+    /// (id array in the corpus, "#tag" accepted). Execution tail:
+    /// recursive spreading with shuffled-direction rng.
+    MultifaceGrowth {
+        block: String,
+        search_range: i32,
+        can_place_on_floor: bool,
+        can_place_on_ceiling: bool,
+        can_place_on_wall: bool,
+        chance_of_spreading: f32,
+        can_be_placed_on: Vec<String>,
+    },
     Unsupported(String),
 }
 
@@ -1007,6 +1045,96 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
                     .unwrap_or(0.0) as f32,
             },
             "freeze_top_layer" => FeatureDef::FreezeTopLayer,
+            "monster_room" => FeatureDef::MonsterRoom,
+            "underwater_magma" => {
+                let cfg = j.get("config").ok_or("underwater_magma.config")?;
+                // intRange / floatRange codecs: REQUIRED fields, out-of-range
+                // = codec error (honest reject, no silent clamp).
+                let fsr = cfg
+                    .get("floor_search_range")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("underwater_magma.floor_search_range")? as i32;
+                if !(0..=512).contains(&fsr) {
+                    return Err(format!("underwater_magma floor_search_range 0..=512, got {fsr}"));
+                }
+                let radius = cfg
+                    .get("placement_radius_around_floor")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("underwater_magma.placement_radius_around_floor")? as i32;
+                if !(0..=64).contains(&radius) {
+                    return Err(format!(
+                        "underwater_magma placement_radius_around_floor 0..=64, got {radius}"
+                    ));
+                }
+                let prob = cfg
+                    .get("placement_probability_per_valid_position")
+                    .and_then(|v| v.as_f64())
+                    .ok_or("underwater_magma.placement_probability_per_valid_position")?
+                    as f32;
+                if !(0.0..=1.0).contains(&prob) {
+                    return Err(format!(
+                        "underwater_magma placement_probability 0..=1, got {prob}"
+                    ));
+                }
+                FeatureDef::UnderwaterMagma {
+                    floor_search_range: fsr,
+                    placement_radius_around_floor: radius,
+                    placement_probability_per_valid_position: prob,
+                }
+            }
+            "multiface_growth" => {
+                let cfg = j.get("config").ok_or("multiface_growth.config")?;
+                // byNameCodec().orElse(GLOW_LICHEN): optional field, default
+                // glow_lichen (the flatXmap MultifaceSpreadeableBlock check
+                // narrows the registry to lichen-like blocks).
+                let block = cfg
+                    .get("block")
+                    .and_then(|b| b.as_str())
+                    .unwrap_or("minecraft:glow_lichen")
+                    .to_string();
+                let mut can_be_placed_on = Vec::new();
+                match cfg.get("can_be_placed_on").ok_or("multiface.can_be_placed_on")? {
+                    Json::Str(s) => can_be_placed_on.push(s.clone()), // "#tag" HolderSet
+                    Json::Arr(a) => {
+                        for e in a {
+                            can_be_placed_on
+                                .push(e.as_str().ok_or("multiface.holder entry")?.to_string());
+                        }
+                    }
+                    _ => return Err("multiface.can_be_placed_on shape".into()),
+                }
+                FeatureDef::MultifaceGrowth {
+                    block,
+                    search_range: cfg.get("search_range").and_then(|v| v.as_i64()).unwrap_or(10)
+                        as i32,
+                    can_place_on_floor: cfg
+                        .get("can_place_on_floor")
+                        .and_then(|v| match v {
+                            Json::Bool(b) => Some(*b),
+                            _ => None,
+                        })
+                        .unwrap_or(false),
+                    can_place_on_ceiling: cfg
+                        .get("can_place_on_ceiling")
+                        .and_then(|v| match v {
+                            Json::Bool(b) => Some(*b),
+                            _ => None,
+                        })
+                        .unwrap_or(false),
+                    can_place_on_wall: cfg
+                        .get("can_place_on_wall")
+                        .and_then(|v| match v {
+                            Json::Bool(b) => Some(*b),
+                            _ => None,
+                        })
+                        .unwrap_or(false),
+                    chance_of_spreading: cfg
+                        .get("chance_of_spreading")
+                        .and_then(|v| v.as_f64())
+                        .unwrap_or(0.5) as f32,
+                    can_be_placed_on,
+                }
+            }
             "spring_feature" => {
                 let cfg = j.get("config").ok_or("spring.config")?;
                 let st = cfg.get("state").ok_or("spring.state")?;
@@ -1662,5 +1790,166 @@ mod tests {
         assert!(eval_predicate(&iwb, 0, 5, 0, &at, &repl, &tag_of)); // 0 readable
         assert!(!eval_predicate(&iwb, 0, 4, 0, &at, &repl, &tag_of)); // -1 unreadable
         assert!(!eval_predicate(&iwb, 0, 64, 0, &none, &repl, &tag_of));
+    }
+
+    #[test]
+    fn monster_room_verbatim_none_config() {
+        // configured_feature/monster_room.json — NoneFeatureConfiguration
+        // ({}); the placed chain (count 10 / in_square / height_range
+        // below_top 0 .. absolute 0 / biome) must parse fully too.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:monster_room\",\"config\":{}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        assert!(matches!(
+            parse_configured_def(&j, short).unwrap(),
+            FeatureDef::MonsterRoom
+        ));
+        let pj = crate::json::parse(
+            "{\"feature\":\"minecraft:monster_room\",\"placement\":[\
+             {\"type\":\"minecraft:count\",\"count\":10},{\"type\":\"minecraft:in_square\"},\
+             {\"type\":\"minecraft:height_range\",\"height\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":{\"below_top\":0},\"min_inclusive\":{\"absolute\":0}}},\
+             {\"type\":\"minecraft:biome\"}]}",
+        )
+        .unwrap();
+        let def = parse_placed_feature(&pj).unwrap();
+        assert!(def
+            .placement
+            .iter()
+            .all(|m| !matches!(m, PlacementMod::Unsupported(_))));
+    }
+
+    #[test]
+    fn underwater_magma_config_verbatim_and_ranges() {
+        // configured_feature/underwater_magma.json — floor_search_range 5,
+        // placement_probability_per_valid_position 0.5, radius 1.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:underwater_magma\",\"config\":\
+             {\"floor_search_range\":5,\"placement_probability_per_valid_position\":0.5,\
+             \"placement_radius_around_floor\":1}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::UnderwaterMagma {
+            floor_search_range,
+            placement_radius_around_floor,
+            placement_probability_per_valid_position,
+        } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected UnderwaterMagma");
+        };
+        assert_eq!(floor_search_range, 5);
+        assert_eq!(placement_radius_around_floor, 1);
+        assert_eq!(placement_probability_per_valid_position, 0.5);
+        // codec ranges are honest codec errors (intRange/floatRange).
+        let mk = |fsr: i64, radius: i64, prob: f64| {
+            crate::json::parse(&format!(
+                "{{\"type\":\"minecraft:underwater_magma\",\"config\":\
+                 {{\"floor_search_range\":{fsr},\
+                 \"placement_probability_per_valid_position\":{prob},\
+                 \"placement_radius_around_floor\":{radius}}}}}"
+            ))
+            .unwrap()
+        };
+        let short = "underwater_magma";
+        assert!(parse_configured_def(&mk(513, 1, 0.5), short).is_err());
+        assert!(parse_configured_def(&mk(5, 65, 0.5), short).is_err());
+        assert!(parse_configured_def(&mk(5, 1, 1.5), short).is_err());
+        assert!(parse_configured_def(&mk(0, 64, 1.0), short).is_ok());
+        // missing field = codec error too (required, no defaults).
+        let miss = crate::json::parse(
+            "{\"type\":\"minecraft:underwater_magma\",\"config\":\
+             {\"floor_search_range\":5,\"placement_radius_around_floor\":1}}",
+        )
+        .unwrap();
+        assert!(parse_configured_def(&miss, short).is_err());
+    }
+
+    #[test]
+    fn multiface_growth_glow_lichen_verbatim() {
+        // configured_feature/glow_lichen.json — explicit block, 8-entry
+        // can_be_placed_on id array, ceiling+wall true / floor false,
+        // chance 0.5, search 20.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:multiface_growth\",\"config\":\
+             {\"block\":\"minecraft:glow_lichen\",\"can_be_placed_on\":\
+             [\"minecraft:stone\",\"minecraft:andesite\",\"minecraft:diorite\",\
+             \"minecraft:granite\",\"minecraft:dripstone_block\",\"minecraft:calcite\",\
+             \"minecraft:tuff\",\"minecraft:deepslate\"],\
+             \"can_place_on_ceiling\":true,\"can_place_on_floor\":false,\
+             \"can_place_on_wall\":true,\"chance_of_spreading\":0.5,\"search_range\":20}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::MultifaceGrowth {
+            block,
+            search_range,
+            can_place_on_floor,
+            can_place_on_ceiling,
+            can_place_on_wall,
+            chance_of_spreading,
+            can_be_placed_on,
+        } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected MultifaceGrowth");
+        };
+        assert_eq!(block, "minecraft:glow_lichen");
+        assert_eq!(search_range, 20);
+        assert!(!can_place_on_floor);
+        assert!(can_place_on_ceiling);
+        assert!(can_place_on_wall);
+        assert_eq!(chance_of_spreading, 0.5);
+        assert_eq!(can_be_placed_on.len(), 8);
+    }
+
+    #[test]
+    fn multiface_growth_sculk_vein_and_codec_defaults() {
+        // configured_feature/sculk_vein.json — chance 1.0, all flags true.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:multiface_growth\",\"config\":\
+             {\"block\":\"minecraft:sculk_vein\",\"can_be_placed_on\":\
+             [\"minecraft:stone\"],\"can_place_on_ceiling\":true,\
+             \"can_place_on_floor\":true,\"can_place_on_wall\":true,\
+             \"chance_of_spreading\":1.0,\"search_range\":20}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::MultifaceGrowth { block, chance_of_spreading, .. } =
+            parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected MultifaceGrowth");
+        };
+        assert_eq!(block, "minecraft:sculk_vein");
+        assert_eq!(chance_of_spreading, 1.0);
+        // codec defaults: block orElse(glow_lichen), search_range orElse(10),
+        // flags default false, chance orElse(0.5); HolderSet "#tag" form.
+        let dj = crate::json::parse(
+            "{\"type\":\"minecraft:multiface_growth\",\"config\":\
+             {\"can_be_placed_on\":\"#minecraft:base_stone_overworld\"}}",
+        )
+        .unwrap();
+        let FeatureDef::MultifaceGrowth {
+            block,
+            search_range,
+            can_place_on_floor,
+            can_place_on_ceiling,
+            can_place_on_wall,
+            chance_of_spreading,
+            can_be_placed_on,
+        } = parse_configured_def(&dj, short).unwrap()
+        else {
+            panic!("expected MultifaceGrowth");
+        };
+        assert_eq!(block, "minecraft:glow_lichen");
+        assert_eq!(search_range, 10);
+        assert!(!can_place_on_floor && !can_place_on_ceiling && !can_place_on_wall);
+        assert_eq!(chance_of_spreading, 0.5);
+        assert_eq!(can_be_placed_on, vec!["#minecraft:base_stone_overworld"]);
     }
 }
