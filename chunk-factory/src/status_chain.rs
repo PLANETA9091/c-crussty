@@ -427,6 +427,12 @@ pub fn trace_surface(
                 };
                 let min_surface = ctx.get_min_surface_level();
                 let secondary = ctx.get_surface_secondary();
+                // S1 lazy biome: this row READS the biome like Java reads the
+                // memoize (.get() = compute-on-first-read trigger). Without
+                // this, rows whose rule eval never touched BiomeIs/Temperature
+                // dump an empty biome column (measured: 21,616/26,598 = 81.3%
+                // empty vs 0% pre-S1) — poisons the census TSV diffs.
+                ctx.ensure_biome();
                 let _ = writeln!(
                     out,
                     "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
