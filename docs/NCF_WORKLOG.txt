@@ -4535,3 +4535,143 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    остаются [~] — измерение сделано, ступени доставки закрытся отдельно.
 ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
 (тик 06:02 — Т38-B/T40) — первоисточник = этот LOG; gate-P2 закрыт.
+
+=== 2026-10-09 | аддендум 80: Job 441690 — WORK LIST п.4 P4.1-P4.3 (ИНКРЕМЕНТ 1):
+    decompile-oracle восстановлен (CFR 0.152, 45 классов), IR-слой фич
+    ДОДЕЛАН до декомпил-точного состояния (RuleTest, HeightProvider,
+    anchors, inline inner, alias flower), WorldgenRandom draw-stack
+    (trait WorldgenDraws), biome "features" в BiomeFacts; p4probe —
+    ПОЛНЫЙ ценз корпуса: 72/224 configured + 98/258 placed supported,
+    0 биомов без unsupported-набора ===
+
+0) CI-ПОДТВЕРЖДЕНИЕ ПРЕДЫДУЩЕГО КОММИТА (ride-along): run 37853198744
+   (8730ccb, аддендум 79) completed SUCCESS — 33/33 jobs за ~11 мин
+   (gate-p2 матрица 12/12, ncf-staged noise/surface/carvers zero-diff,
+   ncf-vectors зелёный). P3.2/P3.4 закрыты полностью.
+
+1) ORACLE (decomp): sandbox-рецикл стёр downloads/decomp (сессия 7);
+   восстановлено ИЗ mojang-mapped purpur-1.21.10.jar (ci-server) CFR 0.152:
+   ChunkGenerator(+lambdas), WorldGenRegion, ChunkAccess, ProtoChunk,
+   Heightmap, chunk/status/* (ChunkStep/ChunkPyramid), FeatureSorter,
+   PlacedFeature + ВСЕ placement-модификаторы, heightproviders/*, feature/*
+   (Ore, ScatteredOre, RandomPatch, Disk, Kelp, Seagrass, SimpleBlock),
+   блоки canSurvive (GrowingPlant*/Bush/Seagrass/TallSeagrass/Kelp*/DoublePlant),
+   BiomeGenerationSettings. Живут вне репо: downloads/decomp_p4/decomp.
+
+2) ДЕКОМПИЛ-СПЕЦИФИКАЦИЯ DECORATION (критично для п.4, всё проверено
+   по 1.21.10 CFR, НЕ по памяти):
+   (а) ChunkStep.FEATURES: blockStateWriteRadius(1) => запись в 3x3 чанков;
+       addRequirement(CARVERS, 1). getWritableArea (BoundingBox 16x16) —
+       ТОЛЬКО для structure-кусков.
+   (б) ChunkStatusTasks.generateFeatures: СПЕРВА primeHeightmaps(final 4:
+       OCEAN_FLOOR, WORLD_SURFACE, MOTION_BLOCKING(+NO_LEAVES)); далее
+       applyBiomeDecoration; Blender.generateBorderTicks (fresh-мир = no-op).
+   (в) высоты: ChunkAccess.getHeight = firstAvailable-1; WorldGenRegion
+       .getHeight = +1 => ВОЗВРАЩАЕТ firstAvailable ("highest block + 1");
+       primeHeightmaps: скан сверху, пропуск ТОЛЬКО Blocks.AIR (CAVE_AIR не
+       пропуск!), затем predicate типа: WORLD_SURFACE* = NOT_AIR,
+       OCEAN_FLOOR* = MATERIAL_MOTION_BLOCKING; НЕпримированный тип
+       праймится ON-DEMAND от текущего контента (WG-карты после прайма
+       ЗАМОРОЖЕНЫ — Usage.WORLDGEN не live); FINAL-карты live-обновляются
+       КАЖДЫМ setBlock (ProtoChunk.setBlockState обновляет ровно
+       heightmapsAfter(persistedStatus)); OreFeature пишет через
+       BulkSectionAccess НАПРЯМУЮ (heightmaps НЕ трогает!).
+   (г) драйвер (addVanillaDecorations): l = setDecorationSeed(seed,
+       minBlockX, minBlockZ); набор кандидатов = ОБЪЕДИНЕНИЕ хранимых
+       биом-палитр 3x3 чанков (section.getBiomes().getAll, не биом-центры!);
+       на шаг i: собрать ГЛОБАЛЬНЫЕ индексы кандидатов через
+       StepFeatureData.indexMapping (индекс в ОТСОРТИРОВАННОМ
+       featuresPerStep списке — строится ОДИН раз по possibleBiomes =
+       порядок parameter-list), Arrays.sort, исполнить по возрастанию;
+       setFeatureSeed(l, i3, i) на КАЖДУЮ фичу (структуры тоже ресидятся,
+       но не потребляют дро => фичи друг от друга RNG-независимы);
+       paper featureSeeds default -1 (не мешает). Локальный индекс и
+       порядок биомов в union НЕ влияют (сорт + сеты).
+   (д) исполнение фичи: placeWithBiomeCheck = chain flatMap IN ORDER из
+       origin (minBlockX, minSectionY*16=min_y, minBlockZ); BiomeFilter =
+       hasFeature(любой шаг) у биома позиции (хранимый кварти); финальные
+       позиции: Feature.place => ensureCanWrite(pos) (3x3!) И потом тело.
+       Draw-семантика: Count = 1 дро/позиция; InSquare = nextInt(16) X
+       потом Z; RarityFilter = nextFloat < 1.0f/chance (f32!); Heightmap =
+       getHeight(kind,x,z) (firstAvailable! > minY else empty); RandomOffset
+       = xz,y,xz (xz ДВАЖДЫ); HeightRange = провайдер: Uniform 1 дро,
+       Trapezoid 1 или 2 (plateau>=span => 1), VeryBiasedToBottom 3,
+       Mth.randomBetweenInclusive = nextInt(range)+min.
+   (е) тела: Ore (BitSet ROI, double[4], place: Math.sin f64 + nextInt(3)-2
+       y2, doPlace: Mth.sin f32-таблица; canPlaceOre: RuleTest затем
+       shouldSkipAirCheck (chance<=0 => true БЕЗ дро; >=1 => false БЕЗ дро;
+       иначе nextFloat>=chance) else !isAdjacentToAir (6 соседей));
+       ScatteredOre: nextInt(size+1) попыток, offset 3 оси
+       round((f32-f32)*magnitude) magnitude=min(i,7); RandomPatch: tries,
+       6 дро/попытку (x,y,z по nextInt(s+1)-nextInt(s+1)), inner .place()
+       БЕЗ biome-check; Disk: radius 1 дро, колонки y+h .. y-h-1 ИСКЛ,
+       markAboveForPostProcessing на первой ставке колонки; Kelp:
+       getHeight(OCEAN_FLOOR), 1+nextInt(10), head AGE=nextInt(4)+20;
+       Seagrass: nextInt(8)-nextInt(8) x2, nextDouble<probability.
+   (ж) canSurvive (для простых блоков/водорослей): GrowingPlant = ниже
+       (canAttachTo && (is-head/body || isFaceSturdy(UP))); Kelp canAttachTo
+       = !magma; Seagrass/TallSeagrass mayPlaceOn = sturdy(UP) && !magma
+       (+ вода 8 для нижней половины); BushBlock = mayPlaceOn(below).
+       isFaceSturdy на worldgen-контенте = "solid, не вода/воздух".
+
+3) КОД (этот коммит, IR-слой доведён до декомпил-точного):
+   (а) features.rs: RuleTest (block_match/tag_match/random_block_match;
+       дро ТОЛЬКО у random_block_match), HeightProvider (uniform/trapezoid/
+       very_biased_to_bottom/constant; draw-count точный), anchors =
+       ОДНОКЛЮЧЕВЫЕ объекты {"above_bottom":80} (ловушка: НЕ {type,value});
+       IntProvider.parse: плоский {min_inclusive,max_inclusive} И nested
+       {value:{...}}; ore-ключ = "discard_chance_on_air_exposure" (было
+       неверно "discard_chance_on_air" — тихий 0.0!), targets = RuleTest;
+       disk: "target" ОДИН предикат + state_provider{fallback,rules!=[] =>
+       Unsupported-честно}; random_patch inner = INLINE placed-feature
+       (feature_ref="" + inline:(type,cfg)) ИЛИ ref; simple_block.to_place =
+       state-provider wrapper; alias flower/no_bonemeal_flower =>
+       random_patch; ошибки парса = HONEST Unsupported (не валят реестр);
+       is_placed_supported: модификаторы + тело + inline-inner рекурсия.
+   (б) feature_sorter.rs: trait WorldgenDraws (next_bits/long/int_bound/f32/
+       f64) — ТОЧНЫЙ стек WorldgenRandom extends LegacyRandomSource:
+       next(bits)=(int)(inner.nextLong()>>>(64-bits)), nextLong = Legacy-форма
+       (2 внутренних 64-бит дро), nextInt(bound) = default-формула отклонения
+       по next(31), nextFloat = next(24)*2^-24f, nextDouble = f32-ловушка
+       ((next(26)<<27)+next(27))*2^-53f. DecorationRandom теперь И
+       seeder, И draw-источник (count = getCount).
+   (в) biomes.rs: BiomeFacts.features = 11 step-списков placed-refs
+       (JSON-порядок) — кандидат-листы декорации.
+   (г) bin/p4probe.rs: полный ценз реестра (поддержка/блокеры/биомы).
+   (д) тесты 156/156 GREEN (5 новых: ore/disk/patch/trapezoid/draw-stack —
+       все на РЕАЛЬНЫХ JSON-формах корпуса).
+
+4) ЦЕНЗ КОРПУСА (p4probe, jar-fresh extract 2452 файлов):
+   configured: 72/224 fully supported (tier-1+flower-alias);
+   placed: 98/258 fully supported; блокеры placed-модификаторов:
+   count_on_every_layer 8, environment_scan 9, fixed_placement 1,
+   noise_threshold_count 6, surface_relative_threshold_filter 3,
+   parse-провалы 72 (would_survive 43, intprovider tree-формы 22,
+   matching_fluids 3, clamped*/biased_to_bottom 4);
+   configured-блокеры (по типам, всё 0/N): tree 39, random_selector 21,
+   vegetation_patch 6, block_pile 5, spring 6, lake/geode/monster_room/
+   underwater_magma/multiface_growth 2/freeze_top_layer/sea_pickle...
+   БИОМЫ: 0 из 65 БЕЗ unsupported-набора => chunk-level native features
+   на ванилле = 0% пока не закроены УНИВЕРСАЛЬНЫЕ типы (freeze_top_layer
+   в каждом биоме, spring, monster_room, geode, lake...). ВЫВОД-СТРАТЕГИЯ
+   (для следующих тиков п.4): порядок P4.4 = freeze_top_layer (простой,
+   снимает universal-блок) -> spring_feature -> monster_room -> geode ->
+   lake -> multiface_growth -> underwater_magma -> sea_pickle ->
+   state-provider rules (disk_sand sandstone-правило, offset-предикаты
+   matching_blocks-with-offset/solid/matching_fluids) -> would_survive-
+   правила для трав; ПОСЛЕ этого ocean-биомы станут fully-supported и
+   chunk-гейт features статуса станет осмысленным (спец-выбор ocean-участка
+   корпуса; 3x3-replay по spiral-порядку GoldenDumper: snapshot чанка =
+   своя декорация + spill более ранних соседей — центр спирали чист).
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + RNG + facts + probe + тесты), не
+   worklog-only; гейт-контракты veccheck/stagediff НЕ тронуты
+   (noise/surface/carvers пути не менялись — только новые IR-типы);
+   stagediff-генерация не расширена (features-статус — следующий тик,
+   после freeze_top_layer/spring-портов, когда гейт сможет быть зелёным).
+
+6) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — порт freeze_top_layer + spring
+   (+ offsets-предикаты) по спецификации п.2, затем расширение p4probe
+   до "биомов без universal-блокеров" и stagediff features-статус.
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+(тик 07:02 — Т38-B/T40; 4-й stale-тик) — первоисточник = этот LOG.

@@ -37,6 +37,9 @@ pub struct BiomeFacts {
     pub temperature_modifier: TemperatureModifier,
     /// biome "carvers" list — configured_carver refs in JSON order
     pub carvers: Vec<String>,
+    /// P4.1: biome "features" — 11 GenerationStep.Decoration lists of
+    /// PLACED-feature refs in JSON order (the decorate candidate lists).
+    pub features: Vec<Vec<String>>,
 }
 
 /// Load facts for every data/<ns>/worldgen/biome/*.json in the tree.
@@ -65,6 +68,23 @@ pub fn load_biome_facts(dir: &crate::router::WorldgenDir) -> Result<HashMap<Stri
                     }
                 }
             }
+            // P4.1: the 11-step placed-feature lists (JSON order preserved —
+            // the decorate candidate union is order-independent, but the
+            // per-biome lists feed BiomeFilter membership checks too).
+            let mut features: Vec<Vec<String>> = Vec::new();
+            if let Some(steps) = j.get("features").and_then(|x| x.as_arr()) {
+                for step in steps {
+                    let mut list = Vec::new();
+                    if let Some(arr) = step.as_arr() {
+                        for pf in arr {
+                            if let Some(s) = pf.as_str() {
+                                list.push(expand_rl(s));
+                            }
+                        }
+                    }
+                    features.push(list);
+                }
+            }
             out.insert(
                 full,
                 BiomeFacts {
@@ -72,6 +92,7 @@ pub fn load_biome_facts(dir: &crate::router::WorldgenDir) -> Result<HashMap<Stri
                     temperature,
                     temperature_modifier,
                     carvers,
+                    features,
                 },
             );
         }

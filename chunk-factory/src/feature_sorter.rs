@@ -147,29 +147,80 @@ fn dfs(
     true
 }
 
+/// WorldgenRandom draw semantics (CFR WorldgenRandom.java).
+///
+/// WorldgenRandom extends LegacyRandomSource and overrides ONLY next(bits)
+/// (non-Legacy inner: (int)(inner.nextLong() >>> (64-bits))) and setSeed
+/// (delegates to the inner source). Everything else — nextLong (Legacy
+/// default form), nextInt(bound) (default rejection formula over next(31)),
+/// nextFloat, nextDouble — inherits the LegacyRandomSource formulas BUT
+/// draws through the overridden next(bits). The trait below reproduces
+/// exactly that stack over the Xoroshiro inner source.
+pub trait WorldgenDraws {
+    /// WorldgenRandom.next(bits) with a non-Legacy inner source.
+    fn next_bits_wg(&mut self, bits: u32) -> i32;
+
+    /// LegacyRandomSource.nextLong() default form over the OVERRIDDEN
+    /// next(bits): ((long)next(32) << 32) + next(32) — two inner 64-bit draws.
+    fn next_long_wg(&mut self) -> i64 {
+        let i = self.next_bits_wg(32) as i64;
+        let j = self.next_bits_wg(32) as i64;
+        (i << 32).wrapping_add(j)
+    }
+
+    /// RandomSource.nextInt(bound) default formula over next(31) — the same
+    /// shape jrandom::LegacyRandomSource::next_int_bound uses, but every
+    /// next(31) goes through the WorldgenRandom override.
+    fn next_int_bound_wg(&mut self, bound: i32) -> i32 {
+        assert!(bound > 0, "Bound must be positive");
+        if (bound & (bound - 1)) == 0 {
+            return (((bound as i64) * (self.next_bits_wg(31) as i64)) >> 31) as i32;
+        }
+        let mut i = self.next_bits_wg(31);
+        let mut j = i % bound;
+        while i.wrapping_sub(j).wrapping_add(bound - 1) < 0 {
+            i = self.next_bits_wg(31);
+            j = i % bound;
+        }
+        j
+    }
+
+    /// (float)next(24) * 2^-24 (javap: i2f; ldc 5.9604645E-8f; fmul).
+    fn next_f32_wg(&mut self) -> f32 {
+        (self.next_bits_wg(24) as f32) * 5.960_464_5e-8_f32
+    }
+
+    /// THE TRAP (same as jrandom Legacy): l = ((long)next(26) << 27) +
+    /// next(27), then (float)l * 2^-53f — f32 multiply, f64 out.
+    fn next_f64_wg(&mut self) -> f64 {
+        let i = self.next_bits_wg(26) as i64;
+        let j = self.next_bits_wg(27) as i64;
+        let l = (i << 27).wrapping_add(j);
+        let f = (l as f32) * 1.110_223_2e-16_f32;
+        f as f64
+    }
+}
+
 /// WorldgenRandom-over-Xoroshiro decoration seeder (session 7 decompile).
 pub struct DecorationRandom {
     src: XoroshiroRandomSource,
     pub count: u64,
 }
 
+impl WorldgenDraws for DecorationRandom {
+    /// WorldgenRandom.next(bits) with a non-Legacy inner source.
+    #[inline]
+    fn next_bits_wg(&mut self, bits: u32) -> i32 {
+        debug_assert!((1..=32).contains(&bits));
+        self.count += 1;
+        let l = self.src.next_long() as u64;
+        (l >> (64 - bits)) as i32
+    }
+}
+
 impl DecorationRandom {
     pub fn new(unique_seed: i64) -> Self {
         DecorationRandom { src: XoroshiroRandomSource::new(unique_seed), count: 0 }
-    }
-
-    /// WorldgenRandom.next(bits) with a non-Legacy inner source.
-    #[inline]
-    fn next32(&mut self) -> i32 {
-        self.count += 1;
-        (self.src.next_long() >> 32) as i32
-    }
-
-    /// LegacyRandomSource.nextLong shape over the overridden next(32):
-    /// ((long)next(32) << 32) + next(32) — two inner 64-bit draws.
-    #[inline]
-    fn next_long_wg(&mut self) -> i64 {
-        ((self.next32() as i64) << 32).wrapping_add(self.next32() as i64)
     }
 
     /// setDecorationSeed — returns the population seed l.
@@ -198,6 +249,15 @@ impl DecorationRandom {
     /// RNG delegated to the inner source (Feature.place draws).
     pub fn rng(&mut self) -> &mut dyn RandomSource {
         &mut self.src
+    }
+
+    // ---- WorldgenRandom draw semantics live in the WorldgenDraws trait ----
+    // (the execution engine draws through the same stack the vanilla
+    // WorldgenRandom uses; see the trait docs above).
+
+    /// WorldgenRandom.getCount (draw counter — informational).
+    pub fn count_wg(&self) -> u64 {
+        self.count
     }
 }
 
