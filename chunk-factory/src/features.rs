@@ -1,13 +1,20 @@
 //! NCF P4.2/P4.3/P4.5 — placement modifiers, block predicates, tier-1
 //! features (ore/scattered_ore, simple_block, random_patch, disk, kelp,
-//! seagrass) + the tier-3 dispatch with honest fallback accounting.
+//! seagrass, freeze_top_layer, spring_feature) + the tier-3 dispatch with
+//! honest fallback accounting.
 //!
-//! Ports of the mapped Purpur 2535 sources (CFR 0.152, session 7):
+//! Ports of the mapped Purpur 2535 sources (CFR 0.152, session 7 + inc. 2):
 //!   - PlacedFeature.placeWithContext: positions stream folds through the
 //!     modifier chain IN ORDER (flatMap per modifier, per-position draws in
 //!     stream order; empty stream short-circuits the chain).
 //!   - InSquarePlacement/CountPlacement/RarityFilter/HeightmapPlacement/
 //!     HeightRangePlacement/RandomOffsetPlacement/BiomeFilter bodies.
+//!   - StateTestingPredicate offset family (inc. 2): matching_blocks /
+//!     matching_fluids / replaceable / solid at pos.offset(offset)
+//!     (Vec3i.offsetCodec(16)).
+//!   - SnowAndFreezeFeature ("freeze_top_layer", inc. 2) — see the
+//!     FeatureDef::FreezeTopLayer doc.
+//!   - SpringFeature ("spring_feature", inc. 2) — DETERMINISTIC, no draws.
 //!   - OreFeature.place+doPlace (BitSet pruning, double[4] per step, f32
 //!     Mth.sin calls via mth::sin_f32 — the SAME 65536-table as carvers),
 //!   - SimpleBlockFeature.place (canSurvive via a predicate hook),
@@ -41,12 +48,41 @@ use std::collections::HashMap;
 pub enum BlockPredicate {
     True,
     False,
-    MatchingBlocks { blocks: Vec<String> }, // full names or "tag:xxx"
-    Replaceable,
+    /// StateTestingPredicate family: the test runs at pos.offset(offset),
+    /// NOT at pos itself (Vec3i.offsetCodec(16), optional, default ZERO).
+    MatchingBlocks { offset: [i32; 3], blocks: Vec<String> }, // full names or "#tag"
+    Replaceable { offset: [i32; 3] },
+    /// SolidPredicate (deprecated but present in 1.21.10) — state.isSolid().
+    Solid { offset: [i32; 3] },
+    /// MatchingFluidsPredicate — the fluid of the state at pos+offset
+    /// (worldgen fluids are water/lava; flowing_* are levels of the same
+    /// block, so the block base name identifies the fluid).
+    MatchingFluids { offset: [i32; 3], fluids: Vec<String> },
     Not(Box<BlockPredicate>),
     AllOf(Vec<BlockPredicate>),
     AnyOf(Vec<BlockPredicate>),
     WouldSurvive,
+}
+
+/// Vec3i.offsetCodec(16): optional "offset": [x,y,z], each component
+/// clamped to ±16 by the codec (values outside are codec errors in Java —
+/// the tolerant clamp keeps the same effective bound for honest shapes).
+fn parse_offset(j: &Json) -> [i32; 3] {
+    let Some(v) = j.get("offset") else {
+        return [0, 0, 0];
+    };
+    let Some(arr) = v.as_arr() else {
+        return [0, 0, 0];
+    };
+    if arr.len() != 3 {
+        return [0, 0, 0];
+    }
+    let cl = |x: i64| x.clamp(-16, 16) as i32;
+    [
+        cl(arr[0].as_i64().unwrap_or(0)),
+        cl(arr[1].as_i64().unwrap_or(0)),
+        cl(arr[2].as_i64().unwrap_or(0)),
+    ]
 }
 
 pub fn parse_predicate(j: &Json) -> Result<BlockPredicate, String> {
@@ -64,9 +100,21 @@ pub fn parse_predicate(j: &Json) -> Result<BlockPredicate, String> {
             } else if let Some(b) = j.get("blocks").and_then(|b| b.as_str()) {
                 blocks.push(b.to_string());
             }
-            BlockPredicate::MatchingBlocks { blocks }
+            BlockPredicate::MatchingBlocks { offset: parse_offset(j), blocks }
         }
-        "replaceable" => BlockPredicate::Replaceable,
+        "replaceable" => BlockPredicate::Replaceable { offset: parse_offset(j) },
+        "solid" => BlockPredicate::Solid { offset: parse_offset(j) },
+        "matching_fluids" => {
+            let mut fluids = Vec::new();
+            if let Some(Json::Arr(a)) = j.get("fluids") {
+                for f in a {
+                    fluids.push(f.as_str().ok_or("fluid name")?.to_string());
+                }
+            } else if let Some(f) = j.get("fluids").and_then(|f| f.as_str()) {
+                fluids.push(f.to_string());
+            }
+            BlockPredicate::MatchingFluids { offset: parse_offset(j), fluids }
+        }
         "not" => {
             let inner = j.get("predicate").ok_or("not.predicate")?;
             BlockPredicate::Not(Box::new(parse_predicate(inner)?))
@@ -89,40 +137,100 @@ pub fn parse_predicate(j: &Json) -> Result<BlockPredicate, String> {
     })
 }
 
-/// Predicate evaluation against a block state NAME. Tag sets are resolved by
-/// the caller-provided tag lookup (recursive tags/block extractor, same
-/// machinery as carvers replaceable).
+/// Fluid registry id -> the block base name that fluid appears as at
+/// worldgen. flowing_water/flowing_lava are LEVELS of the same block, not
+/// separate blocks; worldgen fluids are water and lava only.
+fn fluid_block_of(id: &str) -> Option<String> {
+    match id {
+        "minecraft:water" | "minecraft:flowing_water" => Some("minecraft:water".into()),
+        "minecraft:lava" | "minecraft:flowing_lava" => Some("minecraft:lava".into()),
+        _ => None,
+    }
+}
+
+/// Fluid of a worldgen block state: the base name (before properties)
+/// identifies it; only water/lava carry fluids at generation time.
+fn fluid_of_block(name: &str) -> Option<String> {
+    let base = name.split('[').next().unwrap_or(name);
+    match base {
+        "minecraft:water" => Some("minecraft:water".into()),
+        "minecraft:lava" => Some("minecraft:lava".into()),
+        _ => None,
+    }
+}
+
+fn name_matches(entry: &str, name: &str, tag_of: &dyn Fn(&str) -> Option<Vec<String>>) -> bool {
+    if let Some(rest) = entry.strip_prefix("#") {
+        tag_of(rest)
+            .map(|members| members.iter().any(|m| m == name))
+            .unwrap_or(false)
+    } else {
+        entry == name
+    }
+}
+
+/// Predicate evaluation at world position (x,y,z). `block_at` resolves the
+/// block state NAME at any in-region position; None = outside the readable
+/// region (vanilla would throw — the native lane cannot verify and answers
+/// false; the chunk verdict keeps unsupported shapes off the native lane).
+/// Tag sets resolve through the caller-provided tag lookup (same machinery
+/// as carvers replaceable). NO rng draws: predicates are pure (the
+/// would_survive evaluation needs block survival rules — P4 tail, still
+/// honest-false).
 pub fn eval_predicate(
     p: &BlockPredicate,
-    name: &str,
+    x: i32,
+    y: i32,
+    z: i32,
+    block_at: &dyn Fn(i32, i32, i32) -> Option<String>,
     is_replaceable: &dyn Fn(&str) -> bool,
     tag_of: &dyn Fn(&str) -> Option<Vec<String>>,
 ) -> bool {
     match p {
         BlockPredicate::True => true,
         BlockPredicate::False => false,
-        BlockPredicate::MatchingBlocks { blocks } => {
-            for b in blocks {
-                if let Some(rest) = b.strip_prefix("#") {
-                    if let Some(members) = tag_of(rest) {
-                        if members.iter().any(|m| m == name) {
-                            return true;
-                        }
-                    }
-                } else if b == name {
-                    return true;
-                }
+        BlockPredicate::MatchingBlocks { offset, blocks } => {
+            match block_at(x + offset[0], y + offset[1], z + offset[2]) {
+                Some(name) => blocks.iter().any(|b| name_matches(b, &name, tag_of)),
+                None => false,
             }
-            false
         }
-        BlockPredicate::Replaceable => is_replaceable(name),
-        BlockPredicate::Not(inner) => !eval_predicate(inner, name, is_replaceable, tag_of),
+        BlockPredicate::Replaceable { offset } => {
+            match block_at(x + offset[0], y + offset[1], z + offset[2]) {
+                Some(name) => is_replaceable(&name),
+                None => false,
+            }
+        }
+        BlockPredicate::Solid { offset } => {
+            // state.isSolid() on worldgen content: a real block that is not
+            // air/water/lava (the "solid, not fluid/air" convention of the
+            // session-7 canSurvive ports).
+            match block_at(x + offset[0], y + offset[1], z + offset[2]) {
+                Some(name) => {
+                    let base = name.split('[').next().unwrap_or(name.as_str());
+                    !matches!(base, "minecraft:air" | "minecraft:water" | "minecraft:lava")
+                }
+                None => false,
+            }
+        }
+        BlockPredicate::MatchingFluids { offset, fluids } => {
+            let fluid = block_at(x + offset[0], y + offset[1], z + offset[2])
+                .as_deref()
+                .and_then(fluid_of_block);
+            match fluid {
+                Some(f) => fluids.iter().filter_map(|id| fluid_block_of(id)).any(|b| b == f),
+                None => false,
+            }
+        }
+        BlockPredicate::Not(inner) => {
+            !eval_predicate(inner, x, y, z, block_at, is_replaceable, tag_of)
+        }
         BlockPredicate::AllOf(v) => v
             .iter()
-            .all(|p| eval_predicate(p, name, is_replaceable, tag_of)),
+            .all(|p| eval_predicate(p, x, y, z, block_at, is_replaceable, tag_of)),
         BlockPredicate::AnyOf(v) => v
             .iter()
-            .any(|p| eval_predicate(p, name, is_replaceable, tag_of)),
+            .any(|p| eval_predicate(p, x, y, z, block_at, is_replaceable, tag_of)),
         BlockPredicate::WouldSurvive => false, // needs block survival rules — P4 tail
     }
 }
@@ -585,6 +693,29 @@ pub enum FeatureDef {
     },
     Kelp,
     Seagrass { probability: f32 },
+    /// SnowAndFreezeFeature — the registry name is "freeze_top_layer"
+    /// (Feature.java registration), body class SnowAndFreezeFeature,
+    /// NoneFeatureConfiguration ({}). 16x16 column scan at the
+    /// MOTION_BLOCKING height; biome shouldFreeze/shouldSnow decide ICE at
+    /// height-1 and SNOW at height (plus SNOWY=true on the block below when
+    /// it carries the property). Block light at decoration time is 0 (the
+    /// light engine is not started at FEATURES) — the <10 checks pass.
+    FreezeTopLayer,
+    /// SpringFeature — registry name "spring_feature". DETERMINISTIC (no rng
+    /// draws): the whole body is neighbour-count checks against
+    /// valid_blocks. state is the FLUID state (Name+Properties from the
+    /// FluidState codec); FluidState.createLegacyBlock pinning happens at
+    /// execution wiring (the material package was not in the session-7
+    /// oracle). valid_blocks: HolderSet = "#tag" string, single block id
+    /// string (spring_nether_open), or an explicit id array (water/lava).
+    Spring {
+        state_name: String,
+        state_props: Vec<(String, String)>,
+        requires_block_below: bool,
+        rock_count: i32,
+        hole_count: i32,
+        valid_blocks: Vec<String>,
+    },
     Unsupported(String),
 }
 
@@ -750,6 +881,47 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
                     .and_then(|p| p.as_f64())
                     .unwrap_or(0.0) as f32,
             },
+            "freeze_top_layer" => FeatureDef::FreezeTopLayer,
+            "spring_feature" => {
+                let cfg = j.get("config").ok_or("spring.config")?;
+                let st = cfg.get("state").ok_or("spring.state")?;
+                let state_name = st
+                    .get("Name")
+                    .and_then(|n| n.as_str())
+                    .ok_or("spring.state.Name")?
+                    .to_string();
+                let mut state_props = Vec::new();
+                if let Some(Json::Obj(po)) = st.get("Properties") {
+                    for (k, v) in po {
+                        state_props.push((k.clone(), v.as_str().unwrap_or("").to_string()));
+                    }
+                }
+                state_props.sort();
+                let mut valid_blocks = Vec::new();
+                match cfg.get("valid_blocks").ok_or("spring.valid_blocks")? {
+                    Json::Str(s) => valid_blocks.push(s.clone()),
+                    Json::Arr(a) => {
+                        for b in a {
+                            valid_blocks.push(b.as_str().ok_or("spring.block")?.to_string());
+                        }
+                    }
+                    _ => return Err("spring.valid_blocks shape".into()),
+                }
+                FeatureDef::Spring {
+                    state_name,
+                    state_props,
+                    requires_block_below: cfg
+                        .get("requires_block_below")
+                        .and_then(|v| match v {
+                            Json::Bool(b) => Some(*b),
+                            _ => None,
+                        })
+                        .unwrap_or(true),
+                    rock_count: cfg.get("rock_count").and_then(|v| v.as_i64()).unwrap_or(4) as i32,
+                    hole_count: cfg.get("hole_count").and_then(|v| v.as_i64()).unwrap_or(1) as i32,
+                    valid_blocks,
+                }
+            }
             other => FeatureDef::Unsupported(other.to_string()),
     })
 }
@@ -915,8 +1087,16 @@ mod tests {
         let target = parse_predicate(cfg.get("target").unwrap()).unwrap();
         let tag_of = |_: &str| -> Option<Vec<String>> { None };
         let repl = |_: &str| false;
-        assert!(eval_predicate(&target, "minecraft:clay", &repl, &tag_of));
-        assert!(!eval_predicate(&target, "minecraft:stone", &repl, &tag_of));
+        // zero offset: the tested position IS the probe position
+        let at = |x: i32, y: i32, z: i32| -> Option<String> {
+            if (x, y, z) == (0, 0, 0) {
+                Some("minecraft:clay".into())
+            } else {
+                Some("minecraft:stone".into())
+            }
+        };
+        assert!(eval_predicate(&target, 0, 0, 0, &at, &repl, &tag_of));
+        assert!(!eval_predicate(&target, 5, 5, 5, &at, &repl, &tag_of));
         let state = parse_simple_state_provider(cfg.get("state_provider").unwrap()).unwrap();
         assert_eq!(state, "minecraft:clay");
         // radius uniform parse
@@ -942,8 +1122,15 @@ mod tests {
         if let PlacementMod::BlockPredicateFilter(p) = &inner.placement[0] {
             let tag_of = |_: &str| -> Option<Vec<String>> { None };
             let repl = |_: &str| false;
-            assert!(eval_predicate(p, "minecraft:air", &repl, &tag_of));
-            assert!(!eval_predicate(p, "minecraft:stone", &repl, &tag_of));
+            let at = |x: i32, y: i32, z: i32| -> Option<String> {
+                if (x, y, z) == (0, 0, 0) {
+                    Some("minecraft:air".into())
+                } else {
+                    Some("minecraft:stone".into())
+                }
+            };
+            assert!(eval_predicate(p, 0, 0, 0, &at, &repl, &tag_of));
+            assert!(!eval_predicate(p, 3, 3, 3, &at, &repl, &tag_of));
         } else {
             panic!("expected block_predicate_filter");
         }
@@ -1013,5 +1200,173 @@ mod tests {
         assert_eq!(x.next_int_bound_wg(1000), y.next_int_bound_wg(1000));
         assert_eq!(x.next_f64_wg(), y.next_f64_wg());
         assert_eq!(x.next_long_wg(), y.next_long_wg());
+    }
+
+    // ---- P4 increment 2: freeze_top_layer, spring_feature, offset
+    // predicates — ALL shapes below are verbatim corpus JSON
+    // (data/minecraft/worldgen/... of the 1.21.10 jar-fresh extract).
+
+    #[test]
+    fn freeze_top_layer_real_shape() {
+        // configured_feature/freeze_top_layer.json + placed_feature wrapper
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:freeze_top_layer\",\"config\":{}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let def = parse_configured_def(&j, short).unwrap();
+        assert!(matches!(def, FeatureDef::FreezeTopLayer));
+        // placed wrapper: biome filter only — fully supported verdict
+        let pj = crate::json::parse(
+            "{\"feature\":\"minecraft:freeze_top_layer\",\"placement\":[\
+             {\"type\":\"minecraft:biome\"}]}",
+        )
+        .unwrap();
+        let placed = parse_placed_feature(&pj).unwrap();
+        assert_eq!(placed.feature_ref, "minecraft:freeze_top_layer");
+    }
+
+    #[test]
+    fn spring_water_real_shape() {
+        // configured_feature/spring_water.json — array HolderSet, state with
+        // Properties, defaults present (requires_block_below=true).
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:spring_feature\",\"config\":{\"hole_count\":1,\
+             \"requires_block_below\":true,\"rock_count\":4,\
+             \"state\":{\"Name\":\"minecraft:water\",\"Properties\":{\"falling\":\"true\"}},\
+             \"valid_blocks\":[\"minecraft:stone\",\"minecraft:granite\",\"minecraft:diorite\",\
+             \"minecraft:andesite\",\"minecraft:deepslate\",\"minecraft:tuff\",\
+             \"minecraft:calcite\",\"minecraft:dirt\",\"minecraft:snow_block\",\
+             \"minecraft:powder_snow\",\"minecraft:packed_ice\"]}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::Spring {
+            state_name,
+            state_props,
+            requires_block_below,
+            rock_count,
+            hole_count,
+            valid_blocks,
+        } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected Spring");
+        };
+        assert_eq!(state_name, "minecraft:water");
+        assert_eq!(state_props, vec![("falling".to_string(), "true".to_string())]);
+        assert!(requires_block_below);
+        assert_eq!(rock_count, 4);
+        assert_eq!(hole_count, 1);
+        assert_eq!(valid_blocks.len(), 11);
+        // the placed wrapper (count 25 / in_square / height_range uniform
+        // absolute 192 above_bottom 0 / biome) must parse fully
+        let pj = crate::json::parse(
+            "{\"feature\":\"minecraft:spring_water\",\"placement\":[\
+             {\"type\":\"minecraft:count\",\"count\":25},{\"type\":\"minecraft:in_square\"},\
+             {\"type\":\"minecraft:height_range\",\"height\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":{\"absolute\":192},\"min_inclusive\":{\"above_bottom\":0}}},\
+             {\"type\":\"minecraft:biome\"}]}",
+        )
+        .unwrap();
+        assert!(parse_placed_feature(&pj).is_ok());
+    }
+
+    #[test]
+    fn spring_nether_open_single_id_valid_blocks() {
+        // configured_feature/spring_nether_open.json — HolderSet DIRECT id
+        // (single string, no #), requires_block_below=false.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:spring_feature\",\"config\":{\"hole_count\":1,\
+             \"requires_block_below\":false,\"rock_count\":4,\
+             \"state\":{\"Name\":\"minecraft:lava\",\"Properties\":{\"falling\":\"true\"}},\
+             \"valid_blocks\":\"minecraft:netherrack\"}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::Spring { requires_block_below, valid_blocks, .. } =
+            parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected Spring");
+        };
+        assert!(!requires_block_below);
+        assert_eq!(valid_blocks, vec!["minecraft:netherrack"]);
+    }
+
+    #[test]
+    fn matching_fluids_offset_real_shape() {
+        // patch_sugar_cane.json inner any_of — matching_fluids with
+        // offsets [1,-1,0] / [-1,-1,0] / [0,-1,1] / [0,-1,-1]; fluids list
+        // covers still + flowing.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:any_of\",\"predicates\":[\
+             {\"type\":\"minecraft:matching_fluids\",\"fluids\":[\"minecraft:water\",\
+             \"minecraft:flowing_water\"],\"offset\":[1,-1,0]},\
+             {\"type\":\"minecraft:matching_fluids\",\"fluids\":[\"minecraft:water\",\
+             \"minecraft:flowing_water\"],\"offset\":[-1,-1,0]},\
+             {\"type\":\"minecraft:matching_fluids\",\"fluids\":[\"minecraft:water\",\
+             \"minecraft:flowing_water\"],\"offset\":[0,-1,1]},\
+             {\"type\":\"minecraft:matching_fluids\",\"fluids\":[\"minecraft:water\",\
+             \"minecraft:flowing_water\"],\"offset\":[0,-1,-1]}]}",
+        )
+        .unwrap();
+        let p = parse_predicate(&j).unwrap();
+        let tag_of = |_: &str| -> Option<Vec<String>> { None };
+        let repl = |_: &str| false;
+        // sugar-cane sits on a grass block with water to one SIDE below:
+        // probe at (0,64,0), water at (1,63,0) => the [1,-1,0] arm hits
+        let at = |x: i32, y: i32, z: i32| -> Option<String> {
+            if x == 1 && y == 63 && z == 0 {
+                Some("minecraft:water[level=0]".into())
+            } else {
+                Some("minecraft:grass_block[snowy=false]".into())
+            }
+        };
+        assert!(eval_predicate(&p, 0, 64, 0, &at, &repl, &tag_of));
+        // no water anywhere below/side => false
+        let dry = |_: i32, _: i32, _: i32| -> Option<String> {
+            Some("minecraft:grass_block[snowy=false]".into())
+        };
+        assert!(!eval_predicate(&p, 0, 64, 0, &dry, &repl, &tag_of));
+    }
+
+    #[test]
+    fn offset_clamp_and_solid_predicate() {
+        // offsetCodec(16): components clamp to ±16 (tolerant parse); the
+        // test probes [17,-20,0] -> [16,-16,0].
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:solid\",\"offset\":[17,-20,0]}",
+        )
+        .unwrap();
+        let p = parse_predicate(&j).unwrap();
+        match &p {
+            BlockPredicate::Solid { offset } => assert_eq!(offset, &[16, -16, 0]),
+            other => panic!("expected Solid, got {other:?}"),
+        }
+        let tag_of = |_: &str| -> Option<Vec<String>> { None };
+        let repl = |_: &str| false;
+        // solid at the offset position (16,-16) below the probe (0,0,0)
+        let at = |x: i32, y: i32, z: i32| -> Option<String> {
+            if (x, y, z) == (16, -16, 0) {
+                Some("minecraft:stone".into())
+            } else {
+                Some("minecraft:water[level=0]".into())
+            }
+        };
+        assert!(eval_predicate(&p, 0, 0, 0, &at, &repl, &tag_of));
+        // water at the tested position => not solid
+        let wet = |x: i32, y: i32, _: i32| -> Option<String> {
+            if (x, y) == (16, -16) {
+                Some("minecraft:water[level=0]".into())
+            } else {
+                Some("minecraft:stone".into())
+            }
+        };
+        assert!(!eval_predicate(&p, 0, 0, 0, &wet, &repl, &tag_of));
+        // out of region => cannot verify => false (honest)
+        let none = |_: i32, _: i32, _: i32| -> Option<String> { None };
+        assert!(!eval_predicate(&p, 0, 0, 0, &none, &repl, &tag_of));
     }
 }

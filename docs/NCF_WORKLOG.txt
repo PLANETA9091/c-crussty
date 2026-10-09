@@ -4675,3 +4675,119 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    до "биомов без universal-блокеров" и stagediff features-статус.
 ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
 (тик 07:02 — Т38-B/T40; 4-й stale-тик) — первоисточник = этот LOG.
+
+=== 2026-10-09 | аддендум 81: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 2):
+    порты freeze_top_layer + spring_feature + offset-предикаты (по
+    спецификации п.2 аддендума 80); p4probe расширен universal-blocker
+    гистограммой; ценз 72->80 configured, 98->110 placed, 161/161 тестов ===
+
+0) CI-ПОДТВЕРЖДЕНИЕ ПРЕДЫДУЩЕГО КОММИТА (собственный run): run 37862709002
+   (7d2e56c, аддендум 80) completed SUCCESS — 33/33 job'ов (~11 мин).
+   Правило «код-commit ждёт свой run» выполнено.
+
+1) ОРАКУЛ: sandbox-рецикл стёр downloads/ (decomp_p4 выжил ВНЕ репо:
+   /home/z/my-project/downloads/decomp_p4). Worldgen-корпус восстановлен по
+   рецепту ci_staged.sh: paperclip patchOnly -> versions/1.21.10 jar ->
+   python-extract data/minecraft/worldgen+tags/block = 1155 json (ценз
+   p4probe ВОСПРОИЗВЁДЕН бит-в-бит: 72/224 + 98/258 + 0/65 биомов на HEAD
+   до правок — база сравнения честная). Decompile проверен по CFR-исходам:
+   SnowAndFreezeFeature, SpringFeature, SpringConfiguration,
+   StateTestingPredicate+подклассы (MatchingBlocks/MatchingFluids/
+   MatchingBlockTag/Replaceable/Solid/WouldSurvive/HasSturdyFace), Biome
+   (shouldSnow/shouldFreeze/getPrecipitationAt/getHeightAdjustedTemperature,
+   TemperatureModifier).
+
+2) ФАКТЫ ИЗ ДЕКОМПИЛА (всё по 1.21.10 CFR, не по памяти):
+   (а) freeze_top_layer = SnowAndFreezeFeature (NoneFeatureConfiguration):
+       скан 16x16, h = WorldGenRegion.getHeight(MOTION_BLOCKING) =
+       firstAvailable («верхний блок + 1»); shouldFreeze(pos.down()):
+       !warmEnoughToRain + light(BLOCK)<10 + вода/жидкий блок => ICE на
+       pos.down(); shouldSnow(pos): hasPrecipitation + coldEnoughToSnow +
+       light<10 + (air|snow) + SNOW.canSurvive => SNOW на pos; затем
+       SNOWY=true нижнему блоку, если несёт свойство (grass_block/podzol/
+       mycelium). Свет на decoration-стадии = 0 (движок не запущен).
+       Температура: getHeightAdjustedTemperature — базовая температура
+       биома + FROZEN-модификатор (FROZEN_TEMPERATURE_NOISE+BIOME_INFO_NOISE)
+       + TEMPERATURE_NOISE при y > seaLevel+17 — ВСЁ УЖЕ ЕСТЬ в biomes.rs
+       (get_temperature/warm_enough_to_rain/cold_enough_to_snow, шумы
+       1234/3456/2345) — переиспользовано на стадии выполнения.
+   (б) spring_feature: ПОЛНОСТЬЮ ДЕТЕРМИНИРОВАН (0 дро). Проверки:
+       блок над origin ∈ valid_blocks; requires_block_below -> низ ∈
+       valid_blocks; origin — air ИЛИ valid_blocks; число соседей-«камней»
+       (W/E/N/S/down) == rock_count И число пустых соседей == hole_count ->
+       setBlock(fluid.createLegacyBlock()) + scheduleTick(pos, fluid, 0).
+       SpringConfiguration: state = FluidState-codec (Name+Properties;
+       у ваниллы вода/лава с falling=true), valid_blocks = HolderSet (тег
+       "#...", одиночный id (spring_nether_open) ИЛИ массив id (вода/лава)),
+       дефолты rock_count=4, hole_count=1, requires_block_below=true.
+       ВНИМАНИЕ: FluidState.createLegacyBlock НЕ запинен (material-пакет не
+       входил в оракул сессии 7) — пинится при проводке выполнения, честно
+       отмечено.
+   (в) offset-предикаты: StateTestingPredicate несёт Vec3i offset
+       (offsetCodec(16): опционально, дефолт ZERO, каждый компонент
+       зажат ±16) и тестирует level.getBlockState(pos.offset(offset)),
+       НЕ сам pos. Подклассы: matching_blocks, matching_fluids, тег,
+       replaceable, solid (deprecated, isSolid), would_survive (offset +
+       state; test = state.canSurvive на смещённой позиции — ПРАВИЛА
+       выживания всё ещё P4-хвост), has_sturdy_face (direction).
+       matching_fluids: fluids = HolderSet<Fluid>; flowing_water/lava —
+       УРОВНИ того же блока, не отдельные блоки => отображение
+       fluid_id -> block_base_name (water/flowing_water -> minecraft:water;
+       lava/flowing_lava -> minecraft:lava), жидкость состояния = базовое
+       имя блока (только вода/лава несут флюид на генерации).
+
+3) КОД (этот коммит):
+   (а) features.rs: BlockPredicate — offset [i32;3] у matching_blocks/
+       replaceable, НОВЫЕ Solid и MatchingFluids варианты; parse_offset
+       (кламп ±16); eval_predicate ПЕРЕВЕДЁН на позиционную семантику
+       (x,y,z + block_at(x,y,z)->Option<name>; None = вне читаемой области
+       -> false, честно; isSolid = «не air/вода/лава» по конвенции
+       canSurvive-портов сессии 7); fluid_block_of/fluid_of_block.
+       FeatureDef::FreezeTopLayer + FeatureDef::Spring { state_name,
+       state_props, requires_block_below, rock_count, hole_count,
+       valid_blocks } с полным парсингом HolderSet трёх форм; заголовок
+       модуля отражает inc.2.
+   (б) p4probe.rs: universal-blocker гистограмма — для каждого блокирующего
+       лейбла (модификатор / тип configured / тип parse-fail'а, читаемый
+       из worldgen-каталога) число биомов, чьи step-списки содержат хотя бы
+       один такой фич; сортировка по ширине охвата. NCF_P4PROBE_LIST=1 —
+       построчные вердикты placed-ключей (для диффов цензов).
+   (в) тесты 161/161 GREEN (5 новых на ВЕРБАТИМНЫХ формах корпуса:
+       freeze_top_layer (+placed-обёртка), spring_water (массив+Properties),
+       spring_nether_open (одиночный id + requires_block_below=false),
+       matching_fluids+offset any_of из patch_sugar_cane, clamp solid
+       [17,-20,0]->[16,-16,0] + честный false вне области).
+
+4) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, jar-fresh extract 1155 json, seed-корпус тот же):
+   configured: 72/224 -> 80/224 (+8: freeze_top_layer 1, spring_feature 6,
+       patch_melon 1 — его блокер и был matching_fluids);
+   placed: 98/258 -> 110/258 (+12: 6 пружин (spring_water/lava/lava_frozen/
+       delta/closed/open), freeze_top_layer, patch_melon + patch_melon_sparse,
+       patch_firefly_bush_swamp, disk_clay + disk_gravel);
+   parse-провалы placed: 72 -> 69 (−3: disk_clay/disk_gravel/disk_sand — их
+       обёртки содержали block_predicate_filter с matching_fluids+offset;
+       disk_sand теперь парсится, но тело по-прежнему Unsupported —
+       rule_based_state_provider с rules);
+   биомы полностью поддержаны: 0/65 (без изменений — деревья/озёра/геоды
+       остаются универсальными блокерами);
+   freeze_top_layer и spring_feature ПОЛНОСТЬЮ ИСЧЕЗЛИ из блокер-наборов
+       всех 65 биомов.
+   ГИСТОГРАММА (топ, type: #биомов заблокировано из 65) = порядок следующих
+   портов: surface_relative_threshold_filter 54; geode 54; monster_room 54;
+   environment_scan 53; lake 53; rule_based_state_provider-with-rules 53;
+   would_survive (через random_patch parse fail) 43; random_selector 36;
+   noise_threshold_count 7; simple_random_selector 6; glowstone_blob 5.
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсер + ценз + тесты), не worklog-only;
+   гейт-контракты veccheck/stagediff НЕ тронуты (noise/surface/carvers
+   пути не менялись); stagediff-генерация не расширена — проводка
+   features-статуса следующая (после того, как гистограмма покажет
+   осмысленный подкорпус: модификаторы surface_relative_threshold_filter/
+   environment_scan дешевле типов — открывают ОБЁРТКИ уже поддержанных тел).
+
+6) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — порт surface_relative_threshold_filter
+   + environment_scan (модификаторы, охват 54/53 биомов) и/или monster_room
+   по декомпилу; затем stagediff features-статус на спец-корпусе
+   (3x3-replay по spiral-порядку GoldenDumper).
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+(тик 08:32 — Т38-B/T40; 5-й stale-тик) — первоисточник = этот LOG.
