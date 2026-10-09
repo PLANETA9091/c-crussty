@@ -67,6 +67,15 @@
 //!   - RandomBooleanSelectorFeature ("random_boolean_selector", inc. 9):
 //!     ONE nextBoolean() — feature_true/feature_false, both fieldOf
 //!     REQUIRED, no default.
+//!   - IntProvider family (inc. 10): weighted_list / clamped /
+//!     clamped_normal / biased_to_bottom / constant — the TRUE root of the
+//!     "random_selector (parse fail) 36" top (count modifiers of every
+//!     trees_* chain). WeightedListInt sample = nextInt(totalWeight) +
+//!     in-order walk; BiasedToBottom = min + nextInt(nextInt(range+1)+1)
+//!     (two draws); ClampedNormal = (int)clamp(mean + (float)nextGaussian()
+//!     * deviation) — the MarsagliaPolar cache rides the SOURCE
+//!     (IntProviderDraws::next_gaussian_wg, reset on re-seed like Java).
+//!     getMinValue/getMaxValue mirrors drive the geode codec-range checks.
 //!   - SnowAndFreezeFeature ("freeze_top_layer", inc. 2) — see the
 //!     FeatureDef::FreezeTopLayer doc.
 //!   - SpringFeature ("spring_feature", inc. 2) — DETERMINISTIC, no draws.
@@ -712,60 +721,229 @@ impl HeightProvider {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum IntProvider {
     Constant(i32),
     Uniform(i32, i32),
-    Triangle(i32, i32),
+    /// BiasedToBottomInt (inc. 10): min + nextInt(nextInt(range+1)+1) —
+    /// TWO nextInt draws (the inner one picks the "magnitude").
+    BiasedToBottom(i32, i32),
+    /// ClampedNormalInt (inc. 10): (int)clamp(mean + (float)nextGaussian()
+    /// * deviation, min, max) — the Mth.normal f32 form; the gaussian
+    /// rides the source-side MarsagliaPolar state (IntProviderDraws).
+    ClampedNormal {
+        mean: f32,
+        deviation: f32,
+        min: i32,
+        max: i32,
+    },
+    /// ClampedInt (inc. 10): clamp(source.sample, min, max).
+    Clamped {
+        source: Box<IntProvider>,
+        min: i32,
+        max: i32,
+    },
+    /// WeightedListInt (inc. 10): the 36-biome tree-chain blocker — count
+    /// modifiers of every trees_* placed chain (plus tree branch_count and
+    /// block_column layers/height internals). WeightedList.nonEmptyCodec(
+    /// IntProvider.CODEC): (weight NON_NEGATIVE_INT, provider) entries,
+    /// sample = nextInt(totalWeight) then the in-order accumulated-weight
+    /// walk (Flat/Compact selectors agree on the same item).
+    WeightedList(Vec<(i32, IntProvider)>),
 }
 
 impl IntProvider {
     pub fn parse(j: &Json) -> Result<IntProvider, String> {
-        // int or {type: uniform|triangle, min_inclusive, max_inclusive} —
-        // the uniform/trapezoid codecs put the bounds at the TOP level;
-        // the {value: {min_inclusive, max_inclusive}} nested shape is the
-        // weighted-list form and is tolerated too.
+        // int literal or a {type: ...} object — the full 1.21.10
+        // IntProviderType family (inc. 10: weighted_list / clamped /
+        // clamped_normal / biased_to_bottom added; there is NO triangle
+        // int provider in 1.21.10 — IntProviderType has exactly constant,
+        // uniform, biased_to_bottom, clamped, clamped_normal,
+        // weighted_list).
         if let Some(v) = j.as_i64() {
             return Ok(IntProvider::Constant(v as i32));
         }
-        let (min, max) = if let Some(val) = j.get("value") {
-            (
-                val.get("min_inclusive")
-                    .and_then(|v| v.as_i64())
-                    .ok_or("intprovider min")?,
-                val.get("max_inclusive")
-                    .and_then(|v| v.as_i64())
-                    .ok_or("intprovider max")?,
-            )
-        } else {
-            match (
-                j.get("min_inclusive").and_then(|v| v.as_i64()),
-                j.get("max_inclusive").and_then(|v| v.as_i64()),
-            ) {
-                (Some(a), Some(b)) => (a, b),
-                _ => return Err("intprovider shape".into()),
-            }
-        };
         let ty = j
             .get("type")
             .and_then(|t| t.as_str())
-            .unwrap_or("minecraft:uniform");
-        match ty.strip_prefix("minecraft:").unwrap_or(ty) {
-            "uniform" => Ok(IntProvider::Uniform(min as i32, max as i32)),
-            other => Err(format!(
-                "unsupported int provider {other} (triangle pending decompile)"
-            )),
+            .map(|t| t.strip_prefix("minecraft:").unwrap_or(t).to_string());
+        match ty.as_deref() {
+            Some("constant") => {
+                // ConstantInt.CODEC = Codec.INT.fieldOf("value").
+                let v = j.get("value").and_then(|v| v.as_i64()).ok_or("constant.value")?;
+                Ok(IntProvider::Constant(v as i32))
+            }
+            Some("biased_to_bottom") => {
+                let (a, b) = Self::min_max(j)?;
+                if b < a {
+                    return Err(format!("biased_to_bottom max < min ({a}..{b})"));
+                }
+                Ok(IntProvider::BiasedToBottom(a, b))
+            }
+            Some("clamped") => {
+                // ClampedInt.CODEC: source = IntProvider.CODEC fieldOf,
+                // both bounds Codec.INT fieldOf; validate max >= min.
+                let source = Box::new(IntProvider::parse(j.get("source").ok_or("clamped.source")?)?);
+                let min = j
+                    .get("min_inclusive")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("clamped.min_inclusive")? as i32;
+                let max = j
+                    .get("max_inclusive")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("clamped.max_inclusive")? as i32;
+                if max < min {
+                    return Err(format!("clamped max < min ({min}..{max})"));
+                }
+                Ok(IntProvider::Clamped { source, min, max })
+            }
+            Some("clamped_normal") => {
+                // ClampedNormalInt.CODEC: mean/deviation Codec.FLOAT, the
+                // bounds Codec.INT; validate max >= min.
+                let mean = j.get("mean").and_then(|v| v.as_f64()).ok_or("clamped_normal.mean")? as f32;
+                let deviation = j
+                    .get("deviation")
+                    .and_then(|v| v.as_f64())
+                    .ok_or("clamped_normal.deviation")? as f32;
+                let min = j
+                    .get("min_inclusive")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("clamped_normal.min_inclusive")? as i32;
+                let max = j
+                    .get("max_inclusive")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("clamped_normal.max_inclusive")? as i32;
+                if max < min {
+                    return Err(format!("clamped_normal max < min ({min}..{max})"));
+                }
+                Ok(IntProvider::ClampedNormal { mean, deviation, min, max })
+            }
+            Some("weighted_list") => {
+                // WeightedList.nonEmptyCodec — an EMPTY/missing
+                // distribution = codec error; entries are {data, weight}.
+                let dist = j
+                    .get("distribution")
+                    .and_then(|d| d.as_arr())
+                    .ok_or("weighted_list.distribution")?;
+                if dist.is_empty() {
+                    return Err("weighted_list distribution empty".into());
+                }
+                let mut items = Vec::with_capacity(dist.len());
+                for w in dist {
+                    let weight = w
+                        .get("weight")
+                        .and_then(|v| v.as_i64())
+                        .ok_or("weighted_list.weight")?;
+                    if weight < 0 {
+                        return Err(format!("weighted_list weight < 0 ({weight})"));
+                    }
+                    let data = IntProvider::parse(w.get("data").ok_or("weighted_list.data")?)?;
+                    items.push((weight as i32, data));
+                }
+                Ok(IntProvider::WeightedList(items))
+            }
+            // uniform (explicit) — and the tolerant ABSENT-type form: the
+            // bounds sit at the top level; the nested {value: {min,max}}
+            // shape is tolerated too (pre-inc.-10 behavior preserved).
+            None | Some("uniform") => {
+                let (a, b) = Self::min_max(j)?;
+                if b < a {
+                    return Err(format!("uniform max < min ({a}..{b})"));
+                }
+                Ok(IntProvider::Uniform(a, b))
+            }
+            other => Err(format!("unsupported int provider {other:?}")),
+        }
+    }
+
+    /// The {value: {min_inclusive, max_inclusive}} nested shape first, else
+    /// the top-level min_inclusive/max_inclusive fields.
+    fn min_max(j: &Json) -> Result<(i32, i32), String> {
+        if let Some(val) = j.get("value") {
+            return Ok((
+                val.get("min_inclusive")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("intprovider min")? as i32,
+                val.get("max_inclusive")
+                    .and_then(|v| v.as_i64())
+                    .ok_or("intprovider max")? as i32,
+            ));
+        }
+        match (
+            j.get("min_inclusive").and_then(|v| v.as_i64()),
+            j.get("max_inclusive").and_then(|v| v.as_i64()),
+        ) {
+            (Some(a), Some(b)) => Ok((a as i32, b as i32)),
+            _ => Err("intprovider shape".into()),
+        }
+    }
+
+    /// Java getMinValue/getMaxValue (the codec range validators use these;
+    /// ClampedInt narrows the source range, WeightedListInt takes the
+    /// min-of-mins / max-of-maxes over the entries).
+    pub fn min_value(&self) -> i32 {
+        match self {
+            IntProvider::Constant(v) => *v,
+            IntProvider::Uniform(a, _) => *a,
+            IntProvider::BiasedToBottom(a, _) => *a,
+            IntProvider::ClampedNormal { min, .. } => *min,
+            IntProvider::Clamped { source, min, .. } => (*min).max(source.min_value()),
+            IntProvider::WeightedList(items) => items
+                .iter()
+                .map(|(_, p)| p.min_value())
+                .min()
+                .unwrap_or(0),
+        }
+    }
+
+    pub fn max_value(&self) -> i32 {
+        match self {
+            IntProvider::Constant(v) => *v,
+            IntProvider::Uniform(_, b) => *b,
+            IntProvider::BiasedToBottom(_, b) => *b,
+            IntProvider::ClampedNormal { max, .. } => *max,
+            IntProvider::Clamped { source, max, .. } => (*max).min(source.max_value()),
+            IntProvider::WeightedList(items) => items
+                .iter()
+                .map(|(_, p)| p.max_value())
+                .max()
+                .unwrap_or(0),
         }
     }
 
     #[inline]
-    pub fn sample(&self, rng: &mut dyn crate::feature_sorter::WorldgenDraws) -> i32 {
-        match *self {
-            IntProvider::Constant(v) => v,
+    pub fn sample(&self, rng: &mut dyn crate::feature_sorter::IntProviderDraws) -> i32 {
+        match self {
+            IntProvider::Constant(v) => *v,
             IntProvider::Uniform(a, b) => rng.next_int_bound_wg(b - a + 1) + a,
-            // Triangle: NOT decompiled this session — unsupported on the
-            // native lane (honest); the parser rejects it, callers fall back.
-            IntProvider::Triangle(..) => 0,
+            // BiasedToBottomInt.sample: min + nextInt(nextInt(range+1)+1).
+            IntProvider::BiasedToBottom(a, b) => {
+                let inner = rng.next_int_bound_wg(b - a + 1) + 1;
+                a + rng.next_int_bound_wg(inner)
+            }
+            // Mth.normal = mean + (float)nextGaussian() * deviation (the
+            // gaussian is cast to f32 FIRST), then clamp in f32 and the
+            // Java (int) cast = trunc toward zero.
+            IntProvider::ClampedNormal { mean, deviation, min, max } => {
+                let normal = *mean + rng.next_gaussian_wg() as f32 * deviation;
+                let c = normal.clamp(*min as f32, *max as f32);
+                c as i32
+            }
+            IntProvider::Clamped { source, min, max } => source.sample(rng).clamp(*min, *max),
+            // WeightedRandom: nextInt(totalWeight), then the in-order
+            // accumulated-weight walk (Flat and Compact selectors return
+            // the same item for the same roll).
+            IntProvider::WeightedList(items) => {
+                let total: i64 = items.iter().map(|(w, _)| *w as i64).sum();
+                let mut r = rng.next_int_bound_wg(total as i32) as i64;
+                for (w, p) in items {
+                    r -= *w as i64;
+                    if r < 0 {
+                        return p.sample(rng);
+                    }
+                }
+                0 // unreachable for validated non-negative weights (total 0 = broken shape)
+            }
         }
     }
 }
@@ -1656,13 +1834,10 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
                         Some(v) => IntProvider::parse(v)?,
                         None => IntProvider::Uniform(da, db),
                     };
-                    let (a, b) = match parsed {
-                        IntProvider::Constant(c) => (c, c),
-                        IntProvider::Uniform(a, b) => (a, b),
-                        IntProvider::Triangle(..) => {
-                            return Err(format!("geode {key}: triangle provider"))
-                        }
-                    };
+                    // IntProvider.codec(lo,hi): the provider's min/max
+                    // range must sit inside the bound (Java semantics via
+                    // the getMinValue/getMaxValue mirrors).
+                    let (a, b) = (parsed.min_value(), parsed.max_value());
                     if a < lo || b > hi {
                         return Err(format!("geode {key} {lo}..={hi}, got {a}..{b}"));
                     }
@@ -3305,5 +3480,154 @@ mod tests {
         )
         .unwrap();
         assert!(parse_configured_def(&j2, "random_boolean_selector").is_err());
+    }
+
+    #[test]
+    fn weighted_list_count_verbatim_trees_birch() {
+        // verbatim from placed_feature/trees_birch.json — the count modifier
+        // that held up the whole 36-biome tree-chain top ("intprovider
+        // shape" before inc. 10).
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:weighted_list\",\"distribution\":[\
+             {\"data\":10,\"weight\":9},{\"data\":11,\"weight\":1}]}",
+        )
+        .unwrap();
+        let p = IntProvider::parse(&j).unwrap();
+        let IntProvider::WeightedList(items) = &p else {
+            panic!("expected weighted_list");
+        };
+        assert_eq!(items.len(), 2);
+        assert_eq!(items[0], (9, IntProvider::Constant(10)));
+        assert_eq!(items[1], (1, IntProvider::Constant(11)));
+        // Java getMinValue/getMaxValue: min-of-mins / max-of-maxes.
+        assert_eq!((p.min_value(), p.max_value()), (10, 11));
+        // sample: ONE nextInt(total=10) draw, the picked entry is a
+        // Constant (no further draws) — the draw count must be exactly 1
+        // for both possible picks.
+        let mut dr = crate::feature_sorter::DecorationRandom::new(3053459);
+        let before = dr.count_wg();
+        let v = p.sample(&mut dr);
+        assert_eq!(dr.count_wg() - before, 1);
+        assert!((10..=11).contains(&v));
+
+        // verbatim from configured_feature/cherry.json — trunk_placer
+        // branch_count rides the same weighted_list shape.
+        let j2 = crate::json::parse(
+            "{\"type\":\"minecraft:weighted_list\",\"distribution\":[\
+             {\"data\":{\"type\":\"minecraft:uniform\",\"min_inclusive\":2,\
+             \"max_inclusive\":4},\"weight\":1}]}",
+        )
+        .unwrap();
+        let IntProvider::WeightedList(items2) = IntProvider::parse(&j2).unwrap() else {
+            panic!("expected weighted_list");
+        };
+        assert_eq!(items2.len(), 1);
+        assert!(matches!(items2[0].1, IntProvider::Uniform(2, 4)));
+
+        // codec honesty: nonEmptyCodec — an EMPTY distribution = error;
+        // weight is NON_NEGATIVE_INT; a missing data key = error.
+        let j3 = crate::json::parse(
+            "{\"type\":\"minecraft:weighted_list\",\"distribution\":[]}",
+        )
+        .unwrap();
+        assert!(IntProvider::parse(&j3).is_err());
+        let j4 = crate::json::parse(
+            "{\"type\":\"minecraft:weighted_list\",\"distribution\":[\
+             {\"data\":1,\"weight\":-1}]}",
+        )
+        .unwrap();
+        assert!(IntProvider::parse(&j4).is_err());
+        let j5 = crate::json::parse(
+            "{\"type\":\"minecraft:weighted_list\",\"distribution\":[\
+             {\"weight\":1}]}",
+        )
+        .unwrap();
+        assert!(IntProvider::parse(&j5).is_err());
+    }
+
+    #[test]
+    fn int_provider_family_verbatim_and_honest_errors() {
+        // verbatim from placed_feature/glowstone_extra.json (count):
+        // biased_to_bottom 0..9 — sample = min + nextInt(nextInt(range+1)+1)
+        // with EXACTLY two nextInt draws.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:biased_to_bottom\",\"max_inclusive\":9,\"min_inclusive\":0}",
+        )
+        .unwrap();
+        let p = IntProvider::parse(&j).unwrap();
+        assert_eq!((p.min_value(), p.max_value()), (0, 9));
+        let mut dr = crate::feature_sorter::DecorationRandom::new(3053459);
+        let before = dr.count_wg();
+        let v = p.sample(&mut dr);
+        assert_eq!(dr.count_wg() - before, 2);
+        assert!((0..=9).contains(&v));
+
+        // verbatim from placed_feature/flower_forest_flowers.json (count):
+        // clamped over a uniform -1..3 clamped to 0..3.
+        let j2 = crate::json::parse(
+            "{\"type\":\"minecraft:clamped\",\"max_inclusive\":3,\"min_inclusive\":0,\
+             \"source\":{\"type\":\"minecraft:uniform\",\"max_inclusive\":3,\
+             \"min_inclusive\":-1}}",
+        )
+        .unwrap();
+        let IntProvider::Clamped { source, min, max } = IntProvider::parse(&j2).unwrap() else {
+            panic!("expected clamped");
+        };
+        assert_eq!((min, max), (0, 3));
+        assert_eq!((source.min_value(), source.max_value()), (-1, 3));
+        // Java getMinValue/getMaxValue on ClampedInt NARROW the source
+        // range: max(min, -1) = 0, min(max, 3) = 3.
+        let pc = IntProvider::parse(&j2).unwrap();
+        assert_eq!((pc.min_value(), pc.max_value()), (0, 3));
+
+        // verbatim from placed_feature/pointed_dripstone.json (xz_spread):
+        // clamped_normal mean 0.0, deviation 3.0, -10..10 — ONE gaussian
+        // draw (through the MarsagliaPolar source-side cache).
+        let j3 = crate::json::parse(
+            "{\"type\":\"minecraft:clamped_normal\",\"deviation\":3.0,\
+             \"max_inclusive\":10,\"mean\":0.0,\"min_inclusive\":-10}",
+        )
+        .unwrap();
+        let IntProvider::ClampedNormal { mean, deviation, min, max } = IntProvider::parse(&j3)
+            .unwrap()
+        else {
+            panic!("expected clamped_normal");
+        };
+        assert_eq!((mean, deviation, min, max), (0.0, 3.0, -10, 10));
+        let mut dr2 = crate::feature_sorter::DecorationRandom::new(3053459);
+        let v2 = IntProvider::parse(&j3).unwrap().sample(&mut dr2);
+        assert!((-10..=10).contains(&v2));
+        // determinism: same seed -> same value.
+        let mut dr3 = crate::feature_sorter::DecorationRandom::new(3053459);
+        assert_eq!(IntProvider::parse(&j3).unwrap().sample(&mut dr3), v2);
+
+        // verbatim ConstantInt form ({type: constant, value: N}).
+        let j4 = crate::json::parse("{\"type\":\"minecraft:constant\",\"value\":5}").unwrap();
+        assert_eq!(IntProvider::parse(&j4).unwrap(), IntProvider::Constant(5));
+
+        // honest codec errors: max < min on every bounded type.
+        let j5 = crate::json::parse(
+            "{\"type\":\"minecraft:biased_to_bottom\",\"max_inclusive\":-2,\"min_inclusive\":3}",
+        )
+        .unwrap();
+        assert!(IntProvider::parse(&j5).is_err());
+        let j6 = crate::json::parse(
+            "{\"type\":\"minecraft:clamped\",\"max_inclusive\":0,\"min_inclusive\":3,\
+             \"source\":{\"type\":\"minecraft:uniform\",\"max_inclusive\":1,\"min_inclusive\":0}}",
+        )
+        .unwrap();
+        assert!(IntProvider::parse(&j6).is_err());
+        let j7 = crate::json::parse(
+            "{\"type\":\"minecraft:clamped_normal\",\"deviation\":1.0,\"max_inclusive\":0,\
+             \"mean\":0.0,\"min_inclusive\":3}",
+        )
+        .unwrap();
+        assert!(IntProvider::parse(&j7).is_err());
+        // an unknown provider type stays an honest error.
+        let j8 = crate::json::parse(
+            "{\"type\":\"minecraft:multiplied\",\"value\":1}",
+        )
+        .unwrap();
+        assert!(IntProvider::parse(&j8).is_err());
     }
 }

@@ -5519,3 +5519,106 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 88, собственный run): run 37892902011
 (30d403b) completed SUCCESS. Правило «код-commit ждёт свой run»
 выполнено — тик ЗАВЕРШЁН.
+
+
+=== 2026-10-09 | аддендум 89: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 10):
+    порт IntProvider-семейства (weighted_list / clamped / clamped_normal /
+    biased_to_bottom / constant + min_value/max_value зеркала + гаусс на
+    стороне ИСТОЧНИКА); parse-провалы placed 26 -> 0; гистограмма сменила
+    голову: fallen_tree 17 / tree 10 (семейство деревьев); 184/184 ===
+
+0) САНДБОКС: fetch+reset -> HEAD 1967384 (аддендум 88, подтверждён).
+   cargo переустановлен (3-я рекализация подряд); корпус и decomp_p4
+   целы. База-ценз = аддендум 88, воспроизведён до правок.
+
+1) ОРАКУЛ (decomp_p4, valueproviders/, 1.21.10):
+   (а) IntProviderType = РОВНО constant, uniform, biased_to_bottom,
+       clamped, clamped_normal, weighted_list — треугольного int-
+       провайдера в 1.21.10 НЕТ (старая заглушка Triangle удалена как
+       ложная следа);
+   (б) WeightedListInt: WeightedList.nonEmptyCodec(IntProvider.CODEC)
+       fieldOf("distribution"); Weighted = value + weight
+       NON_NEGATIVE_INT fieldOf; sample = getRandomOrThrow(random)
+       .sample(random) — nextInt(totalWeight) + обход накопленных
+       весов ПО ПОРЯДКУ (селекторы Flat[<64] и Compact[>=64] дают
+       ОДИН и тот же предмет при том же ролле); min/max кэш = min-of-
+       mins / max-of-maxes по элементам;
+   (в) ClampedInt: source IntProvider.CODEC + min_inclusive/max_inclusive
+       (validate max >= min); sample = Mth.clamp(source.sample,...);
+       getMinValue = max(min, source.min), getMaxValue = min(max,
+       source.max);
+   (г) ClampedNormalInt: mean/deviation Codec.FLOAT + границы (validate);
+       sample = (int) Mth.clamp(Mth.normal(random, mean, deviation), ...),
+       Mth.normal = mean + (float)random.nextGaussian() * deviation —
+       гаусс кастится в f32 ПЕРЕД умножением; (int) = trunc к нулю;
+   (д) BiasedToBottomInt: границы (validate); sample = min +
+       nextInt(nextInt(range+1)+1) — ДВА nextInt;
+   (е) ConstantInt: Codec.INT.fieldOf("value"); UniformInt: границы
+       (validate max>=min — теперь честно проверяется);
+   (ж) ГАУСС: XoroshiroRandomSource ДЕРЖИТ MarsagliaPolarGaussian
+       (this.gaussianSource), nextGaussian() делегирует ему; reset() на
+       КАЖДОМ setSeed внутреннего источника; nextDouble через
+       WorldgenRandom = trap next(26)<<27+next(27) (f32-умножение,
+       f64-выход).
+
+2) КОД (этот коммит):
+   (а) feature_sorter: DecorationRandom несёт состояние гаусса
+       (next_next_gaussian/have_next_next_gaussian), сброс в new()/
+       set_decoration_seed (дважды)/set_feature_seed — зеркально
+       Java-семантике «состояние принадлежит источнику»; НОВЫЙ трейт
+       IntProviderDraws: WorldgenDraws + next_gaussian_wg
+       (MarsagliaPolar над next_f64_wg);
+   (б) features.rs IntProvider: + BiasedToBottom/ClampedNormal/Clamped/
+       WeightedList, - Triangle (мёртвый тип); parse полностью
+       перестроен по типам (пустой distribution = Err, weight < 0 =
+       Err, max < min = Err на ВСЕХ ограниченных типах — Java
+       .validate); sample по всем рукам; min_value/max_value зеркала;
+       geode-замыкание переведено на min_value/max_value (Java
+       IntProvider.codec(lo,hi) семантика);
+   (в) тесты 182->184 (weighted_list_count_verbatim_trees_birch —
+       verbatim trees_birch count + cherry branch_count + счётчик
+       ровно 1 draw + честные Err; int_provider_family_verbatim_and_
+       honest_errors — glowstone_extra biased_to_bottom (ровно 2
+       draws), flower_forest_flowers clamped (сужение диапазона),
+       pointed_dripstone clamped_normal (детерминизм на том же
+       сиде), constant, max<min на трёх типах, неизвестный тип).
+
+3) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, корпус тот же, diff бит-в-бит; база =
+   аддендум 88):
+   configured: 113/224 (без изменений — конфиги деревьев и так были
+       Unsupported по телу);
+   placed: 130/258 (набор и флаги БИТ-В-БИТ идентичны — вердикты
+       держатся на телах деревьев);
+   parse-провалы placed: 26 -> 0 (!!) — ВСЕ 26 "intprovider shape" /
+       "triangle pending decompile" строк stderr ИСЧЕЗЛИ; каждая
+       placed-цепочка корпуса теперь ПОЛНОСТЬЮ парсится в IR;
+   биомы fully-supported: 9/65 (без изменений);
+   ГИСТОГРАММА: топ "random_selector (parse fail) 36" ИСЧЕЗ — его
+       истинный корень (IntProvider в count) закрыт; глубинные метки
+       (рекурсия из инкр. 9) вскрыли НОВУЮ ГОЛОВУ: fallen_tree 17/65 +
+       tree 10/65 (семейство деревьев, суммарно 27 биомов);
+       noise_threshold_count 7; simple_random_selector 7 (было 6 —
+       ещё один биом дошёл до неё); glowstone_blob 5; vines 4;
+       count_on_every_layer 3; fossil 3; + 10 новых строк 1/65
+       (end_island, end_spike, huge_brown/red_mushroom, ice_spike,
+       large_dripstone, netherrack_replace_blobs, root_system,
+       sculk_patch, sea_pickle).
+   decor-seed probe: population=351934174475927443 first_draw=12 —
+       идентичен базе.
+
+4) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — семейство деревьев (fallen_tree 17
+   + tree 10 = 27 биомов; TreeFeature + TreeConfiguration: trunk/foliage
+   placers, minimum_size, decorators) — КРУПНЫЙ порт, резать на
+   подынкременты (сначала fallen_tree — он меньше: 2 поставщика
+   стволов и листвы); затем noise_threshold_count (7) и
+   simple_random_selector (7); затем stagediff features-статус на
+   спец-корпусе (3x3-replay spiral GoldenDumper).
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсер + гаусс-инфраструктура +
+   тесты + ценз), не worklog-only; гейт-контракты veccheck/stagediff
+   НЕ тронуты; placed-вердикты НЕ раздуты (бит-в-бит идентичны) —
+   закрыт только parse-слой; гаусс-детерминизм покрыт тестом на
+   повторяемость, бит-в-бит векторный гейт на clamped_normal пойдёт
+   при stagediff features-статусе (там же исчерпание draw-порядков).
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2
+  текст (тик 14:32 — Т38-B/T40; 14-й stale-тик) — первоисточник = этот LOG.

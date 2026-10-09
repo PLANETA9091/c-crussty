@@ -201,10 +201,49 @@ pub trait WorldgenDraws {
     }
 }
 
+/// Draw stack for IntProvider sampling: the WorldgenRandom formulas PLUS
+/// the inner-source MarsagliaPolar gaussian (ClampedNormalInt -> Mth.normal
+/// -> randomSource.nextGaussian(); XoroshiroRandomSource owns the cache,
+/// reset on setSeed — implementors mirror that).
+pub trait IntProviderDraws: WorldgenDraws {
+    fn next_gaussian_wg(&mut self) -> f64;
+}
+
+impl IntProviderDraws for DecorationRandom {
+    /// MarsagliaPolarGaussian.nextGaussian over the WorldgenRandom override
+    /// (nextDouble = the (float)((26<<27)+27)-bit draw * 2^-53 trap), with
+    /// the cache semantics riding on THIS source (Java: the inner source's
+    /// gaussianSource field).
+    fn next_gaussian_wg(&mut self) -> f64 {
+        if self.have_next_next_gaussian {
+            self.have_next_next_gaussian = false;
+            return self.next_next_gaussian;
+        }
+        let (mut d, mut d1, mut d2);
+        loop {
+            d = 2.0 * self.next_f64_wg() - 1.0;
+            d1 = 2.0 * self.next_f64_wg() - 1.0;
+            d2 = d * d + d1 * d1;
+            if !(d2 >= 1.0 || d2 == 0.0) {
+                break;
+            }
+        }
+        let square_root = (-2.0 * d2.ln() / d2).sqrt();
+        self.next_next_gaussian = d1 * square_root;
+        self.have_next_next_gaussian = true;
+        d * square_root
+    }
+}
+
 /// WorldgenRandom-over-Xoroshiro decoration seeder (session 7 decompile).
+/// Carries the MarsagliaPolarGaussian state of the INNER source (Java:
+/// XoroshiroRandomSource owns one, reset on every setSeed — mirrored by
+/// resetting here wherever the inner source is re-seeded).
 pub struct DecorationRandom {
     src: XoroshiroRandomSource,
     pub count: u64,
+    next_next_gaussian: f64,
+    have_next_next_gaussian: bool,
 }
 
 impl WorldgenDraws for DecorationRandom {
@@ -220,13 +259,19 @@ impl WorldgenDraws for DecorationRandom {
 
 impl DecorationRandom {
     pub fn new(unique_seed: i64) -> Self {
-        DecorationRandom { src: XoroshiroRandomSource::new(unique_seed), count: 0 }
+        DecorationRandom {
+            src: XoroshiroRandomSource::new(unique_seed),
+            count: 0,
+            next_next_gaussian: 0.0,
+            have_next_next_gaussian: false,
+        }
     }
 
     /// setDecorationSeed — returns the population seed l.
     pub fn set_decoration_seed(&mut self, level_seed: i64, min_block_x: i32, min_block_z: i32) -> i64 {
         self.src = XoroshiroRandomSource::new(level_seed);
         self.count = 0;
+        self.have_next_next_gaussian = false;
         let l = self.next_long_wg() | 1;
         let l1 = self.next_long_wg() | 1;
         let l2 = (min_block_x as i64)
@@ -234,6 +279,7 @@ impl DecorationRandom {
             .wrapping_add((min_block_z as i64).wrapping_mul(l1))
             ^ level_seed;
         self.src = XoroshiroRandomSource::new(l2);
+        self.have_next_next_gaussian = false;
         l2
     }
 
@@ -244,6 +290,7 @@ impl DecorationRandom {
             .wrapping_add(10000i64.wrapping_mul(step as i64));
         self.src = XoroshiroRandomSource::new(l);
         self.count = 0;
+        self.have_next_next_gaussian = false;
     }
 
     /// RNG delegated to the inner source (Feature.place draws).
