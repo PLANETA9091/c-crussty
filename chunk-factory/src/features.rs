@@ -1247,10 +1247,11 @@ pub enum FeatureDef {
     /// tail: ONE nextInt(features.size()) uniform draw over the set IN
     /// ORDER, then the chosen placed feature places with the SAME random
     /// source and origin (draw-exact port at the stagediff features-status
-    /// step). Verdict honesty (inc. 13): every element is verdicted
-    /// STRICTLY — an inline element body goes through the SAME
-    /// parse_configured_def dispatch as named features (the inc.8/9 inline
-    /// blacklist trust-hole is NOT extended to this composite); a "#tag"
+    /// step). Verdict honesty (inc. 13, uniform since inc. 14): every
+    /// element is verdicted STRICTLY — an inline element body goes through
+    /// the SAME parse_configured_def dispatch as named features; inc. 14
+    /// retired the inc.8/9 inline trust-hole entirely, so this is no longer
+    /// a selector-only exception but THE one verdict path. A "#tag"
     /// holder-set is an honest unsupported (zero corpus instances).
     SimpleRandomSelector {
         features: Vec<Box<PlacedFeatureDef>>,
@@ -2615,10 +2616,11 @@ pub fn decoration_supported(
 
 /// Composite/leaf support verdict for a RESOLVED configured body (named
 /// lookup or strict inline re-parse). Composites recurse through
-/// is_placed_supported / is_selector_element_supported; the inline
-/// trust-hole of the OLD composites (inc. 8/9: only the 4 composite names
-/// conservatively false, everything else trusted — corpus-zero tree/selector
-/// inline bodies, addendum 91 §1(ж)) is intentionally untouched there.
+/// is_placed_supported. Inc. 14: the OLD composites' inline trust-hole
+/// (inc. 8/9: only the 4 composite names conservatively false, everything
+/// else trusted) is RETIRED — every inline body, old composite or selector
+/// element, rides the same strict re-parse; is_selector_element_supported
+/// collapsed into is_placed_supported (one verdict path).
 fn is_def_supported(body: &FeatureDef, registry: &FeatureRegistry) -> bool {
     match body {
         FeatureDef::Unsupported(_) => false,
@@ -2636,28 +2638,21 @@ fn is_def_supported(body: &FeatureDef, registry: &FeatureRegistry) -> bool {
         }
         FeatureDef::SimpleRandomSelector { features } => features
             .iter()
-            .all(|f| is_selector_element_supported(f, registry)),
+            .all(|f| is_placed_supported(f, registry)),
         _ => true,
     }
 }
 
-/// STRICT element verdict (inc. 13): an INLINE element body is re-parsed
-/// through the same parse_configured_def dispatch as named features —
-/// dispatch-miss types (coral_*, pointed_dripstone) and parse-err shapes
-/// (weighted to_place in the compact simple_block leaf) are honest false;
-/// a ref element resolves through the regular named path.
-fn is_selector_element_supported(f: &PlacedFeatureDef, registry: &FeatureRegistry) -> bool {
-    match &f.inline {
-        Some((short, body)) => match parse_configured_def(body, short) {
-            Ok(d) => is_def_supported(&d, registry),
-            Err(_) => false,
-        },
-        None => is_placed_supported(f, registry),
-    }
-}
-
 /// Full support verdict for one placed feature (modifiers + configured body
-/// + the bodies reachable through random_patch nesting).
+/// + the bodies reachable through random_patch nesting). Uniform strict
+/// verdict since inc. 14: an INLINE body is re-parsed through the same
+/// parse_configured_def dispatch as named features (dispatch-miss types and
+/// parse-err shapes are honest false) — the inc. 8/9 trust rule (4
+/// composite names conservatively false, everything else trusted) is
+/// RETIRED, so this single function now also serves the
+/// simple_random_selector element verdicts (with the element's OWN
+/// placement modifiers checked first, which the inc. 13 selector-only path
+/// skipped).
 pub fn is_placed_supported(def: &PlacedFeatureDef, registry: &FeatureRegistry) -> bool {
     if def
         .placement
@@ -2666,16 +2661,18 @@ pub fn is_placed_supported(def: &PlacedFeatureDef, registry: &FeatureRegistry) -
     {
         return false;
     }
-    // INLINE configured body (random_patch inner shape) — the OLD trust
-    // rule (inc. 8/9): only the 4 composite names are conservatively false;
-    // everything else is trusted. NOT extended to simple_random_selector
-    // (see is_selector_element_supported); corpus-zero tree/selector inline
-    // bodies (addendum 91 §1(ж)).
-    if let Some((short, _)) = &def.inline {
-        return !matches!(
-            short.as_str(),
-            "tree" | "random_selector" | "simple_random_selector" | "random_boolean_selector"
-        );
+    // INLINE configured body (inc. 14): the OLD trust rule (inc. 8/9 — 4
+    // composite names conservatively false, everything else trusted) is
+    // RETIRED; every inline body now rides the uniform strict path (the
+    // inc. 13 selector-element verdict): re-parse through the same
+    // parse_configured_def dispatch as named features — dispatch-miss and
+    // parse-err shapes are honest false. The parked body carries the FULL
+    // {type, config} shape (inc. 13), so no info is lost.
+    if let Some((short, body)) = &def.inline {
+        return match parse_configured_def(body, short) {
+            Ok(d) => is_def_supported(&d, registry),
+            Err(_) => false,
+        };
     }
     match registry.configured.get(&def.feature_ref) {
         Some(cfg) => is_def_supported(cfg, registry),
@@ -2690,9 +2687,16 @@ pub fn placed_blocker_label(def: &PlacedFeatureDef, registry: &FeatureRegistry) 
             return Some(t.clone());
         }
     }
-    if let Some((short, _)) = &def.inline {
-        // OLD trust-rule labels (inc. 8/9): the bare parked short.
-        return Some(short.clone());
+    if let Some((short, body)) = &def.inline {
+        // inc. 14: strict deep label (the inc. 13 selector-element mirror)
+        // — parse-err -> the error text, dispatch-miss -> "unsupported type
+        // X", composite -> deepest recursion; replaces the old
+        // bare-parked-short trust-rule label.
+        return match parse_configured_def(body, short) {
+            Err(e) => Some(e),
+            Ok(FeatureDef::Unsupported(t)) => Some(format!("unsupported type {t}")),
+            Ok(d) => def_blocker_label(&d, registry),
+        };
     }
     registry
         .configured
@@ -2717,26 +2721,8 @@ pub fn def_blocker_label(body: &FeatureDef, registry: &FeatureRegistry) -> Optio
             .or_else(|| placed_blocker_label(feature_false, registry)),
         FeatureDef::SimpleRandomSelector { features } => features
             .iter()
-            .find_map(|f| selector_element_blocker_label(f, registry)),
+            .find_map(|f| placed_blocker_label(f, registry)),
         _ => None,
-    }
-}
-
-/// Blocker label for one STRICT selector element (inc. 13) — mirrors
-/// is_selector_element_supported: the deepest unsupported label of the
-/// element's body (dispatch-miss -> "unsupported type X", parse-err -> the
-/// error text, composite -> recursion), None when fully supported.
-pub fn selector_element_blocker_label(
-    f: &PlacedFeatureDef,
-    registry: &FeatureRegistry,
-) -> Option<String> {
-    match &f.inline {
-        Some((short, body)) => match parse_configured_def(body, short) {
-            Err(e) => Some(e),
-            Ok(FeatureDef::Unsupported(t)) => Some(format!("unsupported type {t}")),
-            Ok(d) => def_blocker_label(&d, registry),
-        },
-        None => placed_blocker_label(f, registry),
     }
 }
 
@@ -4268,6 +4254,65 @@ mod tests {
         let def3 = parse_configured_def(&j3, "simple_random_selector").unwrap();
         assert!(is_def_supported(&def3, &registry));
         assert!(def_blocker_label(&def3, &registry).is_none());
+    }
+
+    #[test]
+    fn uniform_strict_inline_verdict_after_trust_retirement() {
+        // inc. 14: the OLD composites' inline trust rule (inc. 8/9) is
+        // RETIRED — an inline body verdicted through is_placed_supported
+        // now rides the same strict re-parse as simple_random_selector
+        // elements (inc. 13). The registry is EMPTY (temp dir): every
+        // verdict below rides the inline path only.
+        let tmp = std::env::temp_dir().join(format!("ncf_p4_trust_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&tmp);
+        std::fs::create_dir_all(tmp.join("data/minecraft/worldgen")).unwrap();
+        let dir = crate::router::WorldgenDir::load(&tmp).unwrap();
+        let registry = FeatureRegistry {
+            configured: HashMap::new(),
+            placed: HashMap::new(),
+            dir: &dir,
+        };
+        let _ = std::fs::remove_dir_all(&tmp);
+
+        // OLD behavior trusted this body TRUE (non-composite short). Under
+        // the uniform strict verdict it is a parse-err shape (weighted
+        // to_place in the compact simple_block leaf) -> honest false with
+        // the parse-err label.
+        let mk = |body: &str| {
+            crate::json::parse(&format!("{{\"feature\":{body},\"placement\":[]}}")).unwrap()
+        };
+        let weighted = mk(
+            "{\"type\":\"minecraft:simple_block\",\"config\":\
+             {\"to_place\":{\"type\":\"minecraft:weighted_state_provider\",\"entries\":[\
+             {\"data\":{\"Name\":\"minecraft:stone\"},\"weight\":1}]}}}",
+        );
+        let def = parse_placed_feature(&weighted).unwrap();
+        assert!(!is_placed_supported(&def, &registry));
+        assert_eq!(
+            placed_blocker_label(&def, &registry).as_deref(),
+            Some("weighted_state_provider in simple context")
+        );
+
+        // dispatch-miss inner type -> honest false, "unsupported type X"
+        // (the old trust rule returned the bare short as the label).
+        let coral = mk("{\"type\":\"minecraft:coral_claw\",\"config\":{}}");
+        let def2 = parse_placed_feature(&coral).unwrap();
+        assert!(!is_placed_supported(&def2, &registry));
+        assert_eq!(
+            placed_blocker_label(&def2, &registry).as_deref(),
+            Some("unsupported type coral_claw")
+        );
+
+        // a fully supported inline body (plain simple_block) -> honest
+        // true, no label — the strict path does not over-block.
+        let plain = mk(
+            "{\"type\":\"minecraft:simple_block\",\"config\":\
+             {\"to_place\":{\"type\":\"minecraft:simple_state_provider\",\"state\":\
+             {\"Name\":\"minecraft:stone\"}}}}",
+        );
+        let def3 = parse_placed_feature(&plain).unwrap();
+        assert!(is_placed_supported(&def3, &registry));
+        assert!(placed_blocker_label(&def3, &registry).is_none());
     }
 
     #[test]

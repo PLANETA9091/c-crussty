@@ -191,9 +191,9 @@ fn blocker_label(
     use chunk_factory::features::placed_blocker_label;
     // inc. 13: delegated to the IR layer so the simple_random_selector
     // recursion (strict element labels) lives next to the verdict code.
-    // Label behavior is preserved byte-for-byte: unsupported placement
-    // modifier type (bare), inline parked short (bare), named dispatch
-    // miss ("unsupported type X"), composite recursion (deepest label).
+    // inc. 14: the inline label is the STRICT deep label (parse-err text /
+    // "unsupported type X" / composite recursion) — the old bare
+    // parked-short trust-rule label is retired with the trust rule.
     placed_blocker_label(def, registry)
 }
 

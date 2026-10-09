@@ -5987,3 +5987,100 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 92, собственный run): run 37906724414
 (833539d) completed SUCCESS. Правило «код-commit ждёт свой run»
 выполнено — тик ЗАВЕРШЁН.
+
+
+=== 2026-10-09 | аддендум 93: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 14):
+    снятие инлайн-trust-правила inc. 8/9 — равномерный строгий вердикт
+    инлайн-тел; placed 160 -> 137 (измеренный де-каунт -23), биомы
+    12 -> 4; configured 138 -> 138; 192/192 ===
+
+0) САНДБОКС: fetch+reset -> HEAD 2440ba0 (аддендум 92, подтверждён).
+   cargo жив (первый тик без рекализации); корпус и decomp_p4 целы
+   (224/258/65). База-ценз = аддендум 92, воспроизведён ДО правок
+   бит-в-бит (138/224, 160/258, 12/65, pf 0, head fancy_trunk_placer 7 /
+   glowstone_blob 5 / vines 4, probe population=351934174475927443
+   first_draw=12).
+
+1) ЧТО СНЯТО: инлайн-trust-правило inc. 8/9 в is_placed_supported —
+   «только 4 композитных имени (tree / random_selector /
+   simple_random_selector / random_boolean_selector) консервативно false,
+   прочие инлайн-тела доверенно true». Заменено равномерным строгим
+   вердиктом (инфраструктура готова с inc. 13: паркинг несёт ПОЛНОЕ тело
+   {type, config}): КАЖДОЕ инлайн-тело ре-парсится тем же
+   parse_configured_def диспатчем, что и именованные фичи — dispatch-miss
+   и parse-Err формы = честный false. Два selector-only враппера
+   (is_selector_element_supported, selector_element_blocker_label)
+   СХЛОПНУТЫ в is_placed_supported / placed_blocker_label — один путь
+   вердикта вместо двух. Два измеримых эффекта: (а) старые композиты
+   (random_patch inner) больше не доверяют инлайн-телам; (б)
+   инлайн-элементы селектора теперь проверяют И СОБСТВЕННЫЕ
+   placement-модификаторы (путь inc. 13 пропускал эту проверку для
+   инлайн-форм) — на корпусе (б) дал НОЛЬ флипов: все 23 флипа лежат в
+   random_patch-цепях, их новые метки — тела (block_column/провайдеры),
+   ни одна метка модификатора не появилась в diff.
+
+2) КОД (этот коммит): features.rs — is_placed_supported: инлайн-рука =
+   parse_configured_def -> is_def_supported (Err = false);
+   placed_blocker_label: инлайн-рука = строгая глубокая метка (parse-Err
+   -> текст ошибки, dispatch-miss -> "unsupported type X", композит ->
+   рекурсия в глубочайший блокер) вместо голого паркованного шорта;
+   SimpleRandomSelector-руки is_def_supported / def_blocker_label
+   переведены на те же единые функции; p4probe-делегирование не изменено
+   (метки текут из IR-слоя); док-комментарии переписаны (trust-hole
+   больше не «intentionally untouched»).
+
+3) ТЕСТЫ 191 -> 192: uniform_strict_inline_verdict_after_trust_retirement
+   (пустой реестр на temp-дире, вердикт только по инлайн-пути: инлайн
+   weighted simple_block -> false + "weighted_state_provider in simple
+   context" — СТАРОЕ правило давало доверенный true; инлайн coral_claw ->
+   false + "unsupported type coral_claw" — старая метка была голым шортом;
+   инлайн простой simple_block -> честный true без метки — строгий путь
+   НЕ овер-блокит). Полный suite 192/192.
+
+4) ИЗМЕРЕННЫЙ ДЕ-КАУНТ (p4probe, корпус тот же, diff списков бит-в-бит;
+   база = аддендум 92):
+   configured: 138/224 -> 138/224 (БЕЗ изменений — ценз configured
+       считается на IR-parse слое; trust-правило жило на placed-вердикте);
+   placed: 160/258 -> 137/258 (-23, полный список):
+       flower-цепи (7): flower_cherry, flower_default, flower_flower_
+       forest, flower_meadow, flower_plain, flower_plains, flower_warm;
+       patch_cactus* (3): patch_cactus, _decorated, _desert;
+       patch_sugar_cane* (4): patch_sugar_cane, _badlands, _desert,
+       _swamp; patch_dry_grass* (2): _badlands, _desert;
+       patch_grass_taiga* (2): _таига, _2; patch_grass_jungle,
+       patch_leaf_litter, patch_taiga_grass; wildflowers* (2):
+       _birch_forest, _meadow;
+   parse-провалы placed: 0 -> 0 (stderr пуст);
+   биомы fully-supported: 12/65 -> 4/65 (-8: stony_shore,
+       old_growth_birch_forest, badlands, eroded_badlands, beach,
+       birch_forest, wooded_badlands, snowy_beach; остались frozen_peaks,
+       snowy_slopes, jagged_peaks, stony_peaks);
+   ГИСТОГРАММА: НОВЫЙ head — "unsupported type block_column" 44/65
+       (было 1/65: инлайн-block_column-тела были невидимы под trust-
+       правилом); НОВЫЕ строки "weighted_state_provider in simple
+       context" 39/65, "noise_threshold_provider" 4/65,
+       "dual_noise_provider" 1/65, "noise_provider" 1/65;
+       fancy_trunk_placer 7, glowstone_blob 5, vines 4 — бит-в-бит
+       прежние; decor-seed probe идентичен базе.
+
+5) ЧЕСТНОСТЬ: де-каунт ИЗМЕРЕН, не предсказан: pre-scan аддендума 92
+   называл ~14 ключей — равномерный строгий вердикт нашёл 23 (добавились
+   flower_default/_meadow/_plain/_warm, wildflowers_birch_forest,
+   patch_grass_taiga/_2). Строгий путь НЕ овер-блокит: patch_grass_meadow,
+   patch_grass_plain, patch_tall_grass_2, forest_flowers ДЕРЖАТ OK на
+   честном true (их инлайн-тела реально парсятся); warm_ocean_vegetation
+   и pointed_dripstone остаются -- с точными метками (вердикты inc. 13 не
+   тронуты). Биомы birch_forest / old_growth_birch_forest из +2 аддендума
+   92 держались в т.ч. на wildflowers/flower false-OK — де-каунт это
+   честно корректирует. Гейт-контракты veccheck/stagediff НЕ тронуты;
+   ценз не раздут — это ДЕ-каунт (минус 23 placed, минус 8 биомов).
+
+6) СЛЕДУЮЩИЙ ТИК: по гистограмме head = block_column (44 биома) — порт
+   block_column вернёт patch_cactus*/patch_sugar_cane* цепи (7 placed),
+   затем weighted_state_provider как to_place в compact simple_block
+   (39; вернёт grass/flower/wildflowers цепи), затем fancy_trunk_placer
+   (7), glowstone_blob (5) / vines (4); затем stagediff features-status
+   на спец-корпусе (3x3-replay spiral GoldenDumper).
+
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+  (тик 17:02 — Т38-B/T40; 18-й stale-тик) — первоисточник = этот LOG.
