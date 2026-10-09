@@ -696,7 +696,15 @@ pub struct SurfaceContext<'a> {
     pub last_preliminary_surface_cell_origin: i64,
     pub preliminary_surface_cache: [i32; 4],
     // per-updateY state
+    // S1 lazy biome (standing order 2026-10-09): Java sets
+    // biome = Suppliers.memoize(() -> biomeGetter.apply(pos.set(x,y,z)))
+    // in updateY — the VOTE is deferred to the first .get() read and the
+    // memoized value lives until the next updateY OVERWRITES it. We store
+    // the pending position, resolve on first read (biome_or_compute),
+    // invalidate on every update_y. None-pending (no update_y yet) mirrors
+    // Java's null supplier (BiomeIs reads it as "not contained").
     pub biome: Option<String>,
+    pub biome_pending: Option<(i32, i32, i32)>,
     pub block_y: i32,
     pub water_height: i32,
     pub stone_depth_below: i32,
@@ -734,6 +742,7 @@ impl<'a> SurfaceContext<'a> {
             last_preliminary_surface_cell_origin: i64::MAX,
             preliminary_surface_cache: [0; 4],
             biome: None,
+            biome_pending: None,
             block_y: 0,
             water_height: i32::MIN,
             stone_depth_below: 0,
@@ -750,6 +759,36 @@ impl<'a> SurfaceContext<'a> {
         self.surface_depth = self.system.get_surface_depth(self.rs, block_x, block_z);
     }
 
+    /// Context.biome.get() — Suppliers.memoize trigger (S1 lazy): the pending
+    /// (x,y,z) vote is computed on the FIRST read after update_y and cached
+    /// until the next update_y overwrite. Purity: vote_best_corner is pure
+    /// LCG math; BiomeSource is an exact nearest-leaf RTree search (the memo
+    /// hint only prunes — climate.rs search_node) plus a HashMap cache; call
+    /// ORDER cannot change results (verified before the fix). No pending
+    /// update_y (Java: null supplier) is a no-op — reads see None, BiomeIs
+    /// treats it as "not contained" without computing.
+    /// Reads go through `ctx.biome.as_deref()` AFTER this call (field-level
+    /// split borrow — keeps the read path &str, zero clones).
+    #[inline]
+    pub fn ensure_biome(&mut self) {
+        if self.biome.is_none() {
+            if let Some((x, y, z)) = self.biome_pending {
+                let min_section = self.min_y >> 4;
+                let section_count = self.height >> 4;
+                let biome = get_biome_voted_region(
+                    &mut self.source.borrow_mut(),
+                    self.zoom_seed,
+                    x,
+                    y,
+                    z,
+                    min_section,
+                    section_count,
+                );
+                self.biome = Some(biome);
+            }
+        }
+    }
+
     /// Context.updateY
     pub fn update_y(&mut self, stone_depth_above: i32, stone_depth_below: i32, water_height: i32, block_x: i32, block_y: i32, block_z: i32) {
         self.last_update_y = self.last_update_y.wrapping_add(1);
@@ -759,24 +798,17 @@ impl<'a> SurfaceContext<'a> {
         // obfuscateSeed(seed)) — the 8-neighbour VOTE over the region's
         // STORED quarts (LevelReader.getNoiseBiome -> ChunkAccess.getNoiseBiome
         // with the section y-clamp). T35 bisect, session 7 addendum 4.
-        let min_section = self.min_y >> 4;
-        let section_count = self.height >> 4;
-        let biome = get_biome_voted_region(
-            &mut self.source.borrow_mut(),
-            self.zoom_seed,
-            block_x,
-            block_y,
-            block_z,
-            min_section,
-            section_count,
-        );
-        self.biome = Some(biome);
+        // S1: DEFERRED (was: eager get_biome_voted_region here — 30,274
+        // votes/chunk vs <=256 read; probe commit b986eecd). Java memoizes on
+        // first READ; ctx.biome is read only by Cond::BiomeIs /
+        // Cond::Temperature, both epoch-cached per last_update_y.
+        self.biome = None;
+        self.biome_pending = Some((block_x, block_y, block_z));
         self.block_y = block_y;
         self.water_height = water_height;
         self.stone_depth_below = stone_depth_below;
         self.stone_depth_above = stone_depth_above;
-        let _ = block_x;
-        let _ = block_z;
+        // (block_x/block_z land in biome_pending above — the S1 vote coords)
     }
 
     /// Context.getSurfaceSecondary (cached per lastUpdateXZ)
@@ -854,7 +886,8 @@ impl Cond {
                 if c.epoch == ctx.last_update_y {
                     return c.value;
                 }
-                let v = ctx.biome.as_ref().map(|b| biomes.contains(b)).unwrap_or(false);
+                ctx.ensure_biome();
+                let v = ctx.biome.as_deref().map(|b| biomes.iter().any(|s| s == b)).unwrap_or(false);
                 cache.set(LazyCache { epoch: ctx.last_update_y, value: v });
                 v
             }
@@ -902,10 +935,12 @@ impl Cond {
                 if c.epoch == ctx.last_update_y {
                     return c.value;
                 }
-                let biome = ctx.biome.clone().unwrap_or_default();
+                // S1: &str read — the old clone() allocated per epoch miss
+                ctx.ensure_biome();
+                let biome = ctx.biome.as_deref().unwrap_or("");
                 let v = ctx
                     .facts
-                    .get(&biome)
+                    .get(biome)
                     .map(|f| {
                         cold_enough_to_snow(ctx.biome_noise, f, ctx.block_x, ctx.block_y, ctx.block_z, ctx.system.sea_level)
                     })

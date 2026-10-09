@@ -1,0 +1,325 @@
+warning: unused import: `HeightmapKind`
+  --> src/sections.rs:20:49
+   |
+20 | use crate::filler::{BlockStateDef, FillerChunk, HeightmapKind, StateTable};
+   |                                                 ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `crate::climate::ParameterList`
+  --> src/biomes.rs:15:5
+   |
+15 | use crate::climate::ParameterList;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `StateTable`
+  --> src/carvers.rs:23:34
+   |
+23 | use crate::filler::{FillerChunk, StateTable};
+   |                                  ^^^^^^^^^^
+
+warning: unused import: `HashSet`
+  --> src/carvers.rs:27:33
+   |
+27 | use std::collections::{HashMap, HashSet};
+   |                                 ^^^^^^^
+
+warning: unused import: `util_shuffled_copy`
+  --> src/placer.rs:46:85
+   |
+46 |     can_attach, rotation_get_random, rotation_get_shuffled, shuffled_jigsaw_blocks, util_shuffled_copy,
+   |                                                                                     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `StateTable`
+   --> src/features.rs:100:34
+    |
+100 | use crate::filler::{FillerChunk, StateTable};
+    |                                  ^^^^^^^^^^
+
+warning: unused import: `crate::jrandom::RandomSource`
+   --> src/features.rs:101:5
+    |
+101 | use crate::jrandom::RandomSource;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::mth`
+   --> src/features.rs:103:5
+    |
+103 | use crate::mth;
+    |     ^^^^^^^^^^
+
+warning: unused import: `crate::random_spread::RandomSpreadStructurePlacement`
+  --> src/structure_scan.rs:58:5
+   |
+58 | use crate::random_spread::RandomSpreadStructurePlacement;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::vanilla_biomes`
+  --> src/structure_scan.rs:60:5
+   |
+60 | use crate::vanilla_biomes;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `HashMap`
+  --> src/structure_scan.rs:61:34
+   |
+61 | use std::collections::{BTreeSet, HashMap, HashSet};
+   |                                  ^^^^^^^
+
+warning: unreachable expression
+   --> src/interpolator.rs:354:83
+    |
+354 |           Df::FlatCacheWindow { wrapped, first_noise_x, first_noise_z, size_xz } => INode::Marker {
+    |  ___________________________________________________________________________________^
+355 | |             ty: crate::density::MarkerType::Cache2D,
+356 | |             wrapped: {
+...   |
+362 | |                 panic!("FlatCacheWindow reached intern_df — the machine view must stay aquifer-local (addendum 35)")
+    | |                 ---------------------------------------------------------------------------------------------------- any code following this expression is unreachable
+363 | |             },
+364 | |         },
+    | |_________^ unreachable expression
+    |
+    = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `crate::feature_sorter::WorldgenDraws`
+  --> src/features.rs:99:5
+   |
+99 | use crate::feature_sorter::WorldgenDraws;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `bank`
+   --> src/interpolator.rs:615:18
+    |
+615 |     pub fn build(bank: &NoiseBank, ifields: [usize; 15], arena: Arena) -> Self {
+    |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_bank`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `count`
+   --> src/region.rs:504:22
+    |
+504 |         let (offset, count) = sector_of[coord];
+    |                      ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+
+warning: value assigned to `remaining` is never read
+   --> src/carvers.rs:446:36
+    |
+446 |     let mut remaining: [bool; 4] = [true; 4]; // OCEAN_FLOOR, WORLD_SURFACE, MB, MB_NO_LEAVES
+    |                                    ^^^^^^^^^ this value is reassigned later and never used
+...
+449 |             remaining = [true; 4];
+    |             --------------------- `remaining` is overwritten here before the previous value is read
+    |
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> src/carvers.rs:675:25
+    |
+675 |                     let mut cols = ChunkColumns { chunk: state.chunk };
+    |                         ----^^^^
+    |                         |
+    |                         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> src/piece_feed.rs:223:17
+    |
+223 |             let mut anchor = |side: &str| -> Result<i32, String> {
+    |                 ----^^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: type `LazyCache` is more private than the item `Cond::BiomeIs::cache`
+   --> src/surface_rules.rs:287:36
+    |
+287 |     BiomeIs { biomes: Vec<String>, cache: std::cell::Cell<LazyCache> },
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::BiomeIs::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+    = note: `#[warn(private_interfaces)]` on by default
+
+warning: type `LazyCache` is more private than the item `Cond::StoneDepth::cache`
+   --> src/surface_rules.rs:288:99
+    |
+288 |     StoneDepth { offset: i32, add_surface_depth: bool, secondary_depth_range: i32, ceiling: bool, cache: std::cell::Cell<LazyCache> },
+    |                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::StoneDepth::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::YAbove::cache`
+   --> src/surface_rules.rs:289:72
+    |
+289 |     YAbove { anchor: VerticalAnchor, mult: i32, add_stone_depth: bool, cache: std::cell::Cell<LazyCache> },
+    |                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::YAbove::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::Water::cache`
+   --> src/surface_rules.rs:290:60
+    |
+290 |     Water { offset: i32, mult: i32, add_stone_depth: bool, cache: std::cell::Cell<LazyCache> },
+    |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::Water::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::Temperature::cache`
+   --> src/surface_rules.rs:291:19
+    |
+291 |     Temperature { cache: std::cell::Cell<LazyCache> },
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::Temperature::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::VerticalGradient::cache`
+   --> src/surface_rules.rs:292:110
+    |
+292 | ...omFactory>, cache: std::cell::Cell<LazyCache> },
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::VerticalGradient::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::NoiseThreshold::cache`
+   --> src/surface_rules.rs:294:60
+    |
+294 |     NoiseThreshold { noise_idx: usize, min: f64, max: f64, cache: std::cell::Cell<LazyCache> },
+    |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::NoiseThreshold::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::Steep::cache`
+   --> src/surface_rules.rs:295:13
+    |
+295 |     Steep { cache: std::cell::Cell<LazyCache> },
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::Steep::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `LazyCache` is more private than the item `Cond::Hole::cache`
+   --> src/surface_rules.rs:296:12
+    |
+296 |     Hole { cache: std::cell::Cell<LazyCache> },
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `Cond::Hole::cache` is reachable at visibility `pub`
+    |
+note: but type `LazyCache` is only usable at visibility `pub(self)`
+   --> src/surface_rules.rs:276:1
+    |
+276 | struct LazyCache {
+    | ^^^^^^^^^^^^^^^^
+
+warning: type `WNode` is more private than the item `SimTemplate::wnodes`
+   --> src/interpolator.rs:598:5
+    |
+598 |     pub wnodes: Vec<WNode>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^ field `SimTemplate::wnodes` is reachable at visibility `pub`
+    |
+note: but type `WNode` is only usable at visibility `pub(self)`
+   --> src/interpolator.rs:442:1
+    |
+442 | enum WNode {
+    | ^^^^^^^^^^
+
+warning: type `WSpline` is more private than the item `SimTemplate::wsplines`
+   --> src/interpolator.rs:602:5
+    |
+602 |     pub wsplines: Vec<WSpline>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^ field `SimTemplate::wsplines` is reachable at visibility `pub`
+    |
+note: but type `WSpline` is only usable at visibility `pub(self)`
+   --> src/interpolator.rs:468:1
+    |
+468 | struct WSpline {
+    | ^^^^^^^^^^^^^^
+
+warning: fields `first_noise_x` and `first_noise_z` are never read
+   --> src/aquifer.rs:214:5
+    |
+198 | pub struct NoiseBasedAquifer<'a> {
+    |            ----------------- fields in this struct
+...
+214 |     first_noise_x: i32,
+    |     ^^^^^^^^^^^^^
+215 |     first_noise_z: i32,
+    |     ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `noise_size_xz` is never read
+   --> src/interpolator.rs:570:5
+    |
+547 | pub struct NoiseChunkSim<'a> {
+    |            ------------- field in this struct
+...
+570 |     noise_size_xz: i32,
+    |     ^^^^^^^^^^^^^
+
+warning: enum `StartHeightSpec` is never used
+   --> src/structure_scan.rs:168:6
+    |
+168 | enum StartHeightSpec {
+    |      ^^^^^^^^^^^^^^^
+
+warning: function `height_offset` is never used
+   --> src/structure_scan.rs:176:4
+    |
+176 | fn height_offset(v: Option<&crate::json::Json>) -> Option<i32> {
+    |    ^^^^^^^^^^^^^
+
+warning: function `parse_start_height` is never used
+   --> src/structure_scan.rs:185:4
+    |
+185 | fn parse_start_height(v: Option<&crate::json::Json>) -> StartHeightSpec {
+    |    ^^^^^^^^^^^^^^^^^^
+
+warning: function `stub_samples` is never used
+   --> src/structure_scan.rs:234:15
+    |
+234 | pub(crate) fn stub_samples(
+    |               ^^^^^^^^^^^^
+
+warning: `chunk_factory` (lib) generated 35 warnings (run `cargo fix --lib -p chunk_factory` to apply 15 suggestions)
+warning: unused import: `chunk_factory::filler::generate_noise_chunk`
+  --> src/bin/stagediff.rs:14:5
+   |
+14 | use chunk_factory::filler::generate_noise_chunk;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `chunk_factory` (bin "stagediff") generated 1 warning (run `cargo fix --bin "stagediff" -p chunk_factory` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.00s
+     Running `target/release/stagediff /home/z/c-crussty/ci-server/golden/staged_surface /home/z/c-crussty/ci-server/rust_staged`
+pairs=225 equal=225 diverged=0

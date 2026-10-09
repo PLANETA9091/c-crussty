@@ -25,18 +25,18 @@ NCF_WG=<worldgen extract> NCF_DATA_ROOT=<same> ./target/release/bench 3053459 16
 
 Repeatability: two back-to-back runs agree within 2% on every stage.
 
-## Current table (shared prelim-surface memo, P2.16, 2026-10-09)
+## Current table (S1 lazy biome — Suppliers.memoize parity, 2026-10-09)
 
-Measured: noise 19.03, surface 21.04, carvers 1.22, serialization 1.00 (averages
-of two runs; singles 19.00-19.06 / 21.03-21.04 / 1.20-1.23 / 1.00-1.00).
+Measured: noise 19.34, surface 8.63, carvers 1.19, serialization 1.02 (run 1)
+and 19.15 / 8.56 / 1.12 / 1.00 (run 2) — every stage pair within 2%.
 
 | stage         | Rust ms/chunk | Java warm (P0.1) | speedup | share of Java budget |
 |---------------|--------------:|-----------------:|--------:|---------------------:|
-| noise+biomes  | 19.0          | 273.8            | 14.4x   | 75.4%                |
-| surface       | 21.0          | 16.8             | **0.8x**| 4.6%                 |
-| carvers       | 1.2           | 1.6              | **1.3x**| 0.4%                 |
+| noise+biomes  | 19.2          | 273.8            | 14.2x   | 75.4%                |
+| surface       | 8.6           | 16.8             | **2.0x**| 4.6%                 |
+| carvers       | 1.2           | 1.6              | **1.4x**| 0.4%                 |
 | serialization | 1.0           | 2.6              | 2.6x    | 0.7%                 |
-| PORTED TOTAL  | 42.3          | 294.8            | 7.0x    | 81.1%                |
+| PORTED TOTAL  | 30.0          | 294.8            | 9.8x    | 81.1%                |
 
 Stage-to-stage mapping honesty:
 - Rust "noise+biomes" = filler (density + aquifer + ore veins + biome fill +
@@ -58,15 +58,16 @@ jvm_other 48.9 = 67.1 CPU-ms = 18.48% at 1x.
 Current state:
 
 ```
-sum = 75.4%/14.4 + 4.6%/0.8 + 0.4%/1.3 + 0.7%/2.6 + 18.48% = 0.3009
-pregen speedup = 1 / 0.3009 = 3.32x  (vs Java warm 363.0 CPU-ms/chunk)
+sum = 75.4%/14.2 + 4.6%/2.0 + 0.4%/1.4 + 0.7%/2.6 + 18.48% = 0.267
+pregen speedup = 1 / 0.267 = 3.74x  (vs Java warm 363.0 CPU-ms/chunk)
 ```
 
-Lever priorities after P2.16: the noise cluster (19.0 ms, 14.4x, 75.4% share)
-and surface (21.0 ms, 0.8x — now the biggest NEGATIVE lever; to 1x adds
-~+0.13x) are the remaining prizes. Carvers crossed parity (1.3x); the P2.15
-path-cache share shrank to ~0.5 ms of the 1.2 ms stage. P2.13 SIMD on the
-density drive (~5x on noise) remains ~+0.9x.
+Lever priorities after S1: the noise cluster (19.2 ms, 14.2x, 75.4% share)
+remains the dominant prize (P2.13-class SIMD retry ~+0.9x with the gather-
+free variants). Surface CROSSED PARITY (8.6 ms, 2.0x vs Java warm 16.8) —
+the remaining surface items are S2 (block-class flags in StateTable, target
+<= 8 ms) and S3 (biome u16 interning, target <= 4 ms). Carvers 1.4x; the
+P2.15 path-cache share is ~0.5 ms of the 1.2 ms stage.
 
 P2.13 attempt 1 (2026-10-09, REVERTED as a negative lever, see history row):
 AVX2 4-lane perlin (gather-based) + 4-index pure-subtree walk (`compute4`)
@@ -155,3 +156,4 @@ History (end-to-end rows):
 | 937fbab (shared biome tree + carver refs cache) | 2026-10-09 | 23.6 | 21.1 | 5.4 | 1.0 | 51.1 | 3.07x |
 | this commit (P2.16: RandomState-level prelim-surface memo; parent 937fbab) | 2026-10-09 | 19.0 | 21.0 | 1.2 | 1.0 | 42.3 | 3.32x |
 | P2.13 attempt 1 — REVERTED, no commit [!] (AVX2 4-lane perlin + compute4 on tree ef0c68d; SIMD ON numbers; SIMD OFF control on the same tree: 19.4-20.6 / 3.21-3.29x) | 2026-10-09 | 24.9-25.1 | 21.1 | 1.2 | 1.0 | 48.3-48.9 | 3.13-3.15x |
+| this commit (S1 lazy biome: update_y stores pending (x,y,z), Suppliers.memoize parity, &str read path; parent b986eecd probe = 30,274 votes/chunk, after = 4,822; byte-identical stagediff surface+carvers 256/256 vs parent; gate-p2 vanilla/3053459 2376/2376 EQUAL; ci_staged surface 225/225 EQUAL; 194/194 tests) | 2026-10-09 | 19.2 | 8.6 | 1.2 | 1.0 | 30.0 | 3.74x |

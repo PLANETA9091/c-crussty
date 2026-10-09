@@ -5368,3 +5368,32 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    первом чтении ctx.biome (~857/~905), кэш до следующего update_y.
    Таргет surface <= 12 мс; R2: ledger x2 в 2%, stagediff 0/1 байт-идентичен,
    gate-p2 15/15.
+
+=== 2026-10-09 | аддендум 97: standing order — WORKLIST S1 ЗАКРЫТ: ленивый биом
+    (Suppliers.memoize parity): surface 21.2 -> 8.6 мс (2.4x), ported 42.4 ->
+    30.0, Amdahl 3.32 -> 3.74x; surface ПЕРЕВАЛИЛ parity (2.0x vs Java 16.8) ===
+
+0) КОД: surface_rules.rs — update_y больше НЕ голосует (было 30,274 голоса/
+   чанк, пробник b986eecd); хранит biome_pending=(x,y,z) + invalidate;
+   ensure_biome() = memoize-триггер (голос на ПЕРВОМ чтении, кэш до след.
+   update_y; до первого update_y = Java-null зеркально); чтения —
+   ctx.biome.as_deref() (&str, нуль клонов; Temperature clone убит).
+   ЧИСТОТА доказана до кода: vote_best_corner — чистый LCG; BiomeSource —
+   точный RTree-поиск (memo-hint только режет перебор) + HashMap-кэш;
+   порядок вызовов результат не меняет.
+
+1) R2-БАТАРЕЯ: ledger x2 (30.17/29.84 = 1.1%; база 42.47/42.34 = 0.3%);
+   stagediff --gen-batch 256 чанков 16x16 @107,107 vs родитель b986eecd —
+   BYTE-IDENTICAL surface и carvers (diff -rq); gate-p2 vanilla/3053459
+   noise: 2401 dumped, 25 spawn-пар исключены (Paper держит спавн FULL —
+   известный 5x5 bedrock-артефакт), 2376/2376 EQUAL, 0 расход; ci_staged
+   SURFACE 225/225 EQUAL (живой сервер vs Rust на изменённой стадии);
+   cargo test 194/194. Пробник: 4,822 голоса/чанк (было 30,274; остаток =
+   честные memoize-чтения Java).
+
+2) NCF_SPEED.md: текущая таблица + Amdahl 0.267 -> 3.74x + строка истории;
+   WORKLIST: S1 [x] с логом, S2 [~] (следующий шаг).
+
+3) NEXT: S2 — классификационные флаги (AIR/FLUID/OPAQUE) в StateTable при
+   интернировании, поиск по state id (строковые сравнения is_air/fluid/stone
+   на каждый блок); таргет surface <= 8 мс. Затем S3 (биом u16, <= 4 мс).

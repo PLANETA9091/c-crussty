@@ -11,7 +11,7 @@ never wait for the owner (OWNER-Q lines go to the worklog).
 
 ---
 
-## S1 [SURFACE, lazy biome] [~]
+## S1 [SURFACE, lazy biome] [x]
 surface_rules.rs update_y (line ~754) calls get_biome_voted_region
 (biomes.rs:340, returns String, 8-corner vote) for EVERY solid block in every
 column. ctx.biome is read only at lines ~857 (Cond::BiomeIs) and ~905
@@ -21,13 +21,22 @@ Probe first: count get_biome_voted_region calls per chunk (expect tens of
 thousands vs 256 needed). Fix: store the pending (x,y,z) in update_y, compute
 on first read, cache until the next update_y.
 Target: surface <= 12 ms after S1 alone.
+DONE (2026-10-09): probe b986eecd = 30,274 votes/chunk. Fix: biome_pending +
+ensure_biome() (memoize-per-updateY, Java-null mirroring pre-first-updateY),
+&str read path (Temperature clone killed). Surface 21.19/21.08 -> 8.71/8.54
+(2.4x; target <=12 beaten), ported 42.47 -> 30.36, Amdahl 3.31 -> 3.72x,
+probe 30,274 -> 4,822 votes/chunk (remaining = Java-faithful memoize reads).
+IDENTITY: stagediff --gen-batch 256 chunks surface+carvers vs parent
+b986eecd BYTE-IDENTICAL (diff -rq); 194/194 cargo test.
 
-## S2 [SURFACE, block class table] [ ]
+## S2 [SURFACE, block class table] [~]
 is_air_id/is_fluid_id/is_stone_id (surface_rules.rs ~1081) compare block-name
 strings per block, several times per step, plus HeightmapKind::is_opaque_state
 in set_block. Fix: classification flags (AIR/FLUID/OPAQUE...) stored in
 StateTable (filler.rs:72) at intern time, looked up by state id.
 Target: <= 8 ms.
+[~] next step (S1 landed: surface now 8.71, the String classifies are the
+next dominant cost inside it)
 
 ## S3 [SURFACE, no String] [ ]
 biome as an interned id (u16) instead of String in probe, ctx.biome and the
