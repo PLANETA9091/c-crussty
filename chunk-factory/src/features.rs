@@ -1378,6 +1378,42 @@ pub enum FeatureDef {
         stump_decorators: Vec<TreeDecorator>,
         log_decorators: Vec<TreeDecorator>,
     },
+    /// TreeFeature (inc. 12, step 2 of the tree family) — "minecraft:tree".
+    /// TreeConfiguration.CODEC (1.21.10) mirror, fields in codec order:
+    /// trunk_provider (BlockStateProvider — FULL provider path),
+    /// trunk_placer (TrunkPlacer dispatch), foliage_provider
+    /// (BlockStateProvider), foliage_placer (FoliagePlacer dispatch),
+    /// root_placer (optionalFieldOf — PRESENT = honest Err, the corpus
+    /// root shapes are mangrove-only), dirt_provider (BlockStateProvider),
+    /// minimum_size (FeatureSize dispatch), decorators
+    /// (TreeDecorator.CODEC.listOf() REQUIRED — may be empty),
+    /// ignore_vines BOOL orElse(false), force_dirt BOOL orElse(false).
+    /// Verdict subset this increment: straight_trunk_placer +
+    /// blob_foliage_placer + two_layers_feature_size + the decorators
+    /// beehive/cocoa/leave_vine/place_on_ground/trunk_vine/
+    /// attached_to_logs — that flips the 16 straight+blob corpus configs
+    /// (birch/oak/super_birch/jungle/swamp_oak families); every other
+    /// placer/feature-size/decorator type is an honest Err (the 23 other
+    /// tree configs keep verdict false with the precise reason label).
+    /// Execution tail (documented honestly, like FallenTree — the
+    /// draw-exact port is the stagediff features-status gate): TreeFeature
+    ///.place sets dirt below (dirt_provider), trunk placer places logs
+    /// upward (height = base + nextInt(rand_a+1) + nextInt(rand_b+1)
+    /// draws, doPlace pruning with the placer's valid-chunks checks),
+    /// foliage placer walks its layers (per-layer radius/offset draws,
+    /// provider draw per block), then decorators run in LIST order with
+    /// per-position gates (see each TreeDecorator variant's tail).
+    Tree {
+        trunk_provider: StateProvider,
+        trunk_placer: TrunkPlacer,
+        foliage_provider: StateProvider,
+        foliage_placer: FoliagePlacer,
+        dirt_provider: StateProvider,
+        minimum_size: FeatureSize,
+        decorators: Vec<TreeDecorator>,
+        ignore_vines: bool,
+        force_dirt: bool,
+    },
     Unsupported(String),
 }
 
@@ -1979,6 +2015,53 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
                 log_decorators,
             }
         }
+        "tree" => {
+            let cfg = j.get("config").ok_or("tree.config")?;
+            // Fields decoded in TreeConfiguration.CODEC order — the FIRST
+            // failing field owns the honest error label (DFU group
+            // semantics).
+            let trunk_provider = parse_state_provider(
+                cfg.get("trunk_provider").ok_or("tree.trunk_provider")?,
+            )?;
+            let trunk_placer =
+                parse_trunk_placer(cfg.get("trunk_placer").ok_or("tree.trunk_placer")?)?;
+            let foliage_provider = parse_state_provider(
+                cfg.get("foliage_provider").ok_or("tree.foliage_provider")?,
+            )?;
+            let foliage_placer =
+                parse_foliage_placer(cfg.get("foliage_placer").ok_or("tree.foliage_placer")?)?;
+            // optionalFieldOf("root_placer"): ABSENT = None; PRESENT with
+            // an unsupported root placer shape = honest codec error (the
+            // corpus root shapes are mangrove-only).
+            if cfg.get("root_placer").is_some() {
+                return Err("unsupported root placer".into());
+            }
+            let dirt_provider =
+                parse_state_provider(cfg.get("dirt_provider").ok_or("tree.dirt_provider")?)?;
+            let minimum_size =
+                parse_feature_size(cfg.get("minimum_size").ok_or("tree.minimum_size")?)?;
+            let decorators = parse_tree_decorators(cfg, "decorators")?;
+            let bool_field = |key: &str| -> Result<bool, String> {
+                match cfg.get(key) {
+                    Some(Json::Bool(b)) => Ok(*b),
+                    None => Ok(false), // orElse(false)
+                    _ => Err(format!("tree.{key}")),
+                }
+            };
+            let ignore_vines = bool_field("ignore_vines")?;
+            let force_dirt = bool_field("force_dirt")?;
+            FeatureDef::Tree {
+                trunk_provider,
+                trunk_placer,
+                foliage_provider,
+                foliage_placer,
+                dirt_provider,
+                minimum_size,
+                decorators,
+                ignore_vines,
+                force_dirt,
+            }
+        }
         other => FeatureDef::Unsupported(other.to_string()),
     })
 }
@@ -2098,6 +2181,41 @@ pub enum TreeDecorator {
     },
     /// trunk_vine (TrunkVineDecorator.CODEC = MapCodec.unit — NO fields).
     TrunkVine,
+    /// beehive (BeehiveDecorator.CODEC, inc. 12): probability =
+    /// floatRange(0,1) fieldOf REQUIRED. Execution tail: per curated log
+    /// position a nextFloat() <= probability gate, then the BEEHIVE block
+    /// with the BeehiveBlockEntity NBT (2-3 bees — honey_level 5, facing
+    /// draw) — wired at execution like the Spring FluidState pin.
+    Beehive {
+        probability: f32,
+    },
+    /// cocoa (CocoaDecorator.CODEC 1.21.10): probability = floatRange(0,1)
+    /// fieldOf REQUIRED (the older vertical/wall quantity fields are GONE
+    /// in 1.21.10). Execution tail: per curated log face a nextFloat() <=
+    /// probability gate then a cocoa block with a nextInt(3) age draw.
+    Cocoa {
+        probability: f32,
+    },
+    /// leave_vine (LeaveVineDecorator.CODEC): probability = floatRange(0,1)
+    /// fieldOf REQUIRED. Execution tail: per curated leaf position four
+    /// directional nextFloat() <= probability gates (N/S/W/E vines).
+    LeaveVine {
+        probability: f32,
+    },
+    /// place_on_ground (PlaceOnGroundDecorator.CODEC, 1.21.5+ leaf-litter
+    /// trees): tries = POSITIVE_INT fieldOf orElse(128), radius =
+    /// NON_NEGATIVE_INT fieldOf orElse(2), height = NON_NEGATIVE_INT
+    /// fieldOf orElse(1), block_state_provider = BlockStateProvider.CODEC
+    /// fieldOf REQUIRED (weighted shapes go through the full provider
+    /// path). Execution tail: tries iterations over a radius/height box
+    /// around the curated leaves' ground projection, per-placed-block
+    /// provider draw.
+    PlaceOnGround {
+        tries: i64,
+        radius: i64,
+        height: i64,
+        block_provider: StateProvider,
+    },
 }
 
 fn is_canonical_direction(s: &str) -> bool {
@@ -2112,6 +2230,47 @@ fn parse_tree_decorator(j: &Json) -> Result<TreeDecorator, String> {
     let ty = ty.strip_prefix("minecraft:").unwrap_or(ty);
     match ty {
         "trunk_vine" => Ok(TreeDecorator::TrunkVine),
+        "beehive" | "cocoa" | "leave_vine" => {
+            // all three share the {probability: floatRange(0,1) fieldOf}
+            // single-field codec shape.
+            let probability = j
+                .get("probability")
+                .and_then(|p| p.as_f64())
+                .ok_or("tree decorator probability")?;
+            if !(0.0..=1.0).contains(&probability) {
+                return Err(format!("{ty} probability 0..=1, got {probability}"));
+            }
+            let probability = probability as f32;
+            Ok(match ty {
+                "beehive" => TreeDecorator::Beehive { probability },
+                "cocoa" => TreeDecorator::Cocoa { probability },
+                _ => TreeDecorator::LeaveVine { probability },
+            })
+        }
+        "place_on_ground" => {
+            let tries = j.get("tries").and_then(|t| t.as_i64()).unwrap_or(128);
+            if tries < 1 {
+                return Err(format!("place_on_ground tries POSITIVE, got {tries}"));
+            }
+            let radius = j.get("radius").and_then(|t| t.as_i64()).unwrap_or(2);
+            if radius < 0 {
+                return Err(format!("place_on_ground radius NON_NEGATIVE, got {radius}"));
+            }
+            let height = j.get("height").and_then(|t| t.as_i64()).unwrap_or(1);
+            if height < 0 {
+                return Err(format!("place_on_ground height NON_NEGATIVE, got {height}"));
+            }
+            let block_provider = parse_state_provider(
+                j.get("block_state_provider")
+                    .ok_or("place_on_ground.block_state_provider")?,
+            )?;
+            Ok(TreeDecorator::PlaceOnGround {
+                tries,
+                radius,
+                height,
+                block_provider,
+            })
+        }
         "attached_to_logs" => {
             let probability = j
                 .get("probability")
@@ -2155,6 +2314,179 @@ fn parse_tree_decorators(j: &Json, key: &str) -> Result<Vec<TreeDecorator>, Stri
     match j.get(key).and_then(|d| d.as_arr()) {
         Some(arr) => arr.iter().map(parse_tree_decorator).collect(),
         None => Err(key.to_string()),
+    }
+}
+
+/// TrunkPlacer IR (inc. 12) — the verdict subset. TrunkPlacer.CODEC
+/// dispatches by type; the base parts are base_height intRange(0,32)
+/// fieldOf + height_rand_a intRange(0,24) fieldOf + height_rand_b
+/// intRange(0,24) fieldOf (StraightTrunkPlacer.CODEC = trunkPlacerParts
+/// ONLY). Other placer types are an honest Err.
+#[derive(Debug, Clone)]
+pub enum TrunkPlacer {
+    /// straight_trunk_placer. Draw tail (TrunkPlacer.placeTrunk, verdict
+    /// summary): tree height = base_height + nextInt(height_rand_a + 1) +
+    /// nextInt(height_rand_b + 1) draws, logs set upward with the
+    /// trunk_provider draws, dirt below, decorators in LIST order after.
+    Straight {
+        base_height: i32,
+        height_rand_a: i32,
+        height_rand_b: i32,
+    },
+}
+
+fn parse_trunk_placer(j: &Json) -> Result<TrunkPlacer, String> {
+    let ty = j
+        .get("type")
+        .and_then(|t| t.as_str())
+        .ok_or("trunk placer type")?;
+    let ty = ty.strip_prefix("minecraft:").unwrap_or(ty);
+    match ty {
+        "straight_trunk_placer" => {
+            let base = j
+                .get("base_height")
+                .and_then(|v| v.as_i64())
+                .ok_or("trunk.base_height")?;
+            let ra = j
+                .get("height_rand_a")
+                .and_then(|v| v.as_i64())
+                .ok_or("trunk.height_rand_a")?;
+            let rb = j
+                .get("height_rand_b")
+                .and_then(|v| v.as_i64())
+                .ok_or("trunk.height_rand_b")?;
+            if !(0..=32).contains(&base) {
+                return Err(format!("trunk base_height 0..=32, got {base}"));
+            }
+            if !(0..=24).contains(&ra) {
+                return Err(format!("trunk height_rand_a 0..=24, got {ra}"));
+            }
+            if !(0..=24).contains(&rb) {
+                return Err(format!("trunk height_rand_b 0..=24, got {rb}"));
+            }
+            Ok(TrunkPlacer::Straight {
+                base_height: base as i32,
+                height_rand_a: ra as i32,
+                height_rand_b: rb as i32,
+            })
+        }
+        other => Err(format!("unsupported trunk placer {other}")),
+    }
+}
+
+/// FoliagePlacer IR (inc. 12) — the verdict subset. FoliagePlacer.CODEC
+/// dispatches by type; the base parts are radius IntProvider.codec(0,16)
+/// fieldOf + offset IntProvider.codec(0,16) fieldOf. BlobFoliagePlacer
+/// adds height intRange(0,16) fieldOf. Other placer types are an honest
+/// Err.
+#[derive(Debug, Clone)]
+pub enum FoliagePlacer {
+    /// blob_foliage_placer. Draw tail (BlobFoliagePlacer.placeOnLine,
+    /// verdict summary): per foliage layer a radius/offset draw pair,
+    /// blob walk with provider draws per set block.
+    Blob {
+        radius: IntProvider,
+        offset: IntProvider,
+        height: i32,
+    },
+}
+
+fn int_provider_in_range(
+    j: &Json,
+    key: &str,
+    lo: i32,
+    hi: i32,
+) -> Result<IntProvider, String> {
+    // IntProvider.codec(lo,hi): dispatch-or-bare-int decode, then the
+    // min/max mirror must sit inside the bound (IntProvider.validate).
+    let v = j.get(key).ok_or(key)?;
+    let p = IntProvider::parse(v)?;
+    let (a, b) = (p.min_value(), p.max_value());
+    if a < lo || b > hi {
+        return Err(format!("{key} {lo}..={hi}, got {a}..{b}"));
+    }
+    Ok(p)
+}
+
+fn parse_foliage_placer(j: &Json) -> Result<FoliagePlacer, String> {
+    let ty = j
+        .get("type")
+        .and_then(|t| t.as_str())
+        .ok_or("foliage placer type")?;
+    let ty = ty.strip_prefix("minecraft:").unwrap_or(ty);
+    match ty {
+        "blob_foliage_placer" => {
+            let radius = int_provider_in_range(j, "radius", 0, 16)?;
+            let offset = int_provider_in_range(j, "offset", 0, 16)?;
+            let height = j
+                .get("height")
+                .and_then(|v| v.as_i64())
+                .ok_or("blob.height")?;
+            if !(0..=16).contains(&height) {
+                return Err(format!("blob height 0..=16, got {height}"));
+            }
+            Ok(FoliagePlacer::Blob {
+                radius,
+                offset,
+                height: height as i32,
+            })
+        }
+        other => Err(format!("unsupported foliage placer {other}")),
+    }
+}
+
+/// FeatureSize IR (inc. 12) — the verdict subset. FeatureSize.CODEC
+/// dispatches by type; TwoLayersFeatureSize.CODEC = limit intRange(0,81)
+/// orElse(1) + lower_size intRange(0,16) orElse(0) + upper_size
+/// intRange(0,16) orElse(1) + minClippedHeightCodec (optional
+/// intRange(0,80) -> Option). ThreeLayers and other types = honest Err.
+#[derive(Debug, Clone)]
+pub enum FeatureSize {
+    TwoLayers {
+        limit: i32,
+        lower_size: i32,
+        upper_size: i32,
+        min_clipped_height: Option<i32>,
+    },
+}
+
+fn parse_feature_size(j: &Json) -> Result<FeatureSize, String> {
+    let ty = j
+        .get("type")
+        .and_then(|t| t.as_str())
+        .ok_or("feature size type")?;
+    let ty = ty.strip_prefix("minecraft:").unwrap_or(ty);
+    match ty {
+        "two_layers_feature_size" => {
+            let limit = j.get("limit").and_then(|v| v.as_i64()).unwrap_or(1);
+            let lower = j.get("lower_size").and_then(|v| v.as_i64()).unwrap_or(0);
+            let upper = j.get("upper_size").and_then(|v| v.as_i64()).unwrap_or(1);
+            if !(0..=81).contains(&limit) {
+                return Err(format!("two_layers limit 0..=81, got {limit}"));
+            }
+            if !(0..=16).contains(&lower) {
+                return Err(format!("two_layers lower_size 0..=16, got {lower}"));
+            }
+            if !(0..=16).contains(&upper) {
+                return Err(format!("two_layers upper_size 0..=16, got {upper}"));
+            }
+            let min_clipped_height = match j.get("min_clipped_height").and_then(|v| v.as_i64()) {
+                Some(h) => {
+                    if !(0..=80).contains(&h) {
+                        return Err(format!("min_clipped_height 0..=80, got {h}"));
+                    }
+                    Some(h as i32)
+                }
+                None => None,
+            };
+            Ok(FeatureSize::TwoLayers {
+                limit: limit as i32,
+                lower_size: lower as i32,
+                upper_size: upper as i32,
+                min_clipped_height,
+            })
+        }
+        other => Err(format!("unsupported feature size {other}")),
     }
 }
 
@@ -3954,5 +4286,303 @@ mod tests {
             "fallen_tree",
         )
         .is_err());
+    }
+
+    #[test]
+    fn tree_verbatim_birch_bees_0002() {
+        // verbatim from configured_feature/birch_bees_0002.json — the
+        // trees_birch selector default that held up the birch chain.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:tree\",\"config\":{\"decorators\":[\
+             {\"type\":\"minecraft:beehive\",\"probability\":0.002}],\
+             \"dirt_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:dirt\"}},\
+             \"foliage_placer\":{\"type\":\"minecraft:blob_foliage_placer\",\
+             \"height\":3,\"offset\":0,\"radius\":2},\
+             \"foliage_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:birch_leaves\",\"Properties\":\
+             {\"distance\":\"7\",\"persistent\":\"false\",\
+             \"waterlogged\":\"false\"}}},\"force_dirt\":false,\
+             \"ignore_vines\":true,\"minimum_size\":{\"type\":\
+             \"minecraft:two_layers_feature_size\",\"limit\":1,\
+             \"lower_size\":0,\"upper_size\":1},\"trunk_placer\":\
+             {\"type\":\"minecraft:straight_trunk_placer\",\"base_height\":5,\
+             \"height_rand_a\":2,\"height_rand_b\":0},\"trunk_provider\":\
+             {\"type\":\"minecraft:simple_state_provider\",\"state\":\
+             {\"Name\":\"minecraft:birch_log\",\"Properties\":{\"axis\":\"y\"}}}}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::Tree {
+            trunk_provider,
+            trunk_placer,
+            foliage_provider,
+            foliage_placer,
+            dirt_provider,
+            minimum_size,
+            decorators,
+            ignore_vines,
+            force_dirt,
+        } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected Tree");
+        };
+        assert!(matches!(
+            &trunk_provider,
+            StateProvider::Simple(s) if s == "minecraft:birch_log[axis=y]"
+        ));
+        assert!(matches!(
+            &foliage_provider,
+            StateProvider::Simple(s)
+                if s == "minecraft:birch_leaves[distance=7,persistent=false,waterlogged=false]"
+        ));
+        assert!(matches!(
+            &dirt_provider,
+            StateProvider::Simple(s) if s == "minecraft:dirt"
+        ));
+        assert!(matches!(
+            trunk_placer,
+            TrunkPlacer::Straight {
+                base_height: 5,
+                height_rand_a: 2,
+                height_rand_b: 0
+            }
+        ));
+        // bare-int radius/offset decode through the IntProvider Either arm.
+        assert!(matches!(
+            foliage_placer,
+            FoliagePlacer::Blob {
+                radius: IntProvider::Constant(2),
+                offset: IntProvider::Constant(0),
+                height: 3
+            }
+        ));
+        assert!(matches!(
+            minimum_size,
+            FeatureSize::TwoLayers {
+                limit: 1,
+                lower_size: 0,
+                upper_size: 1,
+                min_clipped_height: None
+            }
+        ));
+        assert_eq!(decorators.len(), 1);
+        assert!(matches!(
+            decorators[0],
+            TreeDecorator::Beehive {
+                probability
+            } if probability == 0.002
+        ));
+        assert!(ignore_vines);
+        assert!(!force_dirt);
+
+        // verbatim decorator shapes from swamp_oak (leave_vine 0.25),
+        // jungle_tree (cocoa 0.2 + trunk_vine) and oak_leaf_litter
+        // (place_on_ground with weighted leaf_litter provider, orElse
+        // tries/radius/height omitted in corpus).
+        let mk_dec = |inner: &str| {
+            let full = format!(
+                "{{\"type\":\"minecraft:tree\",\"config\":{{\"decorators\":[{inner}],\
+                 \"dirt_provider\":{{\"type\":\"minecraft:simple_state_provider\",\
+                 \"state\":{{\"Name\":\"minecraft:dirt\"}}}},\"foliage_placer\":\
+                 {{\"type\":\"minecraft:blob_foliage_placer\",\"height\":3,\
+                 \"offset\":0,\"radius\":2}},\"foliage_provider\":{{\"type\":\
+                 \"minecraft:simple_state_provider\",\"state\":{{\"Name\":\
+                 \"minecraft:oak_leaves\"}}}},\"minimum_size\":{{\"type\":\
+                 \"minecraft:two_layers_feature_size\",\"limit\":1,\"lower_size\":0,\
+                 \"upper_size\":1}},\"trunk_placer\":{{\"type\":\
+                 \"minecraft:straight_trunk_placer\",\"base_height\":4,\
+                 \"height_rand_a\":2,\"height_rand_b\":0}},\"trunk_provider\":\
+                 {{\"type\":\"minecraft:simple_state_provider\",\"state\":\
+                 {{\"Name\":\"minecraft:oak_log\"}}}}}}}}"
+            );
+            crate::json::parse(&full).unwrap()
+        };
+        let j2 = mk_dec(
+            "{\"type\":\"minecraft:leave_vine\",\"probability\":0.25},\
+             {\"type\":\"minecraft:cocoa\",\"probability\":0.2},\
+             {\"type\":\"minecraft:trunk_vine\"},\
+             {\"type\":\"minecraft:place_on_ground\",\"block_state_provider\":\
+             {\"type\":\"minecraft:weighted_state_provider\",\"entries\":[\
+             {\"data\":{\"Name\":\"minecraft:leaf_litter\",\"Properties\":\
+             {\"facing\":\"north\",\"segment_amount\":\"3\"}},\"weight\":1}]}},\
+             {\"type\":\"minecraft:trunk_vine\",\"probability\":1.0}",
+        );
+        let FeatureDef::Tree { decorators: d2, .. } =
+            parse_configured_def(&j2, "tree").unwrap()
+        else {
+            panic!("expected Tree decorators");
+        };
+        assert_eq!(d2.len(), 5);
+        assert!(matches!(
+            d2[0],
+            TreeDecorator::LeaveVine {
+                probability
+            } if probability == 0.25
+        ));
+        assert!(matches!(
+            d2[1],
+            TreeDecorator::Cocoa {
+                probability
+            } if probability == 0.2
+        ));
+        assert!(matches!(d2[2], TreeDecorator::TrunkVine));
+        assert!(matches!(
+            d2[3],
+            TreeDecorator::PlaceOnGround {
+                tries: 128,
+                radius: 2,
+                height: 1,
+                ..
+            }
+        ));
+        assert!(matches!(
+            d2[4],
+            TreeDecorator::TrunkVine // MapCodec.unit: extra keys ignored
+        ));
+    }
+
+    #[test]
+    fn tree_honest_verdict_labels() {
+        // the 23 non-straight+blob tree configs keep verdict FALSE with the
+        // precise codec-order label: fancy trunk errors first (fancy_oak).
+        let mk = |trunk: &str, foliage: &str, extra: &str| {
+            let full = format!(
+                "{{\"type\":\"minecraft:tree\",\"config\":{{\"decorators\":[],\
+                 \"dirt_provider\":{{\"type\":\"minecraft:simple_state_provider\",\
+                 \"state\":{{\"Name\":\"minecraft:dirt\"}}}},\"foliage_placer\":\
+                 {foliage},\"foliage_provider\":{{\"type\":\
+                 \"minecraft:simple_state_provider\",\"state\":{{\"Name\":\
+                 \"minecraft:oak_leaves\"}}}}{extra},\"minimum_size\":\
+                 {{\"type\":\"minecraft:two_layers_feature_size\",\"limit\":1,\
+                 \"lower_size\":0,\"upper_size\":1}},\"trunk_placer\":{trunk},\
+                 \"trunk_provider\":{{\"type\":\"minecraft:simple_state_provider\",\
+                 \"state\":{{\"Name\":\"minecraft:oak_log\"}}}}}}}}"
+            );
+            crate::json::parse(&full).unwrap()
+        };
+        let e = parse_configured_def(
+            &mk(
+                "{\"type\":\"minecraft:fancy_trunk_placer\",\"base_height\":4,\
+                 \"height_rand_a\":2,\"height_rand_b\":0}",
+                "{\"type\":\"minecraft:fancy_foliage_placer\",\"offset\":0,\
+                 \"radius\":1}",
+                "",
+            ),
+            "tree",
+        )
+        .unwrap_err();
+        assert_eq!(e, "unsupported trunk placer fancy_trunk_placer");
+        // spruce: trunk parses, the foliage placer owns the label.
+        let e2 = parse_configured_def(
+            &mk(
+                "{\"type\":\"minecraft:straight_trunk_placer\",\"base_height\":6,\
+                 \"height_rand_a\":2,\"height_rand_b\":1}",
+                "{\"type\":\"minecraft:spruce_foliage_placer\",\"offset\":0,\
+                 \"radius\":2,\"trunk_height\":1}",
+                "",
+            ),
+            "tree",
+        )
+        .unwrap_err();
+        assert_eq!(e2, "unsupported foliage placer spruce_foliage_placer");
+        // dark_oak: the TRUNK placer errors first (codec order) — the
+        // three_layers_feature_size / pale_moss decorators are never
+        // reached for the dark_oak family.
+        let j3 = mk(
+            "{\"type\":\"minecraft:dark_oak_trunk_placer\",\"base_height\":4,\
+             \"height_rand_a\":2,\"height_rand_b\":0}",
+            "{\"type\":\"minecraft:blob_foliage_placer\",\"height\":3,\
+             \"offset\":0,\"radius\":2}",
+            "",
+        );
+        let e3 = parse_configured_def(&j3, "tree").unwrap_err();
+        assert_eq!(e3, "unsupported trunk placer dark_oak_trunk_placer");
+        // root_placer PRESENT = honest Err (mangrove shapes).
+        let j4 = mk(
+            "{\"type\":\"minecraft:straight_trunk_placer\",\"base_height\":4,\
+             \"height_rand_a\":2,\"height_rand_b\":0}",
+            "{\"type\":\"minecraft:blob_foliage_placer\",\"height\":3,\
+             \"offset\":0,\"radius\":2}",
+            ",\"root_placer\":{\"type\":\"minecraft:mangrove_root_placer\"}",
+        );
+        assert_eq!(
+            parse_configured_def(&j4, "tree").unwrap_err(),
+            "unsupported root placer"
+        );
+        // range honesty: blob radius 17 leaves IntProvider.codec(0,16).
+        let j5 = mk(
+            "{\"type\":\"minecraft:straight_trunk_placer\",\"base_height\":4,\
+             \"height_rand_a\":2,\"height_rand_b\":0}",
+            "{\"type\":\"minecraft:blob_foliage_placer\",\"height\":3,\
+             \"offset\":0,\"radius\":17}",
+            "",
+        );
+        assert_eq!(
+            parse_configured_def(&j5, "tree").unwrap_err(),
+            "radius 0..=16, got 17..17"
+        );
+        // straight base_height 33 leaves intRange(0,32).
+        let j6 = mk(
+            "{\"type\":\"minecraft:straight_trunk_placer\",\"base_height\":33,\
+             \"height_rand_a\":2,\"height_rand_b\":0}",
+            "{\"type\":\"minecraft:blob_foliage_placer\",\"height\":3,\
+             \"offset\":0,\"radius\":2}",
+            "",
+        );
+        assert_eq!(
+            parse_configured_def(&j6, "tree").unwrap_err(),
+            "trunk base_height 0..=32, got 33"
+        );
+        // decorators REQUIRED (fieldOf) — a missing key is an honest error.
+        let full7 = format!(
+            "{{\"type\":\"minecraft:tree\",\"config\":{{\"dirt_provider\":\
+             {{\"type\":\"minecraft:simple_state_provider\",\"state\":\
+             {{\"Name\":\"minecraft:dirt\"}}}},\"foliage_placer\":\
+             {{\"type\":\"minecraft:blob_foliage_placer\",\"height\":3,\
+             \"offset\":0,\"radius\":2}},\"foliage_provider\":{{\"type\":\
+             \"minecraft:simple_state_provider\",\"state\":{{\"Name\":\
+             \"minecraft:oak_leaves\"}}}},\"minimum_size\":{{\"type\":\
+             \"minecraft:two_layers_feature_size\",\"limit\":1,\"lower_size\":0,\
+             \"upper_size\":1}},\"trunk_placer\":{{\"type\":\
+             \"minecraft:straight_trunk_placer\",\"base_height\":4,\
+             \"height_rand_a\":2,\"height_rand_b\":0}},\"trunk_provider\":\
+             {{\"type\":\"minecraft:simple_state_provider\",\"state\":\
+             {{\"Name\":\"minecraft:oak_log\"}}}}}}}}"
+        );
+        let j8 = crate::json::parse(&full7).unwrap();
+        assert_eq!(
+            parse_configured_def(&j8, "tree").unwrap_err(),
+            "decorators"
+        );
+        // ignore_vines defaults to false via orElse — a bare-int blob shape
+        // must still parse (both orElse bools absent).
+        let j9 = mk(
+            "{\"type\":\"minecraft:straight_trunk_placer\",\"base_height\":4,\
+             \"height_rand_a\":2,\"height_rand_b\":0}",
+            "{\"type\":\"minecraft:blob_foliage_placer\",\"height\":3,\
+             \"offset\":0,\"radius\":2}",
+            "",
+        );
+        let FeatureDef::Tree {
+            ignore_vines,
+            force_dirt,
+            ..
+        } = parse_configured_def(&j9, "tree").unwrap()
+        else {
+            panic!("expected Tree");
+        };
+        assert!(!ignore_vines && !force_dirt);
+        // beehive probability 1.5 = honest Err through the shared
+        // single-field decorator arm (plain literal, single braces).
+        let j10 = crate::json::parse(
+            "{\"type\":\"minecraft:tree\",\"config\":{\"decorators\":[\n             {\"type\":\"minecraft:beehive\",\"probability\":1.5}],\n             \"dirt_provider\":{\"type\":\"minecraft:simple_state_provider\",\n             \"state\":{\"Name\":\"minecraft:dirt\"}},\"foliage_placer\":\n             {\"type\":\"minecraft:blob_foliage_placer\",\"height\":3,\n             \"offset\":0,\"radius\":2},\"foliage_provider\":{\"type\":\n             \"minecraft:simple_state_provider\",\"state\":{\"Name\":\n             \"minecraft:oak_leaves\"}},\"minimum_size\":{\"type\":\n             \"minecraft:two_layers_feature_size\",\"limit\":1,\"lower_size\":0,\n             \"upper_size\":1},\"trunk_placer\":{\"type\":\n             \"minecraft:straight_trunk_placer\",\"base_height\":4,\n             \"height_rand_a\":2,\"height_rand_b\":0},\"trunk_provider\":\n             {\"type\":\"minecraft:simple_state_provider\",\"state\":\n             {\"Name\":\"minecraft:oak_log\"}}}}",
+        )
+        .unwrap();
+        assert_eq!(
+            parse_configured_def(&j10, "tree").unwrap_err(),
+            "beehive probability 0..=1, got 1.5"
+        );
     }
 }

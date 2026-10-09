@@ -5743,3 +5743,123 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 90, собственный run): run 37898813571
 (4169d49) completed SUCCESS. Правило «код-commit ждёт свой run»
 выполнено — тик ЗАВЕРШЁН.
+
+
+=== 2026-10-09 | аддендум 91: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 12):
+    семейство деревьев, шаг 2 — tree (TreeConfiguration + TrunkPlacer/
+    FoliagePlacer/FeatureSize +decorators beehive/cocoa/leave_vine/
+    place_on_ground); configured 118 -> 134 (+16 straight+blob),
+    placed 135 -> 152 (+17); биомы 9 -> 10 (+wooded_badlands);
+    188/188 ===
+
+0) САНДБОКС: fetch+reset -> HEAD 8f96dd1 (аддендум 90, подтверждён).
+   cargo переустановлен (5-я рекализация подряд); корпус и decomp_p4
+   целы. База-ценз = аддендум 90, воспроизведён ДО правок бит-в-бит
+   (118/224, 135/258, 9/65, pf 0, head tree 15, probe идентичен).
+
+1) ОРАКУЛ (decomp_p4, 1.21.10):
+   (а) TreeConfiguration.CODEC — ДЕСЯТЬ полей в порядке кодека:
+       trunk_provider (BlockStateProvider), trunk_placer (TrunkPlacer
+       dispatch), foliage_provider, foliage_placer, root_placer
+       (optionalFieldOf — mangrove-only), dirt_provider, minimum_size
+       (FeatureSize dispatch), decorators (TreeDecorator.CODEC.listOf()
+       REQUIRED, пустой легален), ignore_vines BOOL orElse(false),
+       force_dirt BOOL orElse(false); ВЫСОТА живёт в trunk-placer, не в
+       конфиге;
+   (б) TrunkPlacer.parts: base_height intRange(0,32) + height_rand_a
+       intRange(0,24) + height_rand_b intRange(0,24), ВСЕ fieldOf;
+       StraightTrunkPlacer = только части; TrunkPlacer.CODEC = dispatch;
+   (в) FoliagePlacer.parts: radius IntProvider.codec(0,16) + offset
+       IntProvider.codec(0,16), fieldOf; BlobFoliagePlacer + height
+       intRange(0,16) fieldOf;
+   (г) TwoLayersFeatureSize: limit intRange(0,81) orElse(1), lower_size
+       intRange(0,16) orElse(0), upper_size intRange(0,16) orElse(1),
+       min_clipped_height optional intRange(0,80);
+   (д) IntProvider.CODEC = Either(INT, dispatch) xmap — ГОЛЫЙ int =
+       ConstantInt (потому радиус/офсет в деревьях — числа);
+       IntProvider.codec(lo,hi) = validate по зеркалам min/max;
+   (е) декораторы 1.21.10: BeehiveDecorator = {probability
+       floatRange(0,1)}; CocoaDecorator = ТОЛЬКО probability (старые
+       vertical/wall quantity УДАЛЕНЫ в 1.21.10); LeaveVineDecorator =
+       {probability}; PlaceOnGroundDecorator = tries POSITIVE orElse(128)
+       + radius NON_NEGATIVE orElse(2) + height NON_NEGATIVE orElse(1) +
+       block_state_provider BlockStateProvider.CODEC fieldOf
+       (weighted-лист_литтер идёт через полный путь провайдеров);
+   (ж) инлайн-тела tree/случайных селекторов в корпусе = НОЛЬ (обход
+       json-дерева) — инлайн-блэклист is_placed_supported не срабатывает
+       ни на одном корпусном файле; слепое пятно задокументировано, не
+       тронуто.
+
+2) КОД (этот коммит):
+   (а) FeatureDef::Tree {trunk_provider, trunk_placer, foliage_provider,
+       foliage_placer, dirt_provider, minimum_size, decorators,
+       ignore_vines, force_dirt} + парсер В ПОРЯДКЕ КОДЕКА (первый
+       упавший выгодным честным Err — DFU group семантика);
+       root_placer ПРИСУТСТВУЕТ = Err "unsupported root placer";
+   (б) TrunkPlacer::Straight {base_height, height_rand_a, height_rand_b}
+       с честными границами; FoliagePlacer::Blob {radius, offset,
+       height} с IntProvider.codec(0,16)-зеркалами (int_provider_in_
+       range helper); FeatureSize::TwoLayers {limit, lower, upper,
+       min_clipped_height: Option} с orElse-дефолтами;
+   (в) TreeDecorator +Beehive/+Cocoa/+LeaveVine (общая single-field
+       probability рука с floatRange) +PlaceOnGround (orElse + честные
+       POSITIVE/NON_NEGATIVE + полный провайдер);
+   (г) вердикт: Tree — не-композит, поддержан когда ВЕСЬ конфиг
+       разобран в типизированный IR (подмножество: straight + blob +
+       two_layers + 6 декораторов); остальные 23 конфига деревьев
+       остаются false с ТОЧНОЙ меткой ("unsupported trunk placer
+       fancy_trunk_placer" и т.п.);
+   (д) тесты 186 -> 188 (tree_verbatim_birch_bees_0002 — verbatim
+       деревья-пчеta: straight 5/2/0, blob 2/0/3, two_layers 1/0/1,
+       beehive 0.002, ignore_vines true; + verbatim-формы декораторов
+       swamp_oak/jungle_tree/oak_leaf_litter: leave_vine 0.25, cocoa
+       0.2, trunk_vine unit-экстраключи, place_on_ground с weighted
+       leaf_litter и orElse 128/2/1; tree_honest_verdict_labels —
+       fancy/spruce/dark_oak/root_placer/радиус 17/base_height 33/
+       пустой decorators/beehive 1.5 — все честные Err с точными
+       строками).
+
+3) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, корпус тот же, diff списков бит-в-бит;
+   база = аддендум 90):
+   configured: 118/224 -> 134/224 (+16: РОВНО все straight+blob —
+       birch x6, oak x5, super_birch x2, jungle_tree,
+       jungle_tree_no_vine, swamp_oak; строка "unsupported type tree
+       0/39" ИСЧЕЗЛА);
+   placed: 135/258 -> 152/258 (+17: birch_bees_0002(+leaf_litter),
+       birch_bees_002, birch_checked, birch_leaf_litter, birch_tall,
+       jungle_tree, oak, oak_bees_0002_leaf_litter, oak_bees_002,
+       oak_checked, oak_leaf_litter, super_birch_bees(+0002),
+       trees_badlands, trees_birch, trees_swamp; diff PLACED = 34
+       строки, остальное бит-в-бит);
+   биомы fully-supported: 9/65 -> 10/65 (+wooded_badlands — деревья
+       trees_badlands теперь весь селектор поддерживают); прежние 9
+       имён на месте (порядок печати — HashMap-ротация);
+   parse-провалы placed: 0 -> 0 (stderr пуст);
+   ГИСТОГРАММА: "unsupported type tree blocks 15/65" ИСЧЕЗЛА -> 11
+       точных строк (fancy 6, dark_oak 5, cherry 2, giant 2,
+       upwards_branching 2, bending 1, forking 1, mega_jungle 1;
+       foliage: spruce 1, pine 1, bush 1 — по конфигам) и биомным
+       меткам: HEAD = ТРОЙНАЯ НИЧЬЯ noise_threshold_count 7 /
+       simple_random_selector 7 / fancy_trunk_placer 7; glowstone_blob
+       5; cherry_trunk 1, bush_foliage 3 (плюс переМЕТки в существующие
+       строки множеств);
+   decor-seed probe: population=351934174475927443 first_draw=12 —
+       идентичен базе.
+
+4) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — по гистограмме: noise_threshold_
+   count (7) и simple_random_selector (7) — оба НЕ-деревья, малые
+   порты; затем следующий шаг деревьев — fancy_trunk_placer (7 биомов:
+   fancy + fancy_foliage + min_clipped_height уже в IR), затем
+   glowstone_blob (5), vines (4); затем stagediff features-статус на
+   спец-корпусе (3x3-replay spiral GoldenDumper).
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсеры + тесты + ценз), не
+   worklog-only; гейт-контракты veccheck/stagediff НЕ тронуты; ценз НЕ
+   раздут: +16 configured = ровно подмножество straight+blob, +17
+   placed = ровно их цепочки (diff 34 строки), биом +1 (wooded_badlands)
+   — честный флип, 23 дерева остаются Unsupported с точными метками;
+   инлайн-блэклист не тронут (корпусных инлайн-тел = 0, слепое пятно
+   задокументировано); хвост исполнения Tree задокументирован,
+   draw-exact порт = stagediff features-статус.
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2
+  текст (тик 15:32 — Т38-B/T40; 16-й stale-тик) — первоисточник = этот LOG.
