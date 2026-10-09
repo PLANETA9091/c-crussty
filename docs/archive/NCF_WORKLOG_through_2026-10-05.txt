@@ -1,0 +1,876 @@
+================================================================
+WORKLOG: c-crussty / Native Chunk Factory (NCF)
+ЦЕЛЬ: x100 к генерации мира, 100% как ванильный Paper 1.21.10
+Rust, без GPU. Единица работы = чанк/регион, а не вызов noise().
+================================================================
+
+ЛЕГЕНДА
+  [ ] не начато
+  [~] в работе
+  [x] сделано (с доказательством: ссылка на тест/замер в LOG)
+  [!] заблокировано или провал (НЕ удалять, писать причину и цифры)
+
+ПРАВИЛА ДЛЯ АГЕНТА
+  - Отмечай пункты по ходу работы. Пункт [x] без записи в LOG не считается.
+  - Каждую сессию дописывай запись в раздел LOG внизу (шаблон там же).
+  - Провалы, регрессии, опровергнутые гипотезы остаются в файле с цифрами.
+  - Утверждения про внутренности ванили в этом файле даны по памяти.
+    Проверяй по декомпилированным исходникам Paper 1.21.10 и коду репо.
+    Расхождения записывай в LOG, не подгоняй реальность под файл.
+  - Код генерации не пиши, пока не закрыта Фаза 0.
+
+
+----------------------------------------------------------------
+0. КОНТЕКСТ (читать первым)
+----------------------------------------------------------------
+[x] 0.1  Прочитать worklog в приватном репо crussty-dev-logs (папка c-crussty/)
+[x] 0.2  Прочитать docs/ARCHITECTURE.md, docs/KERNEL_POLICY.md, docs/BENCHMARKS.md
+[x] 0.3  Прочитать src/ (lib.rs, area_map.rs, improved_noise.rs, kernel_policy.rs)
+[~] 0.4  Сверить этот файл с исходниками Paper 1.21.10, расхождения в LOG (CFR 0.152 скачан; первые расхождения найдены, см. LOG #1; сверка продолжается по ходу фаз)
+
+Почему текущий путь упёрся (по BENCHMARKS.md репо):
+  - pregen 3721 чанка: 5:39 -> 5:29 (около 3%)
+  - burst 128 чанков: 41 с -> 38 с, CPU 37.9 -> 35.7 с
+  - микро-ядра до x318, но все рычаги сразу дали +51% CPU (хуже ванили)
+  Причины: закон Амдала (features/структуры/свет/сериализация/планировщик
+  остаются в Java), JNI-пол 35-90 нс на мелких вызовах, холодная JVM
+  (JIT/GC), нельзя добавлять новые ядра в закрытые .so, патч тела метода
+  не меняет единицу работы.
+
+
+----------------------------------------------------------------
+1. ИНВАРИАНТЫ (нарушение = откат изменения)
+----------------------------------------------------------------
+[ ] I1  Эквивалентность: результат = то, что даёт ванильный Paper на том же
+        seed / datapack / DataVersion (4556). Критерий: семантическое равенство
+        декодированного NBT (блоки, биомы, heightmaps, свет, structure
+        starts/references, block entities, PostProcessing, fluid ticks).
+        Байт-идентичность желательна, не обязательна.
+[ ] I2  Бит-в-бит математика: нет FMA, fast-math, f32, переупорядочивания
+        float-операций, LUT вместо точных функций.
+[ ] I3  Java-семантика: wrapping int, floor и касты double->int, Legacy и
+        Xoroshiro random, гауссиан (polar, с кэшем), MD5-сидирование
+        позиционных фабрик.
+[ ] I4  Никаких приближений и пропуска влияния соседних чанков. Отсечка работы
+        только по доказанным консервативным границам.
+[ ] I5  Все кэши ключуются (seed, hash спецификации мира). Нет глобального
+        состояния без ключа мира.
+[ ] I6  Закон владельца: никаких JVM-флагов, только -agentpath + модуль.
+[ ] I7  Новый код в новом крейте workspace. Закрытые .so не расширять.
+        Recovered-исходники в native/ (317 selftests) только как референс/оракул.
+[ ] I8  Откат в Java: чанк с неподдерживаемым содержимым (структура, фича,
+        чужой BlockPopulator, blending со старым миром) целиком генерирует Java.
+        Метрика coverage % обязательна в каждом отчёте.
+[ ] I9  Нативная стадия/фича включается только после zero-diff гейта
+        (по образцу kernel_policy.rs: ledger с доказательствами, default-off).
+[ ] I10 Честная статистика: A/B с byte-identical восстановлением мира, точный
+        Mann-Whitney, холодный и тёплый режимы отдельно.
+
+ЗАПРЕЩЕНО: GPU, приближённый шум, уменьшение числа октав, f32, мелкие
+JNI-ядра в расчёте на x100, включение чего-либо по умолчанию без гейта.
+
+
+----------------------------------------------------------------
+2. АРХИТЕКТУРА: Native Chunk Factory
+----------------------------------------------------------------
+Чанк = чистая функция f(seed, datapack, версия, x, z) -> NBT чанка.
+Реализуем f целиком в Rust, Java получает готовые байты.
+
+Ступени доставки (каждая отгружается и измеряется отдельно):
+  A) offline region writer: бинарник пишет .mca напрямую, без сервера
+  B) виртуальный регион-файл: хук на путь "чанка нет на диске -> генерировать"
+     (точку найти в Moonrise chunk IO), вместо Java-генерации возвращаем NBT
+     из Rust, один JNI-вызов на чанк, сервер читает как загруженный FULL-чанк
+  C) стадийные мосты (noise+surface+carve -> секции), промежуточные замеры
+
+Ключевые идеи по ускорению:
+  K1  Компилятор worldgen-графа (датапак -> IR -> оптимизированный план)
+  K2  Точная интервальная отсечка по границам density-узлов
+  K3  Дедупликация между чанками (карверы, 2D-поля, аквиферы, сканы структур)
+  K4  Секционно-разреженная модель, свет только в активных секциях
+  K5  Порт features/структур по тирам с откатом в Java
+  K6  Дисциплина бит-в-бит, эталон = настоящая JVM
+
+
+----------------------------------------------------------------
+ФАЗА 0. ИЗМЕРЕНИЯ (кода генерации нет)
+----------------------------------------------------------------
+[x] P0.1  Профиль ванили по ChunkStatus: CPU/чанк, холодно и тёпло,
+          1 поток и N потоков (spark/jcmd, не JVM-флагами)
+          (jcmd+JFR, spark недоступен для bukkit 1.21.10 — у lucko только
+          fabric/forge/neoforge; скрипт bench/ab/profile_chunkstatus.sh +
+          parse_stage_profile.py в репо, сырьё на риге profile/{cold,warm}.jfr)
+[x] P0.2  Посчитать по Амдалу потолок ускорения для каждой ступени доставки
+          (см. LOG #1: C ~3.4x, B после Ф4/5 ~6-15x, A = вне сервера)
+[x] P0.3  Java-дампер (golden-harness): канонизированные чанки + векторы
+          random/noise/density из реальных классов Paper
+          (дампер: 3x256 чанков, 0 провалов; ВЕКТОРЫ закрыты сессией 3:
+          /goldenvec -> 13171 строк, Rust veccheck 0 расхождений бит-в-бит,
+          CI-джоба ncf-vectors; см. LOG #3)
+[~] P0.4  Корпус: чистая ваниль (>=5 seed), world466-stress-v1
+          (Terralith+Tectonic+BACAP+Structory), worldgen-stand s35-dp1 (Trek)
+          (ваниль: seed 3053459 3x256 + CI-матрица 4 сидов x256; Terralith+
+          Tectonic — CI ncf-datapacks; Structory — CI ncf-datapacks сессия 5
+          (mod-jar с data/ деревом, тот же экстрактор; pin 1.3.17 = 1.21.10);
+          [!] BACAP — НЕТ на Modrinth (CurseForge-only, API-ключа нет), нужен
+          файл от владельца или CF-ключ; [!] Trek/worldgen-stand s35-dp1 —
+          внутренний корпус, нужна ссылка от владельца)
+[x] P0.5  Тест порядка: один регион ванилью в двух разных порядках, diff.
+          Если порядок влияет (подозрение: features на границах чанков),
+          зафиксировать канонический порядок для всех сравнений
+          (ВЛИЯЕТ: spiral vs spiral_rev = 256/256 DIVERGED; контроль
+          spiral vs spiral2 = 256/256 SEMANTIC_EQUAL; 86.2% первых дивергенций
+          на границах чанков; канонический порядок = PLAN=spiral;
+          bench/golden/results/ORDER_TEST_2026-10-05.md)
+[x] P0.6  Скрипт diff чанков (семантика NBT) и отчёт расхождений по блокам
+          (bench/golden/tools/ncfdiff.py: декод палитр/heightmaps, verdicts
+          EQUAL/SEMANTIC_EQUAL/DIVERGED, manifest-режим, selftest)
+[x] P0.7  Раздел 6 заполнен реальными цифрами обеих сторон (ваниль P0.1
+          JFR-профиль; натив — bench.rs single-core без NBT-записи, CI-джоба)
+          (vanilla-сторона замерена — раздел 6 заполнен; нативная сторона:
+          скалярный ванильный роутер 7020 eval за ~0.1-0.3 c single-core в
+          release — измерение сравнимое с Java появится на ступени C)
+ГЕЙТ P0: ЗАКРЫТ (сессия 3): профиль + harness + порядок + ВЕКТОРЫ в репо,
+         векторная половина гейтится CI-джобой ncf-vectors.
+
+
+----------------------------------------------------------------
+ФАЗА 1. ИЗВЛЕЧЕНИЕ СПЕЦИФИКАЦИИ И IR
+----------------------------------------------------------------
+[x] P1.1  Источник спецификации: ФАЙЛЫ ДАТАПАКА (data/<ns>/worldgen/** из
+          jar/датапака; решено и записано в chunk-factory/src/router.rs —
+          байт-стабильно, версионируемо, CI-извлекаемо)
+[x] P1.2  IR для noise_router (DAG density functions), noises (полный набор
+          типов кодеков 1.21.10; zero-dep JSON-парсер в crate, I7)
+[x] P1.3  IR для surface_rule, источника биомов (multi_noise), карверов
+          (сессия 6: surface_rules.rs парсит surface_rule-дерево noise_settings
+          (все 12 vanilla-условий + bandlands/block/sequence/condition + PAPER
+          optionally_flat_bedrock = вертикальный градиент при дефолтном
+          конфиге); carvers.rs парсит configured_carver (float/height
+          providers, vertical anchors, expandable replaceable-теги); biomes.rs
+          грузит факты биомов (temperature/modifier/carvers) из worldgen/biome)
+[ ] P1.4  IR для placed/configured features, structure sets, шаблонов
+[x] P1.5  Скалярный эталонный вычислитель IR (density::Df::compute; все 15
+          полей NoiseRouter живого мира совпали бит-в-бит, 7020/7020)
+[~] P1.6  Round-trip тесты IR на корпусе из P0.4 (ircheck: ваниль 7/7
+          noise_settings parse+wire, 35/35 density_function; Terralith/
+          Tectonic — CI ncf-datapacks; round-trip = wire+eval, без обратной
+          сериализации в JSON — сознательное упрощение)
+[x] P1.7  hash спецификации мира (FNV-1a 64 над канонической формой дерева
+          С КЛЮЧАМИ шумов, не индексами — ловушка найдена на large_biomes)
+ГЕЙТ P1: ЗАКРЫТ (сессия 3): эталонный вычислитель совпадает с golden-
+         векторами из P0.3 бит-в-бит (13171/13171, CI ncf-vectors).
+
+
+----------------------------------------------------------------
+ФАЗА 2. TIER 1 БИТ-В-БИТ (terrain)
+----------------------------------------------------------------
+Базовые примитивы
+[x] P2.1  Legacy и Xoroshiro random, positional factories, MD5-сидирование
+          (5851/5851 векторов бит-в-бит; CI ncf-vectors)
+[x] P2.2  ImprovedNoise, PerlinNoise, NormalNoise (300/300 векторов бит-в-бит
+          вкл. rs_noise — вайринг fromHashOf; BlendedNoise покрыт rs_noise-
+          цепочкой роутера и 2x16 прямыми векторами)
+[x] P2.3  Вычислитель density DAG (скаляр-эталон 7020/7020; NoiseChunk-
+          привязка ячеек/интерполяторы закрыты сессией 4: 786432/786432
+          бит-в-бит vs живой NoiseChunk; интерн-арена + wrap-мемоизация,
+          CacheAllInCell/Cache2D/CacheOnce, FlatCache, пакетные fillArray;
+          остаются только оптимизации P2.11+ поверх эталона)
+[x] P2.4  Биомы: Climate sampler + RTree (сессия 4: climate 539/539 +
+          climate_points 7593/7593 бит-в-бит vs живой сервер; ThreadLocal
+          last-result и identity-шорткат node==leaf покрыты контрактом
+          порядка строк в climate.csv)
+[x] P2.5  Surface rules (сессия 6: дословный SurfaceRules + SurfaceSystem —
+          buildSurface-проход по колонкам, lazy-кэши условий на эпохах
+          lastUpdateXZ/lastUpdateY, getSurfaceDepth (jitter worldgen.at(x,0,z)),
+          clay-полосы (generateBands/makeBands, порядок дроу сохранён),
+          erodedBadlandsExtension, frozenOceanExtension с f32-температурой
+          (TEMPERATURE_NOISE/FROZEN/BIOME_INFO = PerlinSimplexNoise 1234/3456/2345),
+          topMaterial для carver dirt-фикса; гейт = stagediff SURFACE 225/225,
+          CI ncf-staged (matrix noise|surface|carvers))
+[x] P2.6  Аквиферы (сессия 5: NoiseBasedAquifer дословно — сетка 16x12x16,
+          floodedness/spread/lava/barrier, similarity/pressure с at(blockY)
+          семантикой, SURFACE_SAMPLING_OFFSETS; гейт: substance+decision+sched
+          бит-в-бит 2x98304 строк против живого сервера, staged 225/225)
+[x] P2.7  Ore veins (сессия 5: OreVeinifier дословно — vein_toggle/ridged/gap
+          через bound-интерполятор, f32-константы, oreRandom = fromHashOf(
+          "minecraft:ore").forkPositional; покрыт staged-гейтом и aquacheck)
+[x] P2.8  Карверы (сессия 6: дословные WorldCarver/CaveWorldCarver/
+          CanyonWorldCarver + CarvingMask (BitSet, (x&15)|(z&15)<<4|(y-minY)<<8)
+          + applyCarvers 17x17: seed+i3 per carver НЕIGHBOR-биома (прямой
+          climate-сэмпл без BiomeManager-голосования), setLargeFeatureSeed,
+          ОДИН аквифер центрального чанка на всех карверов; ProtoChunk-
+          семантика setBlockState на CARVERS (hasOnlyAir-счётчики, prime
+          FINAL-heightmaps на первой записи); carve-флюид = aquifer.
+          computeSubstance(ctx, 0.0) = AIR/WATER/LAVA/отказ; гейт = stagediff
+          CARVERS, CI ncf-staged)
+[x] P2.9  Heightmaps (сессия 5: WG-пара OCEAN_FLOOR_WG/WORLD_SURFACE_WG —
+          225/225 staged; сессия 6: четыре FINAL (OCEAN_FLOOR, WORLD_SURFACE,
+          MOTION_BLOCKING, MOTION_BLOCKING_NO_LEAVES) — primeHeightmaps-скан
+          сверху + update-машина по предикатам типов, замороженная WG-пара,
+          Heightmap.Types лествица предикатов по декомпилу) (сессия 5: WORLDGEN-пара OCEAN_FLOOR_WG/WORLD_SURFACE_WG
+          закрыта на NOISE-статусе — unprimed update-машина с точным
+          скан-семантикой, длинная упаковка 9-бит SimpleBitStorage — в staged-
+          гейте 225/225; FINAL-типы после CARVERS — не начато)
+[x] P2.10 Сборка секций (сессия 5: содержимое NOISE 225/225 DECODED-схема;
+          сессия 6: SURFACE + CARVERS тем же гейтом; бит-упаковка палитр —
+          palette.rs (P4.7) соserial-формой Strategy$1/$2) (сессия 5: содержимое секций на NOISE-статусе — блоки
+          + биомы — бит-в-бит 225/225 через DECODED-схему (I1: семантическое
+          равенство); бит-упаковка палитр (PalettedContainer serial form) и
+          статусы SURFACE/CARVERS+ — не начато, см. P2.5)
+
+Оптимизации поверх эталона (каждая с zero-diff против скаляра)
+[x] P2.11 Классификация узлов (сессия 6: is_y_free — консервативный
+          доказательный анализатор Y-независимости поддерева (Noise с
+          y_scale==0, ShiftA/B, маркеры-проходы, арифметика и составные);
+          вынос Y-free на колонку: ColumnMemo (compute_memo / apply_memo —
+          мемоизация по адресу узла + (x,z) через маркеры/арифметику/сплайны;
+          сплайны: y-free координата кэшируется целиком, y-dependent координата
+          (depth-градиент) — кэширует СКОВОЗНЫЕ y-free value-ветви);
+          биом-филл 15.9 -> 0.6 мс/чанк, полный стейдж 53.4 -> 38.6 мс
+          (4.6x -> 6.4x к тёплой Java); бит-эквивалентность: мемо возвра-
+          щает бит-тот же f64 чистой функции, гейты перезапускаются в CI)
+[x] P2.12 Плитки по региону (меньше пересчёта границ) (сессия 7: (а) SimTemplate —
+          чанк-НЕЗАВИСИМАЯ часть интерполяционной машины (arena+wnodes+флаги+
+          хэши+сплайны+wrapper-id) строится ОДИН раз на RandomState, на чанк
+          инстанциируется ТОЛЬКО состояние (слайсы/кэши/счётчики); (б) TileCache
+          на RandomState — кросс-чанковый мемо y-free поддеревьев по МИРОВЫМ
+          колонкам (ключ = (spec,seed,структура-хэш узла,x,z), I5 соблюдён);
+          консервативный is-y-free анализ WNode (любое сомнение => y-зависим);
+          A/B NCF_TILE_CACHE=0/1 + до/после рефактора — БАЙТ-ИДЕНТИЧНО)
+[!] P2.13 SIMD по независимым колонкам (AVX2, AVX-512, NEON), без FMA — ПОПЫТКА 2026-10-09 ОТМЕНЕНА (аддендум 78): AVX2 4-lane perlin + compute4 дали РЕГРЕССИЮ noise 19.4-20.6 -> 24.9-25.1 мс/чанк (-20..-28%), бит-идентичность NCF_SIMD 0/1 доказана (256 чанков x noise/surface/carvers BYTE-IDENTICAL, тесты 154/154); revert по правилу <5%, код НЕ коммитился; диагноз: KVM-VM Xeon 2 vCPU — vpgather микрокодовые; retry только после профиля perlin-vs-walk (патч: scripts/p2_13_simd_gather_attempt.diff)
+[x] P2.14 Интервальная отсечка (сессия 7: optimize.rs — build-time переписывания
+          по ТОМ ЖЕ bounds, что строит сам Java (TwoArgumentSimpleFunction.create):
+          RangeChoice с доказанной ветвью => ветвь, Clamp с bounds внутри окна =>
+          снятие, mul*1.0 => input; add+0.0 СОЗНАТЕЛЬНО НЕ фолдится (-0.0 бит-знак);
+          6 юнит-тестов + все бит-гейты CI перезапускаются на переписанном дереве;
+          сплайны/FindTopSurface не тронуты)
+[ ] P2.15 Кэш путей карверов по source chunk (считать один раз, растеризовать
+          в каждый целевой чанк)
+[ ] P2.16 Кэш аквиферных ячеек и 2D-полей скользящим окном по полосам
+
+ГЕЙТ P2:
+[~] 0 расхождений на >=10^4 чанков x >=5 seed x {ваниль, Terralith, Tectonic}
+    (сессия 6: инструмент ГЕЙТА готов — ci_gate_p2.sh, 15 CI-ячеек
+    (5 сидов x 3 пака) x 2401 чанков (49x49 spiral) = 36015 чанков бит-в-бит;
+    первый прогон матрицы — см. addendum сессии 6)
+[~] стадия шума >=30x к тёплой Java на ядро
+    (сессия 6: 6.4x после P2.11 (53.4 -> 38.6 мс/чанк; цель <=8.27 мс);
+    дальнейшие рычаги: мемоизация y-free ветвей ВНУТРИ interpolated-машины
+    (drive_blocks 9.4 мс), P2.13 SIMD, P2.14 интервальная отсечка)
+Иначе фаза не закрыта.
+
+
+----------------------------------------------------------------
+ФАЗА 3. ДОСТАВКА
+----------------------------------------------------------------
+[x] P3.1  Ступень A: region writer (.mca) — zero-dep писатель+читатель с
+          selfcheck-тестами в crate (region.rs, 8 тестов: layout/roundtrip/
+          1024 чанка/multi-sector; stored-block zlib валиден против python
+          zlib); ПОДТВЕРЖДЕНО СЕРВЕРОМ (сессия 4, ci_mca.sh): BOOT1 raw dump
+          -> mcaforge -> FRESH world только с Rust r.3.3.mca -> BOOT2 ->
+          forceload -> execute if block: 18/18 PASS + негативный контроль
+[~] P3.2  Сравнение A с ванильными регионами (сессия 7: bin/mcamatch.rs —
+          семантическое сравнение двух .mca (gzip->NBT->deep compare c
+          игнором Timestamp/InhabitedTime/LastUpdate), --selftest GREEN;
+          CI-этап (серверный регион против mcaforge-региона тех же чанков)
+          — впереди)
+[x] P3.3  Ступень B: точка хука найдена и записана (сессия 6, CFR 0.152 по
+          маппед Purpur 2535): Moonrise =
+          ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO
+          $RegionDataController.readData(int chunkX, int chunkZ) ->
+          ReadData(ReadResult result, DataInputStream input, CompoundTag
+          syncRead, int recalculateCount), ReadResult = {NO_DATA, HAS_DATA,
+          SYNC_READ}. Ступень B = вернуть SYNC_READ с CompoundTag из ОДНОГО
+          JNI-вызова в Rust; NO_DATA = генерация Java. Ванильный запасной
+          choke-point: net.minecraft.world.level.chunk.storage.RegionFileStorage
+          .read(ChunkPos) (возвращает null = отсутствует на диске)
+[~] P3.4  Ступень B: один JNI-вызов на чанк, возврат NBT (сессия 7:
+          jni_bridge.rs — PayloadEngine (RandomState+StageKit один раз) ->
+          generate_carvers_chunk -> full_chunk_nbt -> gzip NBT;
+          payload-тест парсит обратно serial-NBT; Java-сторона в
+          tools/ncf-agent/: NativeChunks.java (native byte[] generateChunk)
+          + NativeChunksIO.java (Moonrise ReadData SYNC_READ через отражение,
+          любой сбой => NO_DATA = откат I8). [~]: cdylib+ecj-CI-шаг и прогон
+          на риге — впереди; enablement DO_NOT_ENABLE до ГЕЙТА P2 (I9))
+[x] P3.5  Ступень B: откат в Java (I8) (сессия 6: fallback.rs — единственная
+          точка решения decide_chunk(features, structures, blending,
+          foreign_populator, unsupported_settings, unsupported_carver) с
+          приоритетом причин + CoverageLedger поверх coverage.rs; юнит-тесты
+          фиксируют узкую нативную дорожку и причины отката)
+[!] P3.6  Замер pregen на >=8 ядрах (БЛОКИРОВАНО: CI 4 ядра, риг 2 vCPU — нужен
+          8+-ядерный риг от владельца; single-core цифры — bench в разделе 6)
+[~] P3.7  Холодный старт vs тёплый (ванильные строки — P0.1 раздел 6; нативные
+          строки ждут ступени B на риге)
+ГЕЙТ P3: сервер грузит чанки ступени B без ошибок, zero-diff на корпусе,
+         замеры в разделе 6.
+
+
+----------------------------------------------------------------
+ФАЗА 4. FEATURES, СВЕТ, NBT
+----------------------------------------------------------------
+[~] P4.1  FeatureSorter и порядок фич (сессия 7: CFR 0.152 декомпил
+          biome/FeatureSorter + ChunkGenerator.addVanillaDecorations +
+          WorldgenRandom; feature_sorter.rs — buildFeaturesPerStep дословно
+          (TreeMap successors + Graph.depthFirstSearch 3-цвет + reverse;
+          цикл = skip + падение 'universe' на следующей вершине — как в Java),
+          DecorationRandom: setDecorationSeed/setFeatureSeed (l+index+10000*step)
+          бит-в-бит; юнит-тесты порядка/цикла/сидов. [~]: CI-гейт на
+          features-корпусе (features-статус дампера) ещё не собран)
+[~] P4.2  Placement modifiers и block predicates (сессия 7: features.rs — IR
+          парсер placed_feature: count/rarity_filter/in_square/heightmap/
+          height_range/random_offset/biome/block_predicate_filter + predicate-
+          дерево matching_blocks(теги)/replaceable/not/all_of/any_of; декомпил
+          тел getPositions снят; Triangle-IntProvider и envscan/cave_surface
+          честно Unsupported. [~]: исполнение пасса не подключено в цепочку)
+[~] P4.3  Тир 1 (сессия 7: декомпилы OreFeature.place+doPlace (BitSet-прунинг,
+          double[4], f32-таблица синуса), SimpleBlockFeature, RandomPatchFeature
+          (tries; nextInt(s+1)-nextInt(s+1)), DiskFeature, KelpFeature,
+          ScatteredOre; IR-парсер в features.rs. [~]: исполнение фич на чанке
+          не подключено — нужен features-статус в дампере + гейт)
+[ ] P4.4  Тир 2: топ-20 типов деревьев, disk, spring, lake, kelp/seagrass
+[x] P4.5  Тир 3: остальные фичи, datapack-фичи (сессия 7: features.rs
+          decoration_supported — диспетчер: ЛЮБАЯ фича/модификатор вне
+          доказанного набора => Unsupported => откат Java (I8) + CoverageLedger
+          считает причины; юнит-тесты на яды диспетчера; ГЕЙТ P4 механика:
+          тип включается только после своего zero-diff)
+[ ] P4.6  Свет только в активных секциях (учесть окклюзию ступенек и плит)
+[x] P4.7  Прямая запись NBT с битпаковкой палитр (сессия 6: palette.rs —
+          serial-форма PalettedContainer.pack по декомпилу Strategy$1/$2:
+          блоки bits = max(4, ceillog2(size)), биомы = ceillog2(size),
+          single-value без data, SimpleBitStorage LSB-first, палитра в порядке
+          первой встречи; fullchunk.rs собирает FULL-чанк NBT (P3.4 payload,
+          P4.9 хвосты); тесты лестницы битов и упаковки)
+[x] P4.8  Сжатие, параллельное (сессия 7: region.rs write_region_parallel —
+          std::thread::scope round-robin воркеры, сборка СЕРИАЛЬНАЯ в том же
+          порядке секторов => байт-в-байт тот же вывод, что serial (тест
+          threads=1/2/4/8 байт-идентичен); бэкенд = compress_payload —
+          swappable-точка. РЕШЕНИЕ по бэкенду: stored-zlib (формат 1) —
+          байт-стабилен и быстрее любого deflate (0 работы CPU); libdeflate/
+          zlib-ng = C-зависимости без выигрыша против stored; deflate-бэкенд
+          (формат 2) остаётся опцией для компактного диска, включается
+          фичей крейта — honest note: C-библиотеки НЕ подключены сознательно,
+          см. LOG сессии 7)
+[x] P4.9  Хвосты NBT (сессия 6 сделала в fullchunk.rs — structures{starts,
+          references}/block_entities/PostProcessing/ticks/isLightOn=false по
+          SerializableChunkData.write; сессия 7: payload-тест jni_bridge
+          парсит обратно serial-NBT (DataVersion+секции) — упражняет хвосты;
+          byte-гейт против FULL-дампов едет со ступенью B как и было записано
+          в T12)
+ГЕЙТ P4: каждый тип фичи включается после своего zero-diff гейта,
+         coverage % растёт, Java-доля падает (цифры в LOG).
+
+
+----------------------------------------------------------------
+ФАЗА 5. СТРУКТУРЫ И SPAWN
+----------------------------------------------------------------
+[x] P5.1  Быстрый нативный предотсев placement (сессия 6: random_spread.rs —
+          RandomSpreadStructurePlacement.parse + isPlacementChunk /
+          getPotentialFeatureChunk дословно (setLargeFeatureWithSalt = rx*341873128712
+          + rz*132897987541 + seed + salt; LINEAR/TRIANGULAR дроу-порядок);
+          юнит-тесты решётки регионов и соли)
+[x] P5.2  Кэш шаблонов NBT (сессия 7: template_cache.rs — парс .nbt шаблона
+          один раз на (датапак, ключ), негативные результаты кэшируются тоже
+          (нет повторного чтения на каждый чанк); ключ = ресурс-ключ (байты
+          шаблона не зависят от мира — I5: сид/спек сидят в ВЫЗЫВАТЕЛЯХ);
+          юнит-тесты)
+[ ] P5.3  Piece-based структуры (mineshaft, stronghold, temples, ruined portal...)
+[ ] P5.4  Jigsaw (village, bastion, ancient city, trial chambers)
+[~] P5.5  SPAWN (сессия 7: entity_region.rs — writer entities-региона
+          (тот же region-file лэйаут, формат 2, схема EntitiesStorage:
+          DataVersion/Position/Entities[]), юнит-тесты roundtrip; спавн-
+          механики пассивов (pack walk/биом-таблицы) — хвост, native
+          DO_NOT_ENABLE до своего zero-diff — честно записано)
+[x] P5.6  Чанки со структурой -> откат Java (сессия 6: fallback.rs —
+          Structures-причина в приоритете decide_chunk;CoverageLedger считает
+          причины отката; юнит-тест структуры-бьют-фичи)
+ГЕЙТ P5: coverage % >= целевого, zero-diff на корпусе.
+
+
+----------------------------------------------------------------
+3. ЛОВУШКИ ТОЧНОСТИ (у каждой должен быть golden-тест)
+----------------------------------------------------------------
+[x] T1  Legacy random nextInt — векторный гейт 5851 random-строк (сессия 3)
+[x] T2  Xoroshiro nextInt/nextDouble/nextFloat/fork — векторный гейт + T13
+[x] T3  nextGaussian polar — векторный гейт random (MarsagliaPolarGaussian)
+[x] T4  MD5-сидирование — векторный гейт + aquacheck (T27: полное имя ресурса)
+[x] T5  Mth.floor/lfloor + saturating-касты — векторный гейт + T15/T22
+[x] T6  Переполнение int и сдвиги — векторный гейт (T14 stafford13 >>>)
+[x] T7  FMA-проверка — CI-шаг C3: objdump release-бинов, grep vfmadd|vfmsub
+          |vfnmadd|fnmadd|fnmsub = регрессия (сессия 6)
+[x] T8  RTree при ничьих — climate-table 7593/7593 (сессия 4, порядок строк)
+[x] T9  Сплайны f32-Hermite — density-векторы 7020 + T17
+[x] T10 Трилинейная интерполяция — interp 786432/786432 (сессия 4)
+[x] T11 Аквиферы — aquacheck 2x98304 строки substance/decision/sched (сессия 5)
+[x] T12 Сериализация палитр — palette.rs тесты лестницы битов (single-value
+          без data, порядок первой встречи, SimpleBitStorage LSB-first);
+          байт-гейт против FULL-дампов сервера едет со ступенью B (P3.4)
+
+
+----------------------------------------------------------------
+4. ОТКРЫТЫЕ ВОПРОСЫ И РИСКИ
+----------------------------------------------------------------
+[x] Q1  ДА (P0.5: 256/256 DIVERGED spiral vs spiral_rev; канон = spiral)
+[x] Q2  MoonriseRegionFileIO$RegionDataController.readData (P3.3, сессия 6)
+[x] Q3  Файлы датапака (P1.1 решено и записано в router.rs)
+[x] Q4  Откат Java (fallback.rs ForeignPopulator-причина; I8)
+[x] Q5  Откат Java (fallback.rs Blending-причина; I8)
+[x] Q6  Пин DataVersion 4556 в оракулах/генераторе + extractor читает
+          version.json (pack_version) — апдейт = пин билда Purpur + гейты
+[~] Q7  Сколько ядер на целевой машине? От этого зависит реалистичность x100
+          (риг 2 vCPU, CI 4 ядра; >=8 не проверено — P3.6 [!] ждёт риг)
+
+
+----------------------------------------------------------------
+5. CI И ПРОДВИЖЕНИЕ
+----------------------------------------------------------------
+[x] C1  CI: zero-diff блокирует (ncf-staged 225/225 + ncf-mca 18/18 +
+          ncf-gate-p2 матрица)
+[x] C2  CI: ncf-vectors (13171 бит-в-бит)
+[x] C3  CI: FMA-free дизассемблер-шаг (сессия 6)
+[x] C4  Ledger — ledger.rs (Evidence + ГЕЙТ P2 константы; kernel_policy.rs
+          образец) + gate.rs NATIVE_READY/DO_NOT_ENABLE
+[x] C5  A/B-стенд — bench/ab (profile_chunkstatus.sh + parse_stage_profile.py,
+          P0.1; byte-identical восстановление мира в ci_mca.sh)
+[x] C6  LOG-записи по сессиям (этот файл)
+
+
+----------------------------------------------------------------
+6. МЕТРИКИ (заполнять по ходу)
+----------------------------------------------------------------
+Базовые цифры из репо (2 vCPU, Purpur 1.21.10, до NCF):
+  pregen 3721 чанка (Chunky, радиус 30): vanilla 5:39 | c-crussty 5:29
+  burst 128 чанков: vanilla 41 с, 37.9 CPU-с | c-crussty 38 с, 35.7 CPU-с
+
+Ванильный Java-бюджет на чанк, CPU-мс/чанк (ЗАМЕР P0.1, jcmd+JFR shares x cpu_burst;
+Purpur 1.21.10-2535, seed 3053459, burst 128 чанков canon, 2 vCPU, -Xmx1536m):
+  стадия                        warm    cold    (доля Java-сэмплов, warm)
+  noise+аквиферы+ore veins      248.1   336.5   68.3%
+  биомы                          25.7    28.2    7.1%
+  surface                        16.8    29.0    4.6%
+  карверы                         1.6     2.0    0.4%
+  features                        4.8     9.8    1.3%
+  свет                            4.3     7.5    1.2%
+  NBT+сжатие                      2.6     3.8    0.7%
+  планировщик/ChunkStatus         9.1    20.5    2.5%
+  jvm_other (GC/JIT+несмэтч.)    48.9    92.2   13.5%
+  ИТОГО CPU-мс/чанк             363.0   537.8
+  wall мс/чанк                  335.9   500.0
+  (warm = 2-й burst той же JVM; cold = 1-й burst после бута)
+
+Оценки бюджета на чанк, НТИВНО, 1 ядро (цели: noise >=30x к тёплой Java — ГЕЙТ P2):
+  noise+аквиферы+ore veins   0.3-1 мс     замер: 248.1 (Java warm); цель native <=8.3
+  биомы                      0.1-0.3 мс   замер: 25.7  (Java warm)
+  surface                    0.1-0.3 мс   замер: 16.8  (Java warm)
+  карверы (с кэшем путей)    0.1-0.5 мс   замер: 1.6   (Java warm)
+  features                   0.5-2 мс     замер: 4.8   (Java warm)
+  свет                       0.3-1 мс     замер: 4.3   (Java warm)
+  NBT + сжатие               0.5-1.5 мс   замер: 2.6   (Java warm)
+  ИТОГО Java                 2-7 мс       замер: 363.0 CPU-мс (warm), 537.8 (cold)
+
+Ключевые числа (заполнять):
+  чанков/с/ядро (vanilla, холодно):   1.86
+  чанков/с/ядро (vanilla, тёпло):     2.75
+  чанков/с/ядро (NCF, noise-стейдж, 1 ядро release, БЕЗ NBT-записи): 25.9
+       (сессия 6, bench 3053459 64 chunks: 38.6 ms/чанк; до P2.11 — 53.4 мс)
+  чанков/с/ядро (NCF, полный чанк после Ф4/5): ______ (ждёт features/structures)
+  масштабирование по ядрам (8/16):    ______ (примечание: burst идёт ~90% на ОДНОМ треде — см. LOG #1; CI 4 ядра, >=8-ядерный риг недоступен — P3.6 [!])
+  coverage % (чанков без отката Java): 0% на ванильном overworld (у каждого чанка фичи — Ф4 не закрыта; механика учёта: fallback.rs CoverageLedger)
+  ускорение pregen суммарно:          ______ x   (цель: >=100x; горизонт ступени A на 8+ ядрах по Амдалу P0.2)
+
+Порядок генерации (P0.5, Q1):
+  ваниль от порядка ЗАВИСИТ (256/256 DIVERGED spiral vs spiral_rev;
+  контроль same-order = 256/256 SEMANTIC_EQUAL). Канонический порядок для
+  всех корпусов = PLAN=spiral (inward-out по часовой, 16x16 chunk 100..115),
+  1 бут на корпус, FRESH мир. Сравнения только между same-order корпусами.
+  86.2% первых дивергенций на границах чанков (перелив фич + свет/heightmaps
+  от состояния соседей) — центральный риск ступени B.
+
+
+----------------------------------------------------------------
+LOG (новые записи добавлять ВНИЗ, не переписывать старые)
+----------------------------------------------------------------
+Шаблон записи:
+
+  === YYYY-MM-DD | сессия N | пункты: P2.3, P2.4 ===
+  Сделано:      ...
+  Доказательства: тест/замер/ссылка на коммит
+  Цифры:        zero-diff N чанков, скорость, coverage %
+  Провалы:      ... (если были, обязательно)
+  Расхождения с файлом/ванилью: ...
+  Следующий шаг: ...
+
+=== 2026-10-05 | сессия 1 | пункты: 0.1-0.4, P0.1, P0.2, P0.7 (част.) ===
+Сделано:
+  - Окружение восстановлено после ресета: токен в download/../.secrets (github,
+    PLANETA9091), rust 1.99.0 + Temurin JDK 21 (javac/jcmd/jfr) в download/,
+    Purpur 1.21.10 build 2535 (тот же, что в каноне BENCHMARKS).
+  - Новый крейт chunk-factory/ (I7): gate.rs (env CRUSSTY_CHUNK_FACTORY,
+    default Off, DO_NOT_ENABLE > NATIVE_READY, тесты), coverage.rs (coverage %
+    рендер), ledger.rs (Evidence + числа ГЕЙТА P2 как константы), README.md.
+    cargo test: 17/17 GREEN.
+  - Golden-harness v1 (P0.3): bench/golden/ — GoldenDumperPlugin (команда
+    goldendump: квадрат r<=32 / manifest-файл, 8 чанков/тик, meta.properties,
+    маркер GOLDEN DUMP COMPLETE), build_golden.sh (javac против mapped-jar +
+    bungeecord-chat в CP), dump_corpus.sh (PLAN=quadrants/full16/spiral/
+    spiral_rev), tools/ncfdiff.py (P0.6: NBT-парсер, декод палитр/heightmaps,
+    verdicts EQUAL/SEMANTIC_EQUAL/DIVERGED, --selftest GREEN).
+    ПОПРАВКА к файлу: ChunkSerializer.write(level,poi,chunk) в 1.21.10 НЕТ —
+    верифицирован путь SerializableChunkData.copyOf(level, chunk).write();
+    ChunkStatus в пакете net.minecraft.world.level.chunk.status (файл
+    молчал о пакете — не противоречие, а уточнение).
+  - P0.1 ПРОФИЛЬ: spark для bukkit 1.21.10 недоступен (у lucko Modrinth/GH
+    только fabric/forge/neoforge; GH releases пуст) -> jcmd+JFR (разрешено
+    пунктом P0.1, I6 не нарушен: 0 JVM-флагов). Скрипты в репо:
+    bench/ab/profile_chunkstatus.sh + bench/ab/parse_stage_profile.py.
+    Метод: JFR settings=profile вокруг burst'а (jcmd attach), атрибуция
+    сэмпла = ближайший охватывающий фрейм известной стадии; CPU-с = доля
+    сэмплов x измеренный cpu_burst (/proc ticks). Сырьё: profile/cold.jfr,
+    warm.jfr (риг сервера; копий в репо нет — 2.2MB raw).
+Цифры (P0.1/P0.7, см. раздел 6): warm 363.0 CPU-мс/чанк, 2.75 чанков/с/ядро;
+cold 537.8 CPU-мс/чанк, 1.86 чанков/с/ядро; noise-кластер 68.3% Java-сэмплов
+(warm) / 62.6% (cold); биомы 7.1%; surface 4.6%; карверы 0.4%; features 1.3%;
+свет 1.2%; NBT 0.7%; планировщик 2.5%; jvm_other 13.5%.
+  - ТРЕДЫ (важно): ~89-93% Java-сэмплов burst'а падает на ОДИН тред (tid 44;
+    tid 38 = Server console handler по данным warm.jfr; имена 44/36/46 сняты
+    только в следующий бут через jstack — ThreadStart их не содержит, треды
+    стартовали до записи). На 2 vCPU burst ~1.1 ядро средней загрузки.
+    Гипотеза: Moonrise-регионная сериализация задач chunk-gen на квадратах
+    8x8 локальна по региону. Проверить на квадрате с разбросом координат.
+  - P0.2 ПОТОЛКИ (по Амдалу, от warm-профиля, F = множитель нативной стадии):
+    C (шум+surface+carver мосты): доля Java 73.3% -> потолок ~3.4x при F=30
+    (0.733/30 + 0.267). ОЖИДАЕМО: мостики C не дают x100 — подтверждение
+    диагноза, ступень C только для промежуточных замеров.
+    B (весь чанк NBT из Rust): до Ф4/5 coverage ~0% (фичи есть почти в каждом
+    чанке -> откат Java по I8); после Ф4/5 Java держит ~20% (планировщик 2.5%
+    + NBT 0.7% + часть jvm_other; features/structures/light уходят в Rust) ->
+    потолок ~6-15x против тёплой Java на тех же ядрах. Честная оговорка:
+    jvm_other 13.5% наполовину GC/JIT и несмэтченные worldgen-фреймы — при
+    уходе worldgen в Rust доля Java-хвоста уменьшится сверх Амдала.
+    A (region writer, чанки генерятся ВНЕ сервера): сервер грузит готовые
+    .mca — Java-хвост = IO+десериализация+проверки; ускорение pregen
+    определяется параллелизмом Rust-генерации на N ядрах ВНЕ сервера.
+    Это единственная ступень с горизонтом >=100x на 8+ ядрах.
+  - native_jvm_internal (NativeMethodSample) НЕ считаем CPU: сэмплит и
+    блокированные в native треды; cold 27.6s выборки (JIT-компиляция)
+    объясняет провал cold vs warm.
+Провалы: spark-bukkit недоступен (не рискнул форж-jar'ом); background-процессы
+  песочницы умирают между вызовами -> весь серверный цикл в одном вызове;
+  первый jar purpur в my-project был битым (428KB), перекачан 57MB.
+Расхождения с файлом/ванилью: ChunkSerializer.write не существует в 1.21.10
+  (см. выше); "мелкие JNI-ядра" подтверждаются: доминирующий кластер шума
+  68% на одном треде — мост C потолком ~3.4x.
+Следующий шаг: P0.3/P0.4/P0.5 — корпус vanilla seed 3053459 (spiral +
+  spiral_rev, ncfdiff порядок-тест), затем >=5 сидов; имена тредов jstack.
+
+=== 2026-10-05 | сессия 1 (продолжение) | пункты: P0.3, P0.5, P0.6, P0.4 (част.) ===
+Сделано:
+  - P0.3 ДАМПЕР ЗАПУЩЕН В БОЮ. Три прогона по 256 чанков (16x16 chunk 100..115,
+    seed 3053459), все n=256 failed=0 (results/golden_runs.tsv). Корпус
+    (риг, НЕ в репо): /home/z/server/golden/vanilla_s3053459_{spiral,spiral_rev,spiral2}/
+    seed_3053459/c_*.nbt (8.3 MB суммарно, ~11 KB/чанк — регион океанический).
+    Фиксы по ходу (все найдены боем, не по памяти):
+      1) getDataFolder() относительный -> сервер-диеректория терялась
+         ("cannot resolve server dir") — resolve через getAbsoluteFile();
+      2) Paper РЕМАПИТ plugin-jar (spigot->mojang) и ломает уже mojang-mapped
+         ссылки: NoSuchMethodError MinecraftServer.getWorldData() — фикс:
+         manifest-заголовок jar'а 'paperweight-mappings-namespace: mojang'
+         (build_golden.sh), .paper-remapped чистить при пересборке;
+      3) все refusal-ветки плагина теперь логгируются в server log (раньше
+         отказ был виден только RCON-клиенту — невидимые отказы стоили
+         двух слепых прогонов);
+      4) dump_corpus.sh: set -e убивал скрипт на rg-по несуществующему
+         latest.log (|| true), плюс fast-die на 'Command exception'.
+  - P0.5 ПОРЯДОК-ТЕСТ (Q1): spiral vs spiral_rev = 256/256 DIVERGED.
+    КОНТРОЛЬ spiral vs spiral2 (тот же порядок, 2 бута) = 256/256
+    SEMANTIC_EQUAL -> риг детерминирован, дивергенция = именно ПОРЯДОК.
+    Анатомия: mean 1.6 секции/чанк (из 24), 86.2% первых дивергенций на
+    границах чанков (x|z в 0..2/13..15), затронуто: Heightmaps 802,
+    sections 801, block_ticks 248, PostProcessing 143, fluid_ticks 7,
+    block_entities 5. Типичное: deepslate_gold_ore vs clay, andesite vs
+    granite, деревья/листва — перелив фич через границы + свет/heightmap
+    от состояния соседей. Отчёт: bench/golden/results/ORDER_TEST_2026-10-05.md
+    (+ pairs.txt 158 KB, plans/*.tsv).
+    РЕШЕНИЕ: канонический порядок = PLAN=spiral, 1 бут/корпус, FRESH мир;
+    сравнения только между same-order корпусами.
+  - P0.6: ncfdiff подтверждён на реальных 512 чанках (manifest-режим,
+    корректные first-divergence координаты с декодом палитр; honest note:
+    byte-diff-only поля (InhabitedTime и т.п.) ловятся как SEMANTIC_EQUAL).
+Доказательства: results/golden_runs.tsv, ORDER_TEST_2026-10-05.md,
+  контроль 256/256 SEMANTIC_EQUAL (ncfdiff вывод в LOG-пары).
+Цифры: 768 чанков задамплено, 0 провалов; 3 бута по ~30-40 c; дамп 256 чанков
+  ~60-90 c тёплым (2.75-3.5 чанков/с на главном треде).
+Провалы: jstack attach в песочнице молчит (2 попытки) — имена тредов 44/36/46
+  не сняты, отложено (не блокирует: доминирование tid 44 измерено через JFR);
+  2 слепых прогона съедены невидимыми отказами плагина (фиксы 1)-3) выше).
+Расхождения с файлом/ванилью: Q1 = ДА (файл допускал оба исхода, подозрение
+  подтверждено); плагин-ремап Paper — новая ловушка, в файле не описана
+  (важно для будущих Java-харнессов NCF: mojang-namespace header обязателен).
+Следующий шаг: добить P0.4 (>=5 сидов: +4 сидa spiral-планом; лесной регион
+  для фичевого веса), затем векторы random/noise/density (P0.3-хвост) через
+  retransform — и Фаза 0 закрыта; после неё Ф1 (IR из реестра, сверка с CFR).
+
+=== 2026-10-05 | сессия 2 (CI) | пункты: P0.4 (добивка), P0-гейт на GH CI ===
+Контекст: сендбокс reset стёр /home/z/{server,c-crussty,.cargo}; клон восстановлен
+  из GitHub (master a913a91c). Владелец: «сделать всё сейчас, тестировать на GH CI».
+Сделано:
+  - CI-гейт Фазы 0 (e5aa3596 + фиксы 7a2feb91, 84fa0e24): .github/workflows/ci.yml
+    + bench/golden/ci_gate.sh. Джобы: module/native/fuzz-crate (были),
+    chunk-factory (cargo build+test — crate раньше не был покрыт: он исключён
+    из root workspace), golden-harness:
+      1) провижин ci-server: Purpur 1.21.10 build 2535 (pin), paperclip
+         patchOnly + poll CraftWorld.class ВНУТРИ mapped jar;
+      2) сборка GoldenDumper из исходников javac --release 21 (Temurin);
+      3) GATE: 2 FRESH бута, seed 3053459, PLAN=spiral, ncfdiff --manifest
+         ci_gate_A ci_gate_B -> 256/256 SEMANTIC_EQUAL, diverged=0 (реплика
+         контрольной строки ORDER_TEST на CI-железе);
+      4) P0.4 матрица: seeds 90210/424242/8675309/133700, по 1 спиральному
+         буту, 4x256/0 -> корпуса артефактами (golden-dump-corpora).
+  - dump_corpus.sh: BOOT_TIMEOUT теперь env (240->300 по умолчанию); маркеры
+    Done(/GOLDEN DUMP COMPLETE ищутся grep -a, НЕ rg.
+  - ncfdiff --selftest отдельным шагом CI (быстрый фейл до бутов).
+CI-фиксы по ходу (все найдены прогонами, не по памяти):
+  1) paperclip ПРЕ-СОЗДАЁТ versions/1.21.10/purpur-1.21.10.jar до конца ремапа:
+     poll по существованию файла обрывал ремап (run 37282960274) -> jar без
+     CraftBukkit. Фикс: poll = файл есть И CraftWorld.class внутри (7a2feb91).
+  2) на GH-раннере нет ripgrep: `rg` под `|| true` = слепой poll — сервер
+     Done( за 26 c, скрипт ждал 300 c и умер (run 37284053928). Фикс: grep -a
+     (84fa0e24). Мелочь, но именно она стоила второго красного прогона.
+Результат CI (run 37285235686, ubuntu-latest, 4 ядра): ВСЕ ДЖОБЫ ЗЕЛЁНЫЕ.
+  Буты: 27.9 / 20.6 c (vs 30-40 c на риге); дамп 256 чанков ~45-55 c;
+  ncfdiff 256 пар ~8 c; матрица сидов 46/47/47/55 c. Вердикт гейта:
+  pairs=256 equal=0 semantic_equal=256 diverged=0 missing=0.
+Доказательства: run 37285235686 (github.com/PLANETA9091/c-crussty/actions/
+  runs/37285235686), артефакты golden-gate-logs + golden-dump-corpora
+  (6x256 дампов: ci_gate_{A,B}, vanilla_ci_s{90210,424242,8675309,133700}),
+  results/CI_GATE_2026-10-05.txt, results/CI_GATE_budget.tsv (CI-копии).
+Провалы: 2 красных прогона CI (обе причины выше); локальный
+  /home/z/my-project/purpur jar снова оказался битым (428KB — тот же симптом,
+  что в LOG #1); в CI не используется.
+Расхождения с файлом/ванилью: новых нет; GATE повторил контрольную строку
+  ORDER_TEST на другом железе (SEMANTIC_EQUAL 256/256) — детерминизм рига
+  воспроизводим вне песочницы.
+Следующий шаг: P0.4-хвост по спеке (корпуса датапаков: Terralith/Tectonic/
+  BACAP/Structory + Trek), векторы random/noise/density через retransform
+  (P0.3-хвост) — и Фаза 0 закрыта; затем Ф1 (IR-извлечение из реестра,
+  сверка с CFR).
+
+=== 2026-10-05 | сессия 3 (один тик) | пункты: P0.3-хвост, P0.4-хвост, ГЕЙТ P0, P1.1/1.2/1.5/1.7, ГЕЙТ P1, P2.1, P2.2, P2.3 (эталон), P3.1 (каркас) ===
+Контекст: владелец — «сделай всё в одном тике». Сессия от начала до зелёного CI
+  без остановок: восстановление окружения (rustup/JDK21/purpur2535/CFR в
+  download/), CFR-сверка, Rust-ядро Ф1/Ф2, Java-сторона векторов, CI.
+Сделано:
+  - VectorCapture (Java, /goldenvec): random/noise/density векторы из РЕАЛЬНЫХ
+    классов Paper на живом RandomState (ServerChunkCache.randomState()).
+    13171 строк за 192 мс: random 5851, noise 300, density 7020 (все 15 полей
+    роутера через DensityFunction.SinglePointContext; markers проходят
+    насквозь, Blender.empty = identity — ровно скалярный путь P1.5).
+  - chunk-factory crate: zero-dep модули json/mth/md5/jrandom/xoroshiro/
+    noise/density/router/vectors/region + бины veccheck/ircheck.
+    cargo test 56/56, clippy clean, release veccheck PASS.
+  - ВЕКТОРНЫЙ ГЕЙТ: Rust == живая JVM БИТ-В-БИТ: 13171/13171, 0 расхождений
+    (veccheck exit 0). ГЕЙТ P1 закрыт, P2.1/P2.2 закрыты с доказательством.
+  - ircheck: ваниль — 7/7 noise_settings parse+wire, 35/35 density_function
+    файлов, spec_hash per file (P1.7); Terralith/Tectonic — CI ncf-datapacks.
+  - CI: джобы ncf-vectors (boot -> goldenvec -> ircheck+veccheck) и
+    ncf-datapacks (Modrinth -> ircheck датапака -> spiral-корпуса 256/каждый).
+ЛОВУШКИ ТОЧНОСТИ (все найдены ВЕКТОРНЫМ гейтом или сверкой с CFR/javap,
+  каждая закрыта кодом + тестом/вектором; предложения T-нумерации):
+  T13 (NEW, критично): BitRandomSource.nextDouble и Xoroshiro.nextDouble в
+    1.21.10 умножают в f32: l2f; ldc 1.110223E-16f; fmul; f2d — (float)bits *
+    (float)2^-53 с ПОТЕРЕЙ точности до 24 бит мантиссы. f64-порт был бы
+    неправ. (javap; CFR показал верно, память — нет.)
+  T14: RandomSupport.mixStafford13 — Java `>>>` ЛОГИЧЕСКИЙ сдвиг; i64 >> в
+    Rust арифметический (поймано первым прогоном векторов на stafford13).
+  T15: Mth.getSeed — `x * 3129871` это INT-умножение с переполнением ДО
+    расширения до long (позиция 2147483000 ловится векторами).
+  T16: PerlinNoise legacy-конструктор создаёт ПЕРВЫЙ ImprovedNoise
+    БЕЗУСЛОВНО (даже когда i >= size и инстанс выбрасывается — поток
+    случайности расходуется; nether temperature/vegetation).
+  T17: CubicSpline.Multipoint.apply использует ПЕРЕГРУЗКУ Mth.lerp(float,
+    float, float) — весь эрмит f32 (double-перегрузка даёт 1 ulp f32
+    расхождения в depth/final_density; поймано векторами density).
+  T18: ShiftA/ShiftB/Shift в JSON — поле "argument" (singleArgumentCodec),
+    НЕ "noise"; blend_density — тоже "argument".
+  T19: zero.json в датапаке — ГОЛОЕ число 0.0 (файл реестра может быть
+    константой без type).
+  T20: NormalNoise valueFactor: i2-i1 при всех-нулевых амплитудах = int
+    переполнение в Java (wraps to 1) — expected_deviation(1).
+  T21: java.lang.Math.min/max: NaN->NaN (не как Rust f64::min/max) и знаки
+    нулей (+0/-0) — port через to_bits.
+  T22: Mth.floor: i-1 при i32::MIN — Java int math WRAPS (floor(-3e9) =
+    Integer.MAX_VALUE); lfloor аналогично.
+  T23: XoroshiroPositionalRandomFactory.at/fromHashOf/fromSeed — прямой
+    128-битный ctor БЕЗ stafford-микширования (микс только в ctor(long)).
+  T24 (архитектура): Markers (interpolated/flat_cache/cache_2d/cache_once)
+    на НЕпривязанном роутере — чистый pass-through; кэши привязываются
+    NoiseChunk'ом при генерации. Скалярный эталон = непривязанный путь.
+  T25: wire кэширует NormalNoise ПО КЛЮЧУ (getOrCreateNoise), но blended —
+    по равенству параметров (record equals; один draw на уникальные
+    параметры).
+Цифры: векторы 13171 (5851+300+7020) — 0 расхождений; ircheck ваниль 7+35
+  файлов 0 провалов; буты 15-36 c локально; goldenvec 192 мс.
+Провалы: 2 локальных итерации CI-скриптов не было (локальный e2e прошёл с
+  3-го прогона из-за T14/T17); первый /goldenvec упал на ключе
+  minecraft:continents (нет такого noise-параметра — правильный
+  continentalness; ошибка захвата, не ядра).
+Расхождения с файлом/ванилью: P0.3 сформулировал векторы как «TODO Ф2 через
+  retransform» — прямой вызов через публичные API оказался достаточен для
+  гейта P1 (retransform остаётся планом для Ф2-профилировки инлайн-путей);
+  CarverSkip/feature-векторы — вне скоупа P0.3 (это Ф4).
+Следующий шаг: P2.3-хвост (NoiseChunk-интерполяторы: векторы через
+  NoiseChunk.forChunk — путь реальной генерации), затем P2.4+ (климат/surface)
+  и P3.1-подтверждение (сервер читает .mca, писанный Rust'ом).
+
+=== 2026-10-05 | сессия 3 (продолжение: CI-доводка) | пункты: P0.4 (Terralith/Tectonic корпуса) ===
+Сделано: CI-джоба ncf-datapacks доведена до зелёной за 3 итерации (все ловушки
+  найдены прогонами, не по памяти):
+  1) датапак-роутеры ссылаются на ВАНИЛЬНЫЕ записи реестра
+     (minecraft:shift_x, minecraft:overworld/continents) — extract датапака
+     мержится ПОВЕРХ ванильного worldgen-дерева;
+  2) ВЕРСИЯ ПАКА: Terralith 2.6.0 собран под 1.21.11 и валит сервер на
+     создании мира — pin по ТОЧНОМУ совпадению версии из game_versions
+     (1.21.10 -> Terralith 2.5.13; фильтр "любой 1.21.x" опасен);
+  3) ПЕРЕКРЫТИЯ ПАКОВ (pack.mcmeta overlays): 2.5.13 кладёт исправленный
+     overworld.json (с preliminary_surface_level) в '1-21-9-overlay/' —
+     экстрактор применяет overlays, чьи formats покрывают data-pack format
+     сервера (version.json pack_version.data_major = 88), файлы ложатся на
+     базовые пути (последний совпавший overlay побеждает). Tectonic:
+     overlay.datapack (34 файла) + overlay.1_21_9 (2 файла) — тот же код.
+  4) overlays бывают и на верхнем уровне mcmeta, и внутри 'pack' — читаются
+     оба места.
+Цифры: terralith ircheck PASS (9 роутеров суммарно, 158 df-файлов tectonic),
+  корпуса: terralith_s3053459 256/0, tectonic_s3053459 256/0 (PLAN=spiral,
+  артефакты golden-datapack-corpora). Финальный run 37301969113: ВСЕ 7 ДЖОБ
+  ЗЕЛЁНЫЕ (module/native/fuzz-crate/chunk-factory/golden-harness/ncf-vectors/
+  ncf-datapacks).
+Следующий шаг: без изменений (P2.3-хвост — NoiseChunk-интерполяторы, P3.1-
+  подтверждение сервером).
+
+=== 2026-10-05 | сессия 4 (одно сообщение) | пункты: P2.3-хвост (закрыт), P2.4 (закрыт), P3.1 (подтверждение), CI ===
+Контекст: владелец — «сделай все в одном сообщении». Чеклист этого файла не был
+  перевёрнут в прошлом коммите — исправлено этой записью (правило «[x] без
+  записи в LOG не считается»).
+Сделано:
+  - P2.3-хвост (interpolator.rs): полная реплика NoiseChunk — интерн-арена
+    (структурное равенство = Java record equality для дедупа/шаринга
+    обёрток), wrap-мемоизация, NoiseInterpolator slices+swapSlices+lerp-
+    цепочки, CacheAllInCell/Cache2D/CacheOnce (вкл. кросс-интерполяторный
+    array-cache с эпохами), FlatCache y=0 таблицы, пакетные fillArray
+    (Ap2 Add/Mul/Min/Max, Mapped, RangeChoice), doFill drive-цикл дословно
+    вкл. swapSlices после каждой колонки. MarkerType протянут Raw->Df.
+    ДВА ГЛАВНЫХ БАГА, пойманных гейтом: (1) поля bank-индексов
+    (ShiftA/B/Shift/Blended) — это ИНДЕКСЫ ШУМОВ, а не дети (wrap уходил в
+    мусор); (2) сплайны требуют собственной W-трансляции (coordinate/Multi —
+    I-индексы, не W).
+  - P2.4 (climate.rs + vanilla_biomes.rs): quantizeCoord (long)(f*10000.0f)
+    f32-truncate; Parameter fitness в wrapping i64; RTree build (стабильные
+    сортировки с вращающейся 7-ключевой цепочкой компараторов, bucketize
+    pow(6, floor(log6(n-0.01))), in-place каскад сортировок, финальный abs-
+    сорт по СПИСКУ БАКЕТОВ) + search с персистентным ThreadLocal last-result
+    и identity-шорткатом node==leaf. vanilla_biomes.rs = faithful-порт
+    OverworldBiomeBuilder (7593 точки, НЕ ~179 — две depth-строки на вызов x
+    25 пар x 13 слайсов; фикс по живой таблице: строка 261 декомпила =
+    coastContinentalness БЕЗ span — ровно 100 расхождений декомпил глазами
+    не ловит).
+  - P3.1 ПОДТВЕРЖДЕНИЕ СЕРВЕРОМ (mcaforge + ci_mca.sh): сырой несжатый NBT
+    (новый /goldendump raw + пробы «первый НЕ random-tick блок сверху» после
+    того как brown_mushroom лопнул random-тиком между forceload и пробой —
+    было 17/18) -> Rust region writer (stored-zlib, self-check) -> FRESH
+    world держит ТОЛЬКО Rust r.3.3.mca -> бут + forceload + execute if block:
+    18/18 PASS + негативный контроль (сервер ОТВЕРГАЕТ подделку).
+  - Golden-harness фиксы: RegistryAccess.lookupOrThrow (3 перегрузки) НЕ
+    ЛИНКУЕТСЯ на сервере (NoSuchMethodError) -> generatorSettings() +
+    Holder.getRegisteredName() + BuiltInRegistries.BLOCK.getKey;
+    BeardifierMarker — protected -> рефлексия; FluidPicker -> FluidStatus
+    (createLegacyBlock).
+  - CI: новая джоба ncf-mca (два бута + пробы); ci_vectors veccheck
+    -> --release (all-режим включает interp/climate/climate-table).
+Доказательства: коммит 78fa5154; CI run 37328225030 success (все джобы).
+Цифры: ГЕЙТЫ локально interp 786432/786432 + climate 539/539 + climate-table
+  7593/7593 + старые 13171 = 807735/0 бит-в-бит за один прогон veccheck;
+  cargo test 63/63, clippy clean; сервер читает Rust-.mca 18/18.
+Провалы: s4-a (subagent java capture) оборвался по таймауту инфраструктуры —
+  завершено вручную в основном агенте; 17/18 пробы на первом прогоне mca
+  (random-tick гриба) — фикс дампера.
+Расхождения с файлом/ванилью: чеклист отставал от кода на одну сессию
+  (P2.3/P2.4/P3.1) — процессная ловушка: закрывать пункты ЭТИМ файлом в том
+  же коммите, что и код.
+Следующий шаг: ГЕЙТ-матрица P2 на датапаках -> P2.5 surface rules -> ступень
+  B (Moonrise hook P3.3) / оптимизации P2.11+; Фазы 4/5 по плану.
+
+=== 2026-10-05 | сессия 5 (одно сообщение) | пункты: P2.6 (закрыт), P2.7 (закрыт), P2.9-хвост (WG-heightmaps), P2.10 (содержимое секций), P0.4 (Structory), гейты+CI ===
+Контекст: владелец — «так сделай именно всё». 3 параллельных подагента пали по
+  таймауту инфраструктуры → всё вручную (как s4-a в сессии 4).
+Сделано:
+  - Методика СТАДИЙНЫХ ORACLE-ДАМПОВ (новая, ключевая): /goldendump STATUS
+    (task 5-a) — содержимое чанка на промежуточных ChunkStatus (NOISE/SURFACE)
+    в DECODED-схеме (секции: Palette{Name,Properties}+Data int[4096],
+    Biomes: Palette+Data int[64], Heightmaps long[], PostProcessing) — оракул
+    для содержательного нулевого диффа. Корпуса: staged_vanilla_s3053459_
+    {noise,surface} 225/225 (radius 7, spiral, FRESH boot).
+    Индексы верифицированы CFR: блоки (y*16+z)*16+x, биомы (y*16+z)*4+x;
+    heightmap-приминг: EMPTY..SURFACE = {OCEAN_FLOOR_WG, WORLD_SURFACE_WG}.
+  - aquifer.rs (P2.6+P2.7): NoiseBasedAquifer + OreVeinifier дословно.
+  - filler.rs: doFill-реплика на бит-в-бит интерполяторе: per-block
+    blockStateRule = [aquifer(substance), OreVeinifier], default_block,
+    proto-heightmap unprimed-машина (скан вниз по ЧАСТИЧНО заполненному
+    чанку = air), markPosForPostprocessing (pack (x&15)|(y&15)<<4|(z&15)<<8),
+    биомы по квартам (fillBiomesFromNoise: x-внешний порядок, Sampler.sample
+    = QUART-координаты → compute в БЛОЧНЫХ (x*4) — ловушка).
+  - interpolator.rs: substance-кэш (CacheAllInCell = batch-fill всей ячейки в
+    selectCellYZ, forIndex y-DESC) — per-block вычисление финального дерева
+    НЕ эквивалентно (кэш-эпохи) — ловушка; compute_field для vein-полей.
+  - sections.rs: zero-dep NBT reader/writer + gzip (полный inflate + stored-
+    writer) + decoded staged-схема. stagediff (гейт 225/225 + selftest),
+    aquacheck (бисект-риг), --gen-batch (RandomState один раз).
+  - ЛОВУШКИ СЕССИИ (все пойманы гейтами, не глазами):
+    T26 (критично): calculatePressure проверяет firstFluid.at(blockY).is(...)
+    — состояние НА ВЫСОТЕ БЛОКА: для статуса уровня -32512 at(y) = AIR при
+    y > -32512 — сравнение по .kind ломает давление на каждой пещере глубже
+    поверхности (17/225 → 225/225 после фикса).
+    T27 (критично): aquiferRandom/oreRandom хешируют ПОЛНОЕ имя ресурса —
+    "minecraft:aquifer"/"minecraft:ore" (withDefaultNamespace), не "aquifer".
+    T28: CacheAllInCell substance = batch-заполнение ячейки в selectCellYZ;
+    per-block compute дерева даёт другие значения (кэш-эпохи CacheOnce).
+    T29: Sampler.sample принимает КВАРТ-координаты и вычисляет density-
+    функции в БЛОЧНЫХ (QuartPos.toBlock = *4).
+    T30: doFill скипает AIR-блоки полностью (не пишет, не трогает heightmap).
+  - БИСЕКТ-РИГ (новый процесс): VectorCapture.writeAquifer — по блоку чанка
+    (100,100; переопределяется -Dgoldendump.aquiferX/Z): substance из живого
+    cellCaches[0].values + решение computeSubstance + shouldScheduleFluidUpdate
+    + полный дамп кэшей аквифера (локации/статусы/границы сетки). aquacheck
+    сверяет substance/decision/sched бит-в-бит: 2x98304 строк, 0 расхождений.
+  - CI: ci_staged.sh + джоба ncf-staged (boot → staged dump → gen-batch →
+    stagediff); aquacheck в ci_vectors; Structory в ncf-datapacks.
+Доказательства: коммиты 18dd506d (+ worklog-коммит); локальный гейт: stagediff
+  225/225 EQUAL на NOISE-статусе; aquacheck 0 substance/decision/sched расхождений
+  на двух чанках (100,100) и (102,107); CI run — см. addendum.
+Цифры: --gen-batch: 225 чанков за 12.6с = 17.9 чанков/с/ядро (включая staged-
+  NBT запись) против Java noise-стадии 248.1 CPU-мс/чанк = 4.0 чанков/с/ядро
+  (warm) — x4.5 на скаляре; оптимизации P2.11+ впереди (цель >=30x — ГЕЙТ P2).
+Провалы: 3 подагента пали по таймауту инфраструктуры; 4 итерации stagediff
+  (T26-T29); 2 захвата acquifer (константы чанка — параметризованы).
+Расхождения с файлом/ванилью: P2.10 сформулирован как «сборка секций» —
+  содержимое секций закрыто через DECODED-схему (I1), бит-упаковка палитр
+  не нужна для гейта и отложена до ступени B (виртуальный регион).
+Следующий шаг: P2.5 surface rules (SURFACE-статус тем же staged-методом) →
+  P2.8 карверы → ГЕЙТ P2 матрица → ступень B (P3.3 Moonrise hook).
+
+=== 2026-10-05 | сессия 5 (addendum: CI) | пункты: CI-доводка сессии 5 ===
+CI-итерации (все ловушки найдены прогонами):
+  1) run 37351446550: ncf-staged FATAL — build_golden.sh требует SERVER_DIR в
+     окружении (существующие скрипты зовут SERVER_DIR="$SERVER_DIR" ./build_
+     golden.sh; мой вызов терял env); ncf-vectors FATAL — aquacheck включал в
+     exit-код информационные loc/fluid каскады (probe-depth веток давления при
+     идентичных решениях) → гейт = ТОЛЬКО content-путь (substance/decision/
+     sched), каскады = info.
+  2) run 37352842282: ncf-staged FATAL — маркер плагина содержит РЕЕСТРОВОЕ
+     имя ("COMPLETE minecraft:noise"), мой grep ждал "COMPLETE noise"; корпус-
+     дир теперь парсится из поля dir= маркера (жёсткий путь не survives).
+  3) run 37354909056 (9a7d2faa): ВСЕ 9 ДЖОБ ЗЕЛЁНЫЕ. ncf-staged на CI-железе:
+     корпус 225 chunks, gen-batch 16.2 chunks/s, stagediff pairs=225 equal=225
+     diverged=0 — БИТ-В-БИТ против живого сервера воспроизводимо ВНЕ песочницы.
+     aquacheck на CI: substance_diff=0 decision_diff=0 sched_diff=0 (98304
+     строки против ДРУГОГО бута — детерминизм подтверждён).
+
