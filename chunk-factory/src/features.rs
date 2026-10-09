@@ -58,6 +58,15 @@
 //!     ground...) are a P4 tail — eval stays honest-false, the SHAPE is
 //!     parsed verbatim. RandomPatchConfiguration orElse defaults fixed to
 //!     the codec values (tries 128 / xz_spread 7 / y_spread 3).
+//!   - RandomSelectorFeature ("random_selector", inc. 9) — the NEW top
+//!     after inc. 8 (36/65 biomes): RandomFeatureConfiguration = weighted
+//!     features tried IN ORDER (first nextFloat() < chance places and
+//!     RETURNS) else the default; WeightedPlacedFeature chance =
+//!     floatRange(0..1); entries and default are PlacedFeature.CODEC
+//!     (string ref OR inline {feature, placement}).
+//!   - RandomBooleanSelectorFeature ("random_boolean_selector", inc. 9):
+//!     ONE nextBoolean() — feature_true/feature_false, both fieldOf
+//!     REQUIRED, no default.
 //!   - SnowAndFreezeFeature ("freeze_top_layer", inc. 2) — see the
 //!     FeatureDef::FreezeTopLayer doc.
 //!   - SpringFeature ("spring_feature", inc. 2) — DETERMINISTIC, no draws.
@@ -999,6 +1008,26 @@ pub enum FeatureDef {
         y_spread: i32,
         inner: Box<PlacedFeatureDef>,
     },
+    /// RandomFeatureConfiguration ("random_selector", inc. 9): the
+    /// weighted features are tried IN ORDER — the FIRST entry with
+    /// nextFloat() < chance places and RETURNS (random draw per entry,
+    /// short-circuit); if none triggered, the default placed feature
+    /// places. Both the weighted entries and the default are
+    /// PlacedFeature.CODEC (registry string ref OR inline {feature,
+    /// placement} object); chance = floatRange(0..1) fieldOf (out of
+    /// range = codec error), features/default fieldOf REQUIRED.
+    RandomSelector {
+        features: Vec<(f32, Box<PlacedFeatureDef>)>,
+        default: Box<PlacedFeatureDef>,
+    },
+    /// RandomBooleanFeatureConfiguration ("random_boolean_selector",
+    /// inc. 9): ONE nextBoolean() draw — true picks feature_true, false
+    /// picks feature_false (both PlacedFeature.CODEC fieldOf REQUIRED;
+    /// there is no default/fallback).
+    RandomBooleanSelector {
+        feature_true: Box<PlacedFeatureDef>,
+        feature_false: Box<PlacedFeatureDef>,
+    },
     /// DiskConfiguration: "target" is a SINGLE block predicate and the
     /// state comes from "state_provider" (inc. 6: FULL RuleBased
     /// BlockStateProvider — first matching rule wins, else the fallback;
@@ -1296,6 +1325,77 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
                 xz_spread: cfg.get("xz_spread").and_then(|t| t.as_i64()).unwrap_or(7) as i32,
                 y_spread: cfg.get("y_spread").and_then(|t| t.as_i64()).unwrap_or(3) as i32,
                 inner: Box::new(inner),
+            }
+        }
+        "random_selector" => {
+            let cfg = j.get("config").ok_or("random_selector.config")?;
+            // WeightedPlacedFeature.CODEC.listOf().fieldOf("features") —
+            // REQUIRED (an absent key is a codec error; an EMPTY list is
+            // legal and just means "always the default").
+            let mut features = Vec::new();
+            for w in cfg
+                .get("features")
+                .and_then(|f| f.as_arr())
+                .ok_or("random_selector.features")?
+            {
+                let chance = w
+                    .get("chance")
+                    .and_then(|c| c.as_f64())
+                    .ok_or("random_selector.chance")?;
+                // Codec.floatRange(0, 1): out-of-range = codec error.
+                if !(0.0..=1.0).contains(&chance) {
+                    return Err(format!("random_selector chance 0..=1, got {chance}"));
+                }
+                let feature = match w.get("feature") {
+                    // PlacedFeature.CODEC: registry string ref OR inline
+                    // {feature, placement} object (same dual form the
+                    // random_patch inner uses).
+                    Some(fj) if fj.as_str().is_some() => PlacedFeatureDef {
+                        feature_ref: expand_rl(fj.as_str().unwrap()),
+                        placement: Vec::new(),
+                        inline: None,
+                    },
+                    Some(fj) => parse_placed_feature(fj)?,
+                    None => return Err("random_selector.feature".into()),
+                };
+                features.push((chance as f32, Box::new(feature)));
+            }
+            let default = match cfg.get("default") {
+                Some(dj) if dj.as_str().is_some() => Box::new(PlacedFeatureDef {
+                    feature_ref: expand_rl(dj.as_str().unwrap()),
+                    placement: Vec::new(),
+                    inline: None,
+                }),
+                Some(dj) => Box::new(parse_placed_feature(dj)?),
+                None => return Err("random_selector.default".into()),
+            };
+            FeatureDef::RandomSelector { features, default }
+        }
+        "random_boolean_selector" => {
+            let cfg = j.get("config").ok_or("random_boolean_selector.config")?;
+            // Both halves fieldOf (REQUIRED) — a missing key = honest
+            // codec error, no defaults anywhere.
+            let feature_true = match cfg.get("feature_true") {
+                Some(tj) if tj.as_str().is_some() => Box::new(PlacedFeatureDef {
+                    feature_ref: expand_rl(tj.as_str().unwrap()),
+                    placement: Vec::new(),
+                    inline: None,
+                }),
+                Some(tj) => Box::new(parse_placed_feature(tj)?),
+                None => return Err("random_boolean_selector.feature_true".into()),
+            };
+            let feature_false = match cfg.get("feature_false") {
+                Some(fj) if fj.as_str().is_some() => Box::new(PlacedFeatureDef {
+                    feature_ref: expand_rl(fj.as_str().unwrap()),
+                    placement: Vec::new(),
+                    inline: None,
+                }),
+                Some(fj) => Box::new(parse_placed_feature(fj)?),
+                None => return Err("random_boolean_selector.feature_false".into()),
+            };
+            FeatureDef::RandomBooleanSelector {
+                feature_true,
+                feature_false,
             }
         }
         "disk" => {
@@ -1775,6 +1875,17 @@ pub fn is_placed_supported(def: &PlacedFeatureDef, registry: &FeatureRegistry) -
     match body {
         FeatureDef::Unsupported(_) => false,
         FeatureDef::RandomPatch { inner, .. } => is_placed_supported(inner, registry),
+        FeatureDef::RandomSelector { features, default } => {
+            features.iter().all(|(_, f)| is_placed_supported(f, registry))
+                && is_placed_supported(default, registry)
+        }
+        FeatureDef::RandomBooleanSelector {
+            feature_true,
+            feature_false,
+        } => {
+            is_placed_supported(feature_true, registry)
+                && is_placed_supported(feature_false, registry)
+        }
         _ => true,
     }
 }
@@ -3095,5 +3206,104 @@ mod tests {
         } else {
             panic!("expected would_survive filter");
         }
+    }
+
+    #[test]
+    fn random_selector_verbatim_ref_and_inline_forms() {
+        // verbatim from configured_feature/trees_birch.json — the dominant
+        // corpus form: string refs for both the weighted feature and the
+        // default.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:random_selector\",\"config\":\
+             {\"default\":\"minecraft:birch_bees_0002\",\
+             \"features\":[{\"chance\":0.0125,\
+             \"feature\":\"minecraft:fallen_birch_tree\"}]}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::RandomSelector { features, default } =
+            parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected RandomSelector");
+        };
+        assert_eq!(features.len(), 1);
+        assert_eq!(features[0].0, 0.0125);
+        assert_eq!(features[0].1.feature_ref, "minecraft:fallen_birch_tree");
+        assert_eq!(default.feature_ref, "minecraft:birch_bees_0002");
+
+        // verbatim from trees_plains.json — INLINE placed objects (both the
+        // default and a weighted entry): {feature: <ref>, placement: []}.
+        let j2 = crate::json::parse(
+            "{\"type\":\"minecraft:random_selector\",\"config\":\
+             {\"default\":{\"feature\":\"minecraft:oak_bees_005\",\"placement\":[]},\
+             \"features\":[{\"chance\":0.33333334,\"feature\":\
+             {\"feature\":\"minecraft:fancy_oak_bees_005\",\"placement\":[]}},\
+             {\"chance\":0.0125,\"feature\":\"minecraft:fallen_oak_tree\"}]}}",
+        )
+        .unwrap();
+        let FeatureDef::RandomSelector { features, default } =
+            parse_configured_def(&j2, "random_selector").unwrap()
+        else {
+            panic!("expected RandomSelector");
+        };
+        assert_eq!(features.len(), 2);
+        // the inline placed object {feature: <ref>, placement: []} parses
+        // to a ref-carrying PlacedFeatureDef (inline: None — the INNER
+        // feature is a string, not an inline configured body).
+        assert_eq!(features[0].1.feature_ref, "minecraft:fancy_oak_bees_005");
+        assert!(features[0].1.placement.is_empty());
+        assert_eq!(features[1].1.feature_ref, "minecraft:fallen_oak_tree");
+        assert_eq!(default.feature_ref, "minecraft:oak_bees_005");
+
+        // codec honesty: default and features are fieldOf (REQUIRED);
+        // chance is floatRange(0..1) — out of range = codec error.
+        let j3 = crate::json::parse(
+            "{\"type\":\"minecraft:random_selector\",\"config\":\
+             {\"features\":[]}}",
+        )
+        .unwrap();
+        assert!(parse_configured_def(&j3, "random_selector").is_err());
+        let j4 = crate::json::parse(
+            "{\"type\":\"minecraft:random_selector\",\"config\":\
+             {\"default\":\"minecraft:oak\",\"features\":\
+             [{\"chance\":1.5,\"feature\":\"minecraft:oak\"}]}}",
+        )
+        .unwrap();
+        assert!(parse_configured_def(&j4, "random_selector").is_err());
+    }
+
+    #[test]
+    fn random_boolean_selector_verbatim_both_halves_required() {
+        // verbatim from configured_feature/lush_caves_clay.json — BOTH
+        // halves are INLINE placed objects (feature ref + empty placement).
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:random_boolean_selector\",\"config\":\
+             {\"feature_false\":{\"feature\":\"minecraft:clay_pool_with_dripleaves\",\
+             \"placement\":[]},\"feature_true\":{\"feature\":\
+             \"minecraft:clay_with_dripleaves\",\"placement\":[]}}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::RandomBooleanSelector {
+            feature_true,
+            feature_false,
+        } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected RandomBooleanSelector");
+        };
+        assert_eq!(feature_true.feature_ref, "minecraft:clay_with_dripleaves");
+        assert_eq!(
+            feature_false.feature_ref,
+            "minecraft:clay_pool_with_dripleaves"
+        );
+        // codec honesty: a missing half = honest codec error (no defaults).
+        let j2 = crate::json::parse(
+            "{\"type\":\"minecraft:random_boolean_selector\",\"config\":\
+             {\"feature_true\":{\"feature\":\"minecraft:stone\",\"placement\":[]}}}",
+        )
+        .unwrap();
+        assert!(parse_configured_def(&j2, "random_boolean_selector").is_err());
     }
 }

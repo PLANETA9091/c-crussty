@@ -5424,3 +5424,94 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 87, собственный run): run 37889312293
 (6d378a6) completed SUCCESS. Правило «код-commit ждёт свой run»
 выполнено — тик ЗАВЕРШЁН.
+
+
+=== 2026-10-09 | аддендум 88: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 9):
+    порт RandomSelectorFeature ("random_selector", 21/21 конфигов) +
+    RandomBooleanSelectorFeature ("random_boolean_selector", 2/2); ценз
+    configured 90->113/224; РАЗГЛАСОВКА МЕТКИ: топ "random_selector
+    (parse fail) 36" на деле держится на IntProvider-семействе
+    (weighted_list в count-модификаторах деревьев); blocker_label
+    p4probe теперь РЕКУРСИВЕН; 182/182 тестов ===
+
+0) САНДБОКС: fetch+reset -> HEAD e4fdd18 (аддендум 87, подтверждён).
+   cargo переустановлен (2-я рекализация подряд); worldgen-extract и
+   decomp_p4 ПЕРЕЖИЛИ эту рекализацию (восстановлены в тике 13:02).
+   База-ценз воспроизведена из аддендума 87 бит-в-бит (113-строчный
+   PLACED-набор и 26 stderr-строк идентичны).
+
+1) ОРАКУЛ (decomp_p4, cfr 0.152, 1.21.10):
+   (а) RandomSelectorFeature + RandomFeatureConfiguration: features =
+       WeightedPlacedFeature.CODEC.listOf().fieldOf("features")
+       (ОБЯЗАТЕЛЬНО; пустой список легален = всегда default) + default =
+       PlacedFeature.CODEC.fieldOf("default") (ОБЯЗАТЕЛЬНО);
+       WeightedPlacedFeature = feature (PlacedFeature.CODEC — строка-ссылка
+       ИЛИ инлайн {feature, placement}) + chance Codec.floatRange(0,1);
+   (б) хвост выполнения: взвешенные перебираются ПО ПОРЯДКУ — первый
+       entry с nextFloat() < chance размещает и ВОВЗРАЩАЕТ (короткое
+       замыкание, один nextFloat на entry); если никто не сработал —
+       размещается default; результат = его результат;
+   (в) RandomBooleanSelectorFeature + RandomBooleanFeatureConfiguration:
+       ОДИН nextBoolean() — true -> featureTrue, false -> featureFalse
+       (оба fieldOf ОБЯЗАТЕЛЬНЫ, дефолтов нет).
+
+2) КОД (этот коммит):
+   (а) FeatureDef::RandomSelector { features: Vec<(f32, Box<PlacedFeatureDef>)>,
+       default } и FeatureDef::RandomBooleanSelector { feature_true,
+       feature_false } — оба поля/списка через parse_placed_feature с
+       ДВУХФОРМЕННОЙ обработкой (строка-ссылка -> PlacedFeatureDef c
+       пустым placement; объект -> полный parse; отсутствие ключа = Err)
+       — та же двойная форма, что и inner у random_patch;
+   (б) chance: честная проверка floatRange(0..1) — вне диапазона = Err
+       ("random_selector chance 0..=1, got {chance}");
+   (в) is_placed_supported: новые руки-рекурсии (RandomSelector = все
+       взвешенные И default; RandomBooleanSelector = обе половины);
+   (г) p4probe blocker_label: РЕКУРСИЯ в композитные тела (RandomSelector /
+       RandomBooleanSelector / RandomPatch) — раньше распарсенное тело с
+       неподдерживаемой внутренностью давало None и биом ВЫПАДАЛ из
+       гистограммы (слепая зона, существовала со времён random_patch);
+       теперь виден ГЛУБОКИЙ блокер;
+   (д) тесты 180->182 (random_selector_verbatim_ref_and_inline_forms —
+       verbatim trees_birch (строки) + trees_plains (инлайн default и
+       взвешенный инлайн), отсутствие default = Err, chance 1.5 = Err;
+       random_boolean_selector_verbatim_both_halves_required — verbatim
+       lush_caves_clay (обе половины инлайн), пропуск feature_false =
+       Err).
+
+3) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, корпус тот же, diff списков бит-в-бит;
+   база = аддендум 87):
+   configured: 90/224 -> 113/224 (+23: ВСЕ 21 random_selector + ОБА
+       random_boolean_selector; строки "unsupported type random_selector
+       0/21" и "random_boolean_selector 0/2" ИСЧЕЗЛИ — в корпусе не
+       осталось ни одного непарсящегося экземпляра этих типов);
+   placed: 130/258 БЕЗ ИЗМЕНЕНИЙ (набор ключей и флагов бит-в-бит);
+   parse-провалы placed: 26 -> 26 (stderr ИДЕНТИЧЕН);
+   биомы fully-supported: 9/65 (без изменений);
+   ГИСТОГРАММА (после рекурсии меток): "unsupported type random_selector
+       blocks 4/65" и "random_boolean_selector blocks 2/65" ИСЧЕЗЛИ;
+       проявились глубокие блокеры 1/65 (desert_well, dripstone_cluster
+       и др.); строки 5+5/4/3/2 на месте.
+   decor-seed probe: population=351934174475927443 first_draw=12 —
+       идентичен базе.
+
+4) РАЗГЛАСОВКА МЕТКИ (важно для следующего тика): топ "unsupported type
+   random_selector (parse fail) blocks 36/65" — метка placed_parse_type
+   (placed-цепочка деревьев валится на parse РАНЬШЕ тела): в placement
+   стоит count с IntProvider {type: weighted_list} ("intprovider shape";
+   также clamped/clamped_normal/biased_to_bottom — "triangle pending
+   decompile", 4-5 placed). Т.е. ИСТИННЫЙ следующий блокер — семейство
+   IntProvider в МОДИФИКАТОРАХ, а не тело random_selector (оно уже
+   парсится). СЛЕДУЮЩИЙ ТИК: порт IntProvider-семейства по декомпилу
+   (weighted_list первым — он в ЗАМЕСАХ count у всех деревьев: 36 биомов;
+   затем clamped/clamped_normal/biased_to_bottom/trapezoid), после чего
+   простые финальные типы (simple_random_selector 6, noise_threshold_
+   count 7) и stagediff features-статус.
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсер + тесты + ценз + тул-фикс), не
+   worklog-only; гейт-контракты veccheck/stagediff НЕ тронуты; placed-
+   ценз НЕ раздут: тела random_selector парсятся, но вердикт placed
+   держится на рекурсивной is_placed_supported (внутренние деревья
+   Unsupported) — биомы честно не двинулись; рекурсия blocker_label —
+   тул-фикс видимости, не изменение вердиктов.
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2
+  текст (тик 14:02 — Т38-B/T40; 13-й stale-тик) — первоисточник = этот LOG.
