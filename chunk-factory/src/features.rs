@@ -3,7 +3,7 @@
 //! seagrass, freeze_top_layer, spring_feature) + the tier-3 dispatch with
 //! honest fallback accounting.
 //!
-//! Ports of the mapped Purpur 2535 sources (CFR 0.152, session 7 + inc. 2):
+//! Ports of the mapped Purpur 2535 sources (CFR 0.152, session 7 + inc. 2/3):
 //!   - PlacedFeature.placeWithContext: positions stream folds through the
 //!     modifier chain IN ORDER (flatMap per modifier, per-position draws in
 //!     stream order; empty stream short-circuits the chain).
@@ -12,6 +12,12 @@
 //!   - StateTestingPredicate offset family (inc. 2): matching_blocks /
 //!     matching_fluids / replaceable / solid at pos.offset(offset)
 //!     (Vec3i.offsetCodec(16)).
+//!   - SurfaceRelativeThresholdFilter + EnvironmentScanPlacement (inc. 3):
+//!     the two widest placement-modifier blockers (54/53 biomes); scan is a
+//!     vertical position TRANSFORMER with the CFR break-then-final-test
+//!     semantics (the first NOT-allowed position is still tested).
+//!   - HasSturdyFacePredicate + InsideWorldBoundsPredicate (inc. 3): the
+//!     two remaining nested targets of the corpus environment_scan shapes.
 //!   - SnowAndFreezeFeature ("freeze_top_layer", inc. 2) — see the
 //!     FeatureDef::FreezeTopLayer doc.
 //!   - SpringFeature ("spring_feature", inc. 2) — DETERMINISTIC, no draws.
@@ -62,6 +68,17 @@ pub enum BlockPredicate {
     AllOf(Vec<BlockPredicate>),
     AnyOf(Vec<BlockPredicate>),
     WouldSurvive,
+    /// HasSturdyFacePredicate (inc. 3) — state.isFaceSturdy(level, pos,
+    /// direction) at pos+offset. Per-block sturdy-face tables are a P4
+    /// tail; eval uses the session-7 solid convention (terrain full-cube
+    /// blocks are sturdy on every face, air/water/lava are not) — the
+    /// direction is parsed verbatim and kept for the honest eval when the
+    /// property tables land.
+    HasSturdyFace { offset: [i32; 3], direction: String },
+    /// InsideWorldBoundsPredicate (inc. 3) — !level.isOutsideBuildHeight(
+    /// pos.offset(offset)). Eval: block_at answers None exactly outside
+    /// the readable region (= build height), so Some(_) == inside bounds.
+    InsideWorldBounds { offset: [i32; 3] },
 }
 
 /// Vec3i.offsetCodec(16): optional "offset": [x,y,z], each component
@@ -114,6 +131,17 @@ pub fn parse_predicate(j: &Json) -> Result<BlockPredicate, String> {
                 fluids.push(f.to_string());
             }
             BlockPredicate::MatchingFluids { offset: parse_offset(j), fluids }
+        }
+        "has_sturdy_face" => BlockPredicate::HasSturdyFace {
+            offset: parse_offset(j),
+            direction: j
+                .get("direction")
+                .and_then(|d| d.as_str())
+                .ok_or("has_sturdy_face.direction")?
+                .to_string(),
+        },
+        "inside_world_bounds" => {
+            BlockPredicate::InsideWorldBounds { offset: parse_offset(j) }
         }
         "not" => {
             let inner = j.get("predicate").ok_or("not.predicate")?;
@@ -231,6 +259,24 @@ pub fn eval_predicate(
         BlockPredicate::AnyOf(v) => v
             .iter()
             .any(|p| eval_predicate(p, x, y, z, block_at, is_replaceable, tag_of)),
+        BlockPredicate::HasSturdyFace { offset, .. } => {
+            // isFaceSturdy on worldgen content: the session-7 solid
+            // convention (terrain full-cube blocks sturdy on every face;
+            // air/water/lava not). Per-block tables = P4 tail.
+            match block_at(x + offset[0], y + offset[1], z + offset[2]) {
+                Some(name) => {
+                    let base = name.split('[').next().unwrap_or(name.as_str());
+                    !matches!(base, "minecraft:air" | "minecraft:water" | "minecraft:lava")
+                }
+                None => false,
+            }
+        }
+        BlockPredicate::InsideWorldBounds { offset } => {
+            // isOutsideBuildHeight(y) == y outside [min_y, min_y+height).
+            // block_at returns None exactly for the unreadable region, so
+            // a readable position IS inside the build height (honest).
+            block_at(x + offset[0], y + offset[1], z + offset[2]).is_some()
+        }
         BlockPredicate::WouldSurvive => false, // needs block survival rules — P4 tail
     }
 }
@@ -577,8 +623,39 @@ pub enum PlacementMod {
     /// surface_water_depth_filter (trees_water) — depth check against the
     /// OCEAN_FLOORWG heightmap at the position (no rng).
     SurfaceWaterDepthFilter { max_water_depth: i32 },
+    /// surface_relative_threshold_filter (glow_lichen, underwater_magma,
+    /// lake_lava_underground; inc. 3) — PlacementFilter: shouldPlace =
+    /// getHeight(heightmap,x,z)+minInclusive <= y <= +maxInclusive (codec
+    /// defaults Int::MIN / Int::MAX; long arithmetic in Java, no rng).
+    SurfaceRelativeThresholdFilter {
+        heightmap: String,
+        min_inclusive: i32,
+        max_inclusive: i32,
+    },
+    /// environment_scan (cave_vines, lush_caves_*, rooted_azalea_tree,
+    /// spore_blossom, pine_on_snow, spruce_on_snow, lake_lava_underground;
+    /// inc. 3) — vertical position TRANSFORMER (PlacementModifier, NOT a
+    /// filter): from the incoming position, while allowed_search_condition
+    /// holds, step direction_of_search up to max_steps times; the FIRST
+    /// position where target_condition passes is emitted. CFR semantics of
+    /// the loop break: the first NOT-allowed position is still tested as a
+    /// target before giving up (break falls through to the final check).
+    /// max_steps: intRange(1,32) required. No rng draws.
+    EnvironmentScan {
+        direction: ScanDir,
+        target: Box<BlockPredicate>,
+        allowed: BlockPredicate,
+        max_steps: i32,
+    },
     /// any modifier the native lane has not proven bit-exact yet
     Unsupported(String),
+}
+
+/// Direction.VERTICAL_CODEC of EnvironmentScanPlacement: up | down only.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ScanDir {
+    Up,
+    Down,
 }
 
 pub fn parse_placement_mod(j: &Json) -> Result<PlacementMod, String> {
@@ -622,6 +699,54 @@ pub fn parse_placement_mod(j: &Json) -> Result<PlacementMod, String> {
                 .and_then(|v| v.as_i64())
                 .unwrap_or(0) as i32,
         },
+        "surface_relative_threshold_filter" => PlacementMod::SurfaceRelativeThresholdFilter {
+            heightmap: j
+                .get("heightmap")
+                .and_then(|h| h.as_str())
+                .ok_or("surface_relative_threshold.heightmap")?
+                .to_string(),
+            // optionalFieldOf defaults: Int.MIN_VALUE / Int.MAX_VALUE.
+            min_inclusive: j
+                .get("min_inclusive")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(i32::MIN as i64) as i32,
+            max_inclusive: j
+                .get("max_inclusive")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(i32::MAX as i64) as i32,
+        },
+        "environment_scan" => {
+            let dir = j
+                .get("direction_of_search")
+                .and_then(|d| d.as_str())
+                .ok_or("environment_scan.direction_of_search")?;
+            let direction = match dir {
+                "up" => ScanDir::Up,
+                "down" => ScanDir::Down,
+                other => {
+                    return Err(format!(
+                        "environment_scan direction vertical (up|down), got {other}"
+                    ))
+                }
+            };
+            let target =
+                Box::new(parse_predicate(j.get("target_condition").ok_or("target_condition")?)?);
+            // optionalFieldOf("allowed_search_condition", alwaysTrue()).
+            let allowed = match j.get("allowed_search_condition") {
+                Some(p) => parse_predicate(p)?,
+                None => BlockPredicate::True,
+            };
+            // intRange(1, 32) — REQUIRED field; out-of-range = codec error
+            // (honest reject, mirrors the Java codec).
+            let max_steps = j
+                .get("max_steps")
+                .and_then(|v| v.as_i64())
+                .ok_or("environment_scan.max_steps")? as i32;
+            if !(1..=32).contains(&max_steps) {
+                return Err(format!("environment_scan max_steps 1..=32, got {max_steps}"));
+            }
+            PlacementMod::EnvironmentScan { direction, target, allowed, max_steps }
+        }
         _ => PlacementMod::Unsupported(ty.to_string()),
     })
 }
@@ -1368,5 +1493,174 @@ mod tests {
         // out of region => cannot verify => false (honest)
         let none = |_: i32, _: i32, _: i32| -> Option<String> { None };
         assert!(!eval_predicate(&p, 0, 0, 0, &none, &repl, &tag_of));
+    }
+
+    #[test]
+    fn surface_relative_threshold_glow_lichen_verbatim() {
+        // placed_feature/glow_lichen.json — srtf with ONLY max_inclusive
+        // (min defaults to Int.MIN_VALUE); OCEAN_FLOOR_WG heightmap.
+        let j = crate::json::parse(
+            "{\"feature\":\"minecraft:glow_lichen\",\"placement\":[\
+             {\"type\":\"minecraft:count\",\"count\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":157,\"min_inclusive\":104}},\
+             {\"type\":\"minecraft:height_range\",\"height\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":{\"absolute\":256},\"min_inclusive\":{\"above_bottom\":0}}},\
+             {\"type\":\"minecraft:in_square\"},\
+             {\"type\":\"minecraft:surface_relative_threshold_filter\",\
+             \"heightmap\":\"OCEAN_FLOOR_WG\",\"max_inclusive\":-13},\
+             {\"type\":\"minecraft:biome\"}]}",
+        )
+        .unwrap();
+        let def = parse_placed_feature(&j).unwrap();
+        let [.., srtf, last] = def.placement.as_slice() else {
+            panic!("expected 5 mods");
+        };
+        assert!(matches!(last, PlacementMod::BiomeFilter));
+        let PlacementMod::SurfaceRelativeThresholdFilter { heightmap, min_inclusive, max_inclusive } =
+            srtf
+        else {
+            panic!("expected srtf, got {srtf:?}");
+        };
+        assert_eq!(heightmap, "OCEAN_FLOOR_WG");
+        assert_eq!(*min_inclusive, i32::MIN); // codec default
+        assert_eq!(*max_inclusive, -13);
+    }
+
+    #[test]
+    fn surface_relative_threshold_underwater_magma_chain() {
+        // placed_feature/underwater_magma.json — uniform count 44..52 +
+        // srtf OCEAN_FLOOR_WG max_inclusive -2 (no min).
+        let j = crate::json::parse(
+            "{\"feature\":\"minecraft:underwater_magma\",\"placement\":[\
+             {\"type\":\"minecraft:count\",\"count\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":52,\"min_inclusive\":44}},\
+             {\"type\":\"minecraft:in_square\"},\
+             {\"type\":\"minecraft:height_range\",\"height\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":{\"absolute\":256},\"min_inclusive\":{\"above_bottom\":0}}},\
+             {\"type\":\"minecraft:surface_relative_threshold_filter\",\
+             \"heightmap\":\"OCEAN_FLOOR_WG\",\"max_inclusive\":-2},\
+             {\"type\":\"minecraft:biome\"}]}",
+        )
+        .unwrap();
+        let def = parse_placed_feature(&j).unwrap();
+        assert_eq!(def.placement.len(), 5);
+        assert!(def
+            .placement
+            .iter()
+            .all(|m| !matches!(m, PlacementMod::Unsupported(_))));
+    }
+
+    #[test]
+    fn environment_scan_lake_lava_verbatim() {
+        // placed_feature/lake_lava_underground.json — down/32, target =
+        // all_of[not matching_blocks air, inside_world_bounds offset
+        // [0,-5,0]], NO allowed_search_condition (=> alwaysTrue).
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:environment_scan\",\"direction_of_search\":\"down\",\
+             \"max_steps\":32,\"target_condition\":{\"type\":\"minecraft:all_of\",\
+             \"predicates\":[{\"type\":\"minecraft:not\",\"predicate\":\
+             {\"type\":\"minecraft:matching_blocks\",\"blocks\":\"minecraft:air\"}},\
+             {\"type\":\"minecraft:inside_world_bounds\",\"offset\":[0,-5,0]}]}}",
+        )
+        .unwrap();
+        let PlacementMod::EnvironmentScan { direction, target, allowed, max_steps } =
+            parse_placement_mod(&j).unwrap()
+        else {
+            panic!("expected EnvironmentScan");
+        };
+        assert_eq!(direction, ScanDir::Down);
+        assert_eq!(max_steps, 32);
+        assert!(matches!(allowed, BlockPredicate::True));
+        let BlockPredicate::AllOf(v) = &*target else {
+            panic!("expected all_of target");
+        };
+        assert_eq!(v.len(), 2);
+        assert!(matches!(&v[1], BlockPredicate::InsideWorldBounds { offset } if *offset == [0, -5, 0]));
+    }
+
+    #[test]
+    fn environment_scan_cave_vines_verbatim() {
+        // placed_feature/cave_vines.json — up/12, allowed = matching_blocks
+        // air, target = has_sturdy_face direction down.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:environment_scan\",\
+             \"allowed_search_condition\":{\"type\":\"minecraft:matching_blocks\",\
+             \"blocks\":\"minecraft:air\"},\"direction_of_search\":\"up\",\
+             \"max_steps\":12,\"target_condition\":{\"type\":\"minecraft:has_sturdy_face\",\
+             \"direction\":\"down\"}}",
+        )
+        .unwrap();
+        let PlacementMod::EnvironmentScan { direction, target, allowed, max_steps } =
+            parse_placement_mod(&j).unwrap()
+        else {
+            panic!("expected EnvironmentScan");
+        };
+        assert_eq!(direction, ScanDir::Up);
+        assert_eq!(max_steps, 12);
+        assert!(matches!(&allowed, BlockPredicate::MatchingBlocks { blocks, .. } if blocks == &vec!["minecraft:air".to_string()]));
+        assert!(matches!(&*target, BlockPredicate::HasSturdyFace { direction: d, .. } if d == "down"));
+    }
+
+    #[test]
+    fn environment_scan_codec_bounds_honest_reject() {
+        // intRange(1,32) and VERTICAL_CODEC are codec errors in Java — the
+        // parser mirrors them (honest reject, no silent clamp).
+        let base = |dir: &str, steps: i64| {
+            crate::json::parse(&format!(
+                "{{\"type\":\"minecraft:environment_scan\",\"direction_of_search\":\"{dir}\",\
+                 \"max_steps\":{steps},\"target_condition\":{{\"type\":\"minecraft:true\"}}}}"
+            ))
+            .unwrap()
+        };
+        assert!(parse_placement_mod(&base("up", 0)).is_err());
+        assert!(parse_placement_mod(&base("up", 33)).is_err());
+        assert!(parse_placement_mod(&base("north", 8)).is_err());
+        assert!(parse_placement_mod(&base("down", 1)).is_ok());
+        assert!(parse_placement_mod(&base("up", 32)).is_ok());
+    }
+
+    #[test]
+    fn sturdy_face_inside_bounds_eval() {
+        let tag_of = |_: &str| -> Option<Vec<String>> { None };
+        let repl = |_: &str| false;
+        // has_sturdy_face down at the probe position: stone => sturdy,
+        // water => not, unreadable => false (honest).
+        let sf = parse_predicate(
+            &crate::json::parse(
+                "{\"type\":\"minecraft:has_sturdy_face\",\"direction\":\"down\"}",
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        let stone = |_: i32, _: i32, _: i32| -> Option<String> {
+            Some("minecraft:stone".into())
+        };
+        let water = |_: i32, _: i32, _: i32| -> Option<String> {
+            Some("minecraft:water[level=0]".into())
+        };
+        let none = |_: i32, _: i32, _: i32| -> Option<String> { None };
+        assert!(eval_predicate(&sf, 0, 64, 0, &stone, &repl, &tag_of));
+        assert!(!eval_predicate(&sf, 0, 64, 0, &water, &repl, &tag_of));
+        assert!(!eval_predicate(&sf, 0, 64, 0, &none, &repl, &tag_of));
+        // inside_world_bounds offset [0,-5,0]: tests (0,59,0) — readable =>
+        // inside build height; the offset position unreadable => false.
+        let iwb = parse_predicate(
+            &crate::json::parse(
+                "{\"type\":\"minecraft:inside_world_bounds\",\"offset\":[0,-5,0]}",
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        let at = |_: i32, y: i32, _: i32| -> Option<String> {
+            if y >= 0 {
+                Some("minecraft:stone".into())
+            } else {
+                None // below the build height => unreadable
+            }
+        };
+        assert!(eval_predicate(&iwb, 0, 64, 0, &at, &repl, &tag_of)); // 59 readable
+        assert!(eval_predicate(&iwb, 0, 5, 0, &at, &repl, &tag_of)); // 0 readable
+        assert!(!eval_predicate(&iwb, 0, 4, 0, &at, &repl, &tag_of)); // -1 unreadable
+        assert!(!eval_predicate(&iwb, 0, 64, 0, &none, &repl, &tag_of));
     }
 }

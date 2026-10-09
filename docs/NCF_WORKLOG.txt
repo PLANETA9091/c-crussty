@@ -4791,3 +4791,104 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    (3x3-replay по spiral-порядку GoldenDumper).
 ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
 (тик 08:32 — Т38-B/T40; 5-й stale-тик) — первоисточник = этот LOG.
+
+=== 2026-10-09 | аддендум 82: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 3):
+    порты surface_relative_threshold_filter + environment_scan (два самых
+    широких МОДИФИКатор-блокиратора, 54/53 биомов) + nested-предикаты
+    has_sturdy_face/inside_world_bounds; гистограмма очищена от
+    модификатор-блокираторов (раскрыты замаскированные body-блокеры);
+    ценз 80/224 configured (без изм.) + 110->111 placed (+1
+    spore_blossom); 167/167 тестов ===
+
+0) CI-ПОДТВЕРЖДЕНИЕ ПРЕДЫДУЩЕГО КОММИТА (собственный run): run 37867785109
+   (ed1268d, аддендум 81) completed SUCCESS — 33/33 job'ов (~10 мин).
+   Правило «код-commit ждёт свой run» выполнено. Отмечено: API-путь
+   check-runs на этот SHA вернул пусто — статус брался через
+   /actions/runs?head_sha= (с обрезкой префикса github.com/ у REPO —
+   в прошлых сессиях sed-цепочка оставляла его, давая 404).
+
+1) ОРАКУЛ: sandbox-рецикл стёр worldgen-корпус (downloads/wg_extract
+   пуст) — восстановлен из ВЫЖИВШЕГО /home/z/my-project/ci-server/
+   worldgen-extract (полность проверена подсчётом: 258 placed + 224
+   configured + 200 block tags). Decomp_p4 выжил вне репо. Decomp
+   прочитан ПО ИСТОЧНИКАМ (не по памяти): SurfaceRelativeThresholdFilter,
+   EnvironmentScanPlacement, CaveSurface, InsideWorldBoundsPredicate,
+   HasSturdyFacePredicate. База ценза воспроизведена бит-в-бит (git stash
+   -> baseline build -> NCF_P4PROBE_LIST diff): 80/224 + 110/258 на
+   ed1268d.
+
+2) ФАКТЫ ИЗ ДЕКОМПИЛА (1.21.10 CFR):
+   (а) surface_relative_threshold_filter = PlacementFilter: shouldPlace =
+       getHeight(heightmap, x, z) + minInclusive <= y <= +maxInclusive
+       (LONG-арифметика в Java; codec defaults Int.MIN_VALUE /
+       Int.MAX_VALUE, поля optional; heightmap REQUIRED; rng нет).
+       Корпус: glow_lichen (-13), underwater_magma (-2),
+       lake_lava_underground (-5) — все OCEAN_FLOOR_WG, все без min.
+   (б) environment_scan = PlacementModifier (ТРАНСФОРМЕР позиций, не
+       фильтр!): mutable от входной позиции; если !allowed на старте ->
+       пусто; цикл до max_steps: target на текущей -> emit; move(direction);
+       isOutsideBuildHeight -> пусто; !allowed -> BREAK; после цикла
+       финальный test target на текущей позиции => семантика
+       break-then-final-test: первая НЕ-allowed позиция всё равно
+       тестируется как target. direction_of_search = VERTICAL_CODEC
+       (up|down ТОЛЬКО, иное = codec error); max_steps = intRange(1,32)
+       REQUIRED (вне диапазона = codec error, не кламп);
+       allowed_search_condition optional default alwaysTrue(). rng нет.
+   (в) inside_world_bounds: !isOutsideBuildHeight(pos.offset(offset)) —
+       offset optional ZERO (offsetCodec 16).
+   (г) has_sturdy_face: isFaceSturdy(pos.offset(offset), direction) —
+       offset optional ZERO, direction REQUIRED (Direction.CODEC).
+
+3) КОД (этот коммит):
+   (а) features.rs: PlacementMod::SurfaceRelativeThresholdFilter
+       {heightmap, min_inclusive=Int::MIN, max_inclusive=Int::MAX} +
+       PlacementMod::EnvironmentScan {direction: ScanDir, target,
+       allowed, max_steps} + enum ScanDir {Up, Down}; парсеры с ЧЕСТНЫМ
+       reject: не-vertical direction -> Err, max_steps вне 1..=32 -> Err
+       (зеркало codec, без молчаливых клампов).
+   (б) BlockPredicate::HasSturdyFace {offset, direction} +
+       InsideWorldBounds {offset}; eval-arms: sturdy = session-7
+       solid-конвенция («не air/вода/лава»; per-block isFaceSturdy-
+       таблицы = P4-хвост, направление разобрано и сохранено);
+       inside_world_bounds = block_at().is_some() (readable region ==
+       build height — конвенция already задокументирована у block_at).
+   (в) тесты 161->167 (6 новых на ВЕРБАТИМНЫХ формах корпуса:
+       glow_lichen-цепочка (дефолт min=Int::MIN проверен),
+       underwater_magma-цепочка, lake_lava_underground env_scan
+       (allowed-дефолт => True), cave_vines env_scan (allowed air,
+       target sturdy_face down), codec-bounds honest-reject (0/33/north
+       -> Err; 1/32 -> Ok), eval sturdy/inside (stone/water/None,
+       offset-семантика [0,-5,0] с unreadable-границей)).
+
+4) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, corpus ci-server/worldgen-extract, тот же):
+   configured: 80/224 (без изменений — body-типов не добавлялось);
+   placed: 110/258 -> 111/258 (+1: ТОЛЬКО spore_blossom — diff списков
+       NCF_P4PROBE_LIST бит-в-бит; остальные env_scan/srtf-пользователи
+       остаются за body-блокерами: lake, underwater_magma,
+       multiface_growth, random_selector-деревья, disk-stateProvider);
+   parse-провалы placed: 69 -> 69 (Unsupported-модификатор не был
+       parse-fail'ом — счётчик не двигается, честно);
+   биомы fully-supported: 0/65 (без изменений);
+   ГИСТОГРАММА: surface_relative_threshold_filter 54 -> ИСЧЕЗЛА;
+       environment_scan 53 -> ИСЧЕЗЛА; РАСКРЫЛИСЬ замаскированные
+       first-blocker-лейблом body-блокеры: multiface_growth 54 и
+       underwater_magma 54 (биом, заблокированный srtf+body, раньше
+       шёл в srtf-строку). НОВЫЙ ТОП (порядок след. портов):
+       geode 54; monster_room 54; multiface_growth 54;
+       underwater_magma 54; lake 53; rule_based_state_provider-with-
+       rules 53; would_survive (random_patch parse fail) 43;
+       random_selector 36; noise_threshold_count 7;
+       simple_random_selector 6; glowstone_blob 5.
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсеры + eval-arms + тесты + ценз),
+   не worklog-only; гейт-контракты veccheck/stagediff НЕ тронуты
+   (features-пути в гейты не входят, noise/surface/carvers не менялись);
+   eval-конвенции задокументированы в коде с честными P4-хвостами.
+
+6) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — порт monster_room ИЛИ
+   underwater_magma / multiface_growth по декомпилу (топ гистограммы
+   54/54/54/54, все — компактные placement-фичи); после закрытия пары
+   типов — stagediff features-статус на спец-корпусе (3x3-replay по
+   spiral-порядку GoldenDumper).
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+(тик 09:32 — Т38-B/T40; 6-й stale-тик) — первоисточник = этот LOG.
