@@ -5103,3 +5103,90 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 84, собственный run): run 37876441298
 (fbb52c7) completed SUCCESS — 33/33 job'ов (~10 мин). Правило «код-commit
 ждёт свой run» выполнено — тик ЗАВЕРШЁН.
+=== 2026-10-09 | аддендум 85: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 6):
+    порт RuleBasedBlockStateProvider (53 биома — СО-топ с lake; диск-фамилия
+    ждёт именно этот провайдер); ценз 85->87 configured, 117->119 placed
+    (+2: disk_sand, disk_grass configured+placed); 176/176 тестов ===
+
+0) CI-ПОДТВЕРЖДЕНИЕ ПРЕДЫДУЩЕГО КОММИТА (собственный run): run
+   37876441298 (fbb52c7, аддендум 84) completed SUCCESS — 33/33 job'ов
+   (~10 мин); подтверждение внесено docs-коммитом c8fddfb — 0 run'ов
+   (paths-ignore снова проверен в бою). Тик 11:02 — 9-й stale cron
+   (старый gate-P2 текст, Job ID 441690) — НЕ исполнялся; работа по
+   work list п.4 (инкремент 6) из этого LOG.
+
+1) ОРАКУЛ: decomp_p4/decomp/.../feature/stateproviders/
+   RuleBasedBlockStateProvider.java (запись: fallback + List<Rule>;
+   Rule = if_true: BlockPredicate + then: BlockStateProvider; getState —
+   ПЕРВОЕ совпавшее правило выигрывает, иначе fallback); worldgen-корпус
+   /home/z/my-project/ci-server/worldgen-extract цел (258+224+200).
+   Диск-фамилия в корпусе: disk_sand (1 правило), disk_grass (1 правило),
+   disk_clay + disk_gravel (rules: []).
+
+2) ФАКТЫ ИЗ ДЕКОМПИЛА (1.21.10 CFR):
+   (а) RuleBasedBlockStateProvider.CODEC = fallback BlockStateProvider
+       fieldOf (ОБЯЗАТЕЛЬНЫЙ) + rules Rule.CODEC.listOf() fieldOf
+       (ОБЯЗАТЕЛЬНОЕ, но ПУСТОЙ список валиден — disk_clay/disk_gravel);
+   (б) Rule.CODEC = if_true BlockPredicate fieldOf + then
+       BlockStateProvider fieldOf — оба обязательны;
+   (в) семантика getState: итерация правил В ПОРЯДКЕ списка, первый
+       if_true.test(level,pos)=true => then.getState(random,pos), иначе
+       fallback.getState(random,pos); rng — на ВЫБОРЕ состояния (провайдеры),
+       не на обходе правил (нет nextInt/nextFloat на сам dispatch);
+   (г) корпоративные предикаты правил: disk_sand = matching_blocks(air)
+       offset [0,-1,0]; disk_grass = not(any_of(solid@+1y,
+       matching_fluids(water)@+1y)) — все эти предикаты УЖЕ портированы
+       (сессия 7), новые парсить не нужно.
+
+3) КОД (этот коммит):
+   (а) features.rs: НОВЫЙ IR — pub enum StateProvider { Simple(String),
+       RuleBased { fallback: Box<StateProvider>, rules: Vec<(BlockPredicate,
+       StateProvider)> } } + pub fn parse_state_provider (RuleBased-обёртка
+       по наличию "fallback"; оба поля честно REQUIRED; тип-лист
+       simple_state_provider; прочие провайдеры => Err);
+       parse_simple_state_provider СОХРАНЁН как тонкая обёртка для
+       случай-вызовов, где корпус заведомо simple (random_patch to_place,
+       5 провайдеров geode) — RuleBased там остаётся честным
+       Unsupported («rule_based_state_provider with rules»);
+   (б) FeatureDef::Disk: поле state: String -> state_provider:
+       StateProvider; диск-ветка зовёт parse_state_provider НАПРЯМУЮ —
+       disk_sand/disk_grass с правилами теперь ПАРСЯТ-true; хвост
+       выполнения диска (radius sample + betweenClosed обход +
+       per-position getState) задокументирован на варианте;
+   (в) тесты 174->176 (2 новых на verbatim-формах: disk_sand — правило
+       matching_blocks(air)@offset[0,-1,0] -> sandstone над sand-fallback
+       + eval-проверка предиката на стаб-мире и отрицательный target;
+       disk_grass — not(any_of(solid@above, matching_fluids(water)@above))
+       -> grass_block[snowy=false] + 3 eval-проверки (air=true,
+       stone=false, water=false)); диск-тест rules:[] расширен
+       (RuleBased с пустым списком правил + fallback clay).
+
+4) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, corpus тот же, diff списков бит-в-бит):
+   configured: 85/224 -> 87/224 (+2: disk_sand, disk_grass; строка
+       «rule_based_state_provider with rules 0/2» исчезла);
+   placed: 117/258 -> 119/258 (+2: minecraft:disk_sand,
+       minecraft:disk_grass — ЕДИНСТВЕННЫЕ перевёрнутые ключи, ровно как
+       предсказывал список);
+   parse-провалы placed: 69 -> 69 (stderr-списки base/new ИДЕНТИЧНЫ);
+   биомы fully-supported: 0/65 (без изменений — lake 53 / would_survive
+       43 / random_patch-pf 43 остаются универсальными);
+   ГИСТОГРАММА: rule_based_state_provider-with-rules 53 -> ИСЧЕЗЛА.
+       НОВЫЙ ТОП: lake 53 (ЕДИНСТВЕННЫЙ лидер); would_survive 43;
+       random_patch (parse fail) 43; random_selector (parse fail) 36;
+       noise_threshold_count 6 (модификаторный); simple_random_selector
+       (pf) 6; glowstone_blob 5+5; vines 4; fossil/forest_rock/iceberg
+       2-3.
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсер + тесты + ценз), не
+   worklog-only; гейт-контракты veccheck/stagediff НЕ тронуты; хвост
+   выполнения (disk-обход с per-position getState, first-match-wins на
+   реальном уровне) задокументирован и будет проводиться при stagediff
+   features-статусе. Перевёрнутые ключи подтверждены списком
+   PLACED-- -> PLACED OK: ТОЛЬКО disk_sand + disk_grass.
+
+6) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — порт lake (53 биома, ЕДИНСТВЕННЫЙ
+   новый топ: LakeFeature + LakeConfiguration по декомпилу) по декомпилу;
+   затем stagediff features-статус на спец-корпусе (3x3-replay по
+   spiral-порядку GoldenDumper).
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+(тик 11:02 — Т38-B/T40; 9-й stale-тик) — первоисточник = этот LOG.

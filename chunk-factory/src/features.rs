@@ -33,6 +33,13 @@
 //!     geode-private NormalNoise.create(new LegacyRandomSource(seed), -4,
 //!     [1.0]) keyed by the WORLD seed, invSqrt layer radii, crack offsets,
 //!     budding-amethyst FACING/WATERLOGGED writes.
+//!   - RuleBasedBlockStateProvider (inc. 6): the new histogram CO-top (53
+//!     biomes) — the disk family's state_provider {fallback, rules}.
+//!     getState: FIRST rule whose if_true passes wins, else the fallback;
+//!     "rules" is a REQUIRED field but MAY be empty (disk_clay/disk_gravel).
+//!     Opens disk_sand/disk_grass (their rule predicates — matching_blocks
+//!     with offset, not(any_of(solid, matching_fluids)) with offsets — are
+//!     all session-7 predicates).
 //!   - SnowAndFreezeFeature ("freeze_top_layer", inc. 2) — see the
 //!     FeatureDef::FreezeTopLayer doc.
 //!   - SpringFeature ("spring_feature", inc. 2) — DETERMINISTIC, no draws.
@@ -935,13 +942,16 @@ pub enum FeatureDef {
         inner: Box<PlacedFeatureDef>,
     },
     /// DiskConfiguration: "target" is a SINGLE block predicate and the
-    /// state comes from "state_provider" (fallback + rules; vanilla corpus
-    /// shapes are rules: [] + simple fallback state).
+    /// state comes from "state_provider" (inc. 6: FULL RuleBased
+    /// BlockStateProvider — first matching rule wins, else the fallback;
+    /// the rules field is REQUIRED but MAY be empty). Execution tail:
+    /// radius IntProvider sample + betweenClosed disk walk with
+    /// per-position provider getState eval (documented, like Spring).
     Disk {
         half_height: i32,
         radius: IntProvider,
         target: BlockPredicate,
-        state: String,
+        state_provider: StateProvider,
     },
     Kelp,
     Seagrass {
@@ -1210,15 +1220,15 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
             let radius = IntProvider::parse(cfg.get("radius").ok_or("radius")?)?;
             let half = cfg.get("half_height").and_then(|h| h.as_i64()).unwrap_or(0) as i32;
             // DiskConfiguration: target = SINGLE block predicate;
-            // state_provider = {fallback: simple_state_provider, rules}
+            // state_provider = FULL RuleBasedBlockStateProvider (inc. 6)
             let target = parse_predicate(cfg.get("target").ok_or("disk.target")?)?;
             let sp = cfg.get("state_provider").ok_or("disk.state_provider")?;
-            let state = parse_simple_state_provider(sp)?;
+            let state_provider = parse_state_provider(sp)?;
             FeatureDef::Disk {
                 half_height: half,
                 radius,
                 target,
-                state,
+                state_provider,
             }
         }
         "kelp" => FeatureDef::Kelp,
@@ -1570,22 +1580,40 @@ fn expand_rl(s: &str) -> String {
     }
 }
 
-/// BlockStateProvider subset: the DISK provider is RuleBasedBlockStateProvider
-/// {fallback: provider, rules: [...]} — the corpus shapes have rules: [] so
-/// the state always comes from the fallback; non-empty rules => Err (honest
-/// Unsupported). Only simple_state_provider is a proven leaf.
-fn parse_simple_state_provider(j: &Json) -> Result<String, String> {
-    // RuleBased wrapper: descend into "fallback", reject non-empty rules.
-    let j = if let Some(f) = j.get("fallback") {
-        if let Some(Json::Arr(rules)) = j.get("rules") {
-            if !rules.is_empty() {
-                return Err("rule_based_state_provider with rules".into());
+/// BlockStateProvider IR (inc. 6) — RuleBasedBlockStateProvider +
+/// simple_state_provider. CFR RuleBasedBlockStateProvider.getState: the
+/// FIRST rule whose if_true passes at the position wins, otherwise the
+/// fallback; "rules" is a REQUIRED field but MAY be empty (disk_clay /
+/// disk_gravel). Other provider types (noise/forest/...) => Err (honest
+/// Unsupported).
+#[derive(Debug, Clone)]
+pub enum StateProvider {
+    /// simple_state_provider — fixed compact state, no rng draws.
+    Simple(String),
+    RuleBased {
+        fallback: Box<StateProvider>,
+        rules: Vec<(BlockPredicate, StateProvider)>,
+    },
+}
+
+pub fn parse_state_provider(j: &Json) -> Result<StateProvider, String> {
+    // RuleBased wrapper: {fallback: provider, rules: [{if_true, then}, ...]}
+    // — both fields fieldOf (REQUIRED); rules may be [].
+    if let Some(f) = j.get("fallback") {
+        let fallback = Box::new(parse_state_provider(f)?);
+        let mut rules = Vec::new();
+        match j.get("rules").ok_or("rule_based.rules")? {
+            Json::Arr(a) => {
+                for r in a {
+                    let if_true = parse_predicate(r.get("if_true").ok_or("rule.if_true")?)?;
+                    let then = parse_state_provider(r.get("then").ok_or("rule.then")?)?;
+                    rules.push((if_true, then));
+                }
             }
+            _ => return Err("rule_based.rules shape".into()),
         }
-        f
-    } else {
-        j
-    };
+        return Ok(StateProvider::RuleBased { fallback, rules });
+    }
     let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
     let ty = ty.strip_prefix("minecraft:").unwrap_or(ty);
     if ty != "simple_state_provider" {
@@ -1603,10 +1631,21 @@ fn parse_simple_state_provider(j: &Json) -> Result<String, String> {
         }
     }
     props.sort();
-    if props.is_empty() {
-        Ok(expand_rl(name))
+    let state = if props.is_empty() {
+        expand_rl(name)
     } else {
-        Ok(format!("{}[{}]", expand_rl(name), props.join(",")))
+        format!("{}[{}]", expand_rl(name), props.join(","))
+    };
+    Ok(StateProvider::Simple(state))
+}
+
+/// Compact-state leaf for callers that must stay SIMPLE (random_patch
+/// to_place, geode block providers — the corpus shapes there are all
+/// simple; a RuleBased shape there stays an honest Unsupported).
+fn parse_simple_state_provider(j: &Json) -> Result<String, String> {
+    match parse_state_provider(j)? {
+        StateProvider::Simple(s) => Ok(s),
+        StateProvider::RuleBased { .. } => Err("rule_based_state_provider with rules".into()),
     }
 }
 
@@ -1726,11 +1765,159 @@ mod tests {
         };
         assert!(eval_predicate(&target, 0, 0, 0, &at, &repl, &tag_of));
         assert!(!eval_predicate(&target, 5, 5, 5, &at, &repl, &tag_of));
-        let state = parse_simple_state_provider(cfg.get("state_provider").unwrap()).unwrap();
-        assert_eq!(state, "minecraft:clay");
+        // inc. 6: rules:[] parses as RuleBased with an empty rule list.
+        let sp = parse_state_provider(cfg.get("state_provider").unwrap()).unwrap();
+        match &sp {
+            StateProvider::RuleBased { fallback, rules } => {
+                assert!(rules.is_empty());
+                assert!(matches!(
+                    fallback.as_ref(),
+                    StateProvider::Simple(s) if s == "minecraft:clay"
+                ));
+            }
+            _ => panic!("expected RuleBased provider"),
+        }
         // radius uniform parse
         let r = IntProvider::parse(cfg.get("radius").unwrap()).unwrap();
         assert!(matches!(r, IntProvider::Uniform(2, 3)));
+    }
+
+    #[test]
+    fn disk_sand_rule_based_provider_verbatim() {
+        // configured_feature/disk_sand.json — 1 rule: matching_blocks(air)
+        // at offset [0,-1,0] -> sandstone over the sand fallback.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:disk\",\"config\":{\"half_height\":2,\
+             \"radius\":{\"type\":\"minecraft:uniform\",\"max_inclusive\":6,\"min_inclusive\":2},\
+             \"state_provider\":{\"fallback\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:sand\"}},\"rules\":[\
+             {\"if_true\":{\"type\":\"minecraft:matching_blocks\",\
+             \"blocks\":\"minecraft:air\",\"offset\":[0,-1,0]},\
+             \"then\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:sandstone\"}}}]},\
+             \"target\":{\"type\":\"minecraft:matching_blocks\",\"blocks\":[\"minecraft:dirt\",\"minecraft:grass_block\"]}}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::Disk {
+            half_height,
+            radius,
+            target,
+            state_provider,
+        } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected Disk");
+        };
+        assert_eq!(half_height, 2);
+        assert!(matches!(radius, IntProvider::Uniform(2, 6)));
+        let StateProvider::RuleBased { fallback, rules } = &state_provider else {
+            panic!("expected RuleBased provider");
+        };
+        assert_eq!(rules.len(), 1);
+        assert!(matches!(
+            fallback.as_ref(),
+            StateProvider::Simple(s) if s == "minecraft:sand"
+        ));
+        assert!(matches!(
+            rules[0].1,
+            StateProvider::Simple(ref s) if s == "minecraft:sandstone"
+        ));
+        // rule predicate: air at offset (0,-1,0) — eval against a stub
+        // world (the position BELOW the probe is air, everything else sand).
+        let at = |x: i32, y: i32, z: i32| -> Option<String> {
+            if (x, y, z) == (0, -1, 0) {
+                Some("minecraft:air".into())
+            } else {
+                Some("minecraft:sand".into())
+            }
+        };
+        let tag_of = |_: &str| -> Option<Vec<String>> { None };
+        let repl = |_: &str| false;
+        assert!(eval_predicate(&rules[0].0, 0, 0, 0, &at, &repl, &tag_of));
+        // target = dirt|grass_block: the sand stub world must NOT match.
+        assert!(!eval_predicate(&target, 0, 0, 0, &at, &repl, &tag_of));
+    }
+
+    #[test]
+    fn disk_grass_rule_not_any_of_verbatim() {
+        // configured_feature/disk_grass.json — rule if_true =
+        // NOT(ANY_OF(solid above, matching_fluids water above)) ->
+        // grass_block[snowy=false] over the dirt fallback.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:disk\",\"config\":{\"half_height\":2,\
+             \"radius\":{\"type\":\"minecraft:uniform\",\"max_inclusive\":6,\"min_inclusive\":2},\
+             \"state_provider\":{\"fallback\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:dirt\"}},\"rules\":[\
+             {\"if_true\":{\"type\":\"minecraft:not\",\"predicate\":\
+             {\"type\":\"minecraft:any_of\",\"predicates\":[\
+             {\"type\":\"minecraft:solid\",\"offset\":[0,1,0]},\
+             {\"type\":\"minecraft:matching_fluids\",\"fluids\":\"minecraft:water\",\
+             \"offset\":[0,1,0]}]}},\
+             \"then\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:grass_block\",\"Properties\":{\"snowy\":\"false\"}}}}]},\
+             \"target\":{\"type\":\"minecraft:matching_blocks\",\"blocks\":[\"minecraft:dirt\",\"minecraft:mud\"]}}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::Disk { state_provider, .. } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected Disk");
+        };
+        let StateProvider::RuleBased { fallback, rules } = &state_provider else {
+            panic!("expected RuleBased provider");
+        };
+        assert_eq!(rules.len(), 1);
+        assert!(matches!(
+            fallback.as_ref(),
+            StateProvider::Simple(s) if s == "minecraft:dirt"
+        ));
+        assert!(matches!(
+            rules[0].1,
+            StateProvider::Simple(ref s) if s == "minecraft:grass_block[snowy=false]"
+        ));
+        // rule predicate eval: NOT(any_of(solid@above, water@above)) —
+        // true only when the block ABOVE is neither solid nor water.
+        let pred = &rules[0].0;
+        let tag_of = |_: &str| -> Option<Vec<String>> { None };
+        let repl = |_: &str| false;
+        let world = |above: &'static str| {
+            move |x: i32, y: i32, z: i32| -> Option<String> {
+                if (x, y, z) == (0, 1, 0) {
+                    Some(above.to_string())
+                } else {
+                    Some("minecraft:dirt".into())
+                }
+            }
+        };
+        assert!(eval_predicate(
+            pred,
+            0,
+            0,
+            0,
+            &world("minecraft:air"),
+            &repl,
+            &tag_of
+        ));
+        assert!(!eval_predicate(
+            pred,
+            0,
+            0,
+            0,
+            &world("minecraft:stone"),
+            &repl,
+            &tag_of
+        ));
+        assert!(!eval_predicate(
+            pred,
+            0,
+            0,
+            0,
+            &world("minecraft:water"),
+            &repl,
+            &tag_of
+        ));
     }
 
     #[test]
