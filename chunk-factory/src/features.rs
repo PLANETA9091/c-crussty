@@ -1349,6 +1349,35 @@ pub enum FeatureDef {
         fluid: StateProvider,
         barrier: StateProvider,
     },
+    /// FallenTreeFeature (inc. 11) — "minecraft:fallen_tree" (1.21.5+;
+    /// the 5 corpus shapes are fallen_{birch,spruce,oak,super_birch,jungle}
+    /// _tree). FallenTreeConfiguration codec: ALL FOUR fields fieldOf
+    /// (REQUIRED, no orElse defaults): trunk_provider = FULL
+    /// BlockStateProvider path (weighted_state_provider added this inc.),
+    /// log_length = IntProvider.codec(0, 16) — the min/max mirror must sit
+    /// inside the bound (geode-closure semantics; out-of-range = honest
+    /// codec error), stump_decorators + log_decorators =
+    /// TreeDecorator.CODEC.listOf() (REQUIRED, MAY be empty).
+    /// place() ALWAYS returns true. Execution tail (documented honestly,
+    /// like MonsterRoom/Lake): stump at origin (identity modifier, one
+    /// trunk_provider draw), direction = Util.getRandom(HORIZONTAL.faces)
+    /// = ONE nextInt(4); i = log_length.sample(random) - 2; start pos =
+    /// origin.relative(dir, 2 + nextInt(2)) then UP once with up to 6
+    /// mayPlaceOn probes downward (validTreePos = air ||
+    /// REPLACEABLE_BY_TREES + isFaceSturdy below — NO rng); the
+    /// canPlaceEntireFallenLog walk (validTreePos + solid-gap tolerance 2)
+    /// draws NOTHING; placeFallenLog sets i log blocks with axis =
+    /// dir.getAxis() then runs decorators — attached_to_logs iterates log
+    /// positions in Util.shuffledCopy order (Fisher-Yates, len-1 nextInt
+    /// draws), per position ONE Util.getRandom direction draw + ONE
+    /// nextFloat() <= probability gate with the provider draw only AFTER
+    /// the gate; trunk_vine = 4 x nextInt(3) per log pos (W/E/N/S).
+    FallenTree {
+        trunk_provider: StateProvider,
+        log_length: IntProvider,
+        stump_decorators: Vec<TreeDecorator>,
+        log_decorators: Vec<TreeDecorator>,
+    },
     Unsupported(String),
 }
 
@@ -1927,6 +1956,29 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
                 valid_blocks,
             }
         }
+        "fallen_tree" => {
+            let cfg = j.get("config").ok_or("fallen_tree.config")?;
+            // ALL FOUR fields fieldOf (REQUIRED) — a missing key is an
+            // honest codec error, no orElse defaults anywhere.
+            let trunk_provider =
+                parse_state_provider(cfg.get("trunk_provider").ok_or("fallen_tree.trunk_provider")?)?;
+            let log_length =
+                IntProvider::parse(cfg.get("log_length").ok_or("fallen_tree.log_length")?)?;
+            // IntProvider.codec(0, 16): the provider's min/max mirror must
+            // sit inside the bound (same honesty as the geode closures).
+            let (lo, hi) = (log_length.min_value(), log_length.max_value());
+            if lo < 0 || hi > 16 {
+                return Err(format!("fallen_tree log_length 0..=16, got {lo}..{hi}"));
+            }
+            let stump_decorators = parse_tree_decorators(cfg, "stump_decorators")?;
+            let log_decorators = parse_tree_decorators(cfg, "log_decorators")?;
+            FeatureDef::FallenTree {
+                trunk_provider,
+                log_length,
+                stump_decorators,
+                log_decorators,
+            }
+        }
         other => FeatureDef::Unsupported(other.to_string()),
     })
 }
@@ -1962,6 +2014,17 @@ pub enum StateProvider {
         fallback: Box<StateProvider>,
         rules: Vec<(BlockPredicate, StateProvider)>,
     },
+    /// weighted_state_provider (inc. 11) — WeightedStateProvider.CODEC:
+    /// entries = WeightedList.nonEmptyCodec(BlockState.CODEC)
+    /// .comapFlatMap(create).fieldOf("entries") — REQUIRED and the
+    /// nonEmptyList + create() double-check makes EMPTY entries an honest
+    /// codec error ("WeightedStateProvider with no states"); each entry =
+    /// Weighted.codec: data (fieldOf REQUIRED) + weight
+    /// (ExtraCodecs.NON_NEGATIVE_INT fieldOf REQUIRED — 0 is legal at
+    /// runtime, only an IDE warning). Execution tail: getState =
+    /// weightedList.getRandomOrThrow(random) — nextInt(totalWeight) +
+    /// in-order accumulated walk (WeightedListInt semantics, inc. 10).
+    Weighted(Vec<(String, i64)>),
 }
 
 pub fn parse_state_provider(j: &Json) -> Result<StateProvider, String> {
@@ -1984,21 +2047,125 @@ pub fn parse_state_provider(j: &Json) -> Result<StateProvider, String> {
     }
     let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
     let ty = ty.strip_prefix("minecraft:").unwrap_or(ty);
-    if ty != "simple_state_provider" {
-        return Err(format!("unsupported state provider {ty}"));
+    match ty {
+        "simple_state_provider" => {
+            let st = j.get("state").ok_or("state")?;
+            let state = parse_state_name(st)?;
+            Ok(StateProvider::Simple(state))
+        }
+        "weighted_state_provider" => {
+            let entries = j
+                .get("entries")
+                .and_then(|e| e.as_arr())
+                .ok_or("weighted_state_provider.entries")?;
+            if entries.is_empty() {
+                return Err("WeightedStateProvider with no states".into());
+            }
+            let mut items = Vec::new();
+            for e in entries {
+                let st = e.get("data").ok_or("weighted.data")?;
+                let state = parse_state_name(st)?;
+                let weight = e
+                    .get("weight")
+                    .and_then(|w| w.as_i64())
+                    .ok_or("weighted.weight")?;
+                if weight < 0 {
+                    return Err(format!("weighted weight NON_NEGATIVE, got {weight}"));
+                }
+                items.push((state, weight));
+            }
+            Ok(StateProvider::Weighted(items))
+        }
+        other => Err(format!("unsupported state provider {other}")),
     }
-    let st = j.get("state").ok_or("state")?;
-    let state = parse_state_name(st)?;
-    Ok(StateProvider::Simple(state))
+}
+
+/// TreeDecorator IR (inc. 11) — the two corpus shapes of the
+/// fallen_tree decorators; other decorator types are an honest Err.
+#[derive(Debug, Clone)]
+pub enum TreeDecorator {
+    /// attached_to_logs (AttachedToLogsDecorator.CODEC) — probability =
+    /// floatRange(0,1) fieldOf REQUIRED; block_provider =
+    /// BlockStateProvider.CODEC fieldOf REQUIRED (FULL provider path);
+    /// directions = ExtraCodecs.nonEmptyList(Direction.CODEC.listOf())
+    /// fieldOf REQUIRED (empty = codec error; names are the 6 canonical
+    /// Direction enum names). Execution tail documented on
+    /// FeatureDef::FallenTree.
+    AttachedToLogs {
+        probability: f32,
+        block_provider: StateProvider,
+        directions: Vec<String>,
+    },
+    /// trunk_vine (TrunkVineDecorator.CODEC = MapCodec.unit — NO fields).
+    TrunkVine,
+}
+
+fn is_canonical_direction(s: &str) -> bool {
+    matches!(s, "down" | "up" | "north" | "south" | "west" | "east")
+}
+
+fn parse_tree_decorator(j: &Json) -> Result<TreeDecorator, String> {
+    let ty = j
+        .get("type")
+        .and_then(|t| t.as_str())
+        .ok_or("tree decorator type")?;
+    let ty = ty.strip_prefix("minecraft:").unwrap_or(ty);
+    match ty {
+        "trunk_vine" => Ok(TreeDecorator::TrunkVine),
+        "attached_to_logs" => {
+            let probability = j
+                .get("probability")
+                .and_then(|p| p.as_f64())
+                .ok_or("attached_to_logs.probability")?;
+            if !(0.0..=1.0).contains(&probability) {
+                return Err(format!(
+                    "attached_to_logs probability 0..=1, got {probability}"
+                ));
+            }
+            let block_provider = parse_state_provider(
+                j.get("block_provider")
+                    .ok_or("attached_to_logs.block_provider")?,
+            )?;
+            let dirs = j
+                .get("directions")
+                .and_then(|d| d.as_arr())
+                .ok_or("attached_to_logs.directions")?;
+            if dirs.is_empty() {
+                return Err("attached_to_logs directions nonEmptyList".into());
+            }
+            let mut directions = Vec::new();
+            for d in dirs {
+                let s = d.as_str().ok_or("direction name")?;
+                if !is_canonical_direction(s) {
+                    return Err(format!("unknown direction {s}"));
+                }
+                directions.push(s.to_string());
+            }
+            Ok(TreeDecorator::AttachedToLogs {
+                probability: probability as f32,
+                block_provider,
+                directions,
+            })
+        }
+        other => Err(format!("unsupported tree decorator {other}")),
+    }
+}
+
+fn parse_tree_decorators(j: &Json, key: &str) -> Result<Vec<TreeDecorator>, String> {
+    match j.get(key).and_then(|d| d.as_arr()) {
+        Some(arr) => arr.iter().map(parse_tree_decorator).collect(),
+        None => Err(key.to_string()),
+    }
 }
 
 /// Compact-state leaf for callers that must stay SIMPLE (random_patch
 /// to_place, geode block providers — the corpus shapes there are all
-/// simple; a RuleBased shape there stays an honest Unsupported).
+/// simple; RuleBased / Weighted shapes stay an honest Unsupported there).
 fn parse_simple_state_provider(j: &Json) -> Result<String, String> {
     match parse_state_provider(j)? {
         StateProvider::Simple(s) => Ok(s),
         StateProvider::RuleBased { .. } => Err("rule_based_state_provider with rules".into()),
+        StateProvider::Weighted(_) => Err("weighted_state_provider in simple context".into()),
     }
 }
 
@@ -3629,5 +3796,163 @@ mod tests {
         )
         .unwrap();
         assert!(IntProvider::parse(&j8).is_err());
+    }
+
+    #[test]
+    fn fallen_tree_verbatim_birch_and_oak() {
+        // verbatim from configured_feature/fallen_birch_tree.json — the
+        // uniform log_length 5..8, the weighted_state_provider 2:1
+        // red/brown mushroom block_provider, directions ["up"], empty
+        // stump_decorators.
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:fallen_tree\",\"config\":\
+             {\"log_decorators\":[{\"type\":\"minecraft:attached_to_logs\",\
+             \"block_provider\":{\"type\":\"minecraft:weighted_state_provider\",\
+             \"entries\":[{\"data\":{\"Name\":\"minecraft:red_mushroom\"},\"weight\":2},\
+             {\"data\":{\"Name\":\"minecraft:brown_mushroom\"},\"weight\":1}]},\
+             \"directions\":[\"up\"],\"probability\":0.1}],\
+             \"log_length\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":8,\"min_inclusive\":5},\
+             \"stump_decorators\":[],\
+             \"trunk_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:birch_log\",\
+             \"Properties\":{\"axis\":\"y\"}}}}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::FallenTree {
+            trunk_provider,
+            log_length,
+            stump_decorators,
+            log_decorators,
+        } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected FallenTree");
+        };
+        assert_eq!(log_length, IntProvider::Uniform(5, 8));
+        assert!(matches!(
+            &trunk_provider,
+            StateProvider::Simple(s) if s == "minecraft:birch_log[axis=y]"
+        ));
+        assert!(stump_decorators.is_empty());
+        assert_eq!(log_decorators.len(), 1);
+        let TreeDecorator::AttachedToLogs {
+            probability,
+            block_provider,
+            directions,
+        } = &log_decorators[0]
+        else {
+            panic!("expected AttachedToLogs");
+        };
+        assert_eq!(*probability, 0.1);
+        assert_eq!(directions, &vec!["up".to_string()]);
+        assert!(matches!(
+            block_provider,
+            StateProvider::Weighted(ref items)
+                if *items
+                    == vec![
+                        ("minecraft:red_mushroom".to_string(), 2i64),
+                        ("minecraft:brown_mushroom".to_string(), 1i64),
+                    ]
+        ));
+
+        // verbatim from fallen_oak_tree.json — trunk_vine stump decorator
+        // (type-only object, MapCodec.unit) + log_length 4..7.
+        let j2 = crate::json::parse(
+            "{\"type\":\"minecraft:fallen_tree\",\"config\":\
+             {\"log_decorators\":[],\"log_length\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":7,\"min_inclusive\":4},\
+             \"stump_decorators\":[{\"type\":\"minecraft:trunk_vine\"}],\
+             \"trunk_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:oak_log\",\
+             \"Properties\":{\"axis\":\"y\"}}}}}",
+        )
+        .unwrap();
+        let FeatureDef::FallenTree {
+            log_length: ll2,
+            stump_decorators: sd2,
+            ..
+        } = parse_configured_def(&j2, "fallen_tree").unwrap()
+        else {
+            panic!("expected FallenTree oak");
+        };
+        assert_eq!(ll2, IntProvider::Uniform(4, 7));
+        assert_eq!(sd2.len(), 1);
+        assert!(matches!(sd2[0], TreeDecorator::TrunkVine));
+    }
+
+    #[test]
+    fn fallen_tree_honest_codec_errors() {
+        // IntProvider.codec(0, 16): a log_length whose mirror leaves the
+        // bound is an honest codec error (uniform 0..17).
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:fallen_tree\",\"config\":\
+             {\"log_decorators\":[],\"log_length\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":17,\"min_inclusive\":0},\"stump_decorators\":[],\
+             \"trunk_provider\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:oak_log\"}}}}",
+        )
+        .unwrap();
+        assert!(parse_configured_def(&j, "fallen_tree").is_err());
+        // stump_decorators fieldOf REQUIRED — a missing key = codec error.
+        let j2 = crate::json::parse(
+            "{\"type\":\"minecraft:fallen_tree\",\"config\":\
+             {\"log_decorators\":[],\"log_length\":{\"type\":\"minecraft:uniform\",\
+             \"max_inclusive\":7,\"min_inclusive\":4},\"trunk_provider\":\
+             {\"type\":\"minecraft:simple_state_provider\",\"state\":\
+             {\"Name\":\"minecraft:oak_log\"}}}}",
+        )
+        .unwrap();
+        assert!(parse_configured_def(&j2, "fallen_tree").is_err());
+        // attached_to_logs: probability floatRange(0,1), directions
+        // nonEmptyList, weight NON_NEGATIVE — each an honest error.
+        let mk = |inner: &str| {
+            crate::json::parse(&format!(
+                "{{\"type\":\"minecraft:fallen_tree\",\"config\":\
+                 {{\"log_decorators\":[{inner}],\"log_length\":\
+                 {{\"type\":\"minecraft:uniform\",\"max_inclusive\":7,\
+                 \"min_inclusive\":4}},\"stump_decorators\":[],\
+                 \"trunk_provider\":{{\"type\":\"minecraft:simple_state_provider\",\
+                 \"state\":{{\"Name\":\"minecraft:oak_log\"}}}}}}}}"
+            ))
+            .unwrap()
+        };
+        assert!(parse_configured_def(
+            &mk("{\"type\":\"minecraft:attached_to_logs\",\"probability\":1.5,\
+                 \"block_provider\":{\"type\":\"minecraft:weighted_state_provider\",\
+                 \"entries\":[{\"data\":{\"Name\":\"minecraft:vine\"},\"weight\":1}]},\
+                 \"directions\":[\"up\"]}"),
+            "fallen_tree",
+        )
+        .is_err());
+        assert!(parse_configured_def(
+            &mk("{\"type\":\"minecraft:attached_to_logs\",\"probability\":0.1,\
+                 \"block_provider\":{\"type\":\"minecraft:weighted_state_provider\",\
+                 \"entries\":[{\"data\":{\"Name\":\"minecraft:vine\"},\"weight\":1}]},\
+                 \"directions\":[]}"),
+            "fallen_tree",
+        )
+        .is_err());
+        assert!(parse_configured_def(
+            &mk("{\"type\":\"minecraft:attached_to_logs\",\"probability\":0.1,\
+                 \"block_provider\":{\"type\":\"minecraft:weighted_state_provider\",\
+                 \"entries\":[{\"data\":{\"Name\":\"minecraft:vine\"},\"weight\":-1}]},\
+                 \"directions\":[\"up\"]}"),
+            "fallen_tree",
+        )
+        .is_err());
+        // empty weighted entries = "WeightedStateProvider with no states".
+        let j3 = crate::json::parse(
+            "{\"type\":\"minecraft:weighted_state_provider\",\"entries\":[]}",
+        )
+        .unwrap();
+        assert!(parse_state_provider(&j3).is_err());
+        // an unknown tree decorator type stays an honest error.
+        assert!(parse_configured_def(
+            &mk("{\"type\":\"minecraft:leave_vine\"}"),
+            "fallen_tree",
+        )
+        .is_err());
     }
 }

@@ -5626,3 +5626,116 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 89, собственный run): run 37895502588
 (e255588) completed SUCCESS. Правило «код-commit ждёт свой run»
 выполнено — тик ЗАВЕРШЁН.
+
+
+=== 2026-10-09 | аддендум 90: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 11):
+    семейство деревьев, шаг 1 — fallen_tree (FallenTreeFeature +
+    FallenTreeConfiguration + TreeDecorator attached_to_logs/trunk_vine +
+    weighted_state_provider); configured 113 -> 118, placed 130 -> 135;
+    гистограмма: fallen_tree 17 ИСЧЕЗ, head = tree 15; 186/186 ===
+
+0) САНДБОКС: fetch+reset -> HEAD 988af60 (аддендум 89, подтверждён).
+   cargo переустановлен (4-я рекализация подряд); корпус и decomp_p4
+   целы. База-ценз = аддендум 89, воспроизведён ДО правок бит-в-бит
+   (113/224, 130/258, 9/65, pf 0, decor-seed probe идентичен).
+
+1) ОРАКУЛ (decomp_p4, 1.21.10):
+   (а) FallenTreeConfiguration.CODEC — ВСЕ ЧЕТЫРЕ поля fieldOf
+       (REQUIRED, без orElse): trunk_provider (BlockStateProvider.CODEC),
+       log_length (IntProvider.codec(0, 16) — зеркало min/max обязано
+       сидеть в границе), stump_decorators + log_decorators
+       (TreeDecorator.CODEC.listOf() — пустой список ЛЕГАЛЕН);
+   (б) FallenTreeFeature.place ВСЕГДА true; хвост исполнения: пень в
+       origin (identity, одна выдача провайдера), направление =
+       Util.getRandom(HORIZONTAL.faces) = ОДИН nextInt(4), i =
+       log_length.sample - 2, старт = origin.relative(dir, 2 +
+       nextInt(2)), затем UP + до 6 проб mayPlaceOn вниз (без rng);
+       canPlaceEntireFallenLog (validTreePos = air ||
+       REPLACEABLE_BY_TREES, зазор над твёрдым <= 2) НЕ тянет rng;
+       placeFallenLog ставит i брёвен с axis = dir.getAxis();
+   (в) AttachedToLogsDecorator.CODEC: probability floatRange(0,1)
+       fieldOf, block_provider BlockStateProvider.CODEC fieldOf,
+       directions nonEmptyList(Direction.CODEC.listOf()) fieldOf
+       (пустой = ошибка кодека; имена — 6 канонических). place: логи в
+       порядке Util.shuffledCopy (Fisher-Yates, len-1 nextInt), на
+       позицию: ОДИН Util.getRandom по directions + nextFloat() <=
+       probability (выдача провайдера ТОЛЬКО после гейта) + isAir;
+   (г) TrunkVineDecorator.CODEC = MapCodec.unit (полей НЕТ); place: на
+       позицию 4 x nextInt(3) (W/E/N/S), лоза при >0 и воздухе;
+   (д) WeightedStateProvider.CODEC: entries =
+       WeightedList.nonEmptyCodec(BlockState.CODEC).comapFlatMap
+       .fieldOf — REQUIRED, ПУСТОЙ entries = ошибка кодека (двойная
+       проверка nonEmptyList + create()); элемент Weighted.codec: data
+       fieldOf + weight NON_NEGATIVE_INT fieldOf REQUIRED (0 легален,
+       только IDE-предупреждение); getState = getRandomOrThrow =
+       nextInt(totalWeight) + обход накопленных весов ПО ПОРЯДКУ.
+
+2) КОД (этот коммит):
+   (а) FeatureDef::FallenTree {trunk_provider, log_length,
+       stump_decorators, log_decorators} + парсер по кодеку (все поля
+       REQUIRED, honest Err; граница log_length 0..=16 через зеркала
+       min/max — геод-семантика); хвост исполнения задокументирован в
+       доке варианта (MonsterRoom/Lake-прецедент);
+   (б) StateProvider::Weighted(Vec<(state, weight)>) — новая рука
+       парсера provider'ов (weighted_state_provider; до этого — честный
+       Err "unsupported state provider"); пустой entries = Err, weight
+       < 0 = Err;
+   (в) TreeDecorator IR: AttachedToLogs {probability, block_provider,
+       directions} + TrunkVine; неизвестный тип декоратора, неизвестное
+       направление, пустой directions, probability вне 0..1 — честные
+       Err; parse_tree_decorators (fieldOf REQUIRED, список может быть
+       пустым);
+   (г) parse_simple_state_provider: Weighted в простом контексте =
+       честный Err "weighted_state_provider in simple context"
+       (исчерпывающий match);
+   (д) тесты 184 -> 186 (fallen_tree_verbatim_birch_and_oak — verbatim
+       fallen_birch_tree.json: uniform 5..8, weighted 2:1 red/brown
+       mushroom, directions ["up"], пустой stump + verbatim
+       fallen_oak_tree.json: trunk_vine в stump_decorators, uniform
+       4..7; fallen_tree_honest_codec_errors — log_length 0..17 Err,
+       отсутствующий stump_decorators Err, probability 1.5 Err, пустой
+       directions Err, weight -1 Err, пустой weighted entries Err,
+       неизвестный декоратор Err).
+
+3) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, корпус тот же, diff списков бит-в-бит;
+   база = аддендум 89):
+   configured: 113/224 -> 118/224 (+5: ВСЕ ПЯТЬ fallen_tree —
+       "unsupported type fallen_tree 0/5" ИСЧЕЗЛА);
+   placed: 130/258 -> 135/258 (+5: ровно chains fallen_{birch,spruce,
+       oak,super_birch,jungle}_tree — diff PLACED-списка 10 строк,
+       остальное бит-в-бит);
+   честная переМЕТКА (НЕ раздув): moss_vegetation + pale_moss_
+       vegetation (simple_block с weighted to_place) "unsupported
+       state provider weighted_state_provider" -> "weighted_state_
+       provider in simple context" — 0/2 -> 0/2, вердикты НЕ тронуты;
+   биомы fully-supported: 9/65 (множество имён то же — порядок печати
+       HashMap-ротация); семейство tree (TreeFeature/TreeConfiguration)
+       держит вердикты честно;
+   parse-провалы placed: 0 -> 0 (stderr пуст);
+   ГИСТОГРАММА: "unsupported type fallen_tree blocks 17/65" ИСЧЕЗЛА;
+       head СДВИНУЛСЯ: "unsupported type tree blocks 15/65" (было 10 —
+       +5 биомов переМЕТИЛИСЬ через дефолты селекторов); дальше без
+       сдвигов: noise_threshold_count 7, simple_random_selector 7,
+       glowstone_blob 5, vines 4, count_on_every_layer 3, fossil 3,
+       по 2: bamboo/blue_ice/forest_rock/iceberg/vegetation_patch,
+       по 1: fixed_placement/basalt_pillar/block_column/chorus_plant;
+   decor-seed probe: population=351934174475927443 first_draw=12 —
+       идентичен базе.
+
+4) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — семейство деревьев, шаг 2: tree
+   (10 -> теперь head гистограммы: 15 биомов) — TreeFeature +
+   TreeConfiguration (trunk/foliage placers, minimum_size, decorators);
+   ПОРЯДОК ПОРТА: минимум для вердиктов (trees_birch-цепочка:
+   StraightTrunkPlacer + BlobFoliagePlacer + beehive/attached_to_leaves
+   декораторы уже частично в IR) с резкой на подынкременты; затем
+   noise_threshold_count (7) и simple_random_selector (7); затем
+   stagediff features-статус на спец-корпусе (3x3-replay spiral
+   GoldenDumper).
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсеры + тесты + ценз), не
+   worklog-only; гейт-контракты veccheck/stagediff НЕ тронуты; ценз НЕ
+   раздут: +5/+5 ровно по fallen-цепочкам (diff списков бит-в-бит),
+   биомы честно не двинулись, переМЕТКА 0/2 без смены вердиктов; хвост
+   исполнения FallenTree задокументирован, не замолчан.
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2
+  текст (тик 15:02 — Т38-B/T40; 15-й stale-тик) — первоисточник = этот LOG.
