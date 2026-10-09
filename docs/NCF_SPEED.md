@@ -92,6 +92,21 @@ names make each memcmp reject a few cycles. The next surface lever is inside
 rule.apply itself (worklist S4: intern_canonical per-hit allocations,
 Cond::BiomeIs String compares — probe the inner split FIRST, R5).
 
+S2B probe (2026-10-09, NCF_S2B_PROBE=1, cfg(ncf_profile), S4 inner split; two
+runs, counts bit-identical, timings within 1%): the rule-hit path per chunk —
+try (rule walk, BiomeIs nested) 5.54/5.51 ms, intern_canonical 4.65/4.62,
+set_block 0.61/0.62; biomeis nested 2.94/2.92 ms over 21,021 epoch
+misses/chunk; intern_calls = 16,974/chunk = set_blocks (intern runs per hit).
+Probe-build clock-pair overhead: ~2 clock reads per probe site (~190k
+reads/chunk) inflate every slice — consistent with S2 rule nested 8.86 ->
+14.11 (+5.25 ms) on the same corpus; absolute slices are UPPER BOUNDS, the
+ranking is robust: intern_canonical per hit (BlockStateDef::parse + canonical
+format! + HashMap<String,u32>) is the TOP inner cost, Cond::BiomeIs String
+compares second, set_block cheap. S4 HYP CONFIRMED by counter (R5 satisfied);
+fix direction = allocation-free canonical lookup (prop-less states, intern on
+miss) + a rule-result memo where Java reuses constant states; S4 target
+surface <= 6.5 ms stands.
+
 ## Vanilla Java warm reference (P0.1, measured)
 
 jcmd+JFR shares x cpu_burst; Purpur 1.21.10-2535, seed 3053459, burst 128

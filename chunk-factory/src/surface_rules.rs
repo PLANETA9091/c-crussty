@@ -882,13 +882,21 @@ impl Cond {
     fn test(&self, ctx: &mut SurfaceContext, chunk: &ChunkColumns) -> bool {
         match self {
             Cond::BiomeIs { biomes, cache } => {
+                #[cfg(ncf_profile)]
+                let prof_bi = std::time::Instant::now();
                 let c = cache.get();
+                #[cfg(ncf_profile)]
+                let bi_miss = c.epoch != ctx.last_update_y;
                 if c.epoch == ctx.last_update_y {
+                    #[cfg(ncf_profile)]
+                    s2b_biomeis_tick(prof_bi, bi_miss);
                     return c.value;
                 }
                 ctx.ensure_biome();
                 let v = ctx.biome.as_deref().map(|b| biomes.iter().any(|s| s == b)).unwrap_or(false);
                 cache.set(LazyCache { epoch: ctx.last_update_y, value: v });
+                #[cfg(ncf_profile)]
+                s2b_biomeis_tick(prof_bi, bi_miss);
                 v
             }
             Cond::StoneDepth { offset, add_surface_depth, secondary_depth_range, ceiling, cache } => {
@@ -1076,6 +1084,39 @@ pub static S2_TRY_APPLIES: std::sync::atomic::AtomicU64 = std::sync::atomic::Ato
 #[cfg(ncf_profile)]
 pub static S2_SET_BLOCKS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
+/// S2B probe (S4 inner split, standing order R5, cfg(ncf_profile) only):
+/// the rule-HIT path split — try_apply (rule walk incl. Cond::BiomeIs) vs
+/// intern_canonical (BlockStateDef::parse + canonical + HashMap lookup) vs
+/// set_block — plus Cond::BiomeIs nanos and epoch-miss counts. Answers the
+/// S4 HYP before any fix: intern_canonical-per-hit vs BiomeIs String compares.
+/// Default builds carry ZERO of this code. Sampled by `bench ... ledger`
+/// under NCF_S2B_PROBE=1.
+#[cfg(ncf_profile)]
+pub static S2B_NANOS_TRY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2B_NANOS_INTERN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2B_NANOS_SET: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2B_INTERN_CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2B_BIOMEIS_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static S2B_BIOMEIS_MISS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// Fold one Cond::BiomeIs evaluation into the S2B probe counters.
+#[cfg(ncf_profile)]
+#[inline]
+fn s2b_biomeis_tick(t: std::time::Instant, miss: bool) {
+    S2B_BIOMEIS_NANOS.fetch_add(
+        t.elapsed().as_nanos() as u64,
+        std::sync::atomic::Ordering::Relaxed,
+    );
+    if miss {
+        S2B_BIOMEIS_MISS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
 /// SurfaceSystem.buildSurface — full column walk. `probe_biome` semantics:
 /// biomeManager.getBiome(pos.set(x, useLegacy ? 0 : height+1, z)).
 #[allow(clippy::too_many_arguments)]
@@ -1175,11 +1216,37 @@ pub fn build_surface(
                 if block == default_block {
                     #[cfg(ncf_profile)]
                     S2_TRY_APPLIES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                    if let Some(new_state) = rule.try_apply(ctx, chunk) {
+                    #[cfg(ncf_profile)]
+                    let prof_t0 = std::time::Instant::now();
+                    let hit = rule.try_apply(ctx, chunk);
+                    #[cfg(ncf_profile)]
+                    S2B_NANOS_TRY.fetch_add(
+                        prof_t0.elapsed().as_nanos() as u64,
+                        std::sync::atomic::Ordering::Relaxed,
+                    );
+                    if let Some(new_state) = hit {
+                        #[cfg(ncf_profile)]
+                        let prof_i0 = std::time::Instant::now();
                         let id = chunk.chunk.state_table.intern_canonical(&new_state);
+                        #[cfg(ncf_profile)]
+                        {
+                            S2B_NANOS_INTERN.fetch_add(
+                                prof_i0.elapsed().as_nanos() as u64,
+                                std::sync::atomic::Ordering::Relaxed,
+                            );
+                            S2B_INTERN_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                        }
+                        #[cfg(ncf_profile)]
+                        let prof_s0 = std::time::Instant::now();
                         chunk.set_block(x, y, z, id);
                         #[cfg(ncf_profile)]
-                        S2_SET_BLOCKS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                        {
+                            S2B_NANOS_SET.fetch_add(
+                                prof_s0.elapsed().as_nanos() as u64,
+                                std::sync::atomic::Ordering::Relaxed,
+                            );
+                            S2_SET_BLOCKS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                        }
                     }
                 }
                 #[cfg(ncf_profile)]

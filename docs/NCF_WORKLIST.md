@@ -49,6 +49,9 @@ S2 probe 2026-10-09: the per-column vote itself is only 0.35 ms — S3's real
 prize is the biome STRING work inside Cond::BiomeIs evals (29,976 try_apply
 runs/chunk, each may String-compare ctx.biome): that lives INSIDE rule.apply
 (see S4). Re-scope after the S4 inner split.
+S4 probe 2026-10-09 (NCF_S2B): BiomeIs nested = 2.94/2.92 ms over 21,021
+epoch misses/chunk (vote 0.35 incl.) — SECOND place after S4's intern 4.65.
+S3 keeps its u16 scope but runs AFTER the S4 fix; re-profile then.
 After S1-S4 re-profile and write the next 3 surface items.
 
 ## N1 [NOISE 19.0 ms -> <= 8.27] [ ]
@@ -85,17 +88,18 @@ biomes) -> fancy_trunk_placer (7) -> glowstone_blob (5) / vines (4) ->
 stagediff features-status on the special corpus (3x3-replay spiral
 GoldenDumper).
 
-## S4 [SURFACE, rule.apply internals] [ ]
+## S4 [SURFACE, rule.apply internals] [~]
 rule.apply is ~78% of the 8.5 ms surface stage (S2 probe 2026-10-09: rule
 nested 8.86 of build 11.39 in the counter-instrumented build; clean stage
 8.46-8.58). try_apply 29,976/chunk, set_block 16,974/chunk.
-HYP: intern_canonical per rule hit (BlockStateDef::parse + canonical()
-String format! + HashMap<String,u32> alloc path x 16,974 hits/chunk) is the
-top inner cost; Cond::BiomeIs String compares second.
-Probe first (R5): extend the S2 probe with NCF_S2B counters — wrap
-intern_canonical vs the rule walk vs set_block inside try_apply BEFORE any
-fix.
-Fix direction (only if proven): allocation-free canonical lookup for
-prop-less states (first-char/len dispatch, intern on miss), and a
+PROBE DONE (2026-10-09, NCF_S2B, R5 satisfied; x2 runs counts bit-identical,
+timings within 1%; slices are upper bounds — probe clock-pair overhead ~190k
+reads/chunk, rule nested 8.86 -> 14.11 on the same corpus): try 5.54/5.51,
+intern 4.65/4.62, set 0.61/0.62 ms/chunk; biomeis nested 2.94/2.92 over
+21,021 misses; intern_calls 16,974 = set_blocks. HYP CONFIRMED:
+intern_canonical per hit is the TOP inner cost, BiomeIs String compares
+second, set_block cheap. Evidence: NCF_SPEED.md S2B probe paragraph.
+Fix (next step, code proven by the counter): allocation-free canonical
+lookup for prop-less states (first-char/len dispatch, intern on miss), and a
 rule-result memo where Java reuses constant states.
 Target: surface <= 6.5 ms.

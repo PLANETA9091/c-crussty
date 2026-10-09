@@ -72,6 +72,16 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         chunk_factory::surface_rules::S2_TRY_APPLIES.load(std::sync::atomic::Ordering::Relaxed),
         chunk_factory::surface_rules::S2_SET_BLOCKS.load(std::sync::atomic::Ordering::Relaxed),
     );
+    // S2B probe snapshot (after warmup, before the corpus)
+    #[cfg(ncf_profile)]
+    let s2b_before = (
+        chunk_factory::surface_rules::S2B_NANOS_TRY.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2B_NANOS_INTERN.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2B_NANOS_SET.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2B_INTERN_CALLS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2B_BIOMEIS_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::surface_rules::S2B_BIOMEIS_MISS.load(std::sync::atomic::Ordering::Relaxed),
+    );
 
     let mut acc = [0f64; 4]; // noise, surface, carvers, serialization
     let mut n = 0usize;
@@ -150,6 +160,26 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
             (g(&s::S2_STONE_CALLS, c_stone)) / (n as u64).max(1),
             (g(&s::S2_TRY_APPLIES, c_try)) / (n as u64).max(1),
             (g(&s::S2_SET_BLOCKS, c_set)) / (n as u64).max(1),
+        );
+    }
+    // S2B probe (standing order R5, S4 inner split): rule-hit path nanos.
+    #[cfg(ncf_profile)]
+    if std::env::var("NCF_S2B_PROBE").is_ok() {
+        use std::sync::atomic::Ordering::Relaxed as R;
+        use chunk_factory::surface_rules as s;
+        let (p_try, p_intern, p_set, c_intern, p_bis, c_miss) = s2b_before;
+        let g = |a: &std::sync::atomic::AtomicU64, b: u64| a.load(R) - b;
+        let ms = |a: u64| a as f64 / n as f64 / 1e6;
+        let t = ms(g(&s::S2B_NANOS_TRY, p_try));
+        let i = ms(g(&s::S2B_NANOS_INTERN, p_intern));
+        let st = ms(g(&s::S2B_NANOS_SET, p_set));
+        let bis = ms(g(&s::S2B_BIOMEIS_NANOS, p_bis));
+        eprintln!(
+            "[S2B-probe] hit-path split ms/chunk: try={t:.3} intern={i:.3} set={st:.3} \
+             (sum={:.3}) | biomeis nested={bis:.3} | counts/chunk: intern_calls={} biomeis_miss={}",
+            t + i + st,
+            g(&s::S2B_INTERN_CALLS, c_intern) / (n as u64).max(1),
+            g(&s::S2B_BIOMEIS_MISS, c_miss) / (n as u64).max(1),
         );
     }
     let ported_total: f64 = per.iter().sum();

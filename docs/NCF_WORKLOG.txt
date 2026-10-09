@@ -5427,3 +5427,29 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
    этот тик S2 НЕ трогает (анти-дубликат). Первый открытый без владельца
    после S2 = S3 (u16 биом) или N1-проба (perlin vs tree-walk) — решать
    по WORKLIST на момент следующего тика.
+
+
+=== 2026-10-09 | аддендум 99: standing order Job 446825 — S4 ПРОБА (NCF_S2B):
+    intern_canonical per hit = TOP inner cost, S4 HYP ПОДТВЕРЖДЕНА счётчиком ===
+
+0) САНДБОКС: fetch+ff -> 65e990b; cargo переустановлен (rustup minimal);
+   ci-server/worldgen-extract собран jar-fresh = 2452 файла. 3 beard-провала
+   в cargo test были НЕ усталостью экстракта, а ОТСУТСТВИЕМ tags/worldgen
+   (биом-теги #has_structure для structure-гейта; протокол ci_gate_p2.sh) —
+   после ре-экстракта 197/197 зелёные.
+
+1) КОД (этот коммит): S2B-проба под cfg(ncf_profile) — сплит hit-пути
+   (try/intern/set) + наносекунды/промахи BiomeIs; bench.rs печатает при
+   NCF_S2B_PROBE=1. cfg-off сборка чиста (нуль пробного кода в дефолте).
+
+2) ИЗМЕРЕНО (ledger 169 чанков s=3053459, x2, счётчики бит-в-бит, dt<1%):
+   try 5.54/5.51, intern 4.65/4.62, set 0.61/0.62 мс/чанк; biomeis nested
+   2.94/2.92 на 21,021 промахе/чанк; intern_calls 16,974 = set_blocks.
+   Накладка clock-пар ~190k чтений/чанк (rule nested 8.86 -> 14.11): срезы —
+   верхние границы, РАНГ устойчив: intern_canonical TOP, BiomeIs ВТОРАЯ,
+   set дёшев. Доказательство: NCF_SPEED.md абзац S2B.
+
+3) NEXT (S4-фикс, R5 закрыт): allocation-free canonical lookup для
+   prop-less состояний + intern-on-miss; rule-result memo для констант.
+   Таргет surface <= 6.5. S3 открыта, пере-скоуплена (её приз u16 = срез
+   2.9 мс BiomeIs, второе место — после S4).
