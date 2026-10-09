@@ -40,6 +40,15 @@
 //!     Opens disk_sand/disk_grass (their rule predicates — matching_blocks
 //!     with offset, not(any_of(solid, matching_fluids)) with offsets — are
 //!     all session-7 predicates).
+//!   - LakeFeature (inc. 7): the ONLY remaining histogram top (53 biomes,
+//!     lake_lava_surface + lake_lava_underground placed chains). Codec:
+//!     LakeFeature.Configuration — fluid + barrier, BOTH fieldOf
+//!     (REQUIRED) over BlockStateProvider.CODEC (a rule_based shape
+//!     parses via the full inc.-6 provider path); no other fields, no
+//!     defaults. The class is @Deprecated but still registered
+//!     ("minecraft:lake"). Execution tail documented on the variant
+//!     (16x16x8 ellipsoid flags, CAVE_AIR upper half, barrier layer,
+//!     freeze pass).
 //!   - SnowAndFreezeFeature ("freeze_top_layer", inc. 2) — see the
 //!     FeatureDef::FreezeTopLayer doc.
 //!   - SpringFeature ("spring_feature", inc. 2) — DETERMINISTIC, no draws.
@@ -1062,6 +1071,28 @@ pub enum FeatureDef {
         noise_multiplier: f32,
         invalid_blocks_threshold: i32,
     },
+    /// LakeFeature (inc. 7) — "minecraft:lake" (lake_lava.json is the only
+    /// corpus shape; the class is @Deprecated but still registered).
+    /// Codec mirror: fluid + barrier, BOTH fieldOf (REQUIRED) over
+    /// BlockStateProvider.CODEC (rule_based shapes parse via the full
+    /// inc.-6 provider path). No optional fields, no defaults — a missing
+    /// key is an honest codec error. Execution tail (documented honestly):
+    /// origin.y <= minWorldY+4 => false, then origin.below(4); an rng
+    /// ellipsoid blob fills flags[16x16x8] over nextInt(4)+4 iterations
+    /// (radii nextDouble()*6+3 / *4+2 / *6+3, centers clamped inside
+    /// 1+r/2 .. 15-r/2); boundary checks reject liquid in the UPPER half
+    /// and non-solid non-fluid in the LOWER; placement pass uses
+    /// canReplaceBlock = !FEATURES_CANNOT_REPLACE with the upper half set
+    /// to CAVE_AIR (+ scheduleTick + markAboveForPostProcessing) and the
+    /// lower half to the fluid state; the barrier pass (non-air barrier
+    /// state) replaces solid cells except LAVA_POOL_STONE_CANNOT_REPLACE
+    /// with a nextInt(2) skip at y>=4; the freeze pass puts ICE on the
+    /// y=4 plane when the fluid carries FluidTags.WATER and the biome
+    /// shouldFreeze. Wired at execution like the Spring FluidState pin.
+    Lake {
+        fluid: StateProvider,
+        barrier: StateProvider,
+    },
     Unsupported(String),
 }
 
@@ -1230,6 +1261,16 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
                 target,
                 state_provider,
             }
+        }
+        "lake" => {
+            let cfg = j.get("config").ok_or("lake.config")?;
+            // LakeFeature.Configuration (CFR): fluid + barrier — BOTH
+            // fieldOf (REQUIRED, no orElse defaults); the field codec is
+            // BlockStateProvider.CODEC so a rule_based shape goes through
+            // the FULL inc.-6 provider path (not the simple-only wrapper).
+            let fluid = parse_state_provider(cfg.get("fluid").ok_or("lake.fluid")?)?;
+            let barrier = parse_state_provider(cfg.get("barrier").ok_or("lake.barrier")?)?;
+            FeatureDef::Lake { fluid, barrier }
         }
         "kelp" => FeatureDef::Kelp,
         "seagrass" => FeatureDef::Seagrass {
@@ -2833,5 +2874,100 @@ mod tests {
         )
         .unwrap();
         assert!(parse_configured_def(&j, short).is_err());
+    }
+
+    #[test]
+    fn lake_lava_verbatim() {
+        // configured_feature/lake_lava.json — the ONLY corpus lake shape:
+        // fluid = lava[level=0], barrier = stone (both simple_state_provider).
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:lake\",\"config\":{\"barrier\":\
+             {\"type\":\"minecraft:simple_state_provider\",\"state\":{\"Name\":\"minecraft:stone\"}},\
+             \"fluid\":{\"type\":\"minecraft:simple_state_provider\",\"state\":\
+             {\"Name\":\"minecraft:lava\",\"Properties\":{\"level\":\"0\"}}}}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::Lake { fluid, barrier } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected Lake");
+        };
+        assert!(matches!(
+            fluid,
+            StateProvider::Simple(ref s) if s == "minecraft:lava[level=0]"
+        ));
+        assert!(matches!(
+            barrier,
+            StateProvider::Simple(ref s) if s == "minecraft:stone"
+        ));
+    }
+
+    #[test]
+    fn lake_codec_required_fields_and_rule_based_path() {
+        // BOTH fields are fieldOf (REQUIRED): a missing key = honest codec
+        // error, no orElse defaults anywhere in LakeFeature.Configuration.
+        let mk = |inner: &str| {
+            crate::json::parse(&format!(
+                "{{\"type\":\"minecraft:lake\",\"config\":{inner}}}"
+            ))
+            .unwrap()
+        };
+        // fluid missing.
+        let j = mk(
+            "{\"barrier\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:stone\"}}}",
+        );
+        assert!(parse_configured_def(&j, "lake").is_err());
+        // barrier missing.
+        let j = mk(
+            "{\"fluid\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:water\"}}}",
+        );
+        assert!(parse_configured_def(&j, "lake").is_err());
+        // config itself missing.
+        let j = crate::json::parse("{\"type\":\"minecraft:lake\"}").unwrap();
+        assert!(parse_configured_def(&j, "lake").is_err());
+        // The field codec is BlockStateProvider.CODEC: a rule_based fluid
+        // parses through the FULL inc.-6 provider path (first rule wins,
+        // else fallback) — the same behavior RuleBasedBlockStateProvider
+        // gives the disk family.
+        let j = mk(
+            "{\"fluid\":{\"fallback\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:water\"}},\"rules\":[\
+             {\"if_true\":{\"type\":\"minecraft:matching_blocks\",\
+             \"blocks\":\"minecraft:air\"},\"then\":\
+             {\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:packed_ice\"}}}]},\
+             \"barrier\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:stone\"}}}",
+        );
+        let FeatureDef::Lake { fluid, barrier } = parse_configured_def(&j, "lake").unwrap()
+        else {
+            panic!("expected Lake");
+        };
+        let StateProvider::RuleBased { fallback, rules } = &fluid else {
+            panic!("expected RuleBased fluid");
+        };
+        assert_eq!(rules.len(), 1);
+        assert!(matches!(
+            fallback.as_ref(),
+            StateProvider::Simple(s) if s == "minecraft:water"
+        ));
+        assert!(matches!(
+            rules[0].1,
+            StateProvider::Simple(ref s) if s == "minecraft:packed_ice"
+        ));
+        assert!(matches!(
+            barrier,
+            StateProvider::Simple(ref s) if s == "minecraft:stone"
+        ));
+        // An unknown provider type stays an honest codec error.
+        let j = mk(
+            "{\"fluid\":{\"type\":\"minecraft:noise_threshold_provider\"},\
+             \"barrier\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:stone\"}}}",
+        );
+        assert!(parse_configured_def(&j, "lake").is_err());
     }
 }

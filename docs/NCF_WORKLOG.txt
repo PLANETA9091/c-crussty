@@ -5194,3 +5194,99 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 85, собственный run): run 37878145809
 (fb9f298) completed SUCCESS — 33/33 job'ов (~11 мин). Правило «код-commit
 ждёт свой run» выполнено — тик ЗАВЕРШЁН.
+
+
+=== 2026-10-09 | аддендум 86: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 7):
+    порт LakeFeature (53 биома — ЕДИНСТВЕННЫЙ новый топ; @Deprecated-класс,
+    lake_lava_surface/underground placed-цепочки); ценз 87->88 configured,
+    119->121 placed (+2: lake_lava_surface/underground); ПЕРВЫЕ 4
+    fully-supported биома (пиковое семейство); 178/178 тестов ===
+
+0) CI-ПОДТВЕРЖДЕНИЕ ПРЕДЫДУЩЕГО КОММИТА (собственный run): run 37878145809
+   (fb9f298, аддендум 85) completed SUCCESS — 33/33 job'ов (~11 мин);
+   подтверждение внесено docs-коммитом 89fdb89 — 0 run'ов (paths-ignore
+   снова проверен в бою). Тик 11:32 — 10-й stale cron (старый gate-P2
+   текст, Job ID 441690) — НЕ исполнялся; работа по work list п.4
+   (инкремент 7) из этого LOG.
+
+1) ОРАКУЛ: decomp_p4/decomp/.../feature/LakeFeature.java (класс
+   @Deprecated, но зарегистрирован как "minecraft:lake"); worldgen-корпус
+   /home/z/my-project/ci-server/worldgen-extract цел (258+224+200).
+   В корпусе РОВНО ОДИН lake: configured lake_lava (fluid = lava[level=0],
+   barrier = stone — оба simple_state_provider); placed-цепочки
+   lake_lava_surface (rarity 200 / in_square / heightmap WORLD_SURFACE_WG /
+   biome) и lake_lava_underground (rarity 9 / in_square / height_range
+   uniform 0..below_top 0 / environment_scan down 32 + target all_of(
+   not(matching_blocks air), inside_world_bounds [0,-5,0]) /
+   surface_relative_threshold_filter OCEAN_FLOOR_WG -5 / biome) — ВСЕ
+   модификаторы обеих цепочек УЖЕ портированы (сессия 7 + inc. 3), вердикт
+   держался только на configured-теле.
+
+2) ФАКТЫ ИЗ ДЕКОМПИЛА (1.21.10 CFR):
+   (а) LakeFeature.Configuration = fluid BlockStateProvider fieldOf
+       (ОБЯЗАТЕЛЬНЫЙ) + barrier BlockStateProvider fieldOf
+       (ОБЯЗАТЕЛЬНЫЙ); других полей НЕТ, orElse-дефолтов НЕТ — пропажа
+       ключа = честная codec-ошибка;
+   (б) поле-кодек = BlockStateProvider.CODEC, т.е. rule_based-форма
+       парсится через ПОЛНЫЙ inc.-6 путь (не simple-only обёртка);
+   (в) хвост выполнения (задокументирован на варианте): origin.y <=
+       minWorldY+4 => false; origin.below(4); эллипсоидный блоб в
+       flags[16x16x8] за nextInt(4)+4 итераций (радиусы nextDouble()*6+3 /
+       *4+2 / *6+3, центры внутри 1+r/2 .. 15-r/2); boundary-проверки:
+       жидкость в ВЕРХНЕЙ половине => false, в нижней не-solid и не-fluid
+       => false; раскладка: canReplaceBlock = !FEATURES_CANNOT_REPLACE,
+       верхняя половина = CAVE_AIR (+ scheduleTick +
+       markAboveForPostProcessing), нижняя = fluid; barrier-проход
+       (не-air barrier, solid + !LAVA_POOL_STONE_CANNOT_REPLACE,
+       nextInt(2) скип при y>=4); freeze-проход: FluidTags.WATER +
+       biome.shouldFreeze => ICE на плоскости y=4.
+
+3) КОД (этот коммит):
+   (а) features.rs: FeatureDef::Lake { fluid: StateProvider,
+       barrier: StateProvider } — оба поля через parse_state_provider
+       (ПОЛНЫЙ провайдер-путь inc. 6, а НЕ parse_simple_state_provider);
+       dispatch "lake" — оба поля честно REQUIRED, config без ключа = Err;
+   (б) тесты 176->178 (2 новых: lake_lava_verbatim — verbatim из корпуса,
+       fluid lava[level=0] + barrier stone; lake_codec_required_fields_
+       and_rule_based_path — отсутствие fluid/barrier/config = Err,
+       rule_based-fluid парсится через полный путь (1 правило,
+       first-match-wins, fallback water), неизвестный provider-тип = Err);
+   (в) cargo fmt по workspace НЕ включён в коммит: пробный прогон
+       переформатил 63 файла (6930 строк шума) — откат git checkout,
+       правки features.rs восстановлены вручную (те же 4 редактирования),
+       тесты + ценз воспроизведены (порядок fully-supported биомов в
+       p4probe — HashMap-итерация, SET идентичен).
+
+4) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, corpus тот же, diff списков бит-в-бит):
+   configured: 87/224 -> 88/224 (+1: lake_lava; строка «unsupported type
+       lake 0/1» ИСЧЕЗЛА);
+   placed: 119/258 -> 121/258 (+2: minecraft:lake_lava_surface,
+       minecraft:lake_lava_underground — ЕДИНСТВЕННЫЕ перевёрнутые ключи,
+       ровно как предсказывали обе placed-цепочки);
+   parse-провалы placed: 69 -> 69 (stderr-списки base/new ИДЕНТИЧНЫ);
+   биомы fully-supported: 0/65 -> 4/65 — ПЕРВЫЕ полностью поддержанные
+       биомы: minecraft:stony_peaks, minecraft:frozen_peaks,
+       minecraft:snowy_slopes, minecraft:jagged_peaks (пиковое семейство:
+       их единственным универсальным блокером был lake);
+   ГИСТОГРАММА: lake 53 -> ИСЧЕЗЛА. ТЕПЕРЬ: would_survive 43;
+       random_patch (parse fail) 43; random_selector (parse fail) 36;
+       noise_threshold_count 7 (6->7 — следующим блокером одного из
+       освобождённых пиковых биомов); simple_random_selector (pf) 6;
+       glowstone_blob 5+5; random_selector 4; vines 4;
+       count_on_every_layer 3; fossil 3; bamboo/blue_ice/forest_rock/
+       iceberg/random_boolean_selector/tree(pf)/vegetation_patch 2.
+
+5) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсер + тесты + ценз), не
+   worklog-only; гейт-контракты veccheck/stagediff НЕ тронуты; хвост
+   выполнения lake (эллипсоидные flags, CAVE_AIR верхняя половина,
+   barrier-проход, freeze-проход) задокументирован на варианте и будет
+   проводиться при stagediff features-статусе. Перевёрнутые ключи
+   подтверждены списком PLACED-- -> PLACED OK: ТОЛЬКО lake_lava_surface +
+   lake_lava_underground.
+
+6) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — по гистограмме СО-топ: would_survive
+   (43 биома, блок-предикат) и/или random_patch (43, parse fail — inline
+   placed-feature формы), затем stagediff features-статус на спец-корпусе
+   (3x3-replay по spiral-порядку GoldenDumper).
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2 текст
+(тик 11:32 — Т38-B/T40; 10-й stale-тик) — первоисточник = этот LOG.
