@@ -5294,3 +5294,129 @@ CI run 37648102189 (cbf7a46, FlatCacheWindow fix), 33/33 jobs:
 ПОДТВЕРЖДЕНИЕ CI (аддендум 86, собственный run): run 37880417142
 (aef5ece) completed SUCCESS — 33/33 job'ов (~10 мин). Правило «код-commit
 ждёт свой run» выполнено — тик ЗАВЕРШЁН.
+
+
+=== 2026-10-09 | аддендум 87: Job 441690 — WORK LIST п.4 (ИНКРЕМЕНТ 8):
+    порт WouldSurvivePredicate (блок-предикат; ДВА универсальных топа
+    гистограммы 43/65 были ОДНИМ блокером), фикс orElse-дефолтов
+    RandomPatchConfiguration (32/0/0 -> 128/7/3), восстановление
+    рекализированного сандбокса; ценз 88->90 configured, 121->130 placed,
+    parse-провалы 69->26, биомы 4->9/65; 180/180 тестов ===
+
+0) ВОССТАНОВЛЕНИЕ САНДБОКСА (рекализация): HEAD был ef9d107 (аддендум 86,
+   подтверждён). cargo переустановлен. ПОТЕРЯННЫЕ локальные артефакты
+   восстановлены:
+   (а) worldgen-extract СОБРАН ЗАНОВО из vanilla server jar 1.21.10
+       (Mojang piston-data, sha1 95495a7f... ПРОВЕРЕН) — bundler-jar ->
+       внутренний server-1.21.10.jar -> data/minecraft/{worldgen,tags/
+       block,tags/worldgen,structure}; счёт ВСЕ каталогов совпал с
+       оракулом worklog: configured 224, placed 258, biome 65, tags/worldgen
+       95, structure .nbt 1202 (полный скрипт:
+       /home/z/my-project/scripts/rebuild_worldgen_extract.py);
+   (б) decomp_p4 пересобран cfr-ом из mojang-mapped purpur jar
+       (paperclip 2535 собран локально java 21 в ci-server/versions/
+       1.21.10/purpur-1.21.10.jar — тот же путь, что SERVER_DIR в CI);
+   (в) ci-server/golden НЕ восстановлен (pieces_4_6.json существовал
+       только локально; в CI его НЕТ — там beard-тесты скипаются по
+       отсутствию extract). Это ВСКРЫЛО скрытый дефект: тест
+       beard_feed_reference_semantics_neighbor_chunk стерёг extract, но
+       НЕ стерёг golden — panic "golden dir" (см. п.3(д)).
+   БАЗА-ЦЕНЗ на восстановленном корпусе ВОСПРОИЗВЕЛА аддендум 86
+   бит-в-бит: 88/224, 121/258, 4/65, parse-fails 69, PLACED OK 121 —
+   корпус идентичен прежнему.
+
+1) ОРАКУЛ (decomp_p4, cfr 0.152, 1.21.10):
+   (а) would_survive — это ТИП БЛОК-ПРЕДИКАТА, не feature:
+       blockpredicates/WouldSurvivePredicate — offset
+       Vec3i.offsetCodec(16) optionalFieldOf("offset", ZERO) + state
+       BlockState.CODEC fieldOf (ОБЯЗАТЕЛЬНЫЙ); test = state.canSurvive(
+       level, pos.offset(offset));
+   (б) RandomPatchConfiguration.CODEC: tries POSITIVE_INT orElse 128,
+       xz_spread NON_NEGATIVE_INT orElse 7, y_spread NON_NEGATIVE_INT
+       orElse 3, feature PlacedFeature.CODEC fieldOf (внутренний
+       placed-feature целиком инлайн);
+   (в) RandomPatchFeature.place: i1=xz+1, i2=y+1; tries итераций
+       offset = (nextInt(i1)-nextInt(i1), nextInt(i2)-nextInt(i2),
+       nextInt(i1)-nextInt(i1)); успех = счётчик > 0 (уже
+       задокументировано в шапке модуля);
+   (г) МЕХАНИКА ГИСТОГРАММЫ (важно для чтения ценза): оба топа 43/65
+       ("would_survive" и "random_patch (parse fail)") были ОДНИМ
+       блокером: placed с would_survive в block_predicate_filter
+       ПРОВАЛИВАЛИ parse целиком (parse_predicate ?-пробрасывает Err
+       через parse_placement_mod) -> ключ не в реестре ->
+       placed_parse_type помечал биом по ТИПУ внутреннего configured
+       ("random_patch (parse fail)"), а сырой текст ошибки
+       ("unsupported block predicate: would_survive") выходил отдельной
+       строкой через FeatureDef::Unsupported(e) из load_keys.
+
+2) КОД (этот коммит):
+   (а) BlockPredicate::WouldSurvive { offset, state } — заглушка-юнит
+       заменена ЧЕСТНОЙ ФОРМОЙ: offset через parse_offset (clamp ±16,
+       дефолт ZERO), state ОБЯЗАТЕЛЕН ( Err при пропуске ключа), строка
+       каноническая "ns:block[k=v,...]" (свойства отсортированы);
+   (б) НОВЫЙ helper parse_state_name (BlockState JSON -> каноническая
+       строка) — ВЫДЕЛЕН из simple_state_provider и ШЕРИТСЯ обоими
+       путями (провайдер и предикат теперь гарантируют одинаковый
+       формат);
+   (в) eval: WouldSurvive => false — хвост честный (canSurvive
+       по-блочный: свет саженцев, основание кактуса, грунт тростника —
+       P4-хвост), ФОРМА разобрана дословно;
+   (г) random_patch orElse-дефолты ИСПРАВЛЕНЫ 32/0/0 -> 128/7/3 (была
+       нечестность против codec; на корпусе не играла — все 24
+       random_patch несут все три поля явно, проверено скриптом);
+   (д) piece_feed: beard_feed_reference_semantics_neighbor_chunk
+       доведён до конвенции "skip LOUDLY" (Some/else-return по
+       golden_dir()) как в соседнем beard_feed_matches_golden_oracle_
+       chunk_4_6 — свежий checkout/рекализация больше не паникует;
+   (е) тесты 178->180 (2 новых: would_survive_predicate_parse_and_
+       honest_false — verbatim-предикат patch_cactus (all_of[matching_
+       blocks air, would_survive cactus[age=0]]), offset-форма [1,-1,0]
+       firefly_bush, пропуск state = Err, eval=false даже на воздухе;
+       random_patch_codec_defaults_and_would_survive_inner — конфиг
+       БЕЗ tries/xz/y -> 128/7/3, внутренний placed с would_survive
+       короткой_травы проходит block_predicate_filter).
+
+3) ИЗМЕРЕННЫЙ ЦЕНЗ (p4probe, восстановленный корпус, diff списков
+   бит-в-бит; база = аддендум 86):
+   configured: 88/224 -> 90/224 (+2: patch_cactus, patch_sugar_cane;
+       строка "unsupported type unsupported block predicate:
+       would_survive 0/2" ИСЧЕЗЛА; проявился новый блокер
+       waterlogged_vegetation_patch 0/1 — следующий за освободившимся
+       биомом);
+   placed: 121/258 -> 130/258 (+9, СПИСОК ТОЧЕН: patch_cactus,
+       patch_cactus_decorated, patch_cactus_desert, patch_firefly_bush_
+       near_water, patch_firefly_bush_near_water_swamp, patch_sugar_
+       cane, patch_sugar_cane_badlands, patch_sugar_cane_desert,
+       patch_sugar_cane_swamp — набор ключей идентичен, только флаги);
+   parse-провалы placed: 69 -> 26 (stderr: 43 строки удалены, 0
+       добавлены — чистое подмножество; все 43 = would_survive);
+   биомы fully-supported: 4/65 -> 9/65 (+5: minecraft:beach,
+       minecraft:snowy_beach, minecraft:stony_shore, minecraft:badlands,
+       minecraft:eroded_badlands; пиковая четвёрка на месте);
+   ГИСТОГРАММА: "random_patch (parse fail) 43" и "unsupported block
+       predicate: would_survive 43" — ОБЕ СТРОКИ ИСЧЕЗЛИ. НОВЫЙ ТОП:
+       random_selector (parse fail) 36; noise_threshold_count 7;
+       simple_random_selector (pf) 6; glowstone_blob 5+5; random_
+       selector 4; vines 4; count_on_every_layer 3; fossil 3;
+       bamboo/blue_ice/forest_rock/iceberg/random_boolean_selector/
+       tree(pf)/vegetation_patch 2; waterlogged_vegetation_patch 1.
+   decor-seed probe (sanity): population=351934174475927443
+       first_draw=12 — идентичен базе.
+
+4) ЧЕСТНОСТЬ: это КОД-коммит (IR + парсер + тесты + ценз + тест-инфра
+   фикс), не worklog-only; гейт-контракты veccheck/stagediff НЕ тронуты;
+   canSurvive-оценка честно false (по-блочные правила выживания — P4-
+   хвост), при этом форма разобрана и ценз это отражает; orElse-фикс
+   не влияет на корпус (все поля явные) — приведение к codec. Список
+   перевёрнутых ключей подтверждён diff PLACED-- -> PLACED OK: ровно 9
+   patch_*, ничего больше.
+
+5) СЛЕДУЮЩИЙ ТИК: п.4 продолжение — НОВЫЙ ТОП random_selector (36
+   биомов, parse fail — весовая выбора-форма над features; порт
+   RandomSelector/FeatureSelector по декомпилу), далее
+   simple_random_selector (6) и noise_threshold_count (7, модификатор);
+   затем stagediff features-статус на спец-корпусе (3x3-replay по
+   spiral-порядку GoldenDumper).
+ПРИМЕЧАНИЕ: cron-шаблон Job 441690 по-прежнему шлёт старый gate-P2
+  текст (тики 12:02 и 13:02 — Т38-B/T40; 11-й и 12-й stale-тики) —
+  первоисточник = этот LOG.

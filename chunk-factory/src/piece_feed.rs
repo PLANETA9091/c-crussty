@@ -1195,11 +1195,14 @@ mod beard_feed_tests {
         let beard = feed.build_for_chunk(&mut sampler, 3, 6);
         assert!(!beard.is_empty(), "(3,6) must reference the (4,6) start");
 
-        // Oracle expectation for the trial subset at (3,6).
-        let text = std::fs::read_to_string(
-            crate::test_support::golden_dir().expect("golden dir").join("pieces_4_6.json"),
-        )
-        .unwrap();
+        // Oracle expectation for the trial subset at (3,6). The golden dir
+        // is GITIGNORED (absent on fresh checkouts/CI) — skip LOUDLY like
+        // the sibling test instead of panicking when only the extract is
+        // restored (sandbox recycle, inc. 8).
+        let Some(golden) = crate::test_support::golden_dir() else {
+            return; // loud skip already printed by test_support
+        };
+        let text = std::fs::read_to_string(golden.join("pieces_4_6.json")).unwrap();
         let j = crate::json::parse(&text).unwrap();
         let (mbx, mbz) = (48, 96);
         let expected: Vec<InclusiveBox> =

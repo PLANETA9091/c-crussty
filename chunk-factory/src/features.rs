@@ -49,6 +49,15 @@
 //!     ("minecraft:lake"). Execution tail documented on the variant
 //!     (16x16x8 ellipsoid flags, CAVE_AIR upper half, barrier layer,
 //!     freeze pass).
+//!   - WouldSurvivePredicate (inc. 8): the last universal BLOCK-PREDICATE
+//!     blocker (43/65 biomes via block_predicate_filter — the trees/patches
+//!     family; also inside random_patch inline placements). Shape: optional
+//!     offset (Vec3i.offsetCodec(16), default ZERO) + REQUIRED state
+//!     (BlockState.CODEC); test = state.canSurvive(level, pos+offset).
+//!     Per-block survival rules (sapling light, cactus base, sugar-cane
+//!     ground...) are a P4 tail — eval stays honest-false, the SHAPE is
+//!     parsed verbatim. RandomPatchConfiguration orElse defaults fixed to
+//!     the codec values (tries 128 / xz_spread 7 / y_spread 3).
 //!   - SnowAndFreezeFeature ("freeze_top_layer", inc. 2) — see the
 //!     FeatureDef::FreezeTopLayer doc.
 //!   - SpringFeature ("spring_feature", inc. 2) — DETERMINISTIC, no draws.
@@ -108,7 +117,15 @@ pub enum BlockPredicate {
     Not(Box<BlockPredicate>),
     AllOf(Vec<BlockPredicate>),
     AnyOf(Vec<BlockPredicate>),
-    WouldSurvive,
+    /// WouldSurvivePredicate (inc. 8) — state.canSurvive(level, pos+offset)
+    /// at pos+offset. The STATE is parsed verbatim (canonical
+    /// "ns:block[k=v,...]" string); per-block survival rules (sapling light,
+    /// cactus base, sugar-cane ground, ...) are a P4 tail — eval stays
+    /// honest-false until they land.
+    WouldSurvive {
+        offset: [i32; 3],
+        state: String,
+    },
     /// HasSturdyFacePredicate (inc. 3) — state.isFaceSturdy(level, pos,
     /// direction) at pos+offset. Per-block sturdy-face tables are a P4
     /// tail; eval uses the session-7 solid convention (terrain full-cube
@@ -146,6 +163,29 @@ fn parse_offset(j: &Json) -> [i32; 3] {
         cl(arr[1].as_i64().unwrap_or(0)),
         cl(arr[2].as_i64().unwrap_or(0)),
     ]
+}
+
+/// BlockState JSON ({Name, Properties}) -> the canonical worldgen state
+/// string "namespace:block[k=v,...]" (properties sorted; the same
+/// convention as the state providers). Shared by predicates (would_survive,
+/// inc. 8) and the state-provider leaves.
+fn parse_state_name(st: &Json) -> Result<String, String> {
+    let name = st
+        .get("Name")
+        .and_then(|n| n.as_str())
+        .ok_or("state.Name")?;
+    let mut props = Vec::new();
+    if let Some(Json::Obj(po)) = st.get("Properties") {
+        for (k, v) in po {
+            props.push(format!("{}={}", k, v.as_str().unwrap_or("")));
+        }
+    }
+    props.sort();
+    Ok(if props.is_empty() {
+        expand_rl(name)
+    } else {
+        format!("{}[{}]", expand_rl(name), props.join(","))
+    })
 }
 
 pub fn parse_predicate(j: &Json) -> Result<BlockPredicate, String> {
@@ -201,6 +241,10 @@ pub fn parse_predicate(j: &Json) -> Result<BlockPredicate, String> {
         },
         "inside_world_bounds" => BlockPredicate::InsideWorldBounds {
             offset: parse_offset(j),
+        },
+        "would_survive" => BlockPredicate::WouldSurvive {
+            offset: parse_offset(j),
+            state: parse_state_name(j.get("state").ok_or("would_survive.state")?)?,
         },
         "not" => {
             let inner = j.get("predicate").ok_or("not.predicate")?;
@@ -347,7 +391,12 @@ pub fn eval_predicate(
             // a readable position IS inside the build height (honest).
             block_at(x + offset[0], y + offset[1], z + offset[2]).is_some()
         }
-        BlockPredicate::WouldSurvive => false, // needs block survival rules — P4 tail
+        BlockPredicate::WouldSurvive { .. } => {
+            // canSurvive per block (sapling light, cactus base, sugar-cane
+            // ground, ...) — P4 tail; the SHAPE is parsed verbatim since
+            // inc. 8, the verdict stays honest-false.
+            false
+        }
     }
 }
 
@@ -1239,10 +1288,13 @@ fn parse_configured_def(j: &Json, short: &str) -> Result<FeatureDef, String> {
             } else {
                 parse_placed_feature(inner_j)?
             };
+            // orElse defaults per RandomPatchConfiguration.CODEC (inc. 8
+            // fix: 32/0/0 -> 128/7/3 — POSITIVE_INT tries=128, NON_NEGATIVE
+            // xz_spread=7, y_spread=3).
             FeatureDef::RandomPatch {
-                tries: cfg.get("tries").and_then(|t| t.as_i64()).unwrap_or(32) as i32,
-                xz_spread: cfg.get("xz_spread").and_then(|t| t.as_i64()).unwrap_or(0) as i32,
-                y_spread: cfg.get("y_spread").and_then(|t| t.as_i64()).unwrap_or(0) as i32,
+                tries: cfg.get("tries").and_then(|t| t.as_i64()).unwrap_or(128) as i32,
+                xz_spread: cfg.get("xz_spread").and_then(|t| t.as_i64()).unwrap_or(7) as i32,
+                y_spread: cfg.get("y_spread").and_then(|t| t.as_i64()).unwrap_or(3) as i32,
                 inner: Box::new(inner),
             }
         }
@@ -1661,22 +1713,7 @@ pub fn parse_state_provider(j: &Json) -> Result<StateProvider, String> {
         return Err(format!("unsupported state provider {ty}"));
     }
     let st = j.get("state").ok_or("state")?;
-    let name = st
-        .get("Name")
-        .and_then(|n| n.as_str())
-        .ok_or("state.Name")?;
-    let mut props = Vec::new();
-    if let Some(Json::Obj(po)) = st.get("Properties") {
-        for (k, v) in po {
-            props.push(format!("{}={}", k, v.as_str().unwrap_or("")));
-        }
-    }
-    props.sort();
-    let state = if props.is_empty() {
-        expand_rl(name)
-    } else {
-        format!("{}[{}]", expand_rl(name), props.join(","))
-    };
+    let state = parse_state_name(st)?;
     Ok(StateProvider::Simple(state))
 }
 
@@ -2969,5 +3006,94 @@ mod tests {
              \"state\":{\"Name\":\"minecraft:stone\"}}}",
         );
         assert!(parse_configured_def(&j, "lake").is_err());
+    }
+
+    #[test]
+    fn would_survive_predicate_parse_and_honest_false() {
+        // verbatim from configured_feature/patch_cactus.json (the inner
+        // block_predicate_filter of the random_patch): all_of(
+        //   matching_blocks air,
+        //   would_survive cactus[age=0] at offset ZERO).
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:all_of\",\"predicates\":[\
+             {\"type\":\"minecraft:matching_blocks\",\"blocks\":\"minecraft:air\"},\
+             {\"type\":\"minecraft:would_survive\",\"state\":\
+             {\"Name\":\"minecraft:cactus\",\"Properties\":{\"age\":\"0\"}}}]}",
+        )
+        .unwrap();
+        let p = parse_predicate(&j).unwrap();
+        let BlockPredicate::AllOf(v) = &p else {
+            panic!("expected all_of");
+        };
+        assert_eq!(v.len(), 2);
+        let BlockPredicate::WouldSurvive { offset, state } = &v[1] else {
+            panic!("expected would_survive");
+        };
+        // offsetCodec default ZERO, state canonical string with properties.
+        assert_eq!(*offset, [0, 0, 0]);
+        assert_eq!(state, "minecraft:cactus[age=0]");
+        // offset form (the firefly_bush neighbours use [x,-1,z] offsets).
+        let j2 = crate::json::parse(
+            "{\"type\":\"minecraft:would_survive\",\"offset\":[1,-1,0],\
+             \"state\":{\"Name\":\"minecraft:firefly_bush\"}}",
+        )
+        .unwrap();
+        let BlockPredicate::WouldSurvive { offset, state } = parse_predicate(&j2).unwrap()
+        else {
+            panic!("expected would_survive");
+        };
+        assert_eq!(offset, [1, -1, 0]);
+        assert_eq!(state, "minecraft:firefly_bush");
+        // state is fieldOf (REQUIRED): a missing key = honest codec error.
+        let j3 = crate::json::parse("{\"type\":\"minecraft:would_survive\"}").unwrap();
+        assert!(parse_predicate(&j3).is_err());
+        // EVAL: the shape is parsed, the verdict stays honest-false (the
+        // per-block canSurvive rules are a P4 tail) — even on pure air the
+        // would_survive component answers false, so the all_of is false.
+        let tag_of = |_: &str| -> Option<Vec<String>> { None };
+        let repl = |_: &str| false;
+        let at = |_: i32, _: i32, _: i32| -> Option<String> { Some("minecraft:air".into()) };
+        assert!(!eval_predicate(&p, 0, 0, 0, &at, &repl, &tag_of));
+    }
+
+    #[test]
+    fn random_patch_codec_defaults_and_would_survive_inner() {
+        // RandomPatchConfiguration.CODEC orElse defaults (inc. 8 fix):
+        // tries 128 (POSITIVE_INT), xz_spread 7, y_spread 3 (NON_NEGATIVE).
+        let j = crate::json::parse(
+            "{\"type\":\"minecraft:random_patch\",\"config\":{\"feature\":\
+             {\"feature\":{\"type\":\"minecraft:simple_block\",\"config\":\
+             {\"to_place\":{\"type\":\"minecraft:simple_state_provider\",\
+             \"state\":{\"Name\":\"minecraft:short_grass\"}}}},\
+             \"placement\":[{\"type\":\"minecraft:block_predicate_filter\",\
+             \"predicate\":{\"type\":\"minecraft:would_survive\",\"state\":\
+             {\"Name\":\"minecraft:short_grass\"}}}]}}}",
+        )
+        .unwrap();
+        let ty = j.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let short = ty.strip_prefix("minecraft:").unwrap_or(ty);
+        let FeatureDef::RandomPatch {
+            tries,
+            xz_spread,
+            y_spread,
+            inner,
+        } = parse_configured_def(&j, short).unwrap()
+        else {
+            panic!("expected RandomPatch");
+        };
+        assert_eq!((tries, xz_spread, y_spread), (128, 7, 3));
+        // the inner placed feature rides through block_predicate_filter
+        // with a would_survive predicate (the trees/patches family shape).
+        assert_eq!(inner.placement.len(), 1);
+        if let PlacementMod::BlockPredicateFilter(BlockPredicate::WouldSurvive {
+            offset,
+            state,
+        }) = &inner.placement[0]
+        {
+            assert_eq!(*offset, [0, 0, 0]);
+            assert_eq!(state, "minecraft:short_grass");
+        } else {
+            panic!("expected would_survive filter");
+        }
     }
 }
