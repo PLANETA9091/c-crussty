@@ -16,11 +16,13 @@
 
 use crate::aquifer::{GlobalFluidPicker, NoiseBasedAquifer, OreStateIds, OreVeinifierRule};
 use crate::density::Df;
+// S3: the FxHasher moved to the shared crate module (ONE copy, no duplication).
+use crate::fxhash::FxHasher;
 use crate::interpolator::NoiseChunkSim;
 use crate::router::RandomState;
 use crate::xoroshiro::XoroshiroRandomSource;
 use std::collections::HashMap;
-use std::hash::{BuildHasherDefault, Hasher};
+use std::hash::BuildHasherDefault;
 
 // ---------------------------------------------------------------------------
 // Block state table (contract shared with sections.rs / stagediff)
@@ -67,66 +69,10 @@ impl BlockStateDef {
     }
 }
 
-/// FxHash (rustc-hash) — fixed-seed multiply-xor hasher for the StateTable
-/// keys map (S4/S5, R1#4): replaces the std RandomState (SipHash) so every
-/// lookup is deterministic and free of per-map seed setup. The map is a pure
-/// lookup structure (NEVER iterated; id values come from insertion order into
-/// `states`), so the bucket layout is output-invisible. Same arithmetic as
-/// rustc-hash 1.x: rotate-left 5, xor, wrap-mul by the fixed seed.
-#[derive(Default)]
-struct FxHasher {
-    hash: u64,
-}
-
-const FX_SEED: u64 = 0x51_7c_c1_b7_27_22_0a_95;
-
-impl FxHasher {
-    #[inline]
-    fn add_to_hash(&mut self, i: u64) {
-        self.hash = (self.hash.rotate_left(5) ^ i).wrapping_mul(FX_SEED);
-    }
-}
-
-impl Hasher for FxHasher {
-    // str/String hash through here: write(payload bytes) + write_u8(0xff).
-    #[inline]
-    fn write(&mut self, mut bytes: &[u8]) {
-        while bytes.len() >= 8 {
-            self.add_to_hash(u64::from_le_bytes(bytes[..8].try_into().unwrap()));
-            bytes = &bytes[8..];
-        }
-        if bytes.len() >= 4 {
-            self.add_to_hash(u32::from_le_bytes(bytes[..4].try_into().unwrap()) as u64);
-            bytes = &bytes[4..];
-        }
-        if bytes.len() >= 2 {
-            self.add_to_hash(u16::from_le_bytes(bytes[..2].try_into().unwrap()) as u64);
-            bytes = &bytes[2..];
-        }
-        if let Some(&b) = bytes.first() {
-            self.add_to_hash(b as u64);
-        }
-    }
-
-    #[inline]
-    fn write_u8(&mut self, i: u8) {
-        self.add_to_hash(i as u64);
-    }
-
-    #[inline]
-    fn write_u64(&mut self, i: u64) {
-        self.add_to_hash(i);
-    }
-
-    #[inline]
-    fn finish(&self) -> u64 {
-        self.hash
-    }
-}
-
 /// Intern table for block states (first-encounter ids; the contract only
 /// requires CONTENT equality, palette order is irrelevant to stagediff).
-/// Keys use a FIXED-SEED FxHasher (deterministic, no per-map RandomState);
+/// Keys use a FIXED-SEED FxHasher (deterministic, no per-map RandomState;
+/// the hasher lives in the shared crate::fxhash module since S3);
 /// `intern_canonical` hashes the input &str DIRECTLY (S4: zero parse/format
 /// on hits — callers pass canonical strings, see the debug_assert on insert).
 #[derive(Default)]

@@ -26,6 +26,11 @@
 //! mirrors Java's indexed loops and HashMap-of-comparators shape verbatim.
 #![allow(clippy::needless_range_loop, clippy::type_complexity)]
 
+use crate::fxhash::FxHasher;
+use std::collections::HashMap;
+use std::hash::BuildHasherDefault;
+use std::sync::RwLock;
+
 /// Climate.quantizeCoord — `(long)(coord * 10000.0f)`.
 #[inline]
 pub fn quantize_coord(coord: f32) -> i64 {
@@ -473,21 +478,77 @@ fn subtree_cost(
 }
 
 // --------------------------------------------------------------------------
-// ParameterList
+// ParameterList + the S3 u16 biome registry
 // --------------------------------------------------------------------------
 
+/// The unique-name side of the S3 registry (behind a RwLock — see
+/// ParameterList::get_or_create_id).
+struct UniqueBiomes {
+    /// unique biome names in FIRST-ENCOUNTER order over the leaf `names`
+    /// (id i lives at unique_names[i]).
+    unique_names: Vec<String>,
+    /// name -> id; fixed-seed FxHasher (deterministic, no SipHash; the map
+    /// is a pure lookup structure, never iterated).
+    id_of_name: HashMap<String, u16, BuildHasherDefault<FxHasher>>,
+}
+
 /// Climate.ParameterList<T=biome name>: the built RTree plus the ordered
-/// point/name table.
+/// point/name table and the S3 u16 biome registry.
+///
+/// S3 ("u16 biome"): every RTree leaf maps to a dense u16 BIOME ID
+/// (`leaf_ids`, assigned in first-encounter order over the leaf names), and
+/// the resolve path (BiomeSource::resolve_noise_biome) returns that u16
+/// instead of a String. Ids are an INTERNAL representation only — the NBT
+/// output path interns biome NAMES (filler BiomeTable / palette.rs), so ids
+/// can never leak into output (I1).
 pub struct ParameterList {
     pub tree: RTree,
+    /// per-leaf biome name (input order; the same name may label several
+    /// leaves). UNCHANGED since before S3 — the roundtrip oracle for the
+    /// registry (leaf -> id -> name must equal this).
     pub names: Vec<String>,
+    /// S3: leaf -> biome id (index into the unique-name registry; built once
+    /// here, never mutated by later dynamic appends).
+    pub leaf_ids: Vec<u16>,
+    /// S3: unique-name registry. RwLock because kit builds may append
+    /// UNKNOWN biome names (pack surface rules referencing biomes outside
+    /// the search table get FRESH ids — never sampled, so the leaf_ids path
+    /// above is untouched); every other access is a read. Uncontended lock
+    /// cost rides only on the cold kit-build / name-materialization paths.
+    registry: RwLock<UniqueBiomes>,
 }
 
 impl ParameterList {
     pub fn new(points: Vec<(ParameterPoint, String)>) -> Self {
-        let names = points.iter().map(|(_, n)| n.clone()).collect();
+        let names: Vec<String> = points.iter().map(|(_, n)| n.clone()).collect();
         let tree = RTree::create(points.into_iter().map(|(p, _)| p).collect());
-        ParameterList { tree, names }
+        // S3 registry: ids in FIRST-ENCOUNTER order over `names`.
+        let mut unique_names: Vec<String> = Vec::new();
+        let mut id_of_name: HashMap<String, u16, BuildHasherDefault<FxHasher>> =
+            HashMap::default();
+        let mut leaf_ids = Vec::with_capacity(names.len());
+        for n in &names {
+            let id = match id_of_name.get(n) {
+                Some(&id) => id,
+                None => {
+                    let id = unique_names.len() as u16;
+                    assert!(
+                        (id as usize) < u16::MAX as usize,
+                        "biome registry overflow (>65535 unique names)"
+                    );
+                    unique_names.push(n.clone());
+                    id_of_name.insert(n.clone(), id);
+                    id
+                }
+            };
+            leaf_ids.push(id);
+        }
+        ParameterList {
+            tree,
+            names,
+            leaf_ids,
+            registry: RwLock::new(UniqueBiomes { unique_names, id_of_name }),
+        }
     }
 
     /// findValueIndex — biome name for the target (search hint owned by the
@@ -496,6 +557,61 @@ impl ParameterList {
     pub fn find_value(&self, target: &TargetPoint, memo: &mut Option<usize>) -> &str {
         let leaf = self.tree.search(target, memo);
         &self.names[leaf]
+    }
+
+    /// S3: findValueIndex in the integer domain — the winning LEAF's biome
+    /// id (registry lookup is a plain Vec index; no String, no clone).
+    pub fn find_value_id(&self, target: &TargetPoint, memo: &mut Option<usize>) -> u16 {
+        let leaf = self.tree.search(target, memo);
+        self.leaf_ids[leaf]
+    }
+
+    /// S3: resolve a biome name to its registry id, APPENDING a fresh id
+    /// when the name is unknown (pack surface rules may reference biomes
+    /// outside the search table; those ids are never sampled — every
+    /// resolve-path id comes from leaf_ids — so unknown-name semantics stay
+    /// identical to the old String-compare miss). Idempotent.
+    pub fn get_or_create_id(&self, name: &str) -> u16 {
+        {
+            let r = self.registry.read().unwrap();
+            if let Some(&id) = r.id_of_name.get(name) {
+                return id;
+            }
+        }
+        let mut w = self.registry.write().unwrap();
+        // re-check under the write lock (another thread may have appended)
+        if let Some(&id) = w.id_of_name.get(name) {
+            return id;
+        }
+        let id = w.unique_names.len() as u16;
+        assert!(
+            (id as usize) < u16::MAX as usize,
+            "biome registry overflow (>65535 unique names)"
+        );
+        w.unique_names.push(name.to_string());
+        w.id_of_name.insert(name.to_string(), id);
+        id
+    }
+
+    /// S3 (cold paths): snapshot of the unique names, index = id. Clones —
+    /// kit build / tests only, never the per-quart resolve path.
+    pub fn unique_names(&self) -> Vec<String> {
+        self.registry.read().unwrap().unique_names.clone()
+    }
+
+    /// S3 (cold paths): the name for one id (carver-neighbour facts lookup).
+    pub fn unique_name(&self, id: u16) -> String {
+        self.registry.read().unwrap().unique_names[id as usize].clone()
+    }
+
+    /// S3: registry size (upper bound of valid ids).
+    pub fn unique_count(&self) -> usize {
+        self.registry.read().unwrap().unique_names.len()
+    }
+
+    /// S3: read-only lookup (no append) — tests and diagnostics.
+    pub fn id_of(&self, name: &str) -> Option<u16> {
+        self.registry.read().unwrap().id_of_name.get(name).copied()
     }
 
     /// findValueBruteForce — the reference scan (Java findValueBruteForce,
@@ -631,5 +747,137 @@ mod tests {
         // sanity for the crate path
         assert_eq!(bucketize(&[NodeId::Leaf(0); 7]).iter().map(|b| b.len()).sum::<usize>(), 7);
         assert_eq!(bucketize(&[NodeId::Leaf(0); 179]).iter().map(|b| b.len()).sum::<usize>(), 179);
+    }
+
+    // ------------------------------------------------------------------
+    // S3 — u16 biome registry
+    // ------------------------------------------------------------------
+
+    /// Synthetic 40-leaf list with repeated names: for EVERY leaf,
+    /// unique_names[leaf_ids[leaf]] == the leaf's name (the pre-change
+    /// snapshot), ids are first-encounter-ordered and dense, and the
+    /// integer find agrees with the String find.
+    #[test]
+    fn s3_registry_roundtrip_matches_leaf_names() {
+        let mut points = Vec::new();
+        for i in 0..40i64 {
+            let f = |k: i64| (i * 137 + k * 911) % 20001 - 10000;
+            // names repeat: biome_{i%7} over 40 leaves
+            points.push((
+                ParameterPoint {
+                    temperature: Parameter { min: f(1), max: f(1) },
+                    humidity: Parameter { min: f(2), max: f(2) },
+                    continentalness: Parameter { min: f(3), max: f(3) },
+                    erosion: Parameter { min: f(4), max: f(4) },
+                    depth: Parameter { min: f(5), max: f(5) },
+                    weirdness: Parameter { min: f(6), max: f(6) },
+                    offset: i * 100,
+                },
+                format!("biome_{}", i % 7),
+            ));
+        }
+        let list = ParameterList::new(points);
+        // roundtrip against the pre-change name table
+        assert_eq!(list.leaf_ids.len(), list.names.len());
+        for (leaf, name) in list.names.iter().enumerate() {
+            assert_eq!(
+                list.unique_names()[list.leaf_ids[leaf] as usize],
+                *name,
+                "leaf {leaf} roundtrip must reproduce the original name"
+            );
+        }
+        // first-encounter order + density: unique names are exactly
+        // biome_0..biome_6 in first-occurrence order
+        let uniq = list.unique_names();
+        assert_eq!(uniq.len(), 7);
+        let mut seen = std::collections::HashSet::new();
+        let mut next_expect = 0u16;
+        for name in list.names.iter() {
+            let id = list.id_of(name).unwrap();
+            if seen.insert(id) {
+                assert_eq!(id, next_expect, "ids must be first-encounter ordered");
+                next_expect += 1;
+            }
+        }
+        assert_eq!(next_expect as usize, uniq.len(), "ids must be dense");
+        // integer find agrees with the String find
+        let mut memo = None;
+        for q in 0..50i64 {
+            let t = TargetPoint {
+                temperature: (q * 73) % 20001 - 10000,
+                humidity: (q * 151) % 20001 - 10000,
+                continentalness: (q * 977) % 20001 - 10000,
+                erosion: (q * 331) % 20001 - 10000,
+                depth: (q * 419) % 20001 - 10000,
+                weirdness: (q * 571) % 20001 - 10000,
+            };
+            let mut memo2 = None;
+            let want = list.find_value(&t, &mut memo2);
+            let got = list.unique_name(list.find_value_id(&t, &mut memo));
+            assert_eq!(got, want);
+        }
+    }
+
+    /// Extract-gated roundtrip over the REAL search table (vanilla preset or
+    /// the pack's inline biome_source table): every leaf's registry id
+    /// resolves to exactly the name the table carried before S3.
+    #[test]
+    fn s3_registry_roundtrip_on_extract_list() {
+        use crate::test_support::extract_root;
+        let Some(root) = extract_root() else { return };
+        let dir = crate::router::WorldgenDir::load(&root).expect("worldgen dir");
+        let rs = crate::router::RandomState::build_overworld(&dir, 3053459).expect("random state");
+        let list = rs.biome_list();
+        assert_eq!(list.leaf_ids.len(), list.names.len());
+        for (leaf, name) in list.names.iter().enumerate() {
+            assert_eq!(
+                list.unique_names()[list.leaf_ids[leaf] as usize],
+                *name,
+                "leaf {leaf} roundtrip must reproduce the original name"
+            );
+        }
+        // spot pins: the probe biomes exist in the vanilla preset under
+        // their exact registry names
+        assert!(list.id_of("minecraft:frozen_ocean").is_some());
+        assert!(list.id_of("minecraft:deep_frozen_ocean").is_some());
+        assert!(list.id_of("minecraft:eroded_badlands").is_some());
+        // idempotence: get_or_create_id on a known name never appends
+        let before = list.unique_count();
+        let ocean = list.get_or_create_id("minecraft:ocean");
+        assert_eq!(list.id_of("minecraft:ocean"), Some(ocean));
+        assert_eq!(list.unique_count(), before);
+    }
+
+    /// Unknown-name fallback: a name outside the search table gets a FRESH
+    /// id appended after the built-in block, the id is stable/idempotent,
+    /// and NO leaf ever resolves to it (=> BiomeIs-style membership can
+    /// never fire on it — the exact semantics of the old String miss).
+    #[test]
+    fn s3_unknown_name_gets_fresh_never_sampled_id() {
+        let pt = ParameterPoint {
+            temperature: Parameter::point(0.0),
+            humidity: Parameter::point(0.0),
+            continentalness: Parameter::point(0.0),
+            erosion: Parameter::point(0.0),
+            depth: Parameter::point(0.0),
+            weirdness: Parameter::point(0.0),
+            offset: 0,
+        };
+        let list = ParameterList::new(vec![
+            (pt, "minecraft:plains".into()),
+            (pt, "minecraft:desert".into()),
+        ]);
+        let builtin = list.unique_count();
+        assert_eq!(builtin, 2);
+        let ghost = list.get_or_create_id("packmod:haunted_wastes");
+        assert_eq!(ghost as usize, builtin, "unknown name appends AFTER the built-ins");
+        assert_eq!(list.get_or_create_id("packmod:haunted_wastes"), ghost, "idempotent");
+        assert_eq!(list.unique_count(), builtin + 1);
+        assert_eq!(list.unique_name(ghost), "packmod:haunted_wastes");
+        // never sampled: no leaf maps to the appended id
+        assert!(list.leaf_ids.iter().all(|&l| l != ghost));
+        // ...and the built-in ids are untouched by the append
+        assert_eq!(list.id_of("minecraft:plains"), Some(0));
+        assert_eq!(list.id_of("minecraft:desert"), Some(1));
     }
 }

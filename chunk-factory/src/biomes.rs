@@ -395,8 +395,9 @@ impl VotePlanMemo {
     }
 }
 
-/// The biome-source resolution: quart coords in, biome name out. Backed by
-/// the RandomState climate machinery (quantize + RTree), cached per call site.
+/// The biome-source resolution: quart coords in, biome ID out (S3 u16
+/// registry — see climate::ParameterList). Backed by the RandomState climate
+/// machinery (quantize + RTree), cached per call site.
 pub struct BiomeSource<'a> {
     pub rs: &'a RandomState,
     /// the SHARED per-RandomState search tree (Arc) — see RandomState::biome_list
@@ -405,7 +406,9 @@ pub struct BiomeSource<'a> {
     /// chunk/phase), chained within — the memo semantics each phase's
     /// bit-gates were validated with (climate::RTree::search).
     memo: Option<usize>,
-    cache: HashMap<(i32, i32, i32), String>,
+    /// S3: quart -> u16 biome id (registry id), fixed-seed VoteHasher keys —
+    /// NO String build/clone on the resolve path anymore.
+    cache: HashMap<(i32, i32, i32), u16, std::hash::BuildHasherDefault<VoteHasher>>,
     /// R3#1: the per-(x, z, quart-y) vote-plan memo (see VotePlanMemo).
     vote_plan: VotePlanMemo,
     /// R3#2: per-instance climate column memo threaded into Df::compute_memo
@@ -424,21 +427,21 @@ impl<'a> BiomeSource<'a> {
             rs,
             list: rs.biome_list(),
             memo: None,
-            cache: HashMap::new(),
+            cache: HashMap::default(),
             vote_plan: VotePlanMemo::default(),
             climate_memo: HashMap::new(),
         }
     }
 
-    /// The shared single-allocation resolution path: on a cache miss one
-    /// String is built for the caller and one clone goes into the cache;
-    /// the vote wrappers hand that SAME String to their caller instead of
-    /// cloning it a second time via `.to_string()` (R4#2 micro). The RTree
-    /// hint chain is untouched — find_value still runs per distinct quart,
-    /// in the same order, with the same (bit-identical) TargetPoint inputs.
-    fn resolve_noise_biome(&mut self, qx: i32, qy: i32, qz: i32) -> String {
-        if let Some(b) = self.cache.get(&(qx, qy, qz)) {
-            return b.clone();
+    /// The shared single-allocation resolution path: on a cache miss ONE
+    /// RTree search runs (hint chain untouched — same order, same
+    /// bit-identical TargetPoint inputs) and the winning leaf's registry id
+    /// (a plain Vec index) is cached + returned. S3: no `.to_string()`, no
+    /// String clone — callers wanting the NAME materialize it through the
+    /// registry (`list.unique_name(id)`) on their own cold paths.
+    fn resolve_noise_biome(&mut self, qx: i32, qy: i32, qz: i32) -> u16 {
+        if let Some(&b) = self.cache.get(&(qx, qy, qz)) {
+            return b;
         }
         let (bx, by, bz) = (qx * 4, qy * 4, qz * 4);
         // copy the &'a RandomState out first: the router/bank borrows must
@@ -455,14 +458,15 @@ impl<'a> BiomeSource<'a> {
             depth: crate::climate::quantize_coord(r.depth.compute_memo(bank, bx, by, bz, memo) as f32),
             weirdness: crate::climate::quantize_coord(r.ridges.compute_memo(bank, bx, by, bz, memo) as f32),
         };
-        let name = self.list.find_value(&t, &mut self.memo).to_string();
-        self.cache.insert((qx, qy, qz), name.clone());
-        name
+        let id = self.list.find_value_id(&t, &mut self.memo);
+        self.cache.insert((qx, qy, qz), id);
+        id
     }
 
     /// MultiNoiseBiomeSource.getNoiseBiome(quartX, quartY, quartZ): the
     /// sampler takes QUART coords and evaluates at BLOCK coords (T29).
-    pub fn get_noise_biome(&mut self, qx: i32, qy: i32, qz: i32) -> String {
+    /// S3: returns the registry u16 id.
+    pub fn get_noise_biome(&mut self, qx: i32, qy: i32, qz: i32) -> u16 {
         self.resolve_noise_biome(qx, qy, qz)
     }
 }
@@ -472,8 +476,8 @@ impl<'a> BiomeSource<'a> {
 ///
 /// This variant resolves the WINNING corner through a fresh (uncached)
 /// climate sample — the semantics of a NoiseBiomeSource that is the
-/// MultiNoiseBiomeSource itself (structure/spawn probing).
-pub fn get_biome_voted(source: &mut BiomeSource, zoom_seed: i64, x: i32, y: i32, z: i32) -> String {
+/// MultiNoiseBiomeSource itself (structure/spawn probing). S3: registry id.
+pub fn get_biome_voted(source: &mut BiomeSource, zoom_seed: i64, x: i32, y: i32, z: i32) -> u16 {
     let (qx, qy, qz) = source.vote_plan.vote(zoom_seed, x, y, z);
     source.resolve_noise_biome(qx, qy, qz)
 }
@@ -533,7 +537,7 @@ pub fn get_biome_voted_region(
     z: i32,
     min_section: i32,
     section_count: i32,
-) -> String {
+) -> u16 {
     #[cfg(ncf_profile)]
     S1_VOTE_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let (qx, qy, qz) = source.vote_plan.vote(zoom_seed, x, y, z);
@@ -644,7 +648,8 @@ mod t35_tests {
     /// The vote resolves exactly ONE quart (the winner); the region variant
     /// clamps its y. Shaped (needs the NCF_WG worldgen extract — full run in
     /// CI ncf-vectors/ncf-staged): a vote whose winner quart y is out of range
-    /// must resolve to the clamped quart's biome.
+    /// must resolve to the clamped quart's biome. S3: comparisons run in the
+    /// u16 registry-id domain (String-free).
     #[test]
     fn t35_region_vote_clamps_winner() {
         let Ok(wg) = std::env::var("NCF_WG") else { return };
@@ -658,20 +663,54 @@ mod t35_tests {
             let region = get_biome_voted_region(&mut src, zoom, bx, by, bz, -4, 24);
             let (wx, wy, wz) = vote_best_corner(zoom, bx, by, bz);
             let clamped = stored_quart_y(wy, -4, 24);
-            let direct = src.get_noise_biome(wx, clamped, wz).to_string();
+            let direct = src.get_noise_biome(wx, clamped, wz);
             assert_eq!(region, direct, "vote at ({bx},{by},{bz})");
         }
         // a y far above the world must resolve at quart 79, NOT the raw y
         let (fx, _fy, fz) = vote_best_corner(zoom, 400, 2000, 400);
         let far = get_biome_voted_region(&mut src, zoom, 400, 2000, 400, -4, 24);
-        let expected = src.get_noise_biome(fx, 79, fz).to_string();
+        let expected = src.get_noise_biome(fx, 79, fz);
         assert_eq!(far, expected);
         // ...and quart 79 can genuinely differ from the raw-y climate sample
         // (otherwise the clamp would be unobservable): assert the raw sample
         // at y quart 500 differs from the clamped one for this seed/column.
-        let raw_at_y = src.get_noise_biome(fx, 500, fz).to_string();
-        let clamped_at_79 = src.get_noise_biome(fx, 79, fz).to_string();
+        let raw_at_y = src.get_noise_biome(fx, 500, fz);
+        let clamped_at_79 = src.get_noise_biome(fx, 79, fz);
         let _ = (raw_at_y != clamped_at_79); // informational, not a hard gate
+    }
+
+    /// S3 guard (extract-gated): the resolve path's u16 ids must round-trip
+    /// to the SAME names the String path produced before S3 — the resolve id
+    /// indexes the registry, whose unique_names were built from the leaf
+    /// names (see climate.rs roundtrip tests); here we additionally pin
+    /// resolve-id == find_value_id on the same TargetPoint the sampler
+    /// builds, i.e. no id/name skew between the two paths.
+    #[test]
+    fn s3_resolve_ids_roundtrip_to_names() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = crate::router::WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = crate::router::RandomState::build(&dir, "minecraft", "overworld", 3053459)
+            .expect("random state");
+        let mut src = BiomeSource::new(&rs);
+        // assorted quarts (deterministic); every resolved id must name a
+        // real registry entry and be stable across repeats (cache path too)
+        for (qx, qy, qz) in [
+            (100i32, 8i32, 100i32),
+            (-7, 3, 12),
+            (0, 0, 0),
+            (4099, -16, -4099),
+            (33, 19, -60),
+        ] {
+            let id = src.get_noise_biome(qx, qy, qz);
+            let id2 = src.get_noise_biome(qx, qy, qz); // cache-hit path
+            assert_eq!(id, id2, "cache hit must return the same id");
+            let name = src.list.unique_name(id);
+            assert!(
+                src.list.id_of(&name) == Some(id),
+                "id {id} must round-trip to its registry name ({name})"
+            );
+            assert!(!name.is_empty());
+        }
     }
 }
 

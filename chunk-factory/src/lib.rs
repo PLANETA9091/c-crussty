@@ -122,6 +122,7 @@
 //! zero external dependencies, std only.
 
 pub mod aquifer;
+pub(crate) mod fxhash; // S3: the single fixed-seed FxHasher (moved from filler.rs)
 pub mod filler;
 pub mod heightmaps;
 pub mod sections;

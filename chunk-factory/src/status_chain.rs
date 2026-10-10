@@ -30,6 +30,12 @@ pub struct StageKit {
     pub rule_set: SurfaceRuleSet,
     pub system: SurfaceSystem,
     pub facts: HashMap<String, crate::biomes::BiomeFacts>,
+    /// S3: the SAME facts keyed by the RESOLVED u16 registry id — built once
+    /// per kit via `facts.get(registry.unique_names[id])`, i.e. by looking up
+    /// the identical name strings the old per-test `facts.get(biome)` used
+    /// (including the `minecraft:`-prefix key mismatch for pack biomes, which
+    /// stays a miss => None => false, bug-for-bug).
+    pub facts_by_id: Vec<Option<crate::biomes::BiomeFacts>>,
     pub biome_noise: BiomeNoise,
     pub carver_configs: HashMap<String, CarverConfig>,
     /// cached parsed configured_carver JSONs by ref
@@ -71,6 +77,15 @@ impl StageKit {
         let mut system = SurfaceSystem::new(rs, dir, &mut table)?;
         system.block_states = block_states;
         let facts = load_biome_facts(dir)?;
+        // S3: per-registry-id facts (same name strings as the old map lookups
+        // — built AFTER the rule-set/system builds, which may have appended
+        // unknown biome_is/probe names to the registry as fresh ids).
+        let registry = rs.biome_list();
+        let facts_by_id: Vec<Option<crate::biomes::BiomeFacts>> = registry
+            .unique_names()
+            .iter()
+            .map(|n| facts.get(n).cloned())
+            .collect();
         let biome_noise = BiomeNoise::new();
         // configured carvers: parse ONLY the refs referenced by overworld
         // biome carver lists (nether_cave etc. would fail the overworld-only
@@ -108,6 +123,7 @@ impl StageKit {
             rule_set,
             system,
             facts,
+            facts_by_id,
             biome_noise,
             carver_configs,
             default_block,
@@ -213,7 +229,7 @@ pub fn apply_surface_pass(
     let zoom_seed = crate::biomes::biome_zoom_seed(seed);
     let source = RefCell::new(BiomeSource::new(rs));
     {
-        let mut ctx = SurfaceContext::new(&kit.system, rs, &kit.biome_noise, &kit.facts, &source, zoom_seed);
+        let mut ctx = SurfaceContext::new(&kit.system, rs, &kit.biome_noise, &kit.facts_by_id, &source, zoom_seed);
         ctx.default_block = default_block;
         let mut cols = ChunkColumns { chunk };
         build_surface(&mut ctx, &kit.rule_set.root, &mut cols, default_block);
@@ -296,7 +312,7 @@ pub fn apply_carvers_pass(
     );
     #[cfg(ncf_profile)]
     let prof_t_aquifer = prof_t.elapsed();
-    let mut ctx = SurfaceContext::new(&kit.system, rs, &kit.biome_noise, &kit.facts, &source, zoom_seed);
+    let mut ctx = SurfaceContext::new(&kit.system, rs, &kit.biome_noise, &kit.facts_by_id, &source, zoom_seed);
     ctx.default_block = default_block;
     // biome -> carver refs for the DIRECT corner biome at y=0 (StageKit-level
     // cache: one climate sample per neighbor per batch, not per target chunk)
@@ -315,10 +331,14 @@ pub fn apply_carvers_pass(
         let mut src = source.borrow_mut();
         let qx = nx * 16 >> 2;
         let qz = nz * 16 >> 2;
-        let biome = src.get_noise_biome(qx, 0, qz).to_string();
+        // S3: the resolve returns the registry u16 id; the NAME is
+        // materialized once per neighbor per batch (cold) for the facts map,
+        // byte-identical to the old `.to_string()` value.
+        let biome_id = src.get_noise_biome(qx, 0, qz);
+        let biome = src.list.unique_name(biome_id);
         drop(src);
         let refs = std::sync::Arc::new(
-            facts.get(&biome).map(|f| f.carvers.clone()).unwrap_or_default(),
+            facts.get(biome.as_str()).map(|f| f.carvers.clone()).unwrap_or_default(),
         );
         refs_cache.borrow_mut().insert((nx, nz), std::sync::Arc::clone(&refs));
         refs
@@ -378,7 +398,7 @@ pub fn trace_surface(
     let default_block = chunk.state_table.intern_canonical(&rs.settings.default_block);
     let zoom_seed = crate::biomes::biome_zoom_seed(seed);
     let source = RefCell::new(BiomeSource::new(rs));
-    let mut ctx = SurfaceContext::new(&kit.system, rs, &kit.biome_noise, &kit.facts, &source, zoom_seed);
+    let mut ctx = SurfaceContext::new(&kit.system, rs, &kit.biome_noise, &kit.facts_by_id, &source, zoom_seed);
     ctx.default_block = default_block;
     let mut cols = ChunkColumns { chunk: &mut chunk };
     let mut out = String::from(
@@ -455,13 +475,19 @@ pub fn trace_surface(
                 // dump an empty biome column (measured: 21,616/26,598 = 81.3%
                 // empty vs 0% pre-S1) — poisons the census TSV diffs.
                 ctx.ensure_biome();
+                // S3: the TSV biome column must stay the NAME string —
+                // materialized per row (cold trace rig) through the registry.
+                let biome_name = ctx
+                    .biome
+                    .map(|id| source.borrow().list.unique_name(id))
+                    .unwrap_or_default();
                 let _ = writeln!(
                     out,
                     "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
                     x,
                     z,
                     y,
-                    ctx.biome.clone().unwrap_or_default(),
+                    biome_name,
                     ctx.surface_depth,
                     min_surface,
                     secondary,

@@ -27,7 +27,6 @@ use crate::jrandom::RandomSource;
 use crate::mth;
 use crate::router::RandomState;
 use crate::{filler::FillerChunk, json};
-use std::collections::HashMap;
 
 pub const WHITE_TERRACOTTA: &str = "minecraft:white_terracotta";
 pub const ORANGE_TERRACOTTA: &str = "minecraft:orange_terracotta";
@@ -282,9 +281,71 @@ impl LazyCache {
     const FRESH: Self = LazyCache { epoch: u64::MAX, value: false };
 }
 
+/// S3: the integer-domain membership test of a `minecraft:biome` condition.
+/// The kit build resolves every `biome_is` name to a registry u16 id (see
+/// climate::ParameterList::get_or_create_id — unknown names get FRESH ids
+/// that no sampled biome ever carries, so they can never match, exactly
+/// like the old String miss). When every id is < 128 the ids compile to a
+/// 128-bit MASK (two u64 words — one AND + one shift per test); otherwise
+/// the id Vec is kept as the fallback (wide pack tables).
+#[derive(Clone, Debug)]
+pub(crate) enum BiomeIsTest {
+    Mask([u64; 2]),
+    Ids(Box<[u16]>),
+}
+
+impl BiomeIsTest {
+    pub(crate) fn build(ids: &[u16]) -> Self {
+        if ids.iter().all(|&i| i < 128) {
+            let mut m = [0u64; 2];
+            for &i in ids {
+                m[(i >> 6) as usize] |= 1u64 << (i & 63);
+            }
+            BiomeIsTest::Mask(m)
+        } else {
+            BiomeIsTest::Ids(ids.to_vec().into_boxed_slice())
+        }
+    }
+
+    /// The membership predicate — the ONLY runtime difference vs the old
+    /// `biomes.iter().any(|s| s == name)` is that this compares u16s.
+    /// The `id < 128` guard keeps Mask total for probe ids beyond the window
+    /// (wide pack registries can SAMPLE ids >= 128 even when a cond's id set
+    /// is small — the mask answers false for them, exactly like the Vec).
+    #[inline]
+    pub(crate) fn contains(&self, id: u16) -> bool {
+        match self {
+            BiomeIsTest::Mask(m) => {
+                id < 128 && (m[(id >> 6) as usize] >> (id & 63)) & 1 != 0
+            }
+            BiomeIsTest::Ids(v) => v.contains(&id),
+        }
+    }
+
+    /// The Vec reference form (tests: mask-vs-vec exhaustive equality).
+    #[cfg(test)]
+    fn as_ids(&self) -> Box<[u16]> {
+        match self {
+            BiomeIsTest::Mask(m) => {
+                let mut v = Vec::new();
+                for w in 0..2 {
+                    let mut bits = m[w];
+                    while bits != 0 {
+                        let bit = bits.trailing_zeros();
+                        v.push((w * 64 + bit as usize) as u16);
+                        bits &= bits - 1;
+                    }
+                }
+                v.into_boxed_slice()
+            }
+            BiomeIsTest::Ids(v) => v.clone(),
+        }
+    }
+}
+
 pub enum Cond {
     // LazyY conditions (epoch = last_update_y)
-    BiomeIs { biomes: Vec<String>, cache: std::cell::Cell<LazyCache> },
+    BiomeIs { biomes: BiomeIsTest, cache: std::cell::Cell<LazyCache> },
     StoneDepth { offset: i32, add_surface_depth: bool, secondary_depth_range: i32, ceiling: bool, cache: std::cell::Cell<LazyCache> },
     YAbove { anchor: VerticalAnchor, mult: i32, add_stone_depth: bool, cache: std::cell::Cell<LazyCache> },
     Water { offset: i32, mult: i32, add_stone_depth: bool, cache: std::cell::Cell<LazyCache> },
@@ -407,7 +468,17 @@ fn build_rule(def: &RuleDef, rs: &mut RandomState, dir: &crate::router::Worldgen
 
 fn build_cond(def: &CondDef, rs: &mut RandomState, dir: &crate::router::WorldgenDir, _table: &mut StateTable) -> Result<Cond, String> {
     Ok(match def {
-        CondDef::BiomeIs(biomes) => Cond::BiomeIs { biomes: biomes.clone(), cache: std::cell::Cell::new(LazyCache::FRESH) },
+        CondDef::BiomeIs(biomes) => {
+            // S3: resolve every biome_is name to its registry id AT KIT BUILD
+            // (build_cond runs once per kit, not per chunk). Unknown names —
+            // pack rules referencing biomes outside the search table — get
+            // FRESH appended ids (ParameterList::get_or_create_id); those ids
+            // are never sampled, so membership stays false for them exactly
+            // like the old String-compare miss.
+            let list = rs.biome_list();
+            let ids: Vec<u16> = biomes.iter().map(|b| list.get_or_create_id(b)).collect();
+            Cond::BiomeIs { biomes: BiomeIsTest::build(&ids), cache: std::cell::Cell::new(LazyCache::FRESH) }
+        }
         CondDef::NoiseThreshold { noise, min, max } => {
             let idx = rs.get_or_create_noise(dir, noise)?;
             Cond::NoiseThreshold { noise_idx: idx, min: *min, max: *max, cache: std::cell::Cell::new(LazyCache::FRESH) }
@@ -464,6 +535,15 @@ pub struct SurfaceSystem {
     pub iceberg_pillar_noise: usize,
     pub iceberg_pillar_roof_noise: usize,
     pub iceberg_surface_noise: usize,
+    /// S3 probe consts: the column-probe biome ids (SurfaceSystem ctor's
+    /// shouldMeltFrozenOceanIcebergSlightly / eroded_badlands extension
+    /// gates), resolved ONCE at kit build through the u16 registry. If the
+    /// search table lacks one of them the id is a fresh append that is never
+    /// sampled — the probe compare is then permanently false, exactly like
+    /// the old String compare miss.
+    pub probe_frozen_ocean: u16,
+    pub probe_deep_frozen_ocean: u16,
+    pub probe_eroded_badlands: u16,
     /// clayBands[192] as canonical state strings (kit-owned; per chunk,
     /// a band hit resolves to the chunk-table id through the ctx band memo
     /// — intern on the FIRST hit of each band index per chunk)
@@ -491,6 +571,11 @@ impl SurfaceSystem {
         // (noiseRandom = RandomState.random — the worldgen factory itself).
         let mut band_random = rs.worldgen_factory.from_hash_of("minecraft:clay_bands");
         let clay_bands = generate_bands(&mut *band_random, table);
+        // S3: resolve the column-probe biome ids once (kit build).
+        let probe_list = rs.biome_list();
+        let probe_frozen_ocean = probe_list.get_or_create_id("minecraft:frozen_ocean");
+        let probe_deep_frozen_ocean = probe_list.get_or_create_id("minecraft:deep_frozen_ocean");
+        let probe_eroded_badlands = probe_list.get_or_create_id("minecraft:eroded_badlands");
         Ok(SurfaceSystem {
             surface_noise,
             surface_secondary_noise,
@@ -501,6 +586,9 @@ impl SurfaceSystem {
             iceberg_pillar_noise,
             iceberg_pillar_roof_noise,
             iceberg_surface_noise,
+            probe_frozen_ocean,
+            probe_deep_frozen_ocean,
+            probe_eroded_badlands,
             clay_bands,
             // filled by StageKit::build right after SurfaceRuleSet::build
             block_states: Vec::new(),
@@ -709,7 +797,12 @@ pub struct SurfaceContext<'a> {
     pub system: &'a SurfaceSystem,
     pub rs: &'a RandomState,
     pub biome_noise: &'a BiomeNoise,
-    pub facts: &'a HashMap<String, BiomeFacts>,
+    /// S3: per-biome facts indexed by the RESOLVED u16 registry id
+    /// (StageKit::build maps `facts.get(registry.unique_names[id])` once per
+    /// kit — the SAME name strings the old per-test `facts.get(biome)` used,
+    /// so the `minecraft:`-prefix facts-key mismatch for pack biomes is
+    /// preserved bug-for-bug: pack names miss => None => false).
+    pub facts_by_id: &'a [Option<BiomeFacts>],
     pub source: &'a std::cell::RefCell<BiomeSource<'a>>,
     pub zoom_seed: i64,
     pub min_y: i32,
@@ -746,7 +839,9 @@ pub struct SurfaceContext<'a> {
     // the pending position, resolve on first read (biome_or_compute),
     // invalidate on every update_y. None-pending (no update_y yet) mirrors
     // Java's null supplier (BiomeIs reads it as "not contained").
-    pub biome: Option<String>,
+    // S3: the memoized value is the registry u16 ID (name materialization
+    // happens only on cold paths — trace TSV / carver-neighbour facts).
+    pub biome: Option<u16>,
     pub biome_pending: Option<(i32, i32, i32)>,
     pub block_y: i32,
     pub water_height: i32,
@@ -759,7 +854,7 @@ impl<'a> SurfaceContext<'a> {
         system: &'a SurfaceSystem,
         rs: &'a RandomState,
         biome_noise: &'a BiomeNoise,
-        facts: &'a HashMap<String, BiomeFacts>,
+        facts_by_id: &'a [Option<BiomeFacts>],
         source: &'a std::cell::RefCell<BiomeSource<'a>>,
         zoom_seed: i64,
     ) -> Self {
@@ -767,7 +862,7 @@ impl<'a> SurfaceContext<'a> {
             system,
             rs,
             biome_noise,
-            facts,
+            facts_by_id,
             source,
             zoom_seed,
             min_y: rs.settings.min_y,
@@ -850,8 +945,10 @@ impl<'a> SurfaceContext<'a> {
     /// ORDER cannot change results (verified before the fix). No pending
     /// update_y (Java: null supplier) is a no-op — reads see None, BiomeIs
     /// treats it as "not contained" without computing.
-    /// Reads go through `ctx.biome.as_deref()` AFTER this call (field-level
-    /// split borrow — keeps the read path &str, zero clones).
+    /// S3: the cached value is the registry u16 ID — the SHAPE is
+    /// byte-for-byte the S1 one (same vote trigger, same epoch
+    /// invalidation), so the vote-call count cannot move; only the value
+    /// type changed (String -> u16, no allocation).
     #[inline]
     pub fn ensure_biome(&mut self) {
         if self.biome.is_none() {
@@ -976,7 +1073,9 @@ impl Cond {
                     return c.value;
                 }
                 ctx.ensure_biome();
-                let v = ctx.biome.as_deref().map(|b| biomes.iter().any(|s| s == b)).unwrap_or(false);
+                // S3: integer membership (mask AND / Vec scan) — same epoch
+                // cache, same evaluation count, no String compares.
+                let v = ctx.biome.map(|id| biomes.contains(id)).unwrap_or(false);
                 cache.set(LazyCache { epoch: ctx.last_update_y, value: v });
                 #[cfg(ncf_profile)]
                 s2b_biomeis_tick(prof_bi, bi_miss);
@@ -1026,16 +1125,23 @@ impl Cond {
                 if c.epoch == ctx.last_update_y {
                     return c.value;
                 }
-                // S1: &str read — the old clone() allocated per epoch miss
+                // S1 lazy; S3: facts_by_id[registry_id] — the kit build
+                // looked up the SAME name string the old `facts.get(biome)`
+                // did, so hits and misses (incl. the pack `minecraft:`-prefix
+                // key mismatch) are identical bug-for-bug. No sampled id can
+                // exceed the table (leaf_ids < registry built-in block).
                 ctx.ensure_biome();
-                let biome = ctx.biome.as_deref().unwrap_or("");
-                let v = ctx
-                    .facts
-                    .get(biome)
-                    .map(|f| {
-                        cold_enough_to_snow(ctx.biome_noise, f, ctx.block_x, ctx.block_y, ctx.block_z, ctx.system.sea_level)
-                    })
-                    .unwrap_or(false);
+                let v = match ctx.biome {
+                    Some(id) => ctx
+                        .facts_by_id
+                        .get(id as usize)
+                        .and_then(|f| f.as_ref())
+                        .map(|f| {
+                            cold_enough_to_snow(ctx.biome_noise, f, ctx.block_x, ctx.block_y, ctx.block_z, ctx.system.sea_level)
+                        })
+                        .unwrap_or(false),
+                    None => false,
+                };
                 cache.set(LazyCache { epoch: ctx.last_update_y, value: v });
                 v
             }
@@ -1296,8 +1402,9 @@ pub fn build_surface(
                 prof_v0.elapsed().as_nanos() as u64,
                 std::sync::atomic::Ordering::Relaxed,
             );
-            let probe_frozen = matches!(probe.as_str(), "minecraft:frozen_ocean" | "minecraft:deep_frozen_ocean");
-            let probe_badlands = probe == "minecraft:eroded_badlands";
+            let probe_frozen = probe == ctx.system.probe_frozen_ocean
+                || probe == ctx.system.probe_deep_frozen_ocean;
+            let probe_badlands = probe == ctx.system.probe_eroded_badlands;
             if probe_badlands {
                 #[cfg(ncf_profile)]
                 let prof_b0 = std::time::Instant::now();
@@ -1400,7 +1507,7 @@ pub fn build_surface(
                 #[cfg(ncf_profile)]
                 let prof_f0 = std::time::Instant::now();
                 let min_surface = ctx.get_min_surface_level();
-                frozen_ocean_extension(ctx, chunk, &probe, x, z, i4, min_surface, default_block);
+                frozen_ocean_extension(ctx, chunk, probe, x, z, i4, min_surface, default_block);
                 #[cfg(ncf_profile)]
                 S2_NANOS_FROZEN.fetch_add(
                     prof_f0.elapsed().as_nanos() as u64,
@@ -1522,12 +1629,14 @@ fn eroded_badlands_extension(
     }
 }
 
-/// SurfaceSystem.frozenOceanExtension — probe biome is the column biome.
+/// SurfaceSystem.frozenOceanExtension — probe biome is the column biome
+/// (S3: its u16 registry id; facts come from the kit's facts_by_id table —
+/// the SAME name-string lookup the old `facts.get(probe_biome)` did).
 #[allow(clippy::too_many_arguments)]
 fn frozen_ocean_extension(
     ctx: &mut SurfaceContext,
     chunk: &mut ChunkColumns,
-    probe_biome: &str,
+    probe: u16,
     x: i32,
     z: i32,
     height: i32,
@@ -1557,7 +1666,7 @@ fn frozen_ocean_extension(
         .abs();
     let mut min1 = f64::min(min * min * 1.2, abs.ceil() * 40.0 + 14.0);
     // biome.shouldMeltFrozenOceanIcebergSlightly(pos.set(x, seaLevel, z), seaLevel)
-    let facts = ctx.facts.get(probe_biome);
+    let facts = ctx.facts_by_id.get(probe as usize).and_then(|f| f.as_ref());
     let melts = facts
         .map(|f| {
             should_melt_frozen_ocean_iceberg_slightly(
@@ -1709,7 +1818,7 @@ mod s4_surface_id_tests {
         let zoom_seed = crate::biomes::biome_zoom_seed(seed);
         let source = std::cell::RefCell::new(crate::biomes::BiomeSource::new(&rs));
         let mut ctx = SurfaceContext::new(
-            &kit.system, &rs, &kit.biome_noise, &kit.facts, &source, zoom_seed,
+            &kit.system, &rs, &kit.biome_noise, &kit.facts_by_id, &source, zoom_seed,
         );
         ctx.default_block = default_block;
         let mut cols = ChunkColumns { chunk: &mut chunk };
@@ -1750,6 +1859,105 @@ mod s4_surface_id_tests {
             let _ = cols.chunk.state_table.intern_canonical(st);
         }
         assert_eq!(cols.chunk.state_table.states.len(), len_before);
+    }
+
+    /// S3 (b): BiomeIs MASK vs VEC — exhaustive equality. For a spread of id
+    /// sets (empty, boundary singles 0/63/64/127, mixed, all-of-0..128, and
+    /// sets with >= 128 members forcing the Vec fallback) the two
+    /// representations must agree on EVERY probe id in 0..256, and
+    /// BiomeIsTest::build must pick Mask iff every id is < 128. Extract-gated
+    /// addendum: the REAL registry's biome id set (all leaf ids of the
+    /// extract's search table) must satisfy the same exhaustive equality —
+    /// and, being vanilla-preset-sized, must compile to a Mask.
+    #[test]
+    fn s3_biomeis_mask_equals_vec_exhaustive() {
+        // reference mask bits, built the way BiomeIsTest::build does
+        // (ids >= 128 never reach a Mask — guarded here to match)
+        let mask_bits = |ids: &[u16]| -> [u64; 2] {
+            let mut m = [0u64; 2];
+            for &i in ids.iter().filter(|&&i| i < 128) {
+                m[(i >> 6) as usize] |= 1u64 << (i & 63);
+            }
+            m
+        };
+        let sets: Vec<Vec<u16>> = vec![
+            vec![],
+            vec![0],
+            vec![63],
+            vec![64],
+            vec![127],
+            vec![1, 5, 64, 127],
+            (0..128u16).collect(),
+            vec![128],
+            vec![5, 200],
+            (0..130u16).filter(|i| i % 3 == 0).collect(),
+        ];
+        for ids in &sets {
+            let t = BiomeIsTest::build(ids);
+            // build picks Mask iff every id < 128
+            assert_eq!(
+                matches!(t, BiomeIsTest::Mask(_)),
+                ids.iter().all(|&i| i < 128),
+                "wrong representation for {ids:?}"
+            );
+            // decoded ids equal the input set (deduped, as a set)
+            let mut want: Vec<u16> = ids.to_vec();
+            want.sort_unstable();
+            want.dedup();
+            assert_eq!(&*t.as_ids(), &want[..], "decoded id set mismatch for {ids:?}");
+            // exhaustive predicate equality on 0..256
+            let is_mask = matches!(t, BiomeIsTest::Mask(_));
+            for probe in 0..=255u16 {
+                let via_test = t.contains(probe);
+                let via_vec = ids.contains(&probe);
+                assert_eq!(via_test, via_vec, "test vs vec id {probe} set {ids:?}");
+                // mask reference only for the Mask representation (window-
+                // guarded exactly like contains: probes >= 128 are false)
+                if is_mask && probe < 128 {
+                    let via_mask =
+                        (mask_bits(ids)[(probe >> 6) as usize] >> (probe & 63)) & 1 != 0;
+                    assert_eq!(via_test, via_mask, "test vs mask id {probe} set {ids:?}");
+                }
+            }
+        }
+
+        // extract-gated: the real registry's biome ids
+        use crate::test_support::extract_root;
+        let Some(root) = extract_root() else { return };
+        let dir = crate::router::WorldgenDir::load(&root).expect("worldgen dir");
+        let rs = RandomState::build_overworld(&dir, 3053459).expect("random state");
+        let list = rs.biome_list();
+        let mut ids: Vec<u16> = list.leaf_ids.clone();
+        ids.sort_unstable();
+        ids.dedup();
+        assert!(!ids.is_empty(), "extract registry must have biomes");
+        let t = BiomeIsTest::build(&ids);
+        assert!(
+            matches!(t, BiomeIsTest::Mask(_)),
+            "the extract registry id set must sit in the mask window (ids < 128)"
+        );
+        for probe in 0..=255u16 {
+            assert_eq!(
+                t.contains(probe),
+                ids.contains(&probe),
+                "mask vs vec diverged at id {probe} (extract registry)"
+            );
+        }
+        // probe consts land in the same window and differ from each other
+        assert_ne!(rs_biome_probe_check(&rs), (u16::MAX, u16::MAX, u16::MAX));
+    }
+
+    /// Helper: the SurfaceSystem probe consts as resolved for this RandomState
+    /// (distinct, in-window ids).
+    fn rs_biome_probe_check(rs: &RandomState) -> (u16, u16, u16) {
+        let list = rs.biome_list();
+        let a = list.get_or_create_id("minecraft:frozen_ocean");
+        let b = list.get_or_create_id("minecraft:deep_frozen_ocean");
+        let c = list.get_or_create_id("minecraft:eroded_badlands");
+        assert!(a < 128 && b < 128 && c < 128);
+        assert_ne!(a, b);
+        assert_ne!(a, c);
+        (a, b, c)
     }
 
     /// StateTable sanity used by the S4 memo: fresh tables agree on ids
