@@ -1322,6 +1322,65 @@ pub static N1_SLICE_LEAF_YDEP: std::sync::atomic::AtomicU64 = std::sync::atomic:
 pub static N1_SLICE_LEAF_YFREE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 #[cfg(ncf_profile)]
 pub static N1_DRIVE_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+// N2 probe (NP2 go/no-go, standing order R5, cfg(ncf_profile) only): the
+// parallel fill_slice arm split — clone / scope / main-rows / worker-rows /
+// merge — plus an OPTIONAL per-unit table (fill_slice_rows unit =
+// (row, interpolator) take+fill_array+put-back) behind a second env gate.
+// All clocks are plain Instant deltas summed into Relaxed atomics (unit
+// clocks run on BOTH threads; atomics sum per chunk). Zero effect on normal
+// builds: every line here is compiled out without --cfg ncf_profile.
+//   N2_FILL_CALLS      — fill_slice_parallel entries (5/chunk overworld)
+//   N2_CLONE_NANOS     — the worker replica clone (once per fill call)
+//   N2_SCOPE_NANOS     — the whole thread::scope (spawn..join..merge)
+//   N2_MAIN_ROWS_NANOS — parent-side fill_slice_rows (lower half)
+//   N2_WORKER_ROWS_NANOS — worker-side fill_slice_rows (upper half)
+//   N2_MERGE_NANOS     — copy-back + counter/scalar/memo merge block
+// Decision rule (worklist NP2): keep pushing parallelism only if the fixed
+// fork/join overhead (clone + scope - max(main, worker)) is small vs the
+// parallel slice mass, and clone cost does not dominate a 5-call chunk.
+#[cfg(ncf_profile)]
+pub static N2_FILL_CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N2_CLONE_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N2_SCOPE_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N2_MAIN_ROWS_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N2_WORKER_ROWS_NANOS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N2_MERGE_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+/// Per-unit slots, indexed `row * interps_len + id` (overworld: 5 rows x
+/// 8 interps = 40 used of 64; the bench guards every index). Optional —
+/// see N2_UNIT_PROBE below.
+#[cfg(ncf_profile)]
+pub const N2_UNIT_LEN: usize = 64;
+#[cfg(ncf_profile)]
+pub static N2_UNIT_NANOS: [std::sync::atomic::AtomicU64; N2_UNIT_LEN] =
+    [const { std::sync::atomic::AtomicU64::new(0) }; N2_UNIT_LEN];
+#[cfg(ncf_profile)]
+pub static N2_UNIT_IC_DELTA: [std::sync::atomic::AtomicU64; N2_UNIT_LEN] =
+    [const { std::sync::atomic::AtomicU64::new(0) }; N2_UNIT_LEN];
+/// interpolators.len() seen by the last unit-probed fill_slice_rows call —
+/// the bench needs it to split the flat unit slots back into (row, id).
+#[cfg(ncf_profile)]
+pub static N2_INTERPS_LEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+/// N2 per-unit gate, read ONCE per process: only the exact value "1"
+/// enables the per-unit clocks in fill_slice_rows (~4-6 µs/chunk of clock
+/// pairs at 200 units/chunk — always OFF unless asked for). Independent of
+/// NCF_PAR_FILL (units are clocked on the serial path too) and of
+/// NCF_N2_PROBE (printout gate, bench side only).
+#[cfg(ncf_profile)]
+static N2_UNIT_PROBE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+
+/// N2 per-unit probe gate (probe only; cfg(ncf_profile) builds).
+#[cfg(ncf_profile)]
+#[inline]
+pub fn n2_unit_probe_enabled() -> bool {
+    *N2_UNIT_PROBE.get_or_init(|| std::env::var("NCF_N2_UNIT_PROBE").as_deref() == Ok("1"))
+}
+
 #[cfg(ncf_profile)]
 thread_local! {
     static N1_IN_SLICE_FILL: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
@@ -2247,6 +2306,20 @@ impl<'a> NoiseChunkSim<'a> {
         #[cfg(ncf_profile)]
         N1_IN_SLICE_FILL.with(|c| c.set(true));
         let cols = (self.cell_count_y + 1) as usize;
+        // N2 per-unit probe: read the gate + interp count ONCE per call (this
+        // fn runs on BOTH threads — the atomics sum per chunk). Gate OFF =
+        // only a branch + a field read per unit (~0.2 µs/chunk).
+        #[cfg(ncf_profile)]
+        let n2_unit = n2_unit_probe_enabled();
+        #[cfg(ncf_profile)]
+        let n2_interps_len = self.interpolators.len();
+        #[cfg(ncf_profile)]
+        if n2_unit {
+            N2_INTERPS_LEN.store(
+                n2_interps_len as u64,
+                std::sync::atomic::Ordering::Relaxed,
+            );
+        }
         for i in rows {
             let i1 = self.first_cell_z + i as i32;
             self.cell_start_block_z = i1 * self.cell_width;
@@ -2255,6 +2328,17 @@ impl<'a> NoiseChunkSim<'a> {
             // De-alloc: id range iteration — no per-slice Vec allocation.
             let row = i * cols;
             for id in 0..self.interpolators.len() {
+                // N2 unit clock: take+fill_array+put-back for ONE (row, id)
+                // unit. Instant is only constructed when the gate is on (the
+                // 4-6 µs/chunk cost must not leak into unprobed runs).
+                #[cfg(ncf_profile)]
+                let n2_u0 = if n2_unit {
+                    Some(std::time::Instant::now())
+                } else {
+                    None
+                };
+                #[cfg(ncf_profile)]
+                let n2_ic0 = self.interpolation_counter;
                 let mut flat = if is_slice0 {
                     std::mem::take(&mut self.interpolators[id].slice0)
                 } else {
@@ -2266,6 +2350,20 @@ impl<'a> NoiseChunkSim<'a> {
                     self.interpolators[id].slice0 = flat;
                 } else {
                     self.interpolators[id].slice1 = flat;
+                }
+                #[cfg(ncf_profile)]
+                if let Some(n2_u0) = n2_u0 {
+                    let n2_idx = i * n2_interps_len + id;
+                    if n2_idx < N2_UNIT_LEN {
+                        N2_UNIT_NANOS[n2_idx].fetch_add(
+                            n2_u0.elapsed().as_nanos() as u64,
+                            std::sync::atomic::Ordering::Relaxed,
+                        );
+                        N2_UNIT_IC_DELTA[n2_idx].fetch_add(
+                            (self.interpolation_counter - n2_ic0) as u64,
+                            std::sync::atomic::Ordering::Relaxed,
+                        );
+                    }
                 }
             }
         }
@@ -2307,6 +2405,8 @@ impl<'a> NoiseChunkSim<'a> {
     /// (select_cell_yz epoch arithmetic, CacheOnce checks, drive-callback
     /// reads) must see the serial machine, not merely an equivalent one.
     fn fill_slice_parallel(&mut self, is_slice0: bool, start: i32, rows: std::ops::Range<usize>) {
+        #[cfg(ncf_profile)]
+        N2_FILL_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let mid = (rows.start + rows.end + 1) / 2; // main takes the larger lower half
         let fork_ic = self.interpolation_counter;
         let fork_aic = self.array_interpolation_counter;
@@ -2314,17 +2414,42 @@ impl<'a> NoiseChunkSim<'a> {
         // mutable; only the shared `&'a` refs (SimTemplate/NoiseBank/
         // TileCache) cross the scope boundary — all Sync (tile.rs NP1).
         // The closure captures NO reference into self's interior.
+        #[cfg(ncf_profile)]
+        let n2_t_clone = std::time::Instant::now();
         let mut worker = self.clone();
+        #[cfg(ncf_profile)]
+        N2_CLONE_NANOS.fetch_add(
+            n2_t_clone.elapsed().as_nanos() as u64,
+            std::sync::atomic::Ordering::Relaxed,
+        );
         let is_slice0_c = is_slice0;
         let start_c = start;
         let rows_end = rows.end;
+        #[cfg(ncf_profile)]
+        let n2_t_scope = std::time::Instant::now();
         std::thread::scope(|scope| {
             let h = scope.spawn(move || {
+                #[cfg(ncf_profile)]
+                let n2_t_worker = std::time::Instant::now();
                 worker.fill_slice_rows(is_slice0_c, start_c, mid..rows_end);
+                #[cfg(ncf_profile)]
+                N2_WORKER_ROWS_NANOS.fetch_add(
+                    n2_t_worker.elapsed().as_nanos() as u64,
+                    std::sync::atomic::Ordering::Relaxed,
+                );
                 worker // return the owned clone
             });
+            #[cfg(ncf_profile)]
+            let n2_t_main = std::time::Instant::now();
             self.fill_slice_rows(is_slice0, start, rows.start..mid);
+            #[cfg(ncf_profile)]
+            N2_MAIN_ROWS_NANOS.fetch_add(
+                n2_t_main.elapsed().as_nanos() as u64,
+                std::sync::atomic::Ordering::Relaxed,
+            );
             let done = h.join().expect("np1 fill worker");
+            #[cfg(ncf_profile)]
+            let n2_t_merge = std::time::Instant::now();
             // Parent deltas while the worker ran (ic = per-element Slice
             // bumps, aic = per-row bumps). Serial totals = fork + both
             // deltas; the parent already holds its own.
@@ -2385,7 +2510,17 @@ impl<'a> NoiseChunkSim<'a> {
             // slot recomputes identical bits — see fork comment).
             // ap2_scratch: scratch cleared+resized before every use, and its
             // len/capacity are unobservable in values.
+            #[cfg(ncf_profile)]
+            N2_MERGE_NANOS.fetch_add(
+                n2_t_merge.elapsed().as_nanos() as u64,
+                std::sync::atomic::Ordering::Relaxed,
+            );
         });
+        #[cfg(ncf_profile)]
+        N2_SCOPE_NANOS.fetch_add(
+            n2_t_scope.elapsed().as_nanos() as u64,
+            std::sync::atomic::Ordering::Relaxed,
+        );
     }
 
     /// Drive the doFill loop and collect per-block values for every

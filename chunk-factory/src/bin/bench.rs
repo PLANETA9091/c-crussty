@@ -99,6 +99,34 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         chunk_factory::interpolator::N1_DRIVE_NANOS.load(std::sync::atomic::Ordering::Relaxed),
     );
 
+    // N2 probe snapshot (after warmup, before the corpus). The per-unit
+    // arrays are snapshotted element-wise too — the warmup chunks must not
+    // leak into the per-chunk unit table.
+    #[cfg(ncf_profile)]
+    let n2_before = (
+        chunk_factory::interpolator::N2_FILL_CALLS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N2_CLONE_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N2_SCOPE_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N2_MAIN_ROWS_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N2_WORKER_ROWS_NANOS
+            .load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N2_MERGE_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+    );
+    #[cfg(ncf_profile)]
+    let n2_units_before: (
+        [u64; chunk_factory::interpolator::N2_UNIT_LEN],
+        [u64; chunk_factory::interpolator::N2_UNIT_LEN],
+    ) = {
+        use std::sync::atomic::Ordering::Relaxed as R;
+        let mut nanos = [0u64; chunk_factory::interpolator::N2_UNIT_LEN];
+        let mut icd = [0u64; chunk_factory::interpolator::N2_UNIT_LEN];
+        for i in 0..chunk_factory::interpolator::N2_UNIT_LEN {
+            nanos[i] = chunk_factory::interpolator::N2_UNIT_NANOS[i].load(R);
+            icd[i] = chunk_factory::interpolator::N2_UNIT_IC_DELTA[i].load(R);
+        }
+        (nanos, icd)
+    };
+
     let mut acc = [0f64; 4]; // noise, surface, carvers, serialization
     let mut n = 0usize;
     let t_all = Instant::now();
@@ -237,6 +265,89 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
             yfree / (n as u64).max(1),
             100.0 * ydep as f64 / (ydep + yfree).max(1) as f64,
         );
+    }
+    // N2 probe (NP2 go/no-go, standing order R5): parallel fill_slice split.
+    // NOTE the approximation: main/worker times are GLOBAL atomics — the
+    // per-call split is not captured, so imbalance is the per-chunk estimate
+    // |main_total - worker_total| / 2 (labeled as such below).
+    #[cfg(ncf_profile)]
+    if std::env::var("NCF_N2_PROBE").is_ok() {
+        use std::sync::atomic::Ordering::Relaxed as R;
+        use chunk_factory::interpolator as ip;
+        let (fc0, cl0, sc0, mr0, wr0, mg0) = n2_before;
+        let g = |a: &std::sync::atomic::AtomicU64, b: u64| a.load(R) - b;
+        let ms = |nanos: u64| nanos as f64 / n as f64 / 1e6;
+        let fill_calls = g(&ip::N2_FILL_CALLS, fc0);
+        let clone_ms = ms(g(&ip::N2_CLONE_NANOS, cl0));
+        let scope_ms = ms(g(&ip::N2_SCOPE_NANOS, sc0));
+        let main_ms = ms(g(&ip::N2_MAIN_ROWS_NANOS, mr0));
+        let worker_ms = ms(g(&ip::N2_WORKER_ROWS_NANOS, wr0));
+        let merge_ms = ms(g(&ip::N2_MERGE_NANOS, mg0));
+        // fixed = clone + (scope - max(main, worker)): spawn/join + protocol
+        // overhead (the merge block is inside scope and NOT subtracted).
+        let fixed_ms = clone_ms + (scope_ms - main_ms.max(worker_ms));
+        // imbalance loss, per-chunk APPROXIMATION (see header note).
+        let imbalance_ms = (main_ms - worker_ms).abs() / 2.0;
+        eprintln!(
+            "[N2-probe] parallel fill_slice ms/chunk (APPROX: imbalance from global atomics, per-call split not captured): fill_calls = {} (expect 5) | clone = {clone_ms:.3} scope = {scope_ms:.3} main_rows = {main_ms:.3} worker_rows = {worker_ms:.3} merge = {merge_ms:.3}",
+            fill_calls / (n as u64).max(1),
+        );
+        eprintln!(
+            "[N2-probe] fixed (clone + scope - max(main,worker), incl. merge) = {fixed_ms:.3} ms/chunk | imbalance_loss (approx |m-w|/2) = {imbalance_ms:.3} ms/chunk | m/w totals = {main_ms:.3}/{worker_ms:.3} | |m-w|/(m+w) = {:.3}",
+            (main_ms - worker_ms).abs() / (main_ms + worker_ms).max(1e-9),
+        );
+        if ip::n2_unit_probe_enabled() {
+            let interps = ip::N2_INTERPS_LEN.load(R) as usize;
+            if interps == 0 {
+                eprintln!("[N2-probe] unit table: no unit-probed fill ran (interps unknown)");
+            } else {
+                let mut per_interp = [0u64; ip::N2_UNIT_LEN];
+                let mut sum_nanos = 0u64;
+                let mut ic_min = u64::MAX;
+                let mut ic_max = 0u64;
+                let mut i0_min = u64::MAX;
+                let mut i0_max = 0u64;
+                let mut rows_seen = 0usize;
+                for idx in 0..ip::N2_UNIT_LEN {
+                    let nanos = ip::N2_UNIT_NANOS[idx].load(R) - n2_units_before.0[idx];
+                    if nanos == 0 {
+                        continue;
+                    }
+                    let (row_i, id) = (idx / interps, idx % interps);
+                    rows_seen = rows_seen.max(row_i + 1);
+                    sum_nanos += nanos;
+                    if id < ip::N2_UNIT_LEN {
+                        per_interp[id] += nanos;
+                    }
+                    if id == 0 {
+                        i0_min = i0_min.min(nanos);
+                        i0_max = i0_max.max(nanos);
+                    }
+                    let icd = ip::N2_UNIT_IC_DELTA[idx].load(R) - n2_units_before.1[idx];
+                    ic_min = ic_min.min(icd);
+                    ic_max = ic_max.max(icd);
+                }
+                let sum_ms = sum_nanos as f64 / n as f64 / 1e6;
+                let share = |v: u64| {
+                    100.0 * v as f64 / sum_nanos.max(1) as f64
+                };
+                let interp_list: String = per_interp
+                    .iter()
+                    .take(interps.min(ip::N2_UNIT_LEN))
+                    .enumerate()
+                    .map(|(id, &v)| format!("[{id}]={:.3}({:.1}%)", v as f64 / n as f64 / 1e6, share(v)))
+                    .collect::<Vec<_>>()
+                    .join(" ");
+                eprintln!(
+                    "[N2-probe] unit table (interps = {interps}, rows = {rows_seen}, per-chunk ms/share of unit-clock sum): {interp_list}",
+                );
+                eprintln!(
+                    "[N2-probe] unit table: interp[0] share = {:.1}% | interp[0] per-row spread = {}..{} ns | unit ic-delta (units with time>0) = {}..{} | sum of unit clocks = {sum_ms:.3} ms/chunk",
+                    share(per_interp[0]),
+                    i0_min, i0_max, ic_min, ic_max,
+                );
+            }
+        }
     }
     let ported_total: f64 = per.iter().sum();
 
