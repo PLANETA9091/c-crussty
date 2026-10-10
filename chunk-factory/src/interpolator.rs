@@ -1390,6 +1390,19 @@ pub fn n2_unit_probe_enabled() -> bool {
 }
 
 // --------------------------------------------------------------------------
+// NP5 probe counters (cfg ncf_profile only) — FlatCacheW hit/miss split.
+// Miss on the slice-fill path = full inner-subtree recompute per element with
+// NO store (write-once priming at instantiate only). If misses ~ 0 on slice
+// fills, the window-geometry lever is dead and the interp[0] unit mass is
+// all in-window work (dispatch + splines + noodle noise) -> NP5 falsified.
+// Always zero-cost in normal builds (cfg'd out); ~1 relaxed add per
+// FlatCacheW visit under ncf_profile builds.
+#[cfg(ncf_profile)]
+pub static N5_FCM_HITS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N5_FCM_MISSES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+// --------------------------------------------------------------------------
 // NP3 probe clocks (cfg ncf_profile only) — pipelined-drive overlap split.
 // Same rules as N1/N2: Relaxed atomics summed across threads, compiled out
 // of normal builds entirely.
@@ -1804,8 +1817,12 @@ impl<'a> NoiseChunkSim<'a> {
                     let i1 = qz - self.first_noise_z;
                     let size_xz = self.flat_caches[*id].size_xz;
                     if i >= 0 && i1 >= 0 && (i as usize) < size_xz && (i1 as usize) < size_xz {
+                        #[cfg(ncf_profile)]
+                        N5_FCM_HITS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                         self.flat_caches[*id].values[i as usize + i1 as usize * size_xz]
                     } else {
+                        #[cfg(ncf_profile)]
+                        N5_FCM_MISSES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                         let inner = self.flat_caches[*id].inner;
                         self.compute(inner, ctx)
                     }

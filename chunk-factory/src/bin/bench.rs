@@ -113,6 +113,11 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         chunk_factory::interpolator::N2_MERGE_NANOS.load(std::sync::atomic::Ordering::Relaxed),
     );
     #[cfg(ncf_profile)]
+    let n5_fcm_before = (
+        chunk_factory::interpolator::N5_FCM_HITS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N5_FCM_MISSES.load(std::sync::atomic::Ordering::Relaxed),
+    );
+    #[cfg(ncf_profile)]
     let n2_units_before: (
         [u64; chunk_factory::interpolator::N2_UNIT_LEN],
         [u64; chunk_factory::interpolator::N2_UNIT_LEN],
@@ -311,6 +316,20 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
             "[N2-probe] fixed (clone + scope - max(main,worker), incl. merge) = {fixed_ms:.3} ms/chunk | imbalance_loss (approx |m-w|/2) = {imbalance_ms:.3} ms/chunk | m/w totals = {main_ms:.3}/{worker_ms:.3} | |m-w|/(m+w) = {:.3}",
             (main_ms - worker_ms).abs() / (main_ms + worker_ms).max(1e-9),
         );
+        // NP5 R5 probe: FlatCacheW hit/miss split (miss = full inner recompute,
+        // no store). Misses ~ 0 on slice fills => window-geometry lever dead,
+        // interp[0] mass is all in-window work (dispatch+splines+noodle).
+        {
+            let fcm_h = g(&ip::N5_FCM_HITS, n5_fcm_before.0);
+            let fcm_m = g(&ip::N5_FCM_MISSES, n5_fcm_before.1);
+            eprintln!(
+                "[N5-probe] FlatCacheW visits/chunk = {} (hit {} / miss {}; miss share = {:.1}%)",
+                (fcm_h + fcm_m) / (n as u64).max(1),
+                fcm_h / (n as u64).max(1),
+                fcm_m / (n as u64).max(1),
+                100.0 * fcm_m as f64 / (fcm_h + fcm_m).max(1) as f64,
+            );
+        }
         if ip::n2_unit_probe_enabled() {
             let interps = ip::N2_INTERPS_LEN.load(R) as usize;
             if interps == 0 {

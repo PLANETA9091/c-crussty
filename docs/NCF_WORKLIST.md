@@ -260,7 +260,7 @@ WALK-side cuts (SUB1 substance) have ~0 wall leverage while F > W;
 WORKER fill-kernel speedups convert ~1:1 into wall (window F-W = 2.33-2.77
 ms/chunk) -> NP5 opened, SUB1 re-ordered below it.
 
-## NP5 [FILL-KERNEL SPEEDUP UNDER PIPELINE, worker-side wall leverage] [ ]
+## NP5 [FILL-KERNEL SPEEDUP UNDER PIPELINE, worker-side wall leverage] [x]
 HYP: mode2 is worker-bound (F = 3.025-3.173 vs W = 2.247-2.351 ms/column,
 quiet rig x2): the 3 overlapped columns contribute 3xF wall, so worker
 fill-kernel speedups land ~1:1 on noise (window F-W = 2.33-2.77 ms/chunk) —
@@ -272,3 +272,26 @@ premise under mode2 (slice-fill kernel share via existing unit clocks +
 scoped arm prototype in an isolated worktree, byte-identical A/B stagediff +
 paired ledger x2); implement only if projected paired gain >= 0.70 ms.
 Target: noise <= 10.5 ms/chunk. Effort: medium-high.
+
+PROBE FALSIFIED (2026-10-11, this commit: N5_FCM_HITS/MISSES counters at
+the FlatCacheW arm + bench [N5-probe] print; R5 gate BEFORE any fix code).
+RESEARCH (np5-research agent): interp[0] = sloped-cheese root BlendDensity
+-> Add -> Mul(slope_lower) -> Add(-0.1) -> Add(-1) -> Mul(slope_upper) ->
+Min(REF base_terrain, REF caves); FlatCache = write-once priming at
+instantiate, hit = 10 int ops, miss recomputes WITHOUT store; the
+window-redundancy hypothesis (adjacent cell columns re-evaluating a shared
+x-boundary plane) REFUTED in code — the shared plane is filled exactly once
+per chunk, no per-cell window reset exists. PROBE (64ch mode2): FlatCacheW
+visits 6,283/chunk, miss share 0.0% -> window-geometry lever = 0 ms.
+LEVER LEDGER vs R2 bar 0.70: (a) window geometry 0 (proven dead);
+(b) dispatch-removal array arms MEASURED 0.09-0.43 sub-bar (n1-arms
+tick-2318; N1-R pfd pool 0.095 ms); (c) leaf-math SoA/vectorization
+forbidden/weak (P2.13 no-gather, octave-SoA grad_dot, leaves 100% YDEP
+with y-free front memo complete); (d) interp[0] mass = irreducible
+per-element spline+noise math short of interpreter->compiled-passes
+rework (SUB1-scale+ effort, ceiling unproven, not a one-tick lever).
+VERDICT: no >= 0.70 worker-fill lever exists within R3 constraints ->
+NP5 CLOSED (NP2/NP4 precedent). N3 residual 2.471 (6th reproduction).
+Worker-fill wall is now MEASURED-irreducible: pipeline shape (NP3) +
+kernel economics are at their R3 optimum; next live item = SUB1 probe
+(mode0 serial path value; mode2 walk-side leverage still ~0 while F > W).
