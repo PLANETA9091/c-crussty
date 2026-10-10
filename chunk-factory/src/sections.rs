@@ -18,7 +18,6 @@
 #![allow(clippy::type_complexity)]
 
 use crate::filler::{BlockStateDef, FillerChunk, HeightmapKind, StateTable};
-use std::collections::HashMap;
 
 // ---------------------------------------------------------------------------
 // gzip
@@ -676,38 +675,38 @@ pub fn parse_staged_file(bytes: &[u8]) -> Result<StagedChunk, String> {
 /// the fill, heightmaps packed into long[37] 9-bit SimpleBitStorage form).
 pub fn filler_to_staged(fc: &FillerChunk, seed_status: &str, data_version: i32) -> StagedChunk {
     let mut sections = Vec::with_capacity(fc.sections.len());
+    // Dense id->palette-index remaps, one per id space (blocks u32 / biomes
+    // u16 — keep them separate: the biome remap uses its own table's ids),
+    // reused across all 24 sections with a tiny memset reset per section.
+    // Replaces the per-section SipHash HashMaps (98,304+ lookups per chunk):
+    // the first-encounter walk order is UNCHANGED, so the palette order and
+    // the NBT bytes are identical by construction.
+    let mut remap_blocks = crate::palette::DenseRemap::new(fc.state_table.states.len());
+    let mut remap_biomes = crate::palette::DenseRemap::new(fc.biome_table.names.len());
     for (i, sec) in fc.sections.iter().enumerate() {
         let y = (fc.min_y / 16 + i as i32) as i8;
         // first-encounter palette
         let mut palette: Vec<u32> = Vec::new();
-        let mut index: HashMap<u32, u32> = HashMap::new();
+        remap_blocks.reset();
         let mut data = vec![0u32; 4096];
         for (j, &s) in sec.states.iter().enumerate() {
-            let pi = match index.get(&s) {
-                Some(&p) => p,
-                None => {
-                    let p = palette.len() as u32;
-                    palette.push(s);
-                    index.insert(s, p);
-                    p
-                }
-            };
+            let next = palette.len() as u32;
+            let pi = remap_blocks.remap(s, next);
+            if pi == next {
+                palette.push(s);
+            }
             data[j] = pi;
         }
         let states: Vec<String> = palette.iter().map(|&s| fc.state_table.get(s).canonical()).collect();
         let mut bpalette: Vec<u16> = Vec::new();
-        let mut bindex: HashMap<u16, u32> = HashMap::new();
+        remap_biomes.reset();
         let mut bdata = vec![0u32; 64];
         for (j, &b) in sec.biomes.iter().enumerate() {
-            let pi = match bindex.get(&b) {
-                Some(&p) => p,
-                None => {
-                    let p = bpalette.len() as u32;
-                    bpalette.push(b);
-                    bindex.insert(b, p);
-                    p
-                }
-            };
+            let next = bpalette.len() as u32;
+            let pi = remap_biomes.remap(b as u32, next);
+            if pi == next {
+                bpalette.push(b);
+            }
             bdata[j] = pi;
         }
         let biomes: Vec<String> = bpalette.iter().map(|&b| fc.biome_table.names[b as usize].clone()).collect();

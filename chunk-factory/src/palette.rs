@@ -72,22 +72,71 @@ pub struct PackedSection {
     pub data: Option<Vec<i64>>,
 }
 
+/// Dense id->palette-index remap replacing the per-section
+/// `HashMap<u32,u32>` (R4#4: 4096 SipHash lookups per section, 24 sections
+/// per chunk => 98,304+ per chunk across the two pack paths).
+///
+/// The shared StateTable/BiomeTable ids are DENSE (0..len-1, first-encounter
+/// intern), so the map is a flat Vec indexed by raw id with `u32::MAX` as
+/// the "unseen" sentinel. The caller walks entries in the SAME order as the
+/// old HashMap version and assigns palette indices on first encounter, so
+/// the palette order — and therefore the NBT bytes — are identical by
+/// construction. Reset per section is a tiny memset (`fill`, the shared
+/// tables hold only a few hundred states) — deterministic and simpler than
+/// epoch tagging.
+pub struct DenseRemap {
+    map: Vec<u32>,
+}
+
+impl DenseRemap {
+    /// Sized to the id space of the shared table (`states.len()` /
+    /// `names.len()`).
+    pub fn new(id_space_size: usize) -> Self {
+        Self { map: vec![u32::MAX; id_space_size] }
+    }
+
+    /// Reset for the next section: O(id_space) memset (sub-KB for the
+    /// tables in play), fully deterministic.
+    pub fn reset(&mut self) {
+        self.map.fill(u32::MAX);
+    }
+
+    /// First-encounter remap of `id`: returns its palette index, assigning
+    /// `next_index` (the caller's current `palette.len()`) on first sight.
+    /// The walk order is caller-controlled, so this reproduces the HashMap
+    /// version exactly — including the (unreachable through the pack paths)
+    /// case of an id at or beyond the initial size, which grows the vec
+    /// instead of panicking. `u32::MAX` can never collide with a real
+    /// palette index: a section holds at most 4096 (blocks) / 64 (biomes)
+    /// entries.
+    #[inline]
+    pub fn remap(&mut self, id: u32, next_index: u32) -> u32 {
+        let idx = id as usize;
+        if idx >= self.map.len() {
+            self.map.resize(idx + 1, u32::MAX);
+        }
+        let slot = &mut self.map[idx];
+        if *slot == u32::MAX {
+            *slot = next_index;
+            next_index
+        } else {
+            *slot
+        }
+    }
+}
+
 /// Repack one 4096-block section from raw first-encounter ids.
 pub fn pack_block_section(fc: &FillerChunk, section_idx: usize) -> PackedSection {
     let sec = &fc.sections[section_idx];
     let mut palette: Vec<u32> = Vec::new();
-    let mut index: std::collections::HashMap<u32, u32> = std::collections::HashMap::new();
+    let mut remap = DenseRemap::new(fc.state_table.states.len());
     let mut data = vec![0u32; 4096];
     for (j, &s) in sec.states.iter().enumerate() {
-        let pi = match index.get(&s) {
-            Some(&p) => p,
-            None => {
-                let p = palette.len() as u32;
-                palette.push(s);
-                index.insert(s, p);
-                p
-            }
-        };
+        let next = palette.len() as u32;
+        let pi = remap.remap(s, next);
+        if pi == next {
+            palette.push(s);
+        }
         data[j] = pi;
     }
     let bits = block_storage_bits(palette.len());
@@ -105,18 +154,15 @@ pub fn pack_block_section(fc: &FillerChunk, section_idx: usize) -> PackedSection
 pub fn pack_biome_section(fc: &FillerChunk, section_idx: usize) -> PackedSection {
     let sec = &fc.sections[section_idx];
     let mut palette: Vec<u16> = Vec::new();
-    let mut index: std::collections::HashMap<u16, u32> = std::collections::HashMap::new();
+    // separate dense vec: the biome id space is its own table (u16 ids)
+    let mut remap = DenseRemap::new(fc.biome_table.names.len());
     let mut data = vec![0u32; 64];
     for (j, &b) in sec.biomes.iter().enumerate() {
-        let pi = match index.get(&b) {
-            Some(&p) => p,
-            None => {
-                let p = palette.len() as u32;
-                palette.push(b);
-                index.insert(b, p);
-                p
-            }
-        };
+        let next = palette.len() as u32;
+        let pi = remap.remap(b as u32, next);
+        if pi == next {
+            palette.push(b);
+        }
         data[j] = pi;
     }
     let bits = biome_storage_bits(palette.len());
@@ -137,6 +183,148 @@ pub fn pack_biome_section(fc: &FillerChunk, section_idx: usize) -> PackedSection
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::filler::{BiomeTable, FillerChunk, SectionData, StateTable};
+    use crate::jrandom::{LegacyRandomSource, RandomSource};
+    use std::collections::HashMap;
+
+    /// The ORIGINAL first-encounter walk (verbatim pre-DenseRemap loop) —
+    /// the reference for the equivalence tests below.
+    fn reference_first_encounter(ids: &[u32]) -> (Vec<u32>, Vec<u32>) {
+        let mut palette: Vec<u32> = Vec::new();
+        let mut index: HashMap<u32, u32> = HashMap::new();
+        let mut data = vec![0u32; ids.len()];
+        for (j, &s) in ids.iter().enumerate() {
+            let pi = match index.get(&s) {
+                Some(&p) => p,
+                None => {
+                    let p = palette.len() as u32;
+                    palette.push(s);
+                    index.insert(s, p);
+                    p
+                }
+            };
+            data[j] = pi;
+        }
+        (palette, data)
+    }
+
+    fn test_chunk(states: &[u32], biome_ids: &[u16], table_states: usize, table_biomes: usize) -> FillerChunk {
+        let mut st = StateTable::new();
+        for i in 0..table_states {
+            st.intern_canonical(&format!("minecraft:test_state_{}", i));
+        }
+        let mut bt = BiomeTable::new();
+        for i in 0..table_biomes {
+            bt.intern(&format!("minecraft:test_biome_{}", i));
+        }
+        let mut sec = SectionData::new();
+        sec.states.copy_from_slice(&states[..states.len().min(4096)]);
+        for (j, &b) in biome_ids.iter().take(64).enumerate() {
+            sec.biomes[j] = b;
+        }
+        FillerChunk {
+            min_y: -64,
+            height: 384,
+            chunk_min_x: 0,
+            chunk_min_z: 0,
+            sections: vec![sec],
+            state_table: st,
+            biome_table: bt,
+            heightmaps: Vec::new(),
+            post_processing: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn dense_remap_first_encounter_matches_hashmap() {
+        // random id streams (dense id space + sparse/huge ids) must remap
+        // EXACTLY like the verbatim HashMap walk: same first-encounter
+        // palette order, same packed indices.
+        let mut rng = LegacyRandomSource::new(0x5EED_CAFE);
+        for trial in 0..64 {
+            let space = match trial % 4 {
+                0 => 1,
+                1 => 3,
+                2 => 37,
+                _ => 700,
+            };
+            let len = 1 + (rng.next_int_bound(512).max(0) as usize);
+            let mut ids = Vec::with_capacity(len);
+            for _ in 0..len {
+                ids.push(rng.next_int_bound(space).max(0) as u32);
+            }
+            let mut remap = DenseRemap::new(space as usize);
+            let mut palette: Vec<u32> = Vec::new();
+            let mut got = vec![0u32; len];
+            for (j, &s) in ids.iter().enumerate() {
+                let next = palette.len() as u32;
+                let pi = remap.remap(s, next);
+                if pi == next {
+                    palette.push(s);
+                }
+                got[j] = pi;
+            }
+            let (want_palette, want_data) = reference_first_encounter(&ids);
+            assert_eq!(palette, want_palette, "trial {trial} palette order diverged");
+            assert_eq!(got, want_data, "trial {trial} data diverged");
+            // reset must restore the pristine all-unseen state: after it,
+            // the first id is a first encounter again (palette index 0)
+            remap.reset();
+            assert_eq!(remap.remap(ids[0], 0), 0, "trial {trial} reset left stale entries");
+        }
+    }
+
+    #[test]
+    fn dense_remap_grows_for_out_of_range_ids() {
+        // the pack paths can never produce ids beyond the shared table, but
+        // the growth fallback must stay deterministic and first-encounter
+        // exact anyway.
+        let mut remap = DenseRemap::new(2);
+        assert_eq!(remap.remap(9, 0), 0); // grows to 10
+        assert_eq!(remap.remap(9, 1), 0); // still the same slot
+        assert_eq!(remap.remap(4, 1), 1);
+        assert_eq!(remap.remap(4, 2), 1);
+        assert_eq!(remap.remap(0, 2), 2);
+        assert_eq!(remap.remap(0, 3), 2);
+    }
+
+    #[test]
+    fn pack_block_section_matches_hashmap_reference() {
+        let mut rng = LegacyRandomSource::new(3053459);
+        // adversarial shapes: all-same, random, all-distinct (bits ladder
+        // 0 / 4 / 9), plus random biome fills
+        let cases: Vec<Vec<u32>> = vec![
+            vec![5u32; 4096],
+            (0..4096).map(|_| rng.next_int_bound(37).max(0) as u32).collect(),
+            (0..4096).map(|i| (i % 300) as u32).collect(),
+            (0..4096).map(|_| rng.next_int_bound(1).max(0) as u32).collect(),
+        ];
+        for (ci, states) in cases.iter().enumerate() {
+            let biomes: Vec<u16> = (0..64).map(|_| rng.next_int_bound(5).max(0) as u16).collect();
+            let fc = test_chunk(states, &biomes, 300, 5);
+            let packed = pack_block_section(&fc, 0);
+            let (want_palette, want_data) = reference_first_encounter(states);
+            let want_strings: Vec<String> =
+                want_palette.iter().map(|&s| fc.state_table.get(s).canonical()).collect();
+            assert_eq!(packed.palette, want_strings, "case {ci} palette");
+            let bits = block_storage_bits(want_palette.len());
+            let want_packed = if bits == 0 { None } else { Some(pack_bit_storage(&want_data, bits)) };
+            assert_eq!(packed.data, want_packed, "case {ci} data");
+        }
+        // biome section (separate id space) vs the same reference walk
+        let states: Vec<u32> = (0..4096).map(|_| rng.next_int_bound(37).max(0) as u32).collect();
+        let biomes: Vec<u16> = (0..64).map(|_| rng.next_int_bound(5).max(0) as u16).collect();
+        let fc = test_chunk(&states, &biomes, 300, 5);
+        let packed = pack_biome_section(&fc, 0);
+        let biome_ids: Vec<u32> = biomes.iter().map(|&b| b as u32).collect();
+        let (want_palette, want_data) = reference_first_encounter(&biome_ids);
+        let want_strings: Vec<String> =
+            want_palette.iter().map(|&b| fc.biome_table.names[b as usize].clone()).collect();
+        assert_eq!(packed.palette, want_strings, "biome palette");
+        let bits = biome_storage_bits(want_palette.len());
+        let want_packed = if bits == 0 { None } else { Some(pack_bit_storage(&want_data, bits)) };
+        assert_eq!(packed.data, want_packed, "biome data");
+    }
 
     #[test]
     fn ceillog2_semantics() {
