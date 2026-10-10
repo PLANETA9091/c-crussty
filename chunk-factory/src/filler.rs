@@ -129,10 +129,14 @@ impl StateTable {
 }
 
 /// Biome name table (strings like "minecraft:river").
+/// I-A (R2#3): keys use the fixed-seed FxHasher — exact precedent: StateTable
+/// above (S4). The map is a pure lookup structure, NEVER iterated (ids come
+/// from insertion order into `names`), so the hasher swap has zero ordering
+/// impact and only removes the per-intern SipHash seeding cost.
 #[derive(Default)]
 pub struct BiomeTable {
     pub names: Vec<String>,
-    keys: HashMap<String, u32>,
+    keys: HashMap<String, u32, BuildHasherDefault<FxHasher>>,
 }
 
 impl BiomeTable {
@@ -225,7 +229,15 @@ impl HeightmapData {
     /// the CURRENT (partially filled) chunk array — blocks below the fill
     /// position are still air (id 0), exactly like the live proto chunk
     /// during the y-descending doFill.
-    fn update(&mut self, x: i32, y: i32, z: i32, is_opaque: bool, min_y: i32, sections: &[SectionData], table: &StateTable) {
+    ///
+    /// I-A (R2#4): `kind_flags` is the per-state-id predicate table for THIS
+    /// heightmap's kind (built at table-freeze time by running the existing
+    /// HeightmapKind::is_opaque_state over every interned id — see the flag
+    /// build in generate_noise_chunk_with_beardifier). The old per-scan
+    /// `self.kind.is_opaque_state(s, table)` did a table.get + String match
+    /// per visited block; the array load returns the identical predicate
+    /// result (same functions, evaluated over the same frozen ids).
+    fn update(&mut self, x: i32, y: i32, z: i32, is_opaque: bool, min_y: i32, sections: &[SectionData], kind_flags: &[bool]) {
         let idx = (x + z * 16) as usize;
         let first_available = self.first_available[idx];
         if y <= first_available - 2 {
@@ -248,7 +260,7 @@ impl HeightmapData {
                     continue;
                 }
                 let s = sections[sec_idx].states[SectionData::block_index(x & 15, i & 15, z & 15)];
-                if self.kind.is_opaque_state(s, table) {
+                if kind_flags[s as usize] {
                     self.first_available[idx] = i + 1;
                     return;
                 }
@@ -346,6 +358,24 @@ pub fn generate_noise_chunk_with_beardifier(
     };
     let table = table; // freeze
 
+    // I-A (R2#4): drive id-flags. State ids are FROZEN here (every intern
+    // happened above; the drive loop only reads ids from this table), so the
+    // per-id predicates can be precomputed ONCE by running the EXISTING
+    // predicate functions over all interned ids — no logic reimplementation.
+    // The drive loop then replaces table.get + String compares (the is_air
+    // check, the two is_opaque_state lookups, and the per-scan re-lookups in
+    // HeightmapData::update) with array loads. Same predicates, same ids,
+    // same results — bit-exact by construction.
+    let flag_len = table.states.len();
+    let mut is_air_flg = vec![false; flag_len];
+    let mut op_ocean_flg = vec![false; flag_len];
+    let mut op_surface_flg = vec![false; flag_len];
+    for (i, def) in table.states.iter().enumerate() {
+        is_air_flg[i] = is_air_name(&def.name);
+        op_ocean_flg[i] = HeightmapKind::OceanFloorWg.is_opaque_state(i as u32, &table);
+        op_surface_flg[i] = HeightmapKind::WorldSurfaceWg.is_opaque_state(i as u32, &table);
+    }
+
     // aquiferRandom = random.fromHashOf("aquifer").forkPositional();
     // oreRandom   = random.fromHashOf("ore").forkPositional();
     // `random` = settings.getRandomSource().newInstance(levelSeed).forkPositional()
@@ -418,7 +448,8 @@ pub fn generate_noise_chunk_with_beardifier(
         };
         // doFill: `if (interpolatedState == AIR ...) continue;` — AIR blocks
         // are NOT written to the section and do NOT update the heightmaps.
-        if is_air_name(table.get(state).name.as_str()) || skip_write {
+        // I-A (R2#4): was is_air_name(table.get(state).name.as_str()).
+        if is_air_flg[state as usize] || skip_write {
             return;
         }
         let sec_idx = ((by - min_y) / 16) as usize;
@@ -427,13 +458,15 @@ pub fn generate_noise_chunk_with_beardifier(
         if skip_hm {
             return;
         }
-        let op_ocean = HeightmapKind::OceanFloorWg.is_opaque_state(state, &table);
-        let op_surface = HeightmapKind::WorldSurfaceWg.is_opaque_state(state, &table);
+        // I-A (R2#4): was HeightmapKind::is_opaque_state(state, &table) x2
+        // (table.get + String match per map).
+        let op_ocean = op_ocean_flg[state as usize];
+        let op_surface = op_surface_flg[state as usize];
         // Heightmap.update receives SECTION-LOCAL x/z and WORLD y
         // (doFill: heightmapUnprimed.update(i11, i7, i14, ...) with
         // i11 = i10 & 0xF, i14 = i13 & 0xF).
-        hm_ocean.update(bx & 15, by, bz & 15, op_ocean, min_y, &sections, &table);
-        hm_surface.update(bx & 15, by, bz & 15, op_surface, min_y, &sections, &table);
+        hm_ocean.update(bx & 15, by, bz & 15, op_ocean, min_y, &sections, &op_ocean_flg);
+        hm_surface.update(bx & 15, by, bz & 15, op_surface, min_y, &sections, &op_surface_flg);
         // postprocessing: aquifer.shouldScheduleFluidUpdate && fluid not empty
         if aquifer_ref.should_schedule_fluid_update() {
             let packed = ((bx & 15) | ((by & 15) << 4) | ((bz & 15) << 8)) as u16;
@@ -454,11 +487,22 @@ pub fn generate_noise_chunk_with_beardifier(
     let q_min_x = min_block_x.div_euclid(4);
     let q_min_z = min_block_z.div_euclid(4);
 
-    // P2.11 — the six climate fields classified once; y-free fields are
-    // memoised per quart COLUMN (x,z): the scalar tree is a pure function,
-    // and a y-free tree returns bit-identical values for every y, so the
-    // cache reproduces the exact per-quart scalar result (see density.rs
-    // is_y_free for the equivalence argument).
+    // P2.11 — the six climate fields classified once. I-A (R2#1): the
+    // field_y_free flags are now WIRED (they were computed and discarded —
+    // the old loop did `let _ = field_y_free[fi];`): genuinely y-free fields
+    // (5 of 6 for the tectonic extract — DERIVED from the flags, never
+    // hardcoded) are evaluated ONCE per quart COLUMN (16 (x,z) columns per
+    // chunk, each otherwise visited sections_count*4 times) into `col_vals`;
+    // a y-free tree's scalar value is bit-identical for every y (the
+    // is_y_free equivalence argument in density.rs — the ColumnMemo key
+    // ignores y for the same reason), so reading the column value replaces
+    // the per-quart compute_memo call with an array load at zero bit risk.
+    // Only y-dependent fields (depth for tectonic) still compute per-quart
+    // through the unchanged compute_memo call. The per-quart `fields` array
+    // rebuild is gone too (climate_fields below is the same 6 refs). The
+    // f32 casts stay per-quart — they read the identical f64 bits, and
+    // `as f32` is deterministic, so hoisting them would be bit-neutral
+    // anyway; kept per-quart for a minimal diff.
     let climate_fields: [&Df; 6] = [
         &rs.router.temperature,
         &rs.router.vegetation,
@@ -476,6 +520,45 @@ pub fn generate_noise_chunk_with_beardifier(
     };
     let mut memo: crate::density::ColumnMemo = HashMap::new();
     if skip_biome { return Ok(FillerChunk { min_y, height, chunk_min_x: min_block_x, chunk_min_z: min_block_z, sections, state_table: table, biome_table: biomes_tbl, heightmaps: vec![hm_ocean, hm_surface], post_processing }); }
+
+    // I-A (R2#1) column precompute: evaluate the y-free fields once per
+    // (ix, iz) quart column. The `by` used here is the sy=0/iy=0 quart's
+    // block y — irrelevant to the bits (a y-free evaluation is
+    // bit-identical for every y, density.rs:690-693). This pass also warms
+    // the shared ColumnMemo for exactly the (addr, x, z) keys the old first
+    // visit of each column warmed, with bit-identical values (memo is an
+    // integer-keyed cache over pure functions — call ORDER carries no float
+    // state, so reordering the warm-up is result-neutral).
+    let by_col = (min_y / 16) * 4 * 4;
+    let mut col_vals = [[0.0f64; 6]; 16];
+    for ix in 0..4i32 {
+        for iz in 0..4i32 {
+            let bx = (q_min_x + ix) * 4;
+            let bz = (q_min_z + iz) * 4;
+            let col = (ix * 4 + iz) as usize;
+            for fi in 0..6 {
+                if field_y_free[fi] {
+                    col_vals[col][fi] = climate_fields[fi].compute_memo(&rs.bank, bx, by_col, bz, &mut memo);
+                }
+            }
+        }
+    }
+
+    // I-A (R2#2) String-free intern: find_value_id returns the winning
+    // leaf's u16 REGISTRY id; the BiomeTable id is resolved through
+    // `biome_id_map` (registry id -> table id, filled on first encounter
+    // per registry id). Order-identity: unique_names[leaf_ids[leaf]] ==
+    // names[leaf] by registry construction (climate.rs
+    // ParameterList::new; pinned by climate.rs's roundtrip test), so the
+    // interned string CONTENT is exactly what find_value().to_string()
+    // produced, and a registry id is first encountered in this loop exactly
+    // when its (unique) name is — the BiomeTable first-encounter id
+    // numbering is therefore identical to the String path. The tree.search
+    // call (with the same per-chunk biome_memo chaining) is unchanged, so
+    // the RTree hint sequence is byte-identical. Only ~<10 cold
+    // unique_name() String allocs per chunk remain (down from ~1536).
+    let mut biome_id_map: Vec<Option<u32>> = Vec::new();
+
     for sy in 0..sections_count as i32 {
         let section_y = (min_y / 16) + sy;
         let q_y0 = section_y * 4; // QuartPos.fromSection
@@ -493,20 +576,20 @@ pub fn generate_noise_chunk_with_beardifier(
                     let bx = qx * 4;
                     let by = qy * 4;
                     let bz = qz * 4;
-                    // quantizeCoord takes FLOAT (Climate.java line 62).
-                    let fields = [
-                        (&rs.router.temperature, 0usize),
-                        (&rs.router.vegetation, 1),
-                        (&rs.router.continents, 2),
-                        (&rs.router.erosion, 3),
-                        (&rs.router.depth, 4),
-                        (&rs.router.ridges, 5),
-                    ];
+                    // I-A (R2#1): y-free fields read the column table;
+                    // y-dependent fields keep the per-quart compute_memo
+                    // call (unchanged signature, unchanged shared memo).
+                    let col = (ix * 4 + iz) as usize;
                     let mut vals = [0.0f64; 6];
-                    for (fi, (field, _)) in fields.iter().enumerate() {
-                        let _ = field_y_free[fi];
-                        vals[fi] = field.compute_memo(&rs.bank, bx, by, bz, &mut memo);
+                    for fi in 0..6 {
+                        vals[fi] = if field_y_free[fi] {
+                            col_vals[col][fi]
+                        } else {
+                            climate_fields[fi].compute_memo(&rs.bank, bx, by, bz, &mut memo)
+                        };
                     }
+                    // quantizeCoord takes FLOAT (Climate.java line 62) — the
+                    // f32 casts below read the identical f64 column/per-quart bits.
                     let [t, hu, co, er, de, wi] = vals;
                     let t = t as f32;
                     let hu = hu as f32;
@@ -522,8 +605,23 @@ pub fn generate_noise_chunk_with_beardifier(
                         depth: crate::climate::quantize_coord(de),
                         weirdness: crate::climate::quantize_coord(wi),
                     };
-                    let biome = list.find_value(&target, &mut biome_memo).to_string();
-                    let id = biomes_tbl.intern(&biome);
+                    // I-A (R2#2): String-free intern — was
+                    // find_value(&target, &mut biome_memo).to_string() +
+                    // intern(&biome) (~1536 String allocs/chunk). See the
+                    // biome_id_map order-identity argument above.
+                    let reg_id = list.find_value_id(&target, &mut biome_memo);
+                    let rid = reg_id as usize;
+                    if rid >= biome_id_map.len() {
+                        biome_id_map.resize(rid + 1, None);
+                    }
+                    let id = match biome_id_map[rid] {
+                        Some(id) => id,
+                        None => {
+                            let id = biomes_tbl.intern(&list.unique_name(reg_id));
+                            biome_id_map[rid] = Some(id);
+                            id
+                        }
+                    };
                     sections[sy as usize].biomes[SectionData::biome_index(ix, iy, iz)] = id as u16;
                 }
             }
