@@ -117,7 +117,7 @@ NCF_SPEED.md rows + R3-S4-RESEARCH re-measure at HEAD 5ddfbbf (surface
 2.23/2.29/2.24 x3, stagediff A/B vs 2bfd0ec: vanilla surface 64/64,
 carvers 16/16, seed 90210 64/64, Terralith 36/36 BYTE-IDENTICAL).
 
-## NP1 [NOISE-PARALLEL, slice rows + cell fills, std::thread::scope] [ ]
+## NP1 [NOISE-PARALLEL, slice rows + cell fills, std::thread::scope] [~]
 HYP: the 15 roots x 5 rows slice fills and the per-cell cache fills are
 mutually independent units — RNG is position-derived (xoroshiro at(x,y,z),
 no cross-unit draw sequence), so evaluating units in parallel keeps the
@@ -131,6 +131,22 @@ state crosses the boundary (N1 counter TLS markers, debug EntryGuard) and
 note 2-vCPU contention in the ledger labels. Target: noise <= 12 ms/chunk
 (R2 bar 0.86 ms of noise stage). Effort: medium. NEXT TICK.
 
+PHASE-1 LANDED (2026-10-11, commit 2cd78b3): fill_slice row loop extracted
+verbatim into fill_slice_rows; parallel arm behind NCF_PAR_FILL (OnceLock,
+exactly "1") forks ONE clone worker on the upper row half via
+std::thread::scope (precedent region.rs), copy-back = worker slice rows
+memcpy + counter merge + final scalars + epoch-shifted CacheOnce copy-back;
+tile.rs RefCell->Mutex + AtomicU64 (disabled path still pre-lock); gate
+cell_count_xz>=2 excludes height_feed. I2: zero float-op change; memos are
+position/epoch-keyed pure memos -> replicas value-transparent. EVIDENCE:
+stagediff A/B surface 256 + carvers 16 x NCF_TILE_CACHE 0/1 = 4/4
+BYTE-IDENTICAL + parent-parity empty; 227/0 tests (+T1 bit-equal, +T2
+counters/CacheOnce equal); paired ledger seed 3053459 256 chunks: OFF noise
+17.06 PORTED 20.94 vs ON noise 14.22/14.33 (0.8% spread) PORTED
+18.05/18.20 = noise-stage gain 2.7-2.8 ms >= 0.86 bar KEEP. Flag default
+OFF = zero regression when unset. 2-vCPU rig, contention noted. Target
+noise <= 12 NOT yet reached (14.2-14.3) -> phase-2 refinement = NP2 below.
+
 ## SUB1 [SUBSTANCE+INTERP kernel share] [ ]
 HYP: substance final_density fill 3.16 ms COARSE / ~2.1 clean (98,304
 elems, 3,840 visits/chunk) is dominated by per-element 8-corner
@@ -143,3 +159,16 @@ substance fill; gate the SoA rework ONLY if the arithmetic share >= 1.2 ms
 (5% of noise stage). Target: substance <= 1.5 ms clean. Effort: high —
 run only after NP1 lands or is falsified.
 
+## NP2 [NOISE-PARALLEL PHASE 2, persistent workers + dynamic partition] [ ]
+HYP: phase-1 NP1 leaves 4 of 5 spawn pairs per chunk and a fixed 3/2 heavy-row
+split (interp[0] rows dominate): a persistent worker pool per drive_blocks
+(scope once per drive, generation-gated) with heavy-first dynamic partition
+(AtomicUsize fetch_add over the 40 (row,interp) units) should cut spawn/join
+~0.1-0.4 ms and balance loss ~0.5-0.8 ms -> noise 14.2 -> ~12.5-13.3; adding
+overlap of next-column fill_slice with current-column substance+callback
+(software pipeline at swap_slices boundaries) targets the substance share
+(~2.1 ms) for the final push to <= 12. Probe FIRST (R5): ncf_profile clock on
+spawn/join total per chunk + per-unit exclusive times (balance ratio); fix
+only if overhead+imbalance >= 0.86 ms combined. I2: same unit independence
+proof as NP1 (position-pure op sequences); byte-identity gate = stagediff 4/4
+A/B + ledger x2 paired. Target: noise <= 12.5 ms/chunk. Effort: medium.
