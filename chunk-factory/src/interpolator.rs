@@ -495,6 +495,13 @@ struct InterpState {
     /// array_interpolation_counter epochs CacheOnce observes) are unchanged.
     slice0: Vec<f64>,
     slice1: Vec<f64>,
+    /// NP3: third physical buffer for the pipelined drive. Walk k reads
+    /// 100% of BOTH live buffers (every row 0..rows × col 0..cols via the
+    /// cz×cy coverage), so any fill concurrent with walk k must write a
+    /// THIRD buffer: the hidden fill of column k+2 lands here (by worker
+    /// handle-swap, see drive_blocks_pipelined) and rotate_slices keeps
+    /// (slice0, slice1) = exactly the two columns the next walk reads.
+    slice2: Vec<f64>,
     /// Java field order: [000, 001, 100, 101, 010, 011, 110, 111]
     noise: [f64; 8],
     value_xz00: f64,
@@ -763,6 +770,7 @@ impl<'a> NoiseChunkSim<'a> {
                     // R2#3: flat slices — rows * cols f64, calloc-backed.
                     slice0: vec![0.0; rows * cols],
                     slice1: vec![0.0; rows * cols],
+                    slice2: vec![0.0; rows * cols],
                     noise: [0.0; 8],
                     value_xz00: 0.0,
                     value_xz10: 0.0,
@@ -1381,6 +1389,39 @@ pub fn n2_unit_probe_enabled() -> bool {
     *N2_UNIT_PROBE.get_or_init(|| std::env::var("NCF_N2_UNIT_PROBE").as_deref() == Ok("1"))
 }
 
+// --------------------------------------------------------------------------
+// NP3 probe clocks (cfg ncf_profile only) — pipelined-drive overlap split.
+// Same rules as N1/N2: Relaxed atomics summed across threads, compiled out
+// of normal builds entirely.
+//   N3_HIDDEN_FILLS     — hidden fills executed (expect 3/chunk overworld)
+//   N3_SKIP_FILLS       — last-column iterations with no hidden fill (1/chunk)
+//   N3_FORK_NANOS       — the worker replica clone
+//   N3_WALK_NANOS       — fork→walk-end parent wall (spawn + walk + clocks)
+//   N3_WORKER_NANOS     — worker hidden-fill wall (pipeline_worker_fill)
+//   N3_JOIN_BLOCK_NANOS — parent wall inside h.join() (worker overrun)
+//   N3_MERGE_NANOS      — post-join merge (deltas+scalars+memos+handoff+rotate)
+//   N3_RESIDUAL_NANOS   — Σ per-scope max(0, worker−walk): the time the walk
+//                         spent exposed (exact, not a global-total approx —
+//                         bench could not sum per-scope maxima otherwise;
+//                         +1 auxiliary static, the N2_INTERPS_LEN precedent).
+#[cfg(ncf_profile)]
+pub static N3_HIDDEN_FILLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N3_SKIP_FILLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N3_FORK_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N3_WALK_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N3_WORKER_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N3_JOIN_BLOCK_NANOS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N3_MERGE_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N3_RESIDUAL_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
 #[cfg(ncf_profile)]
 thread_local! {
     static N1_IN_SLICE_FILL: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
@@ -1407,36 +1448,50 @@ thread_local! {
 }
 
 // --------------------------------------------------------------------------
-// NP1: noise-parallel slice-fill gate (NCF_PAR_FILL, default OFF)
+// NP1/NP3: fill/drive parallelism gate (NCF_PAR_FILL, default OFF)
 // --------------------------------------------------------------------------
 
-/// NP1 gate, read ONCE per process: only the exact value "1" enables the
-/// parallel fill arm; unset / "0" / anything else keeps the serial path
-/// (default OFF = byte- and codepath-identical). Never read per call.
-static PAR_FILL: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+/// NP gate, read ONCE per process: 0 = serial (unset / "0" / anything else),
+/// 1 = NP1 phase-1 row-split parallel slice fills, 2 = NP3 pipelined drive
+/// (hidden fill of column k+2 overlaps the walk of column k). Default OFF =
+/// byte- and codepath-identical. Never read per call.
+static PAR_FILL: std::sync::OnceLock<u8> = std::sync::OnceLock::new();
 
 #[cfg(test)]
 static PAR_FORCE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
 
-/// NP1 gate. In test builds the PAR_FORCE atomic (see force_par_fill)
+/// NP gate. In test builds the PAR_FORCE atomic (see force_par_fill)
 /// overrides the env — a OnceLock fed from the env cannot be re-armed
-/// per test, and tests must drive BOTH arms in one process.
+/// per test, and tests must drive ALL arms in one process.
 #[inline]
-fn par_fill_enabled() -> bool {
+fn par_fill_mode() -> u8 {
     #[cfg(test)]
     {
         match PAR_FORCE.load(std::sync::atomic::Ordering::Relaxed) {
-            1 => return true,
-            2 => return false,
+            1 => return 1,
+            2 => return 0,
+            3 => return 2,
             _ => {}
         }
     }
-    *PAR_FILL.get_or_init(|| std::env::var("NCF_PAR_FILL").map(|v| v == "1").unwrap_or(false))
+    *PAR_FILL.get_or_init(|| match std::env::var("NCF_PAR_FILL").as_deref() {
+        Ok("1") => 1,
+        Ok("2") => 2,
+        _ => 0,
+    })
 }
 
-/// Test-only gate override: 0 = follow NCF_PAR_FILL, 1 = force parallel,
-/// 2 = force serial. pub(crate) so the interpolator tests (and only tests)
-/// can pin the arm under test.
+/// Phase-1 arm selector: BOTH parallel modes keep the init/adv0 slice
+/// fills on the phase-1 row-split arm (the pipelined drive's hidden fills
+/// are whole-fill workers and never consult this).
+#[inline]
+fn par_fill_enabled() -> bool {
+    par_fill_mode() >= 1
+}
+
+/// Test-only gate override: 0 = follow NCF_PAR_FILL, 1 = force phase-1,
+/// 2 = force serial, 3 = force NP3 pipelined. pub(crate) so the
+/// interpolator tests (and only tests) can pin the arm under test.
 #[cfg(test)]
 pub(crate) fn force_par_fill(mode: u8) {
     PAR_FORCE.store(mode, std::sync::atomic::Ordering::Relaxed);
@@ -2253,6 +2308,21 @@ impl<'a> NoiseChunkSim<'a> {
         }
     }
 
+    /// NP3: 3-buffer rotate for the pipelined drive. Entry state (per
+    /// interp): (slice0, slice1, slice2) = (col k, col k+1, col k+2) where
+    /// col k/k+1 were just walked and col k+2 was hidden-filled by the
+    /// worker + handed over by handle swap. Exit: (col k+1, col k+2, col k
+    /// stale) — the exact CONTENT state serial reaches with its
+    /// swap_slices + the next fill_slice (physical handles differ; bits
+    /// don't). Algebra: swap(s0, s2): (k+2, k+1, k); swap(s0, s1):
+    /// (k+1, k+2, k).
+    fn rotate_slices(&mut self) {
+        for st in &mut self.interpolators {
+            std::mem::swap(&mut st.slice0, &mut st.slice2);
+            std::mem::swap(&mut st.slice0, &mut st.slice1);
+        }
+    }
+
     /// fillSlice — isSlice0 selects the target array field (true only for
     /// the initializeForFirstCellX call; every advanceCellX fills slice1 and
     /// the column-end swapSlices alternates the physical buffers).
@@ -2523,6 +2593,39 @@ impl<'a> NoiseChunkSim<'a> {
         );
     }
 
+    /// NP3: the worker side of the pipelined drive — the hidden fill of the
+    /// column TWO ahead of the column the parent is walking. Runs ONLY on
+    /// the worker clone (spawned by drive_blocks_pipelined); the parent
+    /// never calls this.
+    ///
+    /// The fill must land in the clone's slice2 STORAGE while reusing
+    /// fill_slice_rows VERBATIM (zero serial-code edits) — which writes the
+    /// slice1 slot when is_slice0 = false. Swap the slice1/slice2 HANDLES
+    /// around the call: fill_slice_rows then fills the buffer that will be
+    /// handed back to the parent as slice2, and the swap-back leaves the
+    /// filled Vec in slice2 with the untouched col-k+1 copy back in slice1.
+    /// The preamble + fill_slice_rows + trailing aic bump replicate
+    /// fill_slice's serial sequence EXACTLY (minus the phase-1 dispatch —
+    /// this worker IS the parallelism; it must not nest), so the worker's
+    /// machine state after the call is serial-exact for
+    /// fill_slice(false, start).
+    fn pipeline_worker_fill(&mut self, start: i32) {
+        let rows = 0..(self.cell_count_xz + 1) as usize;
+        for st in &mut self.interpolators {
+            std::mem::swap(&mut st.slice1, &mut st.slice2);
+        }
+        // fill_slice preamble (verbatim scalars).
+        self.cell_start_block_x = start * self.cell_width;
+        self.in_cell_x = 0;
+        self.fill_slice_rows(false, start, rows);
+        self.array_interpolation_counter += 1; // fill_slice trailing bump
+        // Swap back: slice2 now holds the filled col k+2, slice1 the old
+        // col k+1 data (the parent's own live copy is independent).
+        for st in &mut self.interpolators {
+            std::mem::swap(&mut st.slice1, &mut st.slice2);
+        }
+    }
+
     /// Drive the doFill loop and collect per-block values for every
     /// interpolator, in capture order (cx asc, cz asc, cy desc, inY desc,
     /// inX asc, inZ asc, interpolator 0..n). Returns
@@ -2591,6 +2694,13 @@ impl<'a> NoiseChunkSim<'a> {
 
     #[allow(clippy::type_complexity)]
     pub fn drive_blocks(&mut self, f: &mut dyn FnMut(i32, i32, i32, &mut Self)) {
+        // NP3: NCF_PAR_FILL=2 routes to the pipelined drive (hidden fill of
+        // column k+2 overlapped with the walk of column k). Modes 0/1 fall
+        // through to the serial body below — text untouched, only this one
+        // gate read is added (a OnceLock<u8> deref, no behavior change).
+        if par_fill_mode() == 2 {
+            return self.drive_blocks_pipelined(f);
+        }
         assert!(!self.interpolating, "Starting interpolation twice");
         self.interpolating = true;
         self.interpolation_counter = 0;
@@ -2622,6 +2732,214 @@ impl<'a> NoiseChunkSim<'a> {
                 }
             }
             self.swap_slices();
+        }
+        self.interpolating = false;
+    }
+
+    /// NP3: pipelined doFill drive — NCF_PAR_FILL=2 only (routed from
+    /// drive_blocks). The walk of cell column k (slice0/slice1 = cols k,
+    /// k+1) overlaps the hidden fill of column k+2 on ONE worker clone
+    /// (std::thread::scope, the phase-1 fork pattern). The walk loop below
+    /// is DUPLICATED verbatim from drive_blocks 2603-2622 (no serial
+    /// edits); the init fill and the hoisted adv0 fill run fill_slice,
+    /// i.e. the phase-1 parallel arm (par_fill_enabled = mode >= 1).
+    ///
+    /// BUFFER ACCOUNTING (3 physical buffers per interp — walk k reads
+    /// 100% of BOTH live buffers, so a concurrent fill needs a third):
+    /// entering iteration k: (slice0, slice1, slice2) = (col k, col k+1,
+    /// STALE). The worker swaps its slice1/slice2 handles, fills the
+    /// stale-slot buffer with col k+2 through fill_slice_rows, swaps back —
+    /// its slice2 slot then holds the fresh column. The parent takes it by
+    /// HANDLE SWAP (no memcpy) into its own stale slice2 slot, and
+    /// rotate_slices maps (k, k+1, k+2) -> (k+1, k+2, stale): the next
+    /// iteration's walk reads exactly the content serial would read after
+    /// its swap_slices + next fill. The LAST iteration has no col k+2 —
+    /// walk, then the SERIAL swap_slices, leaving (slice0, slice1)
+    /// bit-equal to serial's post-drive state.
+    ///
+    /// MERGE (why it is serial-exact): since the fork the parent ran ONLY
+    /// the walk and the worker ONLY the fill. Serial reaches the same
+    /// point via walk-k THEN fill-k+2 — integer counter adds commute:
+    /// ic/aic = fork + parent_delta + worker_delta. The CacheOnce epoch
+    /// merge is the phase-1 shape with d = the parent's walk-side delta:
+    /// fill stores are the serial-LATER stores (worker epochs shifted by
+    /// the walk delta reconstruct the serial epochs bit for bit); a cache
+    /// the fill never touched keeps the parent's walk-k stores, which are
+    /// serial's last for it too. Scalars: the fill's end state IS the
+    /// serial post-fill state (worker preamble + row body + trailing bump)
+    /// — copied wholesale, INCLUDING cell_start_block_x/in_cell_x, which
+    /// the parent's walk made stale. Cache2D/tile/last_tile/ap2_scratch
+    /// stay unmerged (value-transparent pure memos — see the phase-1 fork
+    /// comment on fill_slice_parallel).
+    #[allow(clippy::type_complexity, clippy::too_many_lines)]
+    fn drive_blocks_pipelined(&mut self, f: &mut dyn FnMut(i32, i32, i32, &mut Self)) {
+        assert!(!self.interpolating, "Starting interpolation twice");
+        self.interpolating = true;
+        self.interpolation_counter = 0;
+        // initializeForFirstCellX — phase-1 parallel arm under mode 2.
+        self.fill_slice(true, self.first_cell_x);
+        // advanceCellX(0): the cx=0 fill, hoisted out of the loop so every
+        // in-loop iteration can overlap its NEXT-next column fill.
+        self.fill_slice(false, self.first_cell_x + 1);
+        for cx in 0..self.cell_count_xz {
+            self.cell_start_block_x = (self.first_cell_x + cx) * self.cell_width;
+            if cx < self.cell_count_xz - 1 {
+                // Hidden fill of column cx+2 on the worker clone while the
+                // parent walks column cx.
+                let fork_ic = self.interpolation_counter;
+                let fork_aic = self.array_interpolation_counter;
+                #[cfg(ncf_profile)]
+                let n3_t_fork = std::time::Instant::now();
+                let mut worker = self.clone();
+                #[cfg(ncf_profile)]
+                {
+                    N3_FORK_NANOS.fetch_add(
+                        n3_t_fork.elapsed().as_nanos() as u64,
+                        std::sync::atomic::Ordering::Relaxed,
+                    );
+                    N3_HIDDEN_FILLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                }
+                let start = self.first_cell_x + cx + 2;
+                // Worker-total marker for the exact per-scope residual sum.
+                #[cfg(ncf_profile)]
+                let n3_w0 = N3_WORKER_NANOS.load(std::sync::atomic::Ordering::Relaxed);
+                #[cfg(ncf_profile)]
+                let n3_t_walk = std::time::Instant::now();
+                std::thread::scope(|scope| {
+                    let h = scope.spawn(move || {
+                        #[cfg(ncf_profile)]
+                        let n3_t_worker = std::time::Instant::now();
+                        worker.pipeline_worker_fill(start);
+                        #[cfg(ncf_profile)]
+                        N3_WORKER_NANOS.fetch_add(
+                            n3_t_worker.elapsed().as_nanos() as u64,
+                            std::sync::atomic::Ordering::Relaxed,
+                        );
+                        worker // return the owned clone
+                    });
+                    // ---- walk of column cx: VERBATIM drive_blocks -------
+                    for cz in 0..self.cell_count_xz {
+                        for cy in (0..self.cell_count_y).rev() {
+                            self.select_cell_yz(cy, cz);
+                            for in_y in (0..self.cell_height).rev() {
+                                let by = (self.cell_noise_min_y + cy) * self.cell_height + in_y;
+                                let frac_y = in_y as f64 / self.cell_height as f64;
+                                self.update_for_y(by, frac_y);
+                                for in_x in 0..self.cell_width {
+                                    let bx = self.cell_start_block_x + in_x;
+                                    let frac_x = in_x as f64 / self.cell_width as f64;
+                                    self.update_for_x(bx, frac_x);
+                                    for in_z in 0..self.cell_width {
+                                        let bz = self.cell_start_block_z + in_z;
+                                        let frac_z = in_z as f64 / self.cell_width as f64;
+                                        self.update_for_z(bz, frac_z);
+                                        f(bx, by, bz, self);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // ------------------------------------------- walk end
+                    #[cfg(ncf_profile)]
+                    let n3_walk = n3_t_walk.elapsed().as_nanos() as u64;
+                    #[cfg(ncf_profile)]
+                    N3_WALK_NANOS.fetch_add(n3_walk, std::sync::atomic::Ordering::Relaxed);
+                    #[cfg(ncf_profile)]
+                    let n3_t_join = std::time::Instant::now();
+                    let mut done = h.join().expect("np3 pipeline worker");
+                    #[cfg(ncf_profile)]
+                    {
+                        N3_JOIN_BLOCK_NANOS.fetch_add(
+                            n3_t_join.elapsed().as_nanos() as u64,
+                            std::sync::atomic::Ordering::Relaxed,
+                        );
+                        // The worker's fetch_add landed BEFORE join returned,
+                        // so this delta is exactly this scope's fill wall.
+                        let n3_worker =
+                            N3_WORKER_NANOS.load(std::sync::atomic::Ordering::Relaxed) - n3_w0;
+                        N3_RESIDUAL_NANOS.fetch_add(
+                            n3_worker.saturating_sub(n3_walk),
+                            std::sync::atomic::Ordering::Relaxed,
+                        );
+                    }
+                    #[cfg(ncf_profile)]
+                    let n3_t_merge = std::time::Instant::now();
+                    // ---- MERGE (phase-1 shape, walk-side deltas) --------
+                    let d_ic = self.interpolation_counter - fork_ic;
+                    let d_aic = self.array_interpolation_counter - fork_aic;
+                    self.interpolation_counter += done.interpolation_counter - fork_ic;
+                    self.array_interpolation_counter +=
+                        done.array_interpolation_counter - fork_aic;
+                    // Scalars: the fill's end state = serial post-fill state.
+                    self.cell_start_block_z = done.cell_start_block_z;
+                    self.in_cell_z = done.in_cell_z;
+                    self.cell_start_block_y = done.cell_start_block_y;
+                    self.in_cell_y = done.in_cell_y;
+                    self.array_index = done.array_index;
+                    // The worker preamble owns these two after the walk.
+                    self.cell_start_block_x = done.cell_start_block_x;
+                    self.in_cell_x = done.in_cell_x;
+                    // CacheOnce memo states — phase-1 2494-2505 shape: the
+                    // freshest store decides (worker fill stores = serial
+                    // later stores; epochs shifted by the parent walk delta).
+                    for id in 0..self.cacheonces.len() {
+                        let d = &done.cacheonces[id];
+                        let s = &mut self.cacheonces[id];
+                        if d.last_counter > fork_ic {
+                            s.last_counter = d.last_counter + d_ic;
+                            s.last_value = d.last_value;
+                        }
+                        if d.last_array_counter > fork_aic {
+                            s.last_array = d.last_array.clone();
+                            s.last_array_counter = d.last_array_counter + d_aic;
+                        }
+                    }
+                    // slice2 handoff by HANDLE SWAP (not memcpy): the
+                    // worker's slice2 slot holds the filled col cx+2 (see
+                    // pipeline_worker_fill), the parent's slice2 slot holds
+                    // the stale buffer the walk just finished with.
+                    for id in 0..self.interpolators.len() {
+                        std::mem::swap(
+                            &mut self.interpolators[id].slice2,
+                            &mut done.interpolators[id].slice2,
+                        );
+                    }
+                    // 3-buffer rotate: (k, k+1, k+2) -> (k+1, k+2, stale).
+                    self.rotate_slices();
+                    #[cfg(ncf_profile)]
+                    N3_MERGE_NANOS.fetch_add(
+                        n3_t_merge.elapsed().as_nanos() as u64,
+                        std::sync::atomic::Ordering::Relaxed,
+                    );
+                });
+            } else {
+                #[cfg(ncf_profile)]
+                N3_SKIP_FILLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                // Last column: no col cx+2 exists — walk, then the SERIAL
+                // swap_slices so (slice0, slice1) end bit-equal to serial.
+                for cz in 0..self.cell_count_xz {
+                    for cy in (0..self.cell_count_y).rev() {
+                        self.select_cell_yz(cy, cz);
+                        for in_y in (0..self.cell_height).rev() {
+                            let by = (self.cell_noise_min_y + cy) * self.cell_height + in_y;
+                            let frac_y = in_y as f64 / self.cell_height as f64;
+                            self.update_for_y(by, frac_y);
+                            for in_x in 0..self.cell_width {
+                                let bx = self.cell_start_block_x + in_x;
+                                let frac_x = in_x as f64 / self.cell_width as f64;
+                                self.update_for_x(bx, frac_x);
+                                for in_z in 0..self.cell_width {
+                                    let bz = self.cell_start_block_z + in_z;
+                                    let frac_z = in_z as f64 / self.cell_width as f64;
+                                    self.update_for_z(bz, frac_z);
+                                    f(bx, by, bz, self);
+                                }
+                            }
+                        }
+                    }
+                }
+                self.swap_slices();
+            }
         }
         self.interpolating = false;
     }
@@ -2851,19 +3169,218 @@ mod tests {
 
     /// T3: gate semantics of the force override (the env OnceLock shape
     /// itself is process-global — its exact-string behavior is verified by
-    /// the NCF_PAR_FILL=0/1 stagediff A/B runs).
+    /// the NCF_PAR_FILL=0/1/2 stagediff A/B runs).
     #[test]
     fn t3_par_gate_force_semantics() {
         let _g = GATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         force_par_fill(1);
+        assert_eq!(par_fill_mode(), 1);
         assert!(par_fill_enabled());
         force_par_fill(2);
+        assert_eq!(par_fill_mode(), 0);
         assert!(!par_fill_enabled());
+        // NP3: force value 3 = pin the pipelined mode.
+        force_par_fill(3);
+        assert_eq!(par_fill_mode(), 2);
+        assert!(par_fill_enabled());
         force_par_fill(0);
         // mode 0 mirrors the env gate
+        let env_mode = match std::env::var("NCF_PAR_FILL").as_deref() {
+            Ok("1") => 1u8,
+            Ok("2") => 2,
+            _ => 0,
+        };
+        assert_eq!(par_fill_mode(), env_mode);
+        assert_eq!(par_fill_enabled(), env_mode >= 1);
+    }
+
+    /// NP3 helper: one serial (force 2) + one pipelined (force 3)
+    /// drive_blocks on identical FRESH machines from the same RandomState,
+    /// collecting per-block: coords + every interpolator's interpolated
+    /// value BITS + a compute_field(12) (vein_toggle) bit + the substance
+    /// value bit — the filler.rs callback shape (substance read + tree
+    /// computes), so the walk-side CacheOnce/Cache2D store pattern the
+    /// merge must absorb is exercised for real.
+    #[allow(clippy::type_complexity)]
+    fn drive_serial_and_pipelined(
+        rs: &RandomState,
+        cell_count_xz: i32,
+        bx: i32,
+        bz: i32,
+    ) -> (
+        NoiseChunkSim<'_>,
+        Vec<(i32, i32, i32, Vec<u64>)>,
+        NoiseChunkSim<'_>,
+        Vec<(i32, i32, i32, Vec<u64>)>,
+    ) {
+        let _g = GATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        force_par_fill(2); // serial, regardless of env
+        let mut serial = NoiseChunkSim::from_random_state(rs, cell_count_xz, bx, bz);
+        let mut out_s: Vec<(i32, i32, i32, Vec<u64>)> = Vec::new();
+        serial.drive_blocks(&mut |bx, by, bz, sim| {
+            let mut vals: Vec<u64> = sim.interpolators.iter().map(|st| st.value.to_bits()).collect();
+            vals.push(sim.compute_field(12).to_bits());
+            vals.push(sim.substance_value().to_bits());
+            out_s.push((bx, by, bz, vals));
+        });
+        force_par_fill(3); // NP3 pipelined forced on
+        let mut par = NoiseChunkSim::from_random_state(rs, cell_count_xz, bx, bz);
+        let mut out_p: Vec<(i32, i32, i32, Vec<u64>)> = Vec::new();
+        par.drive_blocks(&mut |bx, by, bz, sim| {
+            let mut vals: Vec<u64> = sim.interpolators.iter().map(|st| st.value.to_bits()).collect();
+            vals.push(sim.compute_field(12).to_bits());
+            vals.push(sim.substance_value().to_bits());
+            out_p.push((bx, by, bz, vals));
+        });
+        force_par_fill(0); // back to env
+        (serial, out_s, par, out_p)
+    }
+
+    /// Assert full machine bit-equality of a serial/pipelined pair: every
+    /// collected per-block coord+value record, both live slice buffers per
+    /// interp and the substance cache (T1 shape).
+    fn assert_pipeline_bit_equal(
+        serial: &NoiseChunkSim,
+        out_s: &[(i32, i32, i32, Vec<u64>)],
+        par: &NoiseChunkSim,
+        out_p: &[(i32, i32, i32, Vec<u64>)],
+        origin: (i32, i32),
+    ) {
+        let (bx, bz) = origin;
+        assert_eq!(out_s.len(), out_p.len(), "drive output length ({bx},{bz})");
+        for (a, b) in out_s.iter().zip(out_p.iter()) {
+            assert_eq!(
+                (a.0, a.1, a.2),
+                (b.0, b.1, b.2),
+                "block coords diverged chunk ({bx},{bz})"
+            );
+            assert_eq!(
+                a.3, b.3,
+                "drive values diverged at ({},{},{}) chunk ({bx},{bz})",
+                a.0, a.1, a.2
+            );
+        }
+        for id in 0..serial.interpolators.len() {
+            assert_eq!(
+                bits(&serial.interpolators[id].slice0),
+                bits(&par.interpolators[id].slice0),
+                "slice0 interp {id} chunk ({bx},{bz})"
+            );
+            assert_eq!(
+                bits(&serial.interpolators[id].slice1),
+                bits(&par.interpolators[id].slice1),
+                "slice1 interp {id} chunk ({bx},{bz})"
+            );
+        }
         assert_eq!(
-            par_fill_enabled(),
-            std::env::var("NCF_PAR_FILL").map(|v| v == "1").unwrap_or(false)
+            bits(&serial.substance_cache),
+            bits(&par.substance_cache),
+            "substance cache chunk ({bx},{bz})"
         );
+    }
+
+    /// T4 (shaped on NCF_WG, skips gracefully when the extract is absent):
+    /// the NP3 pipelined drive must be BIT-EXACT against the serial path
+    /// (I2). Full overworld noise drive (cell_count_xz = 4, the real filler
+    /// shape) on identical machines; per-block coord+value bit equality,
+    /// slice0/slice1 buffer bits and substance cache bits, at two origins.
+    #[test]
+    fn t4_pipeline_bit_identical() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = RandomState::build_overworld(&dir, 3053459).expect("build_overworld");
+        for (bx, bz) in [(0, 0), (112, 144)] {
+            let (serial, out_s, par, out_p) = drive_serial_and_pipelined(&rs, 4, bx, bz);
+            assert_pipeline_bit_equal(&serial, &out_s, &par, &out_p, (bx, bz));
+        }
+    }
+
+    /// T5 (shaped on NCF_WG): the NP3 counter/scalar/memo merge — ic/aic
+    /// equality, the FULL scalar set the merge copies back (including
+    /// cell_start_block_x/in_cell_x, which the worker preamble owns after
+    /// the parent's walk) and the CacheOnce memo state incl. last_array
+    /// bits (T2 shape).
+    #[test]
+    fn t5_pipeline_counters_identical() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = RandomState::build_overworld(&dir, 3053459).expect("build_overworld");
+        let (serial, _out_s, par, _out_p) = drive_serial_and_pipelined(&rs, 4, 0, 0);
+        assert_eq!(
+            serial.interpolation_counter, par.interpolation_counter,
+            "interpolation_counter"
+        );
+        assert_eq!(
+            serial.array_interpolation_counter, par.array_interpolation_counter,
+            "array_interpolation_counter"
+        );
+        // full scalar set (merge copy-back (c) + worker preamble pair)
+        assert_eq!(serial.cell_start_block_x, par.cell_start_block_x);
+        assert_eq!(serial.in_cell_x, par.in_cell_x);
+        assert_eq!(serial.cell_start_block_z, par.cell_start_block_z);
+        assert_eq!(serial.in_cell_z, par.in_cell_z);
+        assert_eq!(serial.cell_start_block_y, par.cell_start_block_y);
+        assert_eq!(serial.in_cell_y, par.in_cell_y);
+        assert_eq!(serial.array_index, par.array_index);
+        // CacheOnce memo state incl. last_array, by f64 bits
+        for id in 0..serial.cacheonces.len() {
+            let a = &serial.cacheonces[id];
+            let b = &par.cacheonces[id];
+            assert_eq!(a.last_counter, b.last_counter, "cacheonce {id} last_counter");
+            assert_eq!(
+                a.last_array_counter, b.last_array_counter,
+                "cacheonce {id} last_array_counter"
+            );
+            assert_eq!(a.last_value.to_bits(), b.last_value.to_bits(), "cacheonce {id} last_value");
+            match (&a.last_array, &b.last_array) {
+                (None, None) => {}
+                (Some(x), Some(y)) => assert_eq!(bits(x), bits(y), "cacheonce {id} last_array"),
+                _ => panic!("cacheonce {id} last_array presence divergence"),
+            }
+        }
+    }
+
+    /// T6 (shaped on NCF_WG): degenerate edge — cell_count_xz = 1 (the
+    /// height_feed.rs drive-machine shape: explicit instantiate with the
+    /// overworld template) must drive IDENTICALLY under the pipelined mode
+    /// (the loop degenerates to the last-iteration branch: no hidden fill,
+    /// serial swap_slices) — full bit equality incl. slices + substance.
+    #[test]
+    fn t6_pipeline_degenerate_cc1_bit_identical() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = RandomState::build_overworld(&dir, 3053459).expect("build_overworld");
+        for (bx, bz) in [(0, 0), (64, -32)] {
+            let _g = GATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+            let build = || {
+                NoiseChunkSim::instantiate(
+                    &rs.sim_template,
+                    &rs.bank,
+                    1,
+                    bx,
+                    bz,
+                    rs.settings.min_y,
+                    rs.settings.height,
+                    rs.settings.noise_size_horizontal,
+                    rs.settings.noise_size_vertical,
+                    None,
+                    0,
+                )
+            };
+            force_par_fill(2); // serial
+            let mut serial = build();
+            let mut out_s: Vec<(i32, i32, i32, Vec<u64>)> = Vec::new();
+            serial.drive_blocks(&mut |bx, by, bz, sim| {
+                out_s.push((bx, by, bz, vec![sim.compute_field(11).to_bits()]));
+            });
+            force_par_fill(3); // pipelined (degenerates: no hidden fills)
+            let mut par = build();
+            let mut out_p: Vec<(i32, i32, i32, Vec<u64>)> = Vec::new();
+            par.drive_blocks(&mut |bx, by, bz, sim| {
+                out_p.push((bx, by, bz, vec![sim.compute_field(11).to_bits()]));
+            });
+            force_par_fill(0);
+            assert_pipeline_bit_equal(&serial, &out_s, &par, &out_p, (bx, bz));
+        }
     }
 }

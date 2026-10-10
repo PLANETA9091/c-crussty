@@ -127,6 +127,21 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         (nanos, icd)
     };
 
+    // N3 probe snapshot (after warmup, before the corpus) — NP3 pipelined
+    // drive overlap split (all zero unless NCF_PAR_FILL=2).
+    #[cfg(ncf_profile)]
+    let n3_before = (
+        chunk_factory::interpolator::N3_HIDDEN_FILLS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N3_SKIP_FILLS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N3_FORK_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N3_WALK_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N3_WORKER_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N3_JOIN_BLOCK_NANOS
+            .load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N3_MERGE_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N3_RESIDUAL_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+    );
+
     let mut acc = [0f64; 4]; // noise, surface, carvers, serialization
     let mut n = 0usize;
     let t_all = Instant::now();
@@ -348,6 +363,36 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
                 );
             }
         }
+    }
+    // N3 probe (NP3 pipelined drive, standing order R5): fill/walk overlap.
+    // hidden fills run on the worker while the parent walks the column two
+    // behind; overlap efficiency and the exposed residual (walk time NOT
+    // covered by a concurrent worker fill — exact per-scope sum) are the
+    // NP3 decision payload.
+    #[cfg(ncf_profile)]
+    if std::env::var("NCF_N3_PROBE").is_ok() {
+        use std::sync::atomic::Ordering::Relaxed as R;
+        use chunk_factory::interpolator as ip;
+        let (hf0, sk0, fk0, wk0, wrk0, jb0, mg0, rs0) = n3_before;
+        let g = |a: &std::sync::atomic::AtomicU64, b: u64| a.load(R) - b;
+        let ms = |nanos: u64| nanos as f64 / n as f64 / 1e6;
+        let hidden = g(&ip::N3_HIDDEN_FILLS, hf0);
+        let skips = g(&ip::N3_SKIP_FILLS, sk0);
+        let walk_ms = ms(g(&ip::N3_WALK_NANOS, wk0));
+        let worker_ms = ms(g(&ip::N3_WORKER_NANOS, wrk0));
+        eprintln!(
+            "[N3-probe] pipelined drive (NCF_PAR_FILL=2): hidden_fills = {} (expect 3/chunk) skip_fills = {} (expect 1/chunk) | fork(clone) = {:.3} walk = {walk_ms:.3} worker = {worker_ms:.3} join_block = {:.3} merge = {:.3} ms/chunk",
+            hidden / (n as u64).max(1),
+            skips / (n as u64).max(1),
+            ms(g(&ip::N3_FORK_NANOS, fk0)),
+            ms(g(&ip::N3_JOIN_BLOCK_NANOS, jb0)),
+            ms(g(&ip::N3_MERGE_NANOS, mg0)),
+        );
+        eprintln!(
+            "[N3-probe] overlap efficiency worker/walk = {:.3} | exposed residual Σmax(0,worker−walk) = {:.3} ms/chunk (exact per-scope sum)",
+            worker_ms / walk_ms.max(1e-9),
+            ms(g(&ip::N3_RESIDUAL_NANOS, rs0)),
+        );
     }
     let ported_total: f64 = per.iter().sum();
 
