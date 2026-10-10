@@ -125,12 +125,37 @@ impl DenseRemap {
     }
 }
 
-/// Repack one 4096-block section from raw first-encounter ids.
-pub fn pack_block_section(fc: &FillerChunk, section_idx: usize) -> PackedSection {
+/// Id-space pack result (R3#2b): the palette as raw shared-table ids in
+/// first-encounter order + the packed data longs. Callers map ids through
+/// the shared tables themselves — fullchunk builds the block-state NBT
+/// compound DIRECTLY from the interned BlockStateDef (no canonical String
+/// is materialized at all on this path); the canonical form is only built
+/// where a schema needs owned strings, once per state id per chunk.
+pub struct PackedSectionIds {
+    /// StateTable ids (blocks) / BiomeTable name ids (biomes), widened to
+    /// u32; first-encounter order — identical to the String palettes.
+    pub palette_ids: Vec<u32>,
+    pub data: Option<Vec<i64>>,
+}
+
+/// `pack_block_section` into caller-owned buffers (R3#2b hoist): `remap` is
+/// `reset()` here (the exact pristine all-unseen state a fresh
+/// `DenseRemap::new` produces) and `data` is restored to the same 4096
+/// zeros the fresh `vec![0u32; 4096]` had — the walk writes EVERY slot
+/// (SectionData.states is `[u32; 4096]`), so the packed output is
+/// byte-identical to the per-call-allocation version while the buffers are
+/// reused across all 24 sections of a chunk.
+pub fn pack_block_section_into(
+    fc: &FillerChunk,
+    section_idx: usize,
+    remap: &mut DenseRemap,
+    data: &mut Vec<u32>,
+) -> PackedSectionIds {
     let sec = &fc.sections[section_idx];
+    remap.reset();
+    data.clear();
+    data.resize(4096, 0);
     let mut palette: Vec<u32> = Vec::new();
-    let mut remap = DenseRemap::new(fc.state_table.states.len());
-    let mut data = vec![0u32; 4096];
     for (j, &s) in sec.states.iter().enumerate() {
         let next = palette.len() as u32;
         let pi = remap.remap(s, next);
@@ -143,40 +168,68 @@ pub fn pack_block_section(fc: &FillerChunk, section_idx: usize) -> PackedSection
     let packed = if bits == 0 {
         None
     } else {
-        Some(pack_bit_storage(&data, bits))
+        Some(pack_bit_storage(data, bits))
     };
-    PackedSection {
-        palette: palette.iter().map(|&s| fc.state_table.get(s).canonical()).collect(),
-        data: packed,
-    }
+    PackedSectionIds { palette_ids: palette, data: packed }
 }
 
-pub fn pack_biome_section(fc: &FillerChunk, section_idx: usize) -> PackedSection {
+/// `pack_biome_section` into caller-owned buffers (same hoist contract as
+/// `pack_block_section_into`; the 64-entry biome walk fully overwrites
+/// `bdata` — SectionData.biomes is `[u16; 64]`).
+pub fn pack_biome_section_into(
+    fc: &FillerChunk,
+    section_idx: usize,
+    remap: &mut DenseRemap,
+    bdata: &mut Vec<u32>,
+) -> PackedSectionIds {
     let sec = &fc.sections[section_idx];
+    remap.reset();
+    bdata.clear();
+    bdata.resize(64, 0);
+    // separate dense remap: the biome id space is its own table (u16 ids)
     let mut palette: Vec<u16> = Vec::new();
-    // separate dense vec: the biome id space is its own table (u16 ids)
-    let mut remap = DenseRemap::new(fc.biome_table.names.len());
-    let mut data = vec![0u32; 64];
     for (j, &b) in sec.biomes.iter().enumerate() {
         let next = palette.len() as u32;
         let pi = remap.remap(b as u32, next);
         if pi == next {
             palette.push(b);
         }
-        data[j] = pi;
+        bdata[j] = pi;
     }
     let bits = biome_storage_bits(palette.len());
     let packed = if bits == 0 {
         None
     } else {
-        Some(pack_bit_storage(&data, bits))
+        Some(pack_bit_storage(bdata, bits))
     };
+    PackedSectionIds {
+        palette_ids: palette.iter().map(|&b| b as u32).collect(),
+        data: packed,
+    }
+}
+
+/// Repack one 4096-block section from raw first-encounter ids.
+pub fn pack_block_section(fc: &FillerChunk, section_idx: usize) -> PackedSection {
+    let mut remap = DenseRemap::new(fc.state_table.states.len());
+    let mut data = Vec::new();
+    let packed = pack_block_section_into(fc, section_idx, &mut remap, &mut data);
     PackedSection {
-        palette: palette
+        palette: packed.palette_ids.iter().map(|&s| fc.state_table.get(s).canonical()).collect(),
+        data: packed.data,
+    }
+}
+
+pub fn pack_biome_section(fc: &FillerChunk, section_idx: usize) -> PackedSection {
+    let mut remap = DenseRemap::new(fc.biome_table.names.len());
+    let mut bdata = Vec::new();
+    let packed = pack_biome_section_into(fc, section_idx, &mut remap, &mut bdata);
+    PackedSection {
+        palette: packed
+            .palette_ids
             .iter()
             .map(|&b| fc.biome_table.names[b as usize].clone())
             .collect(),
-        data: packed,
+        data: packed.data,
     }
 }
 
@@ -324,6 +377,45 @@ mod tests {
         let bits = biome_storage_bits(want_palette.len());
         let want_packed = if bits == 0 { None } else { Some(pack_bit_storage(&want_data, bits)) };
         assert_eq!(packed.data, want_packed, "biome data");
+    }
+
+    #[test]
+    fn pack_into_reuse_matches_fresh_per_call() {
+        // R3#2b hoist contract: reusing remap+data buffers across sections
+        // (the into-variants reset them internally) must produce the SAME
+        // palette order and packed longs as the fresh per-call wrappers —
+        // a missing reset would collapse every section after the first to
+        // a single-entry palette and fail this immediately.
+        let mut rng = LegacyRandomSource::new(0x0BEE_F00D);
+        let states: Vec<u32> = (0..4096).map(|_| rng.next_int_bound(97).max(0) as u32).collect();
+        let biomes: Vec<u16> = (0..64).map(|_| rng.next_int_bound(7).max(0) as u16).collect();
+        let mut fc = test_chunk(&states, &biomes, 97, 7);
+        // three sections so the reuse walk actually crosses section
+        // boundaries (test_chunk builds a one-section chunk)
+        let extra = fc.sections[0].clone();
+        fc.sections.push(extra.clone());
+        fc.sections.push(extra);
+        let mut remap_b = DenseRemap::new(fc.state_table.states.len());
+        let mut remap_m = DenseRemap::new(fc.biome_table.names.len());
+        let mut data: Vec<u32> = Vec::new();
+        let mut bdata: Vec<u32> = Vec::new();
+        for i in 0..3 {
+            let fresh_b = pack_block_section(&fc, 0);
+            let fresh_m = pack_biome_section(&fc, 0);
+            let into_b = pack_block_section_into(&fc, i, &mut remap_b, &mut data);
+            let into_m = pack_biome_section_into(&fc, i, &mut remap_m, &mut bdata);
+            assert_eq!(fresh_b.data, into_b.data, "section {i} block data");
+            assert_eq!(fresh_m.data, into_m.data, "section {i} biome data");
+            let strings: Vec<String> =
+                into_b.palette_ids.iter().map(|&s| fc.state_table.get(s).canonical()).collect();
+            assert_eq!(fresh_b.palette, strings, "section {i} block palette");
+            let names: Vec<String> = into_m
+                .palette_ids
+                .iter()
+                .map(|&b| fc.biome_table.names[b as usize].clone())
+                .collect();
+            assert_eq!(fresh_m.palette, names, "section {i} biome palette");
+        }
     }
 
     #[test]
