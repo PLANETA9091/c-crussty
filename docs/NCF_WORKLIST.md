@@ -147,6 +147,21 @@ counters/CacheOnce equal); paired ledger seed 3053459 256 chunks: OFF noise
 OFF = zero regression when unset. 2-vCPU rig, contention noted. Target
 noise <= 12 NOT yet reached (14.2-14.3) -> phase-2 refinement = NP2 below.
 
+PROBE FALSIFIED (2026-10-11, commit 55929de N2 clocks, cfg ncf_profile):
+MEASURED (contended rig): fill_calls 5/chunk; fixed clone+spawn/join-merge =
+0.168 ms/chunk (tiny); imbalance_loss 1.344 ms, ratio |m-w|/(m+w) 0.117;
+interp[0] = 87.8% of unit mass, ic-delta 49-98 per unit (data-dependent,
+merge stays delta-sum); unit clocks cross-validate rows clocks (21.453 vs
+21.466 ms/chunk). CONTENTION-FREE ARITHMETIC (phase-1 paired deltas
+OFF-ON = 2.33-2.84 = 0.3988*M - 0.14): M = 6.5-7.5 ms/chunk -> realizable
+gains: C adaptive contiguous split (best unit cut 57.7% vs 60.1% wall
+factor) = 0.15-0.25 ms; B heavy-first dynamic cursor (52.7% wall factor) =
+0.48-0.55 ms; A persistent pool adds only ~0.17 ms. ALL < R2 bar 0.70 ms
+(5% of noise 14.02) -> do NOT implement. CacheOnce merge under
+non-contiguous ownership (B) would be the highest-complexity code in the
+crate for a sub-bar win. Successor with real headroom: NP3 overlap
+pipeline (parent-only walk window ~60% of drive wall).
+
 ## SUB1 [SUBSTANCE+INTERP kernel share] [ ]
 HYP: substance final_density fill 3.16 ms COARSE / ~2.1 clean (98,304
 elems, 3,840 visits/chunk) is dominated by per-element 8-corner
@@ -159,7 +174,7 @@ substance fill; gate the SoA rework ONLY if the arithmetic share >= 1.2 ms
 (5% of noise stage). Target: substance <= 1.5 ms clean. Effort: high —
 run only after NP1 lands or is falsified.
 
-## NP2 [NOISE-PARALLEL PHASE 2, persistent workers + dynamic partition] [ ]
+## NP2 [NOISE-PARALLEL PHASE 2, persistent workers + dynamic partition] [x]
 HYP: phase-1 NP1 leaves 4 of 5 spawn pairs per chunk and a fixed 3/2 heavy-row
 split (interp[0] rows dominate): a persistent worker pool per drive_blocks
 (scope once per drive, generation-gated) with heavy-first dynamic partition
@@ -172,3 +187,21 @@ spawn/join total per chunk + per-unit exclusive times (balance ratio); fix
 only if overhead+imbalance >= 0.86 ms combined. I2: same unit independence
 proof as NP1 (position-pure op sequences); byte-identity gate = stagediff 4/4
 A/B + ledger x2 paired. Target: noise <= 12.5 ms/chunk. Effort: medium.
+
+## NP3 [SUBSTANCE+CALLBACK OVERLAP PIPELINE, worker pre-fills next column] [ ]
+HYP: during select_cell_yz + per-block callback the NP1 worker is idle
+(phase-1 joins before the walk); the parent-only window per column =
+substance (~2.1 ms/chunk) + callback (~3.2 COARSE) is ~60% of drive wall.
+Pipelined worker (ping-pong slice buffers + index remap in
+select_cell_yz/swap_slices) pre-fills column k+1 while parent walks column
+k: hides up to min(next-fill wall, walk wall) = 2-4 ms/chunk — 4-7x the
+NP2 realizable win. Value-safety: stale-clone speculative pre-fill is
+value-safe (fork epochs < future epochs, no false hits; misses recompute
+identical bits); buffers + measured counter delta handed back, parent
+skips own fill; fill_slice becomes copy-back+merge consumer; non-pipelined
+serial fallback under NCF_PAR_FILL=0 unchanged. I2: same unit independence
+proof (position-pure op sequences; N2 probe shows ic-deltas data-dependent
+-> delta-sum merges only). Probe FIRST (R5): ncf_profile worker-idle
+ms/column + walk-wall ms/column (N2_* clocks extended); fix only if
+hideable window >= 0.70 ms (5% of noise 14.02). Target: noise <= 12
+ms/chunk. Effort: high.
