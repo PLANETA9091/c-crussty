@@ -51,7 +51,7 @@ NCF_SPEED.md history row. S1-S4 re-profile: surface has no >= 5% lever left
 measure 2-5% = R2-revert territory; per-column probe vote 0.35 ms is
 Java-faithful BiomeSource cache — untouchable.
 
-## N1 [NOISE 17.23 ms -> next] [~]
+## N1 [NOISE 17.23 ms -> next] [x]
 DECOMPOSED (2026-10-10, NCF_N1_PROBE 3-counter probe, commit ed9a255 + this):
 profile-build COARSE clocks scaled to clean 17.23: slice fills ~9.9 ms (58%),
 per-block drive callback ~3.2 (19%), substance final_density fill 3.11 raw /
@@ -62,22 +62,27 @@ dedup shared subtrees -> 0 ms; all 6 Java markers handled -> 0 ms; vein
 toggle/ridged are O(1) interp reads + gap lazy ~1-2k evals -> <=0.2 ms).
 L4 SoA y-corner batching: gate PASSES (slices >= 2.5 ms, ydep 100%) but
 ceiling 0.8-0.9 ms = AT the R2 5% bar — only if slice-fill noise kernel share
->= 2.4 ms holds. BIGGER lever found: per-y tree dispatch — fill_array has
-array-wise arms ONLY for Const/Ap2(Add/Mul); everything else (MulOrAdd,
-Mapped, Clamp, RangeChoice, ...) walks PER-Y via provider_fill_all_directly
-(interpolator.rs:1949, 15 roots x 5 rows x 49 y = 3,675 full-tree walks/chunk
-~ 147k node visits). Extending the array-wise pattern to the linear node
-kinds is the same proven bit-exact template (same ops per element, op order
-per element unchanged) — candidate for 1-3 ms. NEXT TICK: array-wise arms
-for MulOrAdd/Mapped/Clamp in isolated worktree -> stagediff 256/256 ->
-ledger x2 (R2 5% bar = 0.86 ms of noise stage).
+>= 2.4 ms holds. The per-y-dispatch lever (arms for MulOrAdd/Clamp/
+BlendDensity, flag-2-guarded) was MEASURED 2026-10-10 tick-2318 and
+FALSIFIED: A/B byte-identical (surface 256/256 + carvers 16/16, NCF_TILE
+_CACHE 0/1, 4/4) but parent noise 16.82/16.82 (PORTED 20.61/20.59) vs
+arms 16.39/16.73 (20.25/20.53) = Δ 0.09-0.43 ms of 16.82 (0.5-2.6%) —
+BELOW the 0.86 ms R2 bar -> REVERTED per R2, no code commit (attempt
+diff archived: wg-build/n1-arms-attempt.diff). N1-R probe attribution:
+after the committed Mapped/RangeChoice/CacheOnce/Cache2D/Interp arms,
+the remaining pfd pool in slice fills = YClampedGradient ONLY (203
+calls, 9,973 elems, 0.095 ms/chunk) and cell fills = 0 — the heavy
+subtrees sit behind cache wrappers whose fills are per-element scalar
+compute BY DESIGN, so the 1-3 ms estimate conflated fill_array visits
+(147k) with harvestable per-y pfd time (~0.1-0.4 ms). Linear-arm lever
+CLOSED.
 Hypotheses (a)/(b) ANSWERED 2026-10-10 (see R3-N1B + DECOMPOSED above):
 (a) no duplicate copies exist (wrap_memo+intern dedup; markers complete);
 (b) no missing markers — Java parity is complete. (c) gather forbidden;
-octave-SoA weak (grad_dot table). Live levers: array-wise fill arms for the
-linear node kinds (above), L4 y-corner SoA (borderline), substance-fill
-kernel share (3.16 raw). Anything skipping work must be bit-exact; gate-p2
-decides.
+octave-SoA weak (grad_dot table). Live levers AFTER the arm falsification:
+NP1 noise-parallel (below — biggest), SUB1 substance/interp kernel share,
+L4 y-corner SoA (borderline). Anything skipping work must be bit-exact;
+gate-p2 decides.
 
 ## H1 [HYBRID MEASUREMENT] [ ]
 The 3.32x figure is a model (unported stages at 1x, incl. jvm_other 48.9 ms).
@@ -111,3 +116,30 @@ after: intern 0.005, intern_calls 4/chunk. Surface 8.5 -> 2.46 ms (S4) then
 NCF_SPEED.md rows + R3-S4-RESEARCH re-measure at HEAD 5ddfbbf (surface
 2.23/2.29/2.24 x3, stagediff A/B vs 2bfd0ec: vanilla surface 64/64,
 carvers 16/16, seed 90210 64/64, Terralith 36/36 BYTE-IDENTICAL).
+
+## NP1 [NOISE-PARALLEL, slice rows + cell fills, std::thread::scope] [ ]
+HYP: the 15 roots x 5 rows slice fills and the per-cell cache fills are
+mutually independent units — RNG is position-derived (xoroshiro at(x,y,z),
+no cross-unit draw sequence), so evaluating units in parallel keeps the
+per-element op order bit-exactly (I2-safe by construction; crate is
+std-only, use std::thread::scope, precedent region.rs write_region_parallel
+~:433). Slice fills ~9.9 ms COARSE of noise 16.5-17.2 (58-60%); the 2-vCPU
+rig caps the wall win at ~2x on the parallel share -> expect noise ~10-12.
+Probe FIRST (R5): scope-parallel row fills behind an env flag (default off),
+stagediff byte-identical A/B (NCF flags 0/1) + ledger x2; verify no TLS
+state crosses the boundary (N1 counter TLS markers, debug EntryGuard) and
+note 2-vCPU contention in the ledger labels. Target: noise <= 12 ms/chunk
+(R2 bar 0.86 ms of noise stage). Effort: medium. NEXT TICK.
+
+## SUB1 [SUBSTANCE+INTERP kernel share] [ ]
+HYP: substance final_density fill 3.16 ms COARSE / ~2.1 clean (98,304
+elems, 3,840 visits/chunk) is dominated by per-element 8-corner
+interpolation arithmetic + cache reads (dispatch already array-wise); a
+lane-parallel SoA form across the 128-elem cell (lane = independent
+element, scalar loads + permutation, NO gather — P2.13 constraint) is
+I2-safe (same ops per element). Probe: ncf_profile exclusive-time split
+(interp-lerp arithmetic vs noise evals vs cache read/write) inside the
+substance fill; gate the SoA rework ONLY if the arithmetic share >= 1.2 ms
+(5% of noise stage). Target: substance <= 1.5 ms clean. Effort: high —
+run only after NP1 lands or is falsified.
+
