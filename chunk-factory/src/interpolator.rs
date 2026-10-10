@@ -585,6 +585,15 @@ pub struct NoiseChunkSim<'a> {
     /// wrapped final_density root, filled in selectCellYZ like Java's
     /// cellCaches list (empty beardifier: values = final per index).
     substance_cache: Vec<f64>,
+    /// R2#2: per-chunk frac tables for the filling-cell lerp3 — the three
+    /// `in_cell as f64 / cell as f64` divisions hoisted out of the per-node
+    /// path (identical operands => identical quotient bits, I2-safe by
+    /// construction). Valid whenever `filling_cell` is set: in-cell coords
+    /// are then always within [0, cell_width) x [0, cell_height) x
+    /// [0, cell_width) (both forIndex and fillAllDirectly guarantee it).
+    frac_x: Vec<f64>,
+    frac_y: Vec<f64>,
+    frac_z: Vec<f64>,
     /// P2.12 cross-chunk tile cache (None = disabled).
     tile: Option<&'a crate::tile::TileCache>,
     tile_epoch: u64,
@@ -775,6 +784,11 @@ impl<'a> NoiseChunkSim<'a> {
             bank,
             beard: crate::beardifier::Beardifier::empty(),
             substance_cache: vec![0.0; (cell_width * cell_width * cell_height) as usize],
+            // R2#2: the hoisted filling-cell fracs — `i as f64 / cell as f64`
+            // with the exact operands the per-node path used, computed once.
+            frac_x: (0..cell_width).map(|i| i as f64 / cell_width as f64).collect(),
+            frac_y: (0..cell_height).map(|i| i as f64 / cell_height as f64).collect(),
+            frac_z: (0..cell_width).map(|i| i as f64 / cell_width as f64).collect(),
             tile,
             tile_epoch,
         };
@@ -1198,6 +1212,40 @@ impl TemplateBuilder {
     }
 }
 
+// --------------------------------------------------------------------------
+// R2#1: debug-only re-entry guard (the old per-node TLS depth check)
+// --------------------------------------------------------------------------
+
+// The old compute_body/fill_array carried a thread-local depth counter paid
+// on EVERY node visit (get + set + Drop). The W-tree is a finite acyclic DAG
+// (structural interning makes self-containment impossible — module header),
+// so per-node recursion is bounded by tree depth and the guard was purely
+// defensive. It now lives at the top-level entry points only (where
+// recursion into the machine originates) and only in debug builds; release
+// builds compile it out entirely.
+#[cfg(debug_assertions)]
+thread_local! {
+    static ENTRY_DEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+#[cfg(debug_assertions)]
+struct EntryGuard;
+
+#[cfg(debug_assertions)]
+impl Drop for EntryGuard {
+    fn drop(&mut self) {
+        ENTRY_DEPTH.with(|c| c.set(c.get() - 1));
+    }
+}
+
+#[cfg(debug_assertions)]
+fn enter_interp_entry(site: &'static str) -> EntryGuard {
+    let d = ENTRY_DEPTH.with(|c| c.get());
+    assert!(d <= 100000, "interp entry re-entry depth {d} at {site}");
+    ENTRY_DEPTH.with(|c| c.set(d + 1));
+    EntryGuard
+}
+
 impl<'a> NoiseChunkSim<'a> {
     // ------------------------------------------------------------------
     // compute
@@ -1231,103 +1279,104 @@ impl<'a> NoiseChunkSim<'a> {
     }
 
     fn compute_body(&mut self, w: usize, ctx: Ctx) -> f64 {
-        thread_local! { static DEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) }; }
-        let d = DEPTH.with(|c| c.get());
-        if d > 100000 {
-            panic!("compute recursion depth {} at w={} node={:?}", d, w, self.template.wnodes[w]);
-        }
-        DEPTH.with(|c| c.set(d + 1));
-        struct G;
-        impl Drop for G { fn drop(&mut self) { DEPTH.with(|c| c.set(c.get() - 1)); } }
-        let _g = G;
-        let node = self.template.wnodes[w].clone();
+        // R2#1: the per-node TLS DEPTH guard (get + set + Drop on EVERY node
+        // visit) is gone. The W-tree is a finite acyclic DAG (interning
+        // guarantees no cycles — module header), so the guard was purely
+        // defensive; a debug-only re-entry guard survives at the top-level
+        // entry points (enter_interp_entry), release builds compile it out.
+        // R2#1: match on a REFERENCE — the old per-visit
+        // `self.template.wnodes[w].clone()` moved a 48-byte node per visit.
+        // The template ref is copied out first, so `node` never borrows
+        // `self` and every arm keeps its verbatim arithmetic.
+        let template = self.template;
+        let node = &template.wnodes[w];
         match node {
-            WNode::Const(v) => f64::from_bits(v),
+            WNode::Const(v) => f64::from_bits(*v),
             WNode::YClampedGradient { from_y, to_y, from_value, to_value } => mth::clamped_map(
                 ctx.y as f64,
-                from_y as f64,
-                to_y as f64,
-                f64::from_bits(from_value),
-                f64::from_bits(to_value),
+                *from_y as f64,
+                *to_y as f64,
+                f64::from_bits(*from_value),
+                f64::from_bits(*to_value),
             ),
-            WNode::Noise(idx, xz, ys) => self.bank.noises[idx].get_value(
-                ctx.x as f64 * f64::from_bits(xz),
-                ctx.y as f64 * f64::from_bits(ys),
-                ctx.z as f64 * f64::from_bits(xz),
+            WNode::Noise(idx, xz, ys) => self.bank.noises[*idx].get_value(
+                ctx.x as f64 * f64::from_bits(*xz),
+                ctx.y as f64 * f64::from_bits(*ys),
+                ctx.z as f64 * f64::from_bits(*xz),
             ),
             WNode::ShiftedNoise { sx, sy, sz, xz, ys, noise } => {
-                let d = ctx.x as f64 * f64::from_bits(xz) + self.compute(sx, ctx);
-                let d1 = ctx.y as f64 * f64::from_bits(ys) + self.compute(sy, ctx);
-                let d2 = ctx.z as f64 * f64::from_bits(xz) + self.compute(sz, ctx);
-                self.bank.noises[noise].get_value(d, d1, d2)
+                let d = ctx.x as f64 * f64::from_bits(*xz) + self.compute(*sx, ctx);
+                let d1 = ctx.y as f64 * f64::from_bits(*ys) + self.compute(*sy, ctx);
+                let d2 = ctx.z as f64 * f64::from_bits(*xz) + self.compute(*sz, ctx);
+                self.bank.noises[*noise].get_value(d, d1, d2)
             }
             WNode::ShiftA(idx) => {
-                self.bank.noises[idx].get_value(ctx.x as f64 * 0.25, 0.0, ctx.z as f64 * 0.25) * 4.0
+                self.bank.noises[*idx].get_value(ctx.x as f64 * 0.25, 0.0, ctx.z as f64 * 0.25) * 4.0
             }
             WNode::ShiftB(idx) => {
-                self.bank.noises[idx].get_value(ctx.z as f64 * 0.25, ctx.x as f64 * 0.25, 0.0) * 4.0
+                self.bank.noises[*idx].get_value(ctx.z as f64 * 0.25, ctx.x as f64 * 0.25, 0.0) * 4.0
             }
             WNode::Shift(idx) => {
-                self.bank.noises[idx].get_value(ctx.x as f64 * 0.25, ctx.y as f64 * 0.25, ctx.z as f64 * 0.25) * 4.0
+                self.bank.noises[*idx].get_value(ctx.x as f64 * 0.25, ctx.y as f64 * 0.25, ctx.z as f64 * 0.25) * 4.0
             }
-            WNode::BlendDensity(i) => self.compute(i, ctx), // Blender.empty identity
+            WNode::BlendDensity(i) => self.compute(*i, ctx), // Blender.empty identity
             WNode::WeirdScaledSampler { input, noise, rarity } => {
-                let value = self.compute(input, ctx);
+                let value = self.compute(*input, ctx);
                 let d = rarity.map(value);
-                d * self.bank.noises[noise].get_value(ctx.x as f64 / d, ctx.y as f64 / d, ctx.z as f64 / d).abs()
+                d * self.bank.noises[*noise].get_value(ctx.x as f64 / d, ctx.y as f64 / d, ctx.z as f64 / d).abs()
             }
             WNode::RangeChoice { input, min, max, in_range, out_of_range } => {
-                let d = self.compute(input, ctx);
-                if d >= f64::from_bits(min) && d < f64::from_bits(max) {
-                    self.compute(in_range, ctx)
+                let d = self.compute(*input, ctx);
+                if d >= f64::from_bits(*min) && d < f64::from_bits(*max) {
+                    self.compute(*in_range, ctx)
                 } else {
-                    self.compute(out_of_range, ctx)
+                    self.compute(*out_of_range, ctx)
                 }
             }
             WNode::Clamp { input, min, max } => {
-                mth::clamp(self.compute(input, ctx), f64::from_bits(min), f64::from_bits(max))
+                mth::clamp(self.compute(*input, ctx), f64::from_bits(*min), f64::from_bits(*max))
             }
             WNode::Mapped { ty, input } => {
-                let v = self.compute(input, ctx);
-                self.mapped_transform(ty, v)
+                let v = self.compute(*input, ctx);
+                self.mapped_transform(*ty, v)
             }
             WNode::MulOrAdd { is_add, input, argument } => {
-                let v = self.compute(input, ctx);
-                if is_add {
-                    v + f64::from_bits(argument)
+                let v = self.compute(*input, ctx);
+                if *is_add {
+                    v + f64::from_bits(*argument)
                 } else {
-                    v * f64::from_bits(argument)
+                    v * f64::from_bits(*argument)
                 }
             }
             WNode::Ap2 { ty, a1, a2, a2_min, a2_max } => {
-                let d = self.compute(a1, ctx);
+                let d = self.compute(*a1, ctx);
                 match ty {
-                    Ap2Type::Add => d + self.compute(a2, ctx),
+                    Ap2Type::Add => d + self.compute(*a2, ctx),
                     Ap2Type::Mul => {
                         if d == 0.0 {
                             0.0
                         } else {
-                            d * self.compute(a2, ctx)
+                            d * self.compute(*a2, ctx)
                         }
                     }
                     Ap2Type::Min => {
-                        if d < f64::from_bits(a2_min) {
+                        if d < f64::from_bits(*a2_min) {
                             d
                         } else {
-                            mth::java_min(d, self.compute(a2, ctx))
+                            mth::java_min(d, self.compute(*a2, ctx))
                         }
                     }
                     Ap2Type::Max => {
-                        if d > f64::from_bits(a2_max) {
+                        if d > f64::from_bits(*a2_max) {
                             d
                         } else {
-                            mth::java_max(d, self.compute(a2, ctx))
+                            mth::java_max(d, self.compute(*a2, ctx))
                         }
                     }
                 }
             }
-            WNode::Spline(s) => self.spline_apply(s, ctx) as f64,
-            WNode::Blended(idx) => self.bank.blended[idx].compute(ctx.x, ctx.y, ctx.z),
+            WNode::Spline(s) => self.spline_apply(*s, ctx) as f64,
+            WNode::Blended(idx) => self.bank.blended[*idx].compute(ctx.x, ctx.y, ctx.z),
             WNode::BlendAlpha => 1.0,
             WNode::BlendOffset => 0.0,
             // BeardifierMarker -> the per-chunk Beardifier (NoiseChunk.wrap
@@ -1336,60 +1385,63 @@ impl<'a> NoiseChunkSim<'a> {
             WNode::Beardifier => self.beard.compute(ctx.x, ctx.y, ctx.z),
             WNode::EndIslands => panic!("EndIslands scalar eval not implemented yet (Phase 2 tail)"),
             WNode::FindTopSurface { density, upper, lower_bound, cell_height } => {
-                let i = mth::floor(self.compute(upper, ctx) / cell_height as f64) * cell_height;
-                if i <= lower_bound {
-                    return lower_bound as f64;
+                let i = mth::floor(self.compute(*upper, ctx) / (*cell_height) as f64) * (*cell_height);
+                if i <= *lower_bound {
+                    return *lower_bound as f64;
                 }
                 let mut i1 = i;
-                while i1 >= lower_bound {
-                    if self.compute(density, Ctx { x: ctx.x, y: i1, z: ctx.z, in_chunk: ctx.in_chunk }) > 0.0 {
+                while i1 >= *lower_bound {
+                    if self.compute(*density, Ctx { x: ctx.x, y: i1, z: ctx.z, in_chunk: ctx.in_chunk }) > 0.0 {
                         return i1 as f64;
                     }
-                    i1 -= cell_height;
+                    i1 -= *cell_height;
                 }
-                lower_bound as f64
+                *lower_bound as f64
             }
             WNode::W(kind) => match kind {
                 WKind::Interp(id) => {
                     if !ctx.in_chunk {
-                        let inner = self.interpolators[id].inner;
+                        let inner = self.interpolators[*id].inner;
                         return self.compute(inner, ctx);
                     }
                     if !self.interpolating {
                         panic!("Trying to sample interpolator outside the interpolation loop");
                     }
                     if self.filling_cell {
-                        let n = self.interpolators[id].noise; // [000,001,100,101,010,011,110,111]
+                        let n = self.interpolators[*id].noise; // [000,001,100,101,010,011,110,111]
+                        // R2#2: the three per-visit int->f64 divisions are
+                        // hoisted into the per-chunk frac tables — same
+                        // operands, same quotient bits, zero float change.
                         mth::lerp3(
-                            self.in_cell_x as f64 / self.cell_width as f64,
-                            self.in_cell_y as f64 / self.cell_height as f64,
-                            self.in_cell_z as f64 / self.cell_width as f64,
+                            self.frac_x[self.in_cell_x as usize],
+                            self.frac_y[self.in_cell_y as usize],
+                            self.frac_z[self.in_cell_z as usize],
                             n[0], n[2], n[4], n[6], n[1], n[3], n[5], n[7],
                         )
                     } else {
-                        self.interpolators[id].value
+                        self.interpolators[*id].value
                     }
                 }
                 WKind::FlatCacheW(id) => {
                     let (qx, qz) = (ctx.x.div_euclid(4), ctx.z.div_euclid(4));
                     let i = qx - self.first_noise_x;
                     let i1 = qz - self.first_noise_z;
-                    let size_xz = self.flat_caches[id].size_xz;
+                    let size_xz = self.flat_caches[*id].size_xz;
                     if i >= 0 && i1 >= 0 && (i as usize) < size_xz && (i1 as usize) < size_xz {
-                        self.flat_caches[id].values[i as usize + i1 as usize * size_xz]
+                        self.flat_caches[*id].values[i as usize + i1 as usize * size_xz]
                     } else {
-                        let inner = self.flat_caches[id].inner;
+                        let inner = self.flat_caches[*id].inner;
                         self.compute(inner, ctx)
                     }
                 }
                 WKind::Cache2DW(id) => {
                     let packed = chunk_as_long(ctx.x, ctx.z);
-                    if self.cache2ds[id].last_pos2d == packed {
-                        self.cache2ds[id].last_value
+                    if self.cache2ds[*id].last_pos2d == packed {
+                        self.cache2ds[*id].last_value
                     } else {
-                        let inner = self.cache2ds[id].inner;
+                        let inner = self.cache2ds[*id].inner;
                         let v = self.compute(inner, ctx);
-                        let st = &mut self.cache2ds[id];
+                        let st = &mut self.cache2ds[*id];
                         st.last_pos2d = packed;
                         st.last_value = v;
                         v
@@ -1397,30 +1449,30 @@ impl<'a> NoiseChunkSim<'a> {
                 }
                 WKind::CacheOnceW(id) => {
                     if !ctx.in_chunk {
-                        let inner = self.cacheonces[id].inner;
+                        let inner = self.cacheonces[*id].inner;
                         return self.compute(inner, ctx);
                     }
-                    let hit_array = self.cacheonces[id]
+                    let hit_array = self.cacheonces[*id]
                         .last_array
                         .as_ref()
-                        .map(|_| self.cacheonces[id].last_array_counter == self.array_interpolation_counter)
+                        .map(|_| self.cacheonces[*id].last_array_counter == self.array_interpolation_counter)
                         .unwrap_or(false);
                     if hit_array {
-                        return self.cacheonces[id].last_array.as_ref().unwrap()[self.array_index];
+                        return self.cacheonces[*id].last_array.as_ref().unwrap()[self.array_index];
                     }
-                    if self.cacheonces[id].last_counter == self.interpolation_counter {
-                        return self.cacheonces[id].last_value;
+                    if self.cacheonces[*id].last_counter == self.interpolation_counter {
+                        return self.cacheonces[*id].last_value;
                     }
-                    let inner = self.cacheonces[id].inner;
+                    let inner = self.cacheonces[*id].inner;
                     let v = self.compute(inner, ctx);
-                    let st = &mut self.cacheonces[id];
+                    let st = &mut self.cacheonces[*id];
                     st.last_counter = self.interpolation_counter;
                     st.last_value = v;
                     v
                 }
                 WKind::CellCacheW(id) => {
                     if !ctx.in_chunk {
-                        let inner = self.cell_caches[id].inner;
+                        let inner = self.cell_caches[*id].inner;
                         return self.compute(inner, ctx);
                     }
                     if !self.interpolating {
@@ -1430,9 +1482,9 @@ impl<'a> NoiseChunkSim<'a> {
                     let (cw, ch) = (self.cell_width, self.cell_height);
                     if i >= 0 && i1 >= 0 && i2 >= 0 && i < cw && i1 < ch && i2 < cw {
                         let slot = (((ch - 1 - i1) * cw + i) * cw + i2) as usize;
-                        self.cell_caches[id].values[slot]
+                        self.cell_caches[*id].values[slot]
                     } else {
-                        let inner = self.cell_caches[id].inner;
+                        let inner = self.cell_caches[*id].inner;
                         self.compute(inner, ctx)
                     }
                 }
