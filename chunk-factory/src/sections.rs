@@ -546,7 +546,13 @@ fn tag_of(v: &Nbt) -> u8 {
 
 /// Write a root compound named "" gzipped (NbtIo.writeCompressed form).
 pub fn write_gzipped_nbt(root: &Nbt) -> Vec<u8> {
+    // R3#2c: single up-front reservation — a typical FULL-chunk payload is
+    // O(100 KiB), so one 384 KiB allocation replaces the repeated
+    // grow-realloc+memcpy steps of the payload walk (small payloads, e.g.
+    // entity-region chunks, only ever touch the pages they use). Pure
+    // allocation-shape change: the produced bytes are unaffected.
     let mut out = Vec::new();
+    out.reserve(384 << 10);
     out.push(10);
     put_str(&mut out, "");
     write_payload(&mut out, root);
@@ -683,6 +689,15 @@ pub fn filler_to_staged(fc: &FillerChunk, seed_status: &str, data_version: i32) 
     // the NBT bytes are identical by construction.
     let mut remap_blocks = crate::palette::DenseRemap::new(fc.state_table.states.len());
     let mut remap_biomes = crate::palette::DenseRemap::new(fc.biome_table.names.len());
+    // Canonical block-state strings, built ONCE per state id per chunk
+    // (R3#2) and cloned per palette entry below: replaces the per-section
+    // format!+join canonical() re-format (sections used to re-format the
+    // same few dozen distinct states for all 24 sections). Same strings
+    // from the same StateTable defs, so the staged schema is unchanged.
+    // (The per-section `vec![0u32; 4096]`/`[; 64]` walk buffers are NOT
+    // hoisted here: they are MOVED into each StagedSection, so reuse would
+    // just turn the alloc into a clone.)
+    let mut canon_cache: Vec<Option<String>> = Vec::new();
     for (i, sec) in fc.sections.iter().enumerate() {
         let y = (fc.min_y / 16 + i as i32) as i8;
         // first-encounter palette
@@ -697,7 +712,19 @@ pub fn filler_to_staged(fc: &FillerChunk, seed_status: &str, data_version: i32) 
             }
             data[j] = pi;
         }
-        let states: Vec<String> = palette.iter().map(|&s| fc.state_table.get(s).canonical()).collect();
+        let states: Vec<String> = palette
+            .iter()
+            .map(|&s| {
+                let id = s as usize;
+                if canon_cache.len() <= id {
+                    canon_cache.resize(id + 1, None);
+                }
+                if canon_cache[id].is_none() {
+                    canon_cache[id] = Some(fc.state_table.get(s).canonical());
+                }
+                canon_cache[id].as_ref().expect("filled above").clone()
+            })
+            .collect();
         let mut bpalette: Vec<u16> = Vec::new();
         remap_biomes.reset();
         let mut bdata = vec![0u32; 64];
