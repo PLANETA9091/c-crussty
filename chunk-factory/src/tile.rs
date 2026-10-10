@@ -27,8 +27,18 @@
 //! (shift noises, terrain-shaper spline coordinates) for every y corner of a
 //! column AND again in the neighboring chunk's border columns. The tile cache
 //! collapses both: O(1) per world column per node shape.
+//!
+//! NP1 (noise-parallel slice fills): the TileCache is shared by reference
+//! with fill WORKER threads, so the RefCell<Table> became a Mutex<Table> and
+//! the diagnostic counters became AtomicU64. The disabled path (NCF_TILE_
+//! CACHE=0) still early-returns BEFORE taking the lock — zero added cost
+//! when the cache is off, and uncontended lock/unlock is two inline cmpxchg
+//! ops when on (232 probes/chunk — noise). Every value in the table is a
+//! pure f(key), so cross-thread interleavings of get/put cannot change any
+//! output bit (a miss is a recompute of identical bits).
 
-use std::cell::{Cell, RefCell};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Mutex;
 
 /// Default slot count: 2^22 ≈ 4.19M slots ≈ 67 MB ((u64,f64) slot + 1
 /// occupancy bit) — the R2#4 budget. Allocated lazily on the first put; the
@@ -53,14 +63,18 @@ struct Table {
 }
 
 pub struct TileCache {
-    table: RefCell<Table>,
+    /// NP1: Mutex (was RefCell) — the cache is shared with fill worker
+    /// threads (`&'a TileCache` crosses the thread::scope boundary; Sync).
+    /// Uncontended lock cost is noise at 232 probes/chunk; the disabled
+    /// path never reaches it.
+    table: Mutex<Table>,
     slot_count: usize, // power of two
     pub enabled: bool,
-    pub hits: Cell<u64>,
-    pub misses: Cell<u64>,
+    pub hits: AtomicU64,
+    pub misses: AtomicU64,
     /// API compat (old cap-clear counter): the open-addressing scheme never
     /// clears, so this stays 0.
-    pub clears: Cell<u64>,
+    pub clears: AtomicU64,
 }
 
 impl TileCache {
@@ -73,12 +87,12 @@ impl TileCache {
             .unwrap_or(DEFAULT_SLOTS)
             .max(PROBE_WINDOW);
         TileCache {
-            table: RefCell::new(Table { slots: Vec::new(), occupied: Vec::new(), len: 0 }),
+            table: Mutex::new(Table { slots: Vec::new(), occupied: Vec::new(), len: 0 }),
             slot_count,
             enabled,
-            hits: 0.into(),
-            misses: 0.into(),
-            clears: 0.into(),
+            hits: AtomicU64::new(0),
+            misses: AtomicU64::new(0),
+            clears: AtomicU64::new(0),
         }
     }
 
@@ -87,9 +101,9 @@ impl TileCache {
         if !self.enabled {
             return None;
         }
-        let t = self.table.borrow();
+        let t = self.table.lock().expect("tile cache mutex poisoned");
         if t.len == 0 {
-            self.misses.set(self.misses.get() + 1);
+            self.misses.fetch_add(1, Ordering::Relaxed);
             return None;
         }
         let sc = self.slot_count;
@@ -100,11 +114,11 @@ impl TileCache {
                 // Empty slot: an insert never probes past the first empty
                 // slot, and slots only ever go empty->occupied, so the key
                 // cannot live beyond this point — miss.
-                self.misses.set(self.misses.get() + 1);
+                self.misses.fetch_add(1, Ordering::Relaxed);
                 return None;
             }
             if t.slots[idx].0 == key {
-                self.hits.set(self.hits.get() + 1);
+                self.hits.fetch_add(1, Ordering::Relaxed);
                 return Some(t.slots[idx].1);
             }
             idx += 1;
@@ -112,7 +126,7 @@ impl TileCache {
                 idx = 0;
             }
         }
-        self.misses.set(self.misses.get() + 1);
+        self.misses.fetch_add(1, Ordering::Relaxed);
         None
     }
 
@@ -121,7 +135,7 @@ impl TileCache {
         if !self.enabled {
             return;
         }
-        let mut t = self.table.borrow_mut();
+        let mut t = self.table.lock().expect("tile cache mutex poisoned");
         if t.slots.is_empty() {
             // Lazy allocation: a TileCache that never stores never pays the
             // (large, zero-filled) table. vec![(0, 0.0); n] is all-zero, so
@@ -160,11 +174,11 @@ impl TileCache {
     }
 
     pub fn len(&self) -> usize {
-        self.table.borrow().len
+        self.table.lock().expect("tile cache mutex poisoned").len
     }
 
     pub fn is_empty(&self) -> bool {
-        self.table.borrow().len == 0
+        self.table.lock().expect("tile cache mutex poisoned").len == 0
     }
 }
 
@@ -207,12 +221,12 @@ mod tests {
     /// Test constructor with a small power-of-two table (no 67 MB default).
     fn cache_with_slots(slots: usize) -> TileCache {
         TileCache {
-            table: RefCell::new(Table { slots: Vec::new(), occupied: Vec::new(), len: 0 }),
+            table: Mutex::new(Table { slots: Vec::new(), occupied: Vec::new(), len: 0 }),
             slot_count: slots,
             enabled: true,
-            hits: 0.into(),
-            misses: 0.into(),
-            clears: 0.into(),
+            hits: AtomicU64::new(0),
+            misses: AtomicU64::new(0),
+            clears: AtomicU64::new(0),
         }
     }
 
@@ -224,8 +238,8 @@ mod tests {
         assert!(c.get(k).is_none());
         c.put(k, v);
         assert_eq!(c.get(k).unwrap().to_bits(), v.to_bits());
-        assert_eq!(c.hits.get(), 1);
-        assert_eq!(c.misses.get(), 1);
+        assert_eq!(c.hits.load(Ordering::Relaxed), 1);
+        assert_eq!(c.misses.load(Ordering::Relaxed), 1);
     }
 
     #[test]
@@ -274,7 +288,7 @@ mod tests {
             let k = base ^ (i << 6);
             assert_eq!(c.get(k).unwrap(), i as f64, "key {i} lost in chain");
         }
-        assert_eq!(c.misses.get(), 0);
+        assert_eq!(c.misses.load(Ordering::Relaxed), 0);
     }
 
     #[test]
@@ -289,7 +303,7 @@ mod tests {
         for i in 0..70u64 {
             c.put(key(i), i as f64);
         }
-        assert_eq!(c.clears.get(), 0);
+        assert_eq!(c.clears.load(Ordering::Relaxed), 0);
         assert_eq!(c.len(), 64);
         assert_eq!(c.get(key(69)).unwrap(), 69.0); // latest write wins
         assert!(c.get(key(0)).is_none()); // first victim (home slot overwritten)
@@ -342,7 +356,7 @@ mod tests {
             for (k, v) in &expected {
                 assert_eq!(c.get(*k).map(f64::to_bits), *v, "replay diverged at key {k:#x}");
             }
-            (c.hits.get(), c.misses.get())
+            (c.hits.load(Ordering::Relaxed), c.misses.load(Ordering::Relaxed))
         };
         // run 3: exact replay again — same snapshot AND same counters
         let c = cache_with_slots(256);
@@ -359,7 +373,10 @@ mod tests {
         for (k, v) in &expected {
             assert_eq!(c.get(*k).map(f64::to_bits), *v);
         }
-        assert_eq!((c.hits.get(), c.misses.get()), (h1, m1));
+        assert_eq!(
+            (c.hits.load(Ordering::Relaxed), c.misses.load(Ordering::Relaxed)),
+            (h1, m1)
+        );
     }
 
     #[test]
@@ -369,7 +386,7 @@ mod tests {
         c.put(7, 2.0);
         assert_eq!(c.get(7).unwrap(), 2.0);
         assert_eq!(c.len(), 1);
-        assert_eq!(c.hits.get(), 1);
+        assert_eq!(c.hits.load(Ordering::Relaxed), 1);
     }
 
     #[test]
@@ -379,5 +396,13 @@ mod tests {
         c.put(42, 1.0);
         assert!(c.get(42).is_none());
         assert!(c.is_empty());
+    }
+
+    /// NP1: the cache must stay Sync so `&TileCache` can cross the
+    /// thread::scope boundary into fill workers (compile-time contract).
+    #[test]
+    fn tile_cache_is_sync() {
+        fn assert_sync<T: Sync>() {}
+        assert_sync::<TileCache>();
     }
 }

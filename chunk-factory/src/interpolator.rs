@@ -483,6 +483,7 @@ enum WSplineValue {
     Multi(usize),
 }
 
+#[derive(Debug, Clone)]
 struct InterpState {
     inner: usize,
     /// R2#3: flat slice storage — one contiguous buffer per slice, indexed
@@ -505,17 +506,20 @@ struct InterpState {
     value: f64,
 }
 
+#[derive(Clone)]
 struct CellCacheState {
     inner: usize,
     values: Vec<f64>,
 }
 
+#[derive(Clone)]
 struct Cache2DState {
     inner: usize,
     last_pos2d: i64,
     last_value: f64,
 }
 
+#[derive(Clone)]
 struct CacheOnceState {
     inner: usize,
     last_counter: u64,
@@ -524,6 +528,7 @@ struct CacheOnceState {
     last_array: Option<Vec<f64>>,
 }
 
+#[derive(Clone)]
 struct FlatCacheState {
     inner: usize,
     values: Vec<f64>,
@@ -556,6 +561,12 @@ struct Ctx {
 /// The NoiseChunk simulation. Per-chunk STATE only; the wrapped tree lives
 /// in the shared `SimTemplate` (P2.12 tiles by region: the template is built
 /// once per RandomState and instantiated per chunk).
+/// NP1: Clone — a fill WORKER needs a private snapshot of the whole per-chunk
+/// machine (all fields are owned Vecs/arrays/primitives plus the shared
+/// `&'a` template/bank/tile refs, which are Copy). The worker mutates its
+/// clone for its row range; the parent copies back exactly what the serial
+/// end state requires (see fill_slice_parallel).
+#[derive(Clone)]
 pub struct NoiseChunkSim<'a> {
     template: &'a SimTemplate,
     pub root_fields: Vec<usize>,
@@ -1334,6 +1345,42 @@ fn n1_slice_leaf_tick(y_free: bool) {
 #[cfg(ncf_profile)]
 thread_local! {
     static N1_IN_SUBSTANCE_FILL: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+// --------------------------------------------------------------------------
+// NP1: noise-parallel slice-fill gate (NCF_PAR_FILL, default OFF)
+// --------------------------------------------------------------------------
+
+/// NP1 gate, read ONCE per process: only the exact value "1" enables the
+/// parallel fill arm; unset / "0" / anything else keeps the serial path
+/// (default OFF = byte- and codepath-identical). Never read per call.
+static PAR_FILL: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+
+#[cfg(test)]
+static PAR_FORCE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
+
+/// NP1 gate. In test builds the PAR_FORCE atomic (see force_par_fill)
+/// overrides the env — a OnceLock fed from the env cannot be re-armed
+/// per test, and tests must drive BOTH arms in one process.
+#[inline]
+fn par_fill_enabled() -> bool {
+    #[cfg(test)]
+    {
+        match PAR_FORCE.load(std::sync::atomic::Ordering::Relaxed) {
+            1 => return true,
+            2 => return false,
+            _ => {}
+        }
+    }
+    *PAR_FILL.get_or_init(|| std::env::var("NCF_PAR_FILL").map(|v| v == "1").unwrap_or(false))
+}
+
+/// Test-only gate override: 0 = follow NCF_PAR_FILL, 1 = force parallel,
+/// 2 = force serial. pub(crate) so the interpolator tests (and only tests)
+/// can pin the arm under test.
+#[cfg(test)]
+pub(crate) fn force_par_fill(mode: u8) {
+    PAR_FORCE.store(mode, std::sync::atomic::Ordering::Relaxed);
 }
 
 // --------------------------------------------------------------------------
@@ -2153,8 +2200,6 @@ impl<'a> NoiseChunkSim<'a> {
     fn fill_slice(&mut self, is_slice0: bool, start: i32) {
         #[cfg(ncf_profile)]
         let n1_t0 = std::time::Instant::now();
-        #[cfg(ncf_profile)]
-        N1_IN_SLICE_FILL.with(|c| c.set(true));
         self.cell_start_block_x = start * self.cell_width;
         self.in_cell_x = 0;
         // R2#3: flat slice storage — a row is the contiguous sub-slice
@@ -2164,14 +2209,51 @@ impl<'a> NoiseChunkSim<'a> {
         // verbatim: the array_interpolation_counter increments are
         // call-order-observable through the CacheOnce lastArray epochs —
         // rows are NOT batched.
+        //
+        // NP1: the row loop is the only parallel section (phase 1). The
+        // serial path is the IDENTICAL instruction sequence via one
+        // #[inline]-able call to fill_slice_rows (same body, moved verbatim);
+        // the parallel arm forks ONE worker on the upper row range. The
+        // trailing array_interpolation_counter bump stays HERE (parent-side)
+        // in both arms.
+        let rows = 0..(self.cell_count_xz + 1) as usize;
+        if par_fill_enabled() && self.cell_count_xz >= 2 && rows.len() >= 2 {
+            self.fill_slice_parallel(is_slice0, start, rows);
+        } else {
+            self.fill_slice_rows(is_slice0, start, rows);
+        }
+        self.array_interpolation_counter += 1;
+        #[cfg(ncf_profile)]
+        {
+            N1_SLICE_NANOS.fetch_add(
+                n1_t0.elapsed().as_nanos() as u64,
+                std::sync::atomic::Ordering::Relaxed,
+            );
+        }
+    }
+
+    /// NP1: the VERBATIM per-row body of fill_slice's row loop (the serial
+    /// path executes exactly today's instruction sequence; the parallel arm
+    /// runs disjoint row ranges of it on parent + one worker). Each row:
+    /// cell_start_block_z/in_cell_z updates, one array_interpolation_counter
+    /// bump, then the per-interpolator take / fill_array / put of
+    /// flat[row..row+cols].
+    ///
+    /// The N1_IN_SLICE_FILL probe marker is armed HERE (not in fill_slice)
+    /// so a NP1 worker thread — which runs this fn with its OWN TLS —
+    /// buckets its leaf ticks into the slice-fill counters exactly like the
+    /// parent. cfg(ncf_profile) only; zero effect on values.
+    fn fill_slice_rows(&mut self, is_slice0: bool, _start: i32, rows: std::ops::Range<usize>) {
+        #[cfg(ncf_profile)]
+        N1_IN_SLICE_FILL.with(|c| c.set(true));
         let cols = (self.cell_count_y + 1) as usize;
-        for i in 0..(self.cell_count_xz + 1) {
-            let i1 = self.first_cell_z + i;
+        for i in rows {
+            let i1 = self.first_cell_z + i as i32;
             self.cell_start_block_z = i1 * self.cell_width;
             self.in_cell_z = 0;
             self.array_interpolation_counter += 1;
             // De-alloc: id range iteration — no per-slice Vec allocation.
-            let row = i as usize * cols;
+            let row = i * cols;
             for id in 0..self.interpolators.len() {
                 let mut flat = if is_slice0 {
                     std::mem::take(&mut self.interpolators[id].slice0)
@@ -2187,15 +2269,123 @@ impl<'a> NoiseChunkSim<'a> {
                 }
             }
         }
-        self.array_interpolation_counter += 1;
         #[cfg(ncf_profile)]
-        {
-            N1_IN_SLICE_FILL.with(|c| c.set(false));
-            N1_SLICE_NANOS.fetch_add(
-                n1_t0.elapsed().as_nanos() as u64,
-                std::sync::atomic::Ordering::Relaxed,
-            );
-        }
+        N1_IN_SLICE_FILL.with(|c| c.set(false));
+    }
+
+    /// NP1: the fork/join parallel arm for fill_slice's rows — main thread
+    /// keeps the larger lower half, ONE cloned worker takes the upper half
+    /// (std::thread::scope, the region.rs write_region_parallel pattern).
+    ///
+    /// Template precondition (NP1 phase-1 contract — re-verify before
+    /// enabling NCF_PAR_FILL for other templates): all cache_2d/flat_cache
+    /// inners in the ACTIVE template are y-free IN VALUE (JSON-verified for
+    /// the overworld template), cellCaches are empty (cell_inners == []),
+    /// and NO RNG exists on the fill path (every draw is constructor-time or
+    /// position-derived in the drive callback). Under those conditions every
+    /// fill unit is position-pure: the f64 written for (row i, element j)
+    /// is f(node, ctx(X, Y_j, Z_i)) — independent of which replica or thread
+    /// computes it and of visit order ACROSS replicas (I2-safe by
+    /// construction; zero float-op changes).
+    ///
+    /// Value transparency of the per-replica memos — why they need NO merge:
+    /// * last_tile front memo + TileCache: pure-function values keyed by
+    ///   (node, world column). A stale/cold slot only re-routes the read
+    ///   through a tile probe or a recompute, which returns the identical
+    ///   bits; different post-call memo CONTENT between serial and parallel
+    ///   is therefore unobservable in every later value.
+    /// * Cache2D (last_pos2d/last_value): position-keyed pure memo — a hit
+    ///   requires an exact (x, z) match and returns f(that position), which
+    ///   is bit-identical to a recompute. No epoch, cannot false-hit.
+    /// * CacheOnce (last_counter/last_value, last_array/last_array_counter):
+    ///   epoch-keyed pure memo. Every replica starts at the fork snapshot
+    ///   (stored epochs <= fork epoch) and its own epochs are strictly
+    ///   monotone, so a replica can never observe an epoch FUTURE to its
+    ///   own state — no false hits, only recomputes of identical bits.
+    /// The copy-backs below exist to make the PARENT's post-call machine
+    /// state byte-identical to the serial end state: later phases
+    /// (select_cell_yz epoch arithmetic, CacheOnce checks, drive-callback
+    /// reads) must see the serial machine, not merely an equivalent one.
+    fn fill_slice_parallel(&mut self, is_slice0: bool, start: i32, rows: std::ops::Range<usize>) {
+        let mid = (rows.start + rows.end + 1) / 2; // main takes the larger lower half
+        let fork_ic = self.interpolation_counter;
+        let fork_aic = self.array_interpolation_counter;
+        // Fork: snapshot clone for the worker. The clone OWNS everything
+        // mutable; only the shared `&'a` refs (SimTemplate/NoiseBank/
+        // TileCache) cross the scope boundary — all Sync (tile.rs NP1).
+        // The closure captures NO reference into self's interior.
+        let mut worker = self.clone();
+        let is_slice0_c = is_slice0;
+        let start_c = start;
+        let rows_end = rows.end;
+        std::thread::scope(|scope| {
+            let h = scope.spawn(move || {
+                worker.fill_slice_rows(is_slice0_c, start_c, mid..rows_end);
+                worker // return the owned clone
+            });
+            self.fill_slice_rows(is_slice0, start, rows.start..mid);
+            let done = h.join().expect("np1 fill worker");
+            // Parent deltas while the worker ran (ic = per-element Slice
+            // bumps, aic = per-row bumps). Serial totals = fork + both
+            // deltas; the parent already holds its own.
+            let d_ic = self.interpolation_counter - fork_ic;
+            let d_aic = self.array_interpolation_counter - fork_aic;
+            // ---- (a) slice rows the worker owned: memcpy f64 -------------
+            let cols = (self.cell_count_y + 1) as usize;
+            let lo = mid * cols;
+            let hi = rows_end * cols;
+            for id in 0..self.interpolators.len() {
+                let (dst, src) = if is_slice0 {
+                    (&mut self.interpolators[id].slice0, &done.interpolators[id].slice0)
+                } else {
+                    (&mut self.interpolators[id].slice1, &done.interpolators[id].slice1)
+                };
+                dst[lo..hi].copy_from_slice(&src[lo..hi]);
+            }
+            // ---- (b) COUNTER MERGE ---------------------------------------
+            // Parent ran rows.start..mid, worker ran mid..rows_end; the sum
+            // of both deltas equals the serial delta exactly (each side's
+            // per-row/per-element bump pattern is replica-independent). The
+            // trailing bump stays parent-side in fill_slice.
+            self.interpolation_counter += done.interpolation_counter - fork_ic;
+            self.array_interpolation_counter += done.array_interpolation_counter - fork_aic;
+            // ---- (c) FINAL SCALAR STATE ----------------------------------
+            // Every scalar the row body mutates (directly or through
+            // fill_array's Provider::Slice context): copy the worker's end
+            // value — its rows are the serial TAIL, so its end state is the
+            // serial end state (the ic/aic epochs it embeds are adjusted by
+            // the parent deltas measured above).
+            self.cell_start_block_z = done.cell_start_block_z;
+            self.in_cell_z = done.in_cell_z;
+            self.cell_start_block_y = done.cell_start_block_y;
+            self.in_cell_y = done.in_cell_y;
+            self.array_index = done.array_index;
+            // CacheOnce memo states: the freshest store decides. If the
+            // worker stored (store epoch > fork epoch — its rows are the
+            // tail), its store IS the serial-last store: copy content and
+            // shift the epoch by the parent's delta so it equals the serial
+            // epoch bit for bit. If it never stored, the parent's own stores
+            // (rows start..mid) are the serial-last stores — keep them.
+            for id in 0..self.cacheonces.len() {
+                let d = &done.cacheonces[id];
+                let s = &mut self.cacheonces[id];
+                if d.last_counter > fork_ic {
+                    s.last_counter = d.last_counter + d_ic;
+                    s.last_value = d.last_value;
+                }
+                if d.last_array_counter > fork_aic {
+                    s.last_array = d.last_array.clone();
+                    s.last_array_counter = d.last_array_counter + d_aic;
+                }
+            }
+            // Cache2D: position-keyed pure memo (no epoch) — value-
+            // transparent in ANY state, so no copy-back (see fork comment).
+            // ---- (d) memo replicas: last_tile / ap2_scratch NOT merged ---
+            // last_tile: value-transparent (pure-function slots; a stale
+            // slot recomputes identical bits — see fork comment).
+            // ap2_scratch: scratch cleared+resized before every use, and its
+            // len/capacity are unobservable in values.
+        });
     }
 
     /// Drive the doFill loop and collect per-block values for every
@@ -2389,4 +2579,156 @@ impl<'a> NoiseChunkSim<'a> {
 #[inline]
 fn chunk_as_long(x: i32, z: i32) -> i64 {
     (x as i64 & 0xFFFF_FFFF) | ((z as i64 & 0xFFFF_FFFF) << 32)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::router::{RandomState, WorldgenDir};
+
+    /// The PAR_FORCE override is process-global — serialize the flips so the
+    /// NP1 tests' serial/parallel drives each run under their own forced
+    /// mode. (Unrelated tests that drive sims concurrently may observe the
+    /// forced arm; their outputs are arm-invariant, so they stay green.)
+    static GATE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    fn bits(v: &[f64]) -> Vec<u64> {
+        v.iter().map(|x| x.to_bits()).collect()
+    }
+
+    /// One serial drive + one parallel drive on identical FRESH machines
+    /// built from the same RandomState (NP1: cell_count_xz = 4, the real
+    /// filler shape; rows = 5). Returns both sims and both drive outputs.
+    fn drive_serial_and_parallel(
+        rs: &RandomState,
+        bx: i32,
+        bz: i32,
+    ) -> (
+        NoiseChunkSim<'_>,
+        Vec<(u32, i32, i32, i32, f64)>,
+        NoiseChunkSim<'_>,
+        Vec<(u32, i32, i32, i32, f64)>,
+    ) {
+        let _g = GATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        force_par_fill(2); // serial, regardless of env
+        let mut serial = NoiseChunkSim::from_random_state(rs, 4, bx, bz);
+        let (_n_s, out_s) = serial.drive_and_collect();
+        force_par_fill(1); // parallel arm forced on
+        let mut par = NoiseChunkSim::from_random_state(rs, 4, bx, bz);
+        let (_n_p, out_p) = par.drive_and_collect();
+        force_par_fill(0); // back to env
+        (serial, out_s, par, out_p)
+    }
+
+    /// T1 (shaped on NCF_WG, skips gracefully when the extract is absent —
+    /// same pattern as router.rs): the NP1 parallel slice-fill arm must be
+    /// BIT-EXACT against the serial path. Full overworld noise drive on
+    /// identical machines; compares every collected drive value, all
+    /// interpolator slice0/slice1 buffers and the substance cache by f64
+    /// BITS (I2), at two chunk origins.
+    #[test]
+    fn t1_par_fill_rows_bit_identical() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = RandomState::build_overworld(&dir, 3053459).expect("build_overworld");
+        for (bx, bz) in [(0, 0), (112, 144)] {
+            let (serial, out_s, par, out_p) = drive_serial_and_parallel(&rs, bx, bz);
+            assert_eq!(out_s.len(), out_p.len(), "drive output length ({bx},{bz})");
+            for (a, b) in out_s.iter().zip(out_p.iter()) {
+                assert_eq!(a.0, b.0);
+                assert_eq!(a.1, b.1);
+                assert_eq!(a.2, b.2);
+                assert_eq!(a.3, b.3);
+                assert_eq!(
+                    a.4.to_bits(),
+                    b.4.to_bits(),
+                    "drive value diverged at ({},{},{}) interp {} chunk ({bx},{bz})",
+                    a.1,
+                    a.2,
+                    a.3,
+                    a.0
+                );
+            }
+            for id in 0..serial.interpolators.len() {
+                assert_eq!(
+                    bits(&serial.interpolators[id].slice0),
+                    bits(&par.interpolators[id].slice0),
+                    "slice0 interp {id} chunk ({bx},{bz})"
+                );
+                assert_eq!(
+                    bits(&serial.interpolators[id].slice1),
+                    bits(&par.interpolators[id].slice1),
+                    "slice1 interp {id} chunk ({bx},{bz})"
+                );
+            }
+            assert_eq!(
+                bits(&serial.substance_cache),
+                bits(&par.substance_cache),
+                "substance cache chunk ({bx},{bz})"
+            );
+        }
+    }
+
+    /// T2 (shaped on NCF_WG): the counter-merge design — interpolation_
+    /// counter and array_interpolation_counter must be EQUAL between the
+    /// serial and the parallel run (they are the CacheOnce epochs). Also
+    /// pins the final scalar state the row body mutates and the CacheOnce
+    /// memo state (the copy-back shifts the worker's stored epochs by the
+    /// parent deltas, reconstructing the serial state exactly).
+    #[test]
+    fn t2_par_fill_counters_identical() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = RandomState::build_overworld(&dir, 3053459).expect("build_overworld");
+        let (serial, _out_s, par, _out_p) = drive_serial_and_parallel(&rs, 0, 0);
+        assert_eq!(
+            serial.interpolation_counter, par.interpolation_counter,
+            "interpolation_counter"
+        );
+        assert_eq!(
+            serial.array_interpolation_counter, par.array_interpolation_counter,
+            "array_interpolation_counter"
+        );
+        // final scalar state the row body mutates (copy-back (c))
+        assert_eq!(serial.cell_start_block_z, par.cell_start_block_z);
+        assert_eq!(serial.in_cell_z, par.in_cell_z);
+        assert_eq!(serial.cell_start_block_y, par.cell_start_block_y);
+        assert_eq!(serial.in_cell_y, par.in_cell_y);
+        assert_eq!(serial.array_index, par.array_index);
+        // CacheOnce memo state: epoch-shifted copy-back must reconstruct the
+        // serial state exactly (last_array included, by f64 bits).
+        for id in 0..serial.cacheonces.len() {
+            let a = &serial.cacheonces[id];
+            let b = &par.cacheonces[id];
+            assert_eq!(a.last_counter, b.last_counter, "cacheonce {id} last_counter");
+            assert_eq!(
+                a.last_array_counter, b.last_array_counter,
+                "cacheonce {id} last_array_counter"
+            );
+            assert_eq!(a.last_value.to_bits(), b.last_value.to_bits(), "cacheonce {id} last_value");
+            match (&a.last_array, &b.last_array) {
+                (None, None) => {}
+                (Some(x), Some(y)) => assert_eq!(bits(x), bits(y), "cacheonce {id} last_array"),
+                _ => panic!("cacheonce {id} last_array presence divergence"),
+            }
+        }
+    }
+
+    /// T3: gate semantics of the force override (the env OnceLock shape
+    /// itself is process-global — its exact-string behavior is verified by
+    /// the NCF_PAR_FILL=0/1 stagediff A/B runs).
+    #[test]
+    fn t3_par_gate_force_semantics() {
+        let _g = GATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        force_par_fill(1);
+        assert!(par_fill_enabled());
+        force_par_fill(2);
+        assert!(!par_fill_enabled());
+        force_par_fill(0);
+        // mode 0 mirrors the env gate
+        assert_eq!(
+            par_fill_enabled(),
+            std::env::var("NCF_PAR_FILL").map(|v| v == "1").unwrap_or(false)
+        );
+    }
 }
