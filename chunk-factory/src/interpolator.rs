@@ -1219,6 +1219,37 @@ impl TemplateBuilder {
 }
 
 // --------------------------------------------------------------------------
+// N1 probe counters (noise/interpolator machine residue, standing order R5,
+// cfg(ncf_profile) only — absent from release/CI builds as a class, same as
+// the S2_* class in surface_rules.rs). These numbers gate the future PKG-D
+// SoA-SIMD decision on the substance fill:
+//   N1_TILE_HITS / N1_TILE_MISSES — y-free subtree tile-cache probe outcomes,
+//     counted at the NoiseChunkSim::compute call site (tile.rs internals
+//     deliberately untouched — counting lives on the caller side).
+//   N1_FILL_NODE_VISITS — W-node visits (fill_array entries) while the
+//     substance cache fills (select_cell_yz, the final_density
+//     CacheAllInCell): the per-node dispatch the SoA rewrite would remove.
+//   N1_FILL_ELEMS — substance-fill elements (cw*cw*ch per cell = 128
+//     overworld; 98,304/chunk at 768 cells).
+#[cfg(ncf_profile)]
+pub static N1_TILE_HITS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N1_TILE_MISSES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N1_FILL_NODE_VISITS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N1_FILL_ELEMS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+// Substance-fill phase marker (probe only): true exactly while the
+// select_cell_yz substance fill walks the tree. thread_local — like FDEPTH —
+// because a NoiseChunkSim is driven from a single thread (&mut self).
+#[cfg(ncf_profile)]
+thread_local! {
+    static N1_IN_SUBSTANCE_FILL: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+// --------------------------------------------------------------------------
 // R2#1: debug-only re-entry guard (the old per-node TLS depth check)
 // --------------------------------------------------------------------------
 
@@ -1226,9 +1257,10 @@ impl TemplateBuilder {
 // on EVERY node visit (get + set + Drop). The W-tree is a finite acyclic DAG
 // (structural interning makes self-containment impossible — module header),
 // so per-node recursion is bounded by tree depth and the guard was purely
-// defensive. It now lives at the top-level entry points only (where
-// recursion into the machine originates) and only in debug builds; release
-// builds compile it out entirely.
+// defensive. It now lives at the top-level entry points (where recursion
+// into the machine originates) and at fill_array's own entry — and only in
+// debug builds; release builds compile it out entirely (N1-H6 closed the
+// last unconditional holdout: fill_array's per-visit FDEPTH, below).
 #[cfg(debug_assertions)]
 thread_local! {
     static ENTRY_DEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
@@ -1250,6 +1282,38 @@ fn enter_interp_entry(site: &'static str) -> EntryGuard {
     assert!(d <= 100000, "interp entry re-entry depth {d} at {site}");
     ENTRY_DEPTH.with(|c| c.set(d + 1));
     EntryGuard
+}
+
+// N1-H6: fill_array's own per-visit guard — same story, same shape as the
+// EntryGuard above. It used to run UNCONDITIONALLY on every fill_array
+// visit (TLS get + set + Drop, release included), contradicting the header
+// claim; the whole machinery is now cfg(debug_assertions) and release
+// builds compile it out entirely. Recursion safety in release rests on the
+// same argument as for the compute path: the W-tree is a finite acyclic
+// DAG, so recursion depth is bounded by tree depth.
+#[cfg(debug_assertions)]
+thread_local! {
+    static FDEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+#[cfg(debug_assertions)]
+struct FillGuard;
+
+#[cfg(debug_assertions)]
+impl Drop for FillGuard {
+    fn drop(&mut self) {
+        FDEPTH.with(|c| c.set(c.get() - 1));
+    }
+}
+
+#[cfg(debug_assertions)]
+fn enter_fill_entry(w: usize, node: &WNode) -> FillGuard {
+    let d = FDEPTH.with(|c| c.get());
+    if d > 100000 {
+        panic!("fill_array recursion depth {d} at w={w} node={node:?}");
+    }
+    FDEPTH.with(|c| c.set(d + 1));
+    FillGuard
 }
 
 impl<'a> NoiseChunkSim<'a> {
@@ -1275,7 +1339,17 @@ impl<'a> NoiseChunkSim<'a> {
             // SAFETY of the unwrap: checked is_some above
             let tile = self.tile.unwrap();
             if let Some(v) = tile.get(key) {
+                #[cfg(ncf_profile)]
+                {
+                    // N1 probe: tile-cache outcome (counted at the call
+                    // site; tile.rs internals untouched).
+                    N1_TILE_HITS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                }
                 return v;
+            }
+            #[cfg(ncf_profile)]
+            {
+                N1_TILE_MISSES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             }
             let v = self.compute_body(w, ctx);
             tile.put(key, v);
@@ -1573,15 +1647,23 @@ impl<'a> NoiseChunkSim<'a> {
     // ------------------------------------------------------------------
 
     fn fill_array(&mut self, w: usize, array: &mut [f64], provider: Provider) {
-        thread_local! { static FDEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) }; }
-        let d = FDEPTH.with(|c| c.get());
-        if d > 100000 {
-            panic!("fill_array recursion depth {} at w={} node={:?}", d, w, self.template.wnodes[w]);
+        // N1-H6: debug-only re-entry guard — the EntryGuard pattern applied
+        // to the fill path. Was: unconditional TLS depth get/set/Drop on
+        // EVERY fill_array visit (release included). Release builds compile
+        // it out entirely (see enter_fill_entry above for the recursion
+        // argument); debug builds keep identical overflow detection and an
+        // identical panic message.
+        #[cfg(debug_assertions)]
+        let _gf = enter_fill_entry(w, &self.template.wnodes[w]);
+        #[cfg(ncf_profile)]
+        {
+            // N1 probe: W-node visits while the substance cache fills (see
+            // the N1 counter block below). fill_array IS the node visit —
+            // one entry per WNode dispatched, recursion included.
+            if N1_IN_SUBSTANCE_FILL.with(|c| c.get()) {
+                N1_FILL_NODE_VISITS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            }
         }
-        FDEPTH.with(|c| c.set(d + 1));
-        struct GF;
-        impl Drop for GF { fn drop(&mut self) { FDEPTH.with(|c| c.set(c.get() - 1)); } }
-        let _gf = GF;
         // De-alloc: match on a REFERENCE into the shared template (copied
         // ref, same pattern as compute_body) — the per-visit 48-byte
         // `wnodes[w].clone()` is gone; every arm keeps its verbatim logic.
@@ -1719,15 +1801,51 @@ impl<'a> NoiseChunkSim<'a> {
             }
             Provider::Cell => {
                 // NoiseChunk.forIndex — y DESCENDING mapping
+                //
+                // N1-H7 fast path for cw==4 && ch==8 — the only dimensions
+                // the overworld machine ever instantiates: NoiseSettings
+                // size_horizontal=1 / size_vertical=2 quarts -> 4/8 blocks
+                // (router.rs defaults, instantiate() multiplies by 4),
+                // filler.rs builds the per-chunk Sim via from_random_state
+                // with exactly those settings, height_feed hard-codes 1,2,
+                // and the SimTemplate cell_volume is 4*4*8.
+                //
+                // Validity of the shift/mask rewrite: `index: usize` is
+                // provably within [0, array.len()) — every Provider::Cell
+                // fill drives it over 0..array.len() with array.len() ==
+                // cell_width*cell_width*cell_height (cell-cache values and
+                // substance_cache; the per-element compute_for_index callers
+                // in Ap2/RangeChoice reuse the same array) — hence `idx =
+                // index as i32` is non-negative and far below i32::MAX. For
+                // a non-negative dividend and the power-of-two divisor 4:
+                // rem_euclid == `& 3` and div_euclid == `>> 2` exactly
+                // (quotient and remainder are non-negative, so euclidean ==
+                // truncating == shift/mask), and the derived i1 is
+                // non-negative again, so its div/rem rewrite is equally
+                // exact. Identical integers feed identical in_cell_x/y/z
+                // state, so pos_now()/compute outputs are bit-identical
+                // (pure integer identity — no float op involved). The
+                // general path below stays for any other dimensions.
                 let cw = self.cell_width;
+                let ch = self.cell_height;
                 let idx = index as i32;
-                let i = idx.rem_euclid(cw);
-                let i1 = idx.div_euclid(cw);
-                let i2 = i1.rem_euclid(cw);
-                let i3 = self.cell_height - 1 - i1.div_euclid(cw);
-                self.in_cell_x = i2;
-                self.in_cell_y = i3;
-                self.in_cell_z = i;
+                if cw == 4 && ch == 8 {
+                    let i = idx & 3; // idx.rem_euclid(4)
+                    let i1 = idx >> 2; // idx.div_euclid(4), idx >= 0
+                    let i2 = i1 & 3; // i1.rem_euclid(4)
+                    let i3 = 7 - (i1 >> 2); // ch - 1 - i1.div_euclid(4)
+                    self.in_cell_x = i2;
+                    self.in_cell_y = i3;
+                    self.in_cell_z = i;
+                } else {
+                    let i = idx.rem_euclid(cw);
+                    let i1 = idx.div_euclid(cw);
+                    let i2 = i1.rem_euclid(cw);
+                    let i3 = ch - 1 - i1.div_euclid(cw);
+                    self.in_cell_x = i2;
+                    self.in_cell_y = i3;
+                    self.in_cell_z = i;
+                }
                 self.array_index = index;
             }
         }
@@ -1812,7 +1930,16 @@ impl<'a> NoiseChunkSim<'a> {
         // root (empty beardifier -> values = final per forIndex index).
         {
             let mut arr = std::mem::take(&mut self.substance_cache);
+            #[cfg(ncf_profile)]
+            {
+                // N1 probe: arm the substance-fill phase marker and count
+                // the elements this fill writes (cw*cw*ch per cell).
+                N1_IN_SUBSTANCE_FILL.with(|c| c.set(true));
+                N1_FILL_ELEMS.fetch_add(arr.len() as u64, std::sync::atomic::Ordering::Relaxed);
+            }
             self.fill_array(self.root_fields[11], &mut arr, Provider::Cell);
+            #[cfg(ncf_profile)]
+            N1_IN_SUBSTANCE_FILL.with(|c| c.set(false));
             self.substance_cache = arr;
         }
         self.array_interpolation_counter += 1;
