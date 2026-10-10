@@ -362,12 +362,27 @@ impl PerlinNoise {
         for (i, level) in self.noise_levels.iter().enumerate() {
             if let Some(improved) = level {
                 let y_arg = if use_fixed_y { -improved.yo } else { Self::wrap(y * d1) };
+                // T5b: when y_scale == 0.0 (the PerlinNoise.getValue default
+                // and every Noise/Shift node path through it), BOTH scaled
+                // args are dead inside noise_scaled — its weird_delta branch
+                // is gated on `y_scale != 0.0` and neither y_scale nor y_max
+                // is read anywhere else — so the per-octave multiplies
+                // `y_scale * d1` and `y_max * d1` produce values that are
+                // computed and discarded. Skipping them passes the raw
+                // operands through: with d1 finite and positive,
+                // `0.0 * d1` is exactly `±0.0` (same bits as y_scale), and
+                // y_max is never read, so this is bit-safe by construction.
+                let (ys_arg, ym_arg) = if y_scale == 0.0 {
+                    (y_scale, y_max)
+                } else {
+                    (y_scale * d1, y_max * d1)
+                };
                 let d3 = improved.noise_scaled(
                     Self::wrap(x * d1),
                     y_arg,
                     Self::wrap(z * d1),
-                    y_scale * d1,
-                    y_max * d1,
+                    ys_arg,
+                    ym_arg,
                 );
                 d += self.amplitudes[i] * d3 * d2; // (amp * d3) * d2 — Java order
             }
@@ -379,10 +394,26 @@ impl PerlinNoise {
 
     /// PerlinNoise.wrap: `value - lfloor(value / 3.3554432E7 + 0.5) * 3.3554432E7`
     /// (2^25 = 33554432.0).
+    ///
+    /// T5a/R2 win-3: the division is computed as a multiply by 2^-25.
+    /// IEEE-754 proof: 3.3554432E7 = 2^25 and 2^-25 are both exactly
+    /// representable, and the exact real value of `x / 2^25` equals the
+    /// exact real value of `x * (2^-25)` for every x; IEEE requires both
+    /// operations to return the correctly rounded (round-to-nearest-even)
+    /// result of their exact real value, so the two results are bit-identical
+    /// for EVERY input — ±0, ±inf, NaN, normals and subnormals (a
+    /// power-of-two scale never alters the significand, only the exponent;
+    /// where the scaled result underflows toward zero both ops round the
+    /// same real value identically). Overflow is impossible (the magnitude
+    /// only shrinks), so `value / 2^25` is replaced 1:1 by
+    /// `value * 2^-25`. The `+ 0.5` inside lfloor and the trailing `* C`
+    /// are untouched.
     #[inline]
     pub fn wrap(value: f64) -> f64 {
+        // 2^-25, exact: x / 3.3554432E7 == x * WRAP_SCALE bitwise (proof above).
+        const WRAP_SCALE: f64 = 2.98023223876953125e-8;
         const C: f64 = 3.3554432E7;
-        value - crate::mth::lfloor(value / C + 0.5) as f64 * C
+        value - crate::mth::lfloor(value * WRAP_SCALE + 0.5) as f64 * C
     }
 }
 
