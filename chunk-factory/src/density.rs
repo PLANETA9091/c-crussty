@@ -759,13 +759,115 @@ impl Df {
 // y-free node's scalar evaluation is bit-identical for every y, so returning
 // a cached value reproduces compute() exactly — the zero-diff gates still
 // compare every produced value bit-for-bit against the JVM oracle.
+//
+// H5 quart-memo — the store is abstracted into `MemoStore` so ONE `memo`
+// parameter can carry TWO pointer-keyed tables:
+//   * the scalar column cache (per (node, x, z)) — VALUES, unchanged contract;
+//   * the per-node `is_y_free` CLASSIFICATION cache (per node) — a bool memo
+//     of the pure structural predicate (is_y_free never reads `bank`; the
+//     answer is a function of the node alone), computed once per node per
+//     store lifetime instead of re-walking the subtree on every call.
+//     The classification memo caches PREDICATES ONLY — no f64 ever flows
+//     through it, so the preserve-exact-float-ops invariant holds by
+//     construction. Soundness = the SAME address-stability contract as the
+//     column cache (rs outlives the per-chunk store; no ABA within it).
 // ---------------------------------------------------------------------------
 
+/// Legacy bare column map (kept under the original alias: BiomeSource in
+/// biomes.rs owns one and constructs it with `HashMap::new()` — the
+/// `MemoStore` blanket impl below keeps ANY hasher compatible). The FxHasher
+/// switch (S3 pattern) lives in `EvalMemo`, used by filler's quart hot path.
 pub type ColumnMemo = std::collections::HashMap<(usize, i32, i32), f64>;
+
+/// The per-chunk evaluation store threaded through compute_memo/apply_memo.
+/// Implementations are pure LOOKUP tables: get/insert only, never iterated
+/// (no .iter()/.keys()/.values() anywhere — bucket layout is output-
+/// invisible), so the hasher choice cannot reach any output byte.
+pub trait MemoStore {
+    /// cached scalar for a provably y-free subtree at (node, x, z).
+    fn col_get(&self, key: &(usize, i32, i32)) -> Option<f64>;
+    fn col_put(&mut self, key: (usize, i32, i32), v: f64);
+    /// cached is_y_free classification for a node (None => recompute).
+    /// Default: no side table to hold it — recompute per call (pure, so
+    /// bit-exact; this keeps bare column maps like BiomeSource's working).
+    fn yfree_get(&self, _node: usize) -> Option<bool> {
+        None
+    }
+    fn yfree_put(&mut self, _node: usize, _v: bool) {}
+}
+
+impl<S: std::hash::BuildHasher> MemoStore for std::collections::HashMap<(usize, i32, i32), f64, S> {
+    #[inline]
+    fn col_get(&self, key: &(usize, i32, i32)) -> Option<f64> {
+        self.get(key).copied()
+    }
+    #[inline]
+    fn col_put(&mut self, key: (usize, i32, i32), v: f64) {
+        self.insert(key, v);
+    }
+}
+
+/// H5 quart-memo: filler's per-chunk evaluation store — the FxHasher switch
+/// (S3 pattern, fixed-seed `crate::fxhash::FxHasher`) for the column cache
+/// PLUS the per-node y-free classification cache, bundled so the existing
+/// single `memo` parameter carries both. Pointer keys are usize: FxHash is
+/// fine (S4 StateTable precedent); both maps are lookup-only (see MemoStore).
+pub struct EvalMemo {
+    columns: std::collections::HashMap<(usize, i32, i32), f64, std::hash::BuildHasherDefault<crate::fxhash::FxHasher>>,
+    y_free: std::collections::HashMap<usize, bool, std::hash::BuildHasherDefault<crate::fxhash::FxHasher>>,
+}
+
+impl Default for EvalMemo {
+    fn default() -> Self {
+        Self { columns: Default::default(), y_free: Default::default() }
+    }
+}
+
+impl EvalMemo {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl MemoStore for EvalMemo {
+    #[inline]
+    fn col_get(&self, key: &(usize, i32, i32)) -> Option<f64> {
+        self.columns.get(key).copied()
+    }
+    #[inline]
+    fn col_put(&mut self, key: (usize, i32, i32), v: f64) {
+        self.columns.insert(key, v);
+    }
+    #[inline]
+    fn yfree_get(&self, node: usize) -> Option<bool> {
+        self.y_free.get(&node).copied()
+    }
+    #[inline]
+    fn yfree_put(&mut self, node: usize, v: bool) {
+        self.y_free.insert(node, v);
+    }
+}
+
+/// H5(B): the y-free classification is a PURE function of the node (a
+/// structural walk — is_y_free; the `bank` parameter is never read), so the
+/// answer is memoised per NODE POINTER per store lifetime: the same
+/// address-stability contract as the column cache (rs outlives the per-chunk
+/// store; no ABA within it). Stores without a side table keep recomputing —
+/// bit-exact by purity.
+#[inline]
+fn classify_y_free<C: MemoStore>(node: &Df, bank: &NoiseBank, memo: &mut C) -> bool {
+    let ptr = node as *const Df as usize;
+    if let Some(b) = memo.yfree_get(ptr) {
+        return b;
+    }
+    let b = node.is_y_free(bank);
+    memo.yfree_put(ptr, b);
+    b
+}
 
 impl SplineValue {
     /// apply with the column memo threaded through nested splines.
-    pub fn apply_memo(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut ColumnMemo) -> f32 {
+    pub fn apply_memo<C: MemoStore>(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut C) -> f32 {
         match self {
             SplineValue::Const(v) => *v,
             SplineValue::Multi(m) => m.apply_memo(bank, x, y, z, memo),
@@ -774,14 +876,16 @@ impl SplineValue {
 }
 
 impl MultiSpline {
-    pub fn apply_memo(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut ColumnMemo) -> f32 {
-        if self.coordinate.is_y_free(bank) {
+    pub fn apply_memo<C: MemoStore>(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut C) -> f32 {
+        // H5(B): coordinate classification through the per-node cache — the
+        // predicate is pure, the cached bool is identical to the re-walk.
+        if classify_y_free(&self.coordinate, bank, memo) {
             let key = (self as *const MultiSpline as usize, x, z);
-            if let Some(&v) = memo.get(&key) {
+            if let Some(v) = memo.col_get(&key) {
                 return v as f32;
             }
             let v = self.apply(bank, x, y, z);
-            memo.insert(key, v as f64);
+            memo.col_put(key, v as f64);
             return v;
         }
         // y-dependent coordinate (e.g. the depth gradient): the location
@@ -792,7 +896,7 @@ impl MultiSpline {
 
     /// apply() with the values (not the coordinate) routed through the memo —
     /// arithmetic identical to MultiSpline::apply.
-    fn apply_memo_inner(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut ColumnMemo) -> f32 {
+    fn apply_memo_inner<C: MemoStore>(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut C) -> f32 {
         let f = self.coordinate.compute(bank, x, y, z) as f32;
         let i = find_interval_start(&self.locations, f);
         let i1 = (self.locations.len() - 1) as i32;
@@ -825,22 +929,35 @@ impl Df {
     /// wrappers (markers, unary transforms) and the spline/arithmetic shape,
     /// memoising every PROVABLY y-free subtree per (x, z) column. Arithmetic
     /// and operand order are identical to compute(); the memo only returns a
-    /// cached bit-identical value for a pure y-free subtree.
-    pub fn compute_memo(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut ColumnMemo) -> f64 {
+    /// cached bit-identical value for a pure y-free subtree. H5(B): the
+    /// is_y_free gate itself is served from the per-node classification
+    /// cache when the store carries one (pure predicate — same bool).
+    pub fn compute_memo<C: MemoStore>(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut C) -> f64 {
+        let y_free = classify_y_free(self, bank, memo);
+        self.compute_memo_free(bank, x, y, z, memo, y_free)
+    }
+
+    /// H5(A): compute_memo with the classification HOISTED by the caller —
+    /// filler classified the six climate fields once per chunk (field_y_free)
+    /// and passes the precomputed bool here, skipping the per-quart
+    /// re-classification walk entirely. Identical to compute_memo whenever
+    /// `y_free` equals `self.is_y_free(bank)` — which is exactly what the
+    /// caller computed with the same pure predicate.
+    pub fn compute_memo_free<C: MemoStore>(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut C, y_free: bool) -> f64 {
         // cheap path: a y-free subtree caches wholesale
-        if self.is_y_free(bank) {
+        if y_free {
             let key = (self as *const Df as usize, x, z);
-            if let Some(&v) = memo.get(&key) {
+            if let Some(v) = memo.col_get(&key) {
                 return v;
             }
             let v = self.compute_memo_inner(bank, x, y, z, memo);
-            memo.insert(key, v);
+            memo.col_put(key, v);
             return v;
         }
         self.compute_memo_inner(bank, x, y, z, memo)
     }
 
-    fn compute_memo_inner(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut ColumnMemo) -> f64 {
+    fn compute_memo_inner<C: MemoStore>(&self, bank: &NoiseBank, x: i32, y: i32, z: i32, memo: &mut C) -> f64 {
         match self {
             Df::Spline(m) => m.apply_memo(bank, x, y, z, memo) as f64,
             Df::Marker { wrapped, .. } => wrapped.compute_memo(bank, x, y, z, memo),
@@ -1068,5 +1185,172 @@ mod flat_cache_window_tests {
         assert_eq!((-198i32 >> 2) - (-52), 2, "negative floor division");
         assert_eq!(dfn.compute(&bank, -198, 57, -240).to_bits(), 1.0f64.to_bits());
         assert_eq!(dfn.compute(&bank, -192, 57, -240).to_bits(), 1.0f64.to_bits());
+    }
+}
+
+#[cfg(test)]
+mod quart_memo_tests {
+    //! H5 quart-memo wg-free equivalence pins: compute_memo / compute_memo_free
+    //! (hoisted classification) must be BIT-identical to compute() on a
+    //! hand-built tree battery covering every is_y_free arm the memo path can
+    //! reach — no wg extract needed (the NCF_WG-gated biomes.rs test covers the
+    //! real routers when an extract is present).
+
+    use super::*;
+    use crate::xoroshiro::XoroshiroRandomSource;
+
+    fn test_bank() -> NoiseBank {
+        let mut rng = XoroshiroRandomSource::new(4242);
+        NoiseBank {
+            noises: vec![
+                NormalNoise::create(&mut rng, -3, &[1.0, 0.5]),
+                NormalNoise::create(&mut rng, -4, &[1.0]),
+            ],
+            blended: Vec::new(),
+        }
+    }
+
+    fn spline(coordinate: Df, values: Vec<SplineValue>) -> Df {
+        let n = values.len();
+        Df::Spline(Box::new(MultiSpline {
+            coordinate: Box::new(coordinate),
+            locations: (0..n as i32).map(|i| i as f32).collect(),
+            values,
+            derivatives: vec![0.0; n],
+            min: 0.0,
+            max: 1.0,
+        }))
+    }
+
+    /// Trees that classify Y-FREE — the memo MUST serve bit-identical values
+    /// at every y (this also pins the y-freeness VALUE-equivalence itself).
+    fn y_free_battery() -> Vec<Df> {
+        vec![
+            Df::Const(-2.5),
+            Df::BlendAlpha,
+            Df::BlendOffset,
+            // y_scale == 0.0 noise
+            Df::Noise(0, 1.0, 0.0),
+            Df::Noise(1, 0.5, 0.0),
+            // 2D shift noises
+            Df::ShiftA(0),
+            Df::ShiftB(1),
+            // transparent wrappers / transforms over y-free content
+            Df::Marker { ty: MarkerType::Cache2D, wrapped: Box::new(Df::Noise(0, 1.0, 0.0)) },
+            Df::Marker { ty: MarkerType::Interpolated, wrapped: Box::new(Df::Const(3.25)) },
+            Df::BlendDensity(Box::new(Df::Noise(0, 1.0, 0.0))),
+            Df::Clamp { input: Box::new(Df::Noise(0, 1.0, 0.0)), min: -0.25, max: 0.25 },
+            Df::Mapped { ty: MappedType::Abs, input: Box::new(Df::Noise(0, 1.0, 0.0)), min: 0.0, max: 2.0 },
+            Df::MulOrAdd { is_add: true, input: Box::new(Df::Noise(1, 1.0, 0.0)), min: -1.0, max: 1.0, argument: 0.5 },
+            Df::MulOrAdd { is_add: false, input: Box::new(Df::Noise(1, 1.0, 0.0)), min: -1.0, max: 1.0, argument: 2.0 },
+            Df::Ap2 { ty: Ap2Type::Add, a1: Box::new(Df::Noise(0, 1.0, 0.0)), a2: Box::new(Df::Noise(1, 1.0, 0.0)), min: -2.0, max: 2.0 },
+            Df::Ap2 { ty: Ap2Type::Mul, a1: Box::new(Df::Noise(0, 1.0, 0.0)), a2: Box::new(Df::Const(0.75)), min: -1.0, max: 1.0 },
+            Df::Ap2 { ty: Ap2Type::Min, a1: Box::new(Df::Noise(0, 1.0, 0.0)), a2: Box::new(Df::Const(0.1)), min: -1.0, max: 0.1 },
+            Df::Ap2 { ty: Ap2Type::Max, a1: Box::new(Df::Noise(0, 1.0, 0.0)), a2: Box::new(Df::Const(-0.1)), min: -0.1, max: 1.0 },
+            Df::RangeChoice {
+                input: Box::new(Df::Noise(0, 1.0, 0.0)),
+                min_inclusive: -0.5,
+                max_exclusive: 0.5,
+                when_in_range: Box::new(Df::Const(1.0)),
+                when_out_of_range: Box::new(Df::ShiftA(1)),
+            },
+            // y-free coordinate -> the WHOLE spline memoises per column
+            spline(Df::Noise(0, 1.0, 0.0), vec![SplineValue::Const(2.0), SplineValue::Const(4.0), SplineValue::Const(-1.5)]),
+            // nested spline VALUES through the memo (coordinate y-free)
+            spline(
+                Df::Const(0.25),
+                vec![
+                    SplineValue::Multi(Box::new(match spline(Df::Const(0.5), vec![SplineValue::Const(1.0), SplineValue::Const(3.0)]) {
+                        Df::Spline(m) => *m,
+                        _ => unreachable!(),
+                    })),
+                    SplineValue::Const(-2.0),
+                ],
+            ),
+        ]
+    }
+
+    /// Trees that classify Y-DEPENDENT — no column caching may occur, but the
+    /// memo path must still return compute()'s exact bits (inner y-free
+    /// splines route through the memo, wrappers recurse).
+    fn y_dependent_battery() -> Vec<Df> {
+        vec![
+            Df::Noise(0, 1.0, 0.25),
+            Df::YClampedGradient { from_y: -16, to_y: 16, from_value: 5.0, to_value: -5.0 },
+            Df::Shift(0),
+            Df::Beardifier,
+            Df::WeirdScaledSampler { input: Box::new(Df::Noise(0, 1.0, 0.0)), noise: 1, rarity: Rarity::Type1 },
+            // y-free per the conservative arm (y_scale == 0): pinned as
+            // memo-safe ONLY via its y-free shift children here — vanilla
+            // climate uses constant/2D shift_y, so this is the real shape.
+            Df::ShiftedNoise {
+                shift_x: Box::new(Df::ShiftA(0)),
+                shift_y: Box::new(Df::Const(0.0)),
+                shift_z: Box::new(Df::ShiftB(1)),
+                xz_scale: 0.25,
+                y_scale: 0.0,
+                noise: 0,
+            },
+            Df::Marker { ty: MarkerType::CacheOnce, wrapped: Box::new(Df::Noise(1, 1.0, 0.5)) },
+            // y-dependent coordinate -> apply_memo_inner (values still memoised)
+            spline(Df::Noise(0, 1.0, 0.25), vec![SplineValue::Const(1.0), SplineValue::Const(-3.0)]),
+        ]
+    }
+
+    #[test]
+    fn memo_and_hoisted_memo_match_compute_bitwise() {
+        let bank = test_bank();
+        let coords = [
+            (400i32, 64i32, 400i32),
+            (-41, -17, 17),
+            (0, 0, 0),
+            (4, 63, 8),
+        ];
+        let trees: Vec<Df> = y_free_battery().into_iter().chain(y_dependent_battery()).collect();
+        for (ti, df) in trees.iter().enumerate() {
+            let y_free = df.is_y_free(&bank);
+            // one store reused across coords and passes: exercises the
+            // column-cache hit path (same (x,z), different y) AND the
+            // classification-cache hit path (same node, many calls).
+            let mut memo = EvalMemo::new();
+            for pass in 0..2 {
+                for &(bx, by, bz) in &coords {
+                    let a = df.compute(&bank, bx, by, bz);
+                    let b = df.compute_memo(&bank, bx, by, bz, &mut memo);
+                    assert_eq!(
+                        a.to_bits(),
+                        b.to_bits(),
+                        "tree {ti} pass {pass} compute_memo diverged at ({bx},{by},{bz})"
+                    );
+                    let c = df.compute_memo_free(&bank, bx, by, bz, &mut memo, y_free);
+                    assert_eq!(
+                        a.to_bits(),
+                        c.to_bits(),
+                        "tree {ti} pass {pass} compute_memo_free diverged at ({bx},{by},{bz})"
+                    );
+                }
+            }
+            // classification cache: after evaluation the store holds the node's
+            // pure predicate answer (lookup-only maps — nothing else escapes).
+            let ptr = df as *const Df as usize;
+            assert_eq!(memo.yfree_get(ptr), Some(y_free), "tree {ti} classification cache mismatch");
+        }
+    }
+
+    /// The MemoStore blanket impl keeps the legacy bare column map working
+    /// (BiomeSource's SipHash HashMap): same bit-identical contract, with the
+    /// default no-op classification methods (pure recompute per call).
+    #[test]
+    fn bare_column_map_store_is_bit_identical() {
+        let bank = test_bank();
+        let coords = [(400i32, 64i32, 400i32), (-41, -17, 17), (0, 0, 0)];
+        for df in y_free_battery().iter().chain(y_dependent_battery().iter()) {
+            let mut memo = ColumnMemo::new();
+            for &(bx, by, bz) in &coords {
+                let a = df.compute(&bank, bx, by, bz);
+                let b = df.compute_memo(&bank, bx, by, bz, &mut memo);
+                assert_eq!(a.to_bits(), b.to_bits(), "bare-map store diverged at ({bx},{by},{bz})");
+            }
+        }
     }
 }

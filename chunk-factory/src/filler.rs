@@ -459,6 +459,12 @@ pub fn generate_noise_chunk_with_beardifier(
     // and a y-free tree returns bit-identical values for every y, so the
     // cache reproduces the exact per-quart scalar result (see density.rs
     // is_y_free for the equivalence argument).
+    // H5(A) quart-memo: the per-chunk classification (field_y_free) is no
+    // longer discarded — it is passed INTO the memo path per quart
+    // (compute_memo_free), so the loop stops re-walking is_y_free for the
+    // six top-level fields 24,576x/chunk. H5(C): the store is EvalMemo —
+    // FxHasher (fixed seed, S3 pattern) column cache + per-node y-free
+    // classification cache (pure predicate memo, no float values).
     let climate_fields: [&Df; 6] = [
         &rs.router.temperature,
         &rs.router.vegetation,
@@ -474,7 +480,7 @@ pub fn generate_noise_chunk_with_beardifier(
         }
         f
     };
-    let mut memo: crate::density::ColumnMemo = HashMap::new();
+    let mut memo = crate::density::EvalMemo::new();
     if skip_biome { return Ok(FillerChunk { min_y, height, chunk_min_x: min_block_x, chunk_min_z: min_block_z, sections, state_table: table, biome_table: biomes_tbl, heightmaps: vec![hm_ocean, hm_surface], post_processing }); }
     for sy in 0..sections_count as i32 {
         let section_y = (min_y / 16) + sy;
@@ -504,8 +510,10 @@ pub fn generate_noise_chunk_with_beardifier(
                     ];
                     let mut vals = [0.0f64; 6];
                     for (fi, (field, _)) in fields.iter().enumerate() {
-                        let _ = field_y_free[fi];
-                        vals[fi] = field.compute_memo(&rs.bank, bx, by, bz, &mut memo);
+                        // H5(A): field_y_free[fi] was classified once per chunk
+                        // above — feed it straight into the memo path instead of
+                        // re-classifying per quart (bit-exact: same pure predicate).
+                        vals[fi] = field.compute_memo_free(&rs.bank, bx, by, bz, &mut memo, field_y_free[fi]);
                     }
                     let [t, hu, co, er, de, wi] = vals;
                     let t = t as f32;
