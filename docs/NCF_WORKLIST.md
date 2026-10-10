@@ -162,6 +162,20 @@ non-contiguous ownership (B) would be the highest-complexity code in the
 crate for a sub-bar win. Successor with real headroom: NP3 overlap
 pipeline (parent-only walk window ~60% of drive wall).
 
+DONE (2026-10-11, commit 1ced27b): NCF_PAR_FILL=2 pipelined drive — worker
+fills col k+2 (pipeline_worker_fill: slice1/slice2 handle swap reuses
+fill_slice_rows verbatim) while parent walks col k; 3-buffer rotate
+(slice2 + rotate_slices) since walk reads 100% of both live buffers; merge
+= phase-1 shape (ic/aic delta-sum F+W+G serial-exact, fill-end scalars incl
+cell_start_block_x/in_cell_x, epoch-shifted CacheOnce, slice2 handle
+handoff); last iteration serial swap_slices. EVIDENCE: stagediff 5/5 diff
+-rq EMPTY (surface 256 + carvers 16 x TC 0/1 mode0-vs-mode2 + parent-parity
++ mode1-vs-mode2); 230/0 tests (+T4 bit-identical 2 origins, +T5
+counters/CacheOnce, +T6 degenerate cc=1); ledger 256ch: mode1 14.22 vs
+mode2 11.93/11.47 noise, PORTED 15.36-15.81, paired gain +2.3-2.8 >= 0.70
+bar KEEP; target noise <= 12 REACHED. N3 probe: walk 6.686 worker 9.132
+join_block 2.695 -> exposed residual 2.519 ms/chunk -> NP4 assist queued.
+
 ## SUB1 [SUBSTANCE+INTERP kernel share] [ ]
 HYP: substance final_density fill 3.16 ms COARSE / ~2.1 clean (98,304
 elems, 3,840 visits/chunk) is dominated by per-element 8-corner
@@ -188,7 +202,7 @@ only if overhead+imbalance >= 0.86 ms combined. I2: same unit independence
 proof as NP1 (position-pure op sequences); byte-identity gate = stagediff 4/4
 A/B + ledger x2 paired. Target: noise <= 12.5 ms/chunk. Effort: medium.
 
-## NP3 [SUBSTANCE+CALLBACK OVERLAP PIPELINE, worker pre-fills next column] [ ]
+## NP3 [SUBSTANCE+CALLBACK OVERLAP PIPELINE, worker pre-fills next column] [x]
 HYP: during select_cell_yz + per-block callback the NP1 worker is idle
 (phase-1 joins before the walk); the parent-only window per column =
 substance (~2.1 ms/chunk) + callback (~3.2 COARSE) is ~60% of drive wall.
@@ -205,3 +219,16 @@ proof (position-pure op sequences; N2 probe shows ic-deltas data-dependent
 ms/column + walk-wall ms/column (N2_* clocks extended); fix only if
 hideable window >= 0.70 ms (5% of noise 14.02). Target: noise <= 12
 ms/chunk. Effort: high.
+
+## NP4 [PIPELINE PARENT-ASSIST, recover exposed fill residual] [ ]
+HYP: N3 probe shows worker fill (9.132 ms/chunk) > walk (6.686): parent
+idles 2.519 ms/chunk at h.join() (exact per-scope residual). Parent-assist:
+before walking column k the parent runs p prefix rows of the hidden fill
+(slice2 — safe, walk never reads slice2), worker takes the suffix; adaptive
+p via EWMA unit costs (N2_UNIT_NANOS infra exists). Wall =
+max(W + pF, (1-p)F); optimal p ~ (F-W)/2F -> recovers up to ~1.2-2.5
+ms/chunk. NP3 pre-enabled the structure (pipeline_worker_fill extendable
+to a rows range; merge is phase-1-proven delta-sum). Probe FIRST (R5): N3
+residual clock already exact (2.519 on 64-ch probe); re-measure paired on
+quiet rig; fix only if residual >= 0.70 ms paired. I2: unchanged protocol.
+Target: noise <= 10.5 ms/chunk. Effort: medium.
