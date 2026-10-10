@@ -485,8 +485,15 @@ enum WSplineValue {
 
 struct InterpState {
     inner: usize,
-    slice0: Vec<Vec<f64>>,
-    slice1: Vec<Vec<f64>>,
+    /// R2#3: flat slice storage — one contiguous buffer per slice, indexed
+    /// `[z * (cell_count_y + 1) + y]` (rows = cell_count_xz + 1, cols =
+    /// cell_count_y + 1). Replaces Vec<Vec<f64>>: the 8 selectCellYZ corner
+    /// reads per interpolator per cell become single-offset reads into one
+    /// contiguous buffer, and fill_slice rows are contiguous sub-slices.
+    /// Values, fill order and the per-row fill_array call structure (the
+    /// array_interpolation_counter epochs CacheOnce observes) are unchanged.
+    slice0: Vec<f64>,
+    slice1: Vec<f64>,
     /// Java field order: [000, 001, 100, 101, 010, 011, 110, 111]
     noise: [f64; 8],
     value_xz00: f64,
@@ -522,6 +529,11 @@ struct FlatCacheState {
     values: Vec<f64>,
     size_xz: usize,
 }
+
+/// R2 free-win 5: frac table capacity — vanilla NoiseSettings clamps
+/// size_horizontal/size_vertical to [1, 4] (codec intRange), so cell
+/// width/height = 4*size span 4..=16.
+const MAX_FRAC: usize = 16;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Provider {
@@ -591,9 +603,16 @@ pub struct NoiseChunkSim<'a> {
     /// construction). Valid whenever `filling_cell` is set: in-cell coords
     /// are then always within [0, cell_width) x [0, cell_height) x
     /// [0, cell_width) (both forIndex and fillAllDirectly guarantee it).
-    frac_x: Vec<f64>,
-    frac_y: Vec<f64>,
-    frac_z: Vec<f64>,
+    /// R2 free-win 5: fixed-size frac tables (const MAX_FRAC slots) instead
+    /// of Vec — the hot lerp3 reads lose the slice header/len load. Vanilla
+    /// clamps NoiseSettings size_horizontal/size_vertical to [1, 4] (codec
+    /// intRange), so cells span 4..=16 and MAX_FRAC = 16 covers every
+    /// loadable world (overworld 4x8, end 8x4); instantiate asserts it once
+    /// per machine. Slots at indices >= cell_{width,height} stay 0.0 and are
+    /// never read: filling_cell guarantees in_cell_* within [0, cell_*).
+    frac_x: [f64; MAX_FRAC],
+    frac_y: [f64; MAX_FRAC],
+    frac_z: [f64; MAX_FRAC],
     /// De-alloc: reusable secondary buffer for the fillArray Ap2::Add
     /// override (Java allocates `doubles = new double[...]` per visit).
     /// Taken/put around each use so nested Ap2::Add levels still get
@@ -602,6 +621,14 @@ pub struct NoiseChunkSim<'a> {
     /// P2.12 cross-chunk tile cache (None = disabled).
     tile: Option<&'a crate::tile::TileCache>,
     tile_epoch: u64,
+    /// R2#1: per-node LAST-SLOT front memo in front of the tile cache —
+    /// one (subtree_hash, x, z, value) entry per W-node id, sentinel
+    /// (0, i32::MIN, i32::MIN, 0.0). Slice fills evaluate the same (node,
+    /// world column) once per y corner (overworld: 49x per column); every
+    /// repeat otherwise pays 3 fnv mixes + a RefCell probe for a
+    /// bit-identical hit. FRONT memo only — tile cache semantics
+    /// (persistence, eviction, epoch, counters) are untouched.
+    last_tile: Vec<(u64, i32, i32, f64)>,
 }
 
 /// P2.12: the chunk-INDEPENDENT part of the machine — interned arena, wrapped
@@ -722,8 +749,9 @@ impl<'a> NoiseChunkSim<'a> {
                 .iter()
                 .map(|&inner| InterpState {
                     inner,
-                    slice0: vec![vec![0.0; cols]; rows],
-                    slice1: vec![vec![0.0; cols]; rows],
+                    // R2#3: flat slices — rows * cols f64, calloc-backed.
+                    slice0: vec![0.0; rows * cols],
+                    slice1: vec![0.0; rows * cols],
                     noise: [0.0; 8],
                     value_xz00: 0.0,
                     value_xz10: 0.0,
@@ -789,14 +817,40 @@ impl<'a> NoiseChunkSim<'a> {
             bank,
             beard: crate::beardifier::Beardifier::empty(),
             substance_cache: vec![0.0; (cell_width * cell_width * cell_height) as usize],
-            // R2#2: the hoisted filling-cell fracs — `i as f64 / cell as f64`
-            // with the exact operands the per-node path used, computed once.
-            frac_x: (0..cell_width).map(|i| i as f64 / cell_width as f64).collect(),
-            frac_y: (0..cell_height).map(|i| i as f64 / cell_height as f64).collect(),
-            frac_z: (0..cell_width).map(|i| i as f64 / cell_width as f64).collect(),
+            // R2#2 + R2 free-win 5: the hoisted filling-cell fracs — `i as
+            // f64 / cell as f64` with the exact operands the per-node path
+            // used, computed once into fixed tables (assert once per machine:
+            // vanilla clamps the settings to cells 4..=16 <= MAX_FRAC).
+            frac_x: {
+                assert!(cell_width as usize <= MAX_FRAC, "cell_width {cell_width} exceeds frac table MAX_FRAC");
+                let mut a = [0.0; MAX_FRAC];
+                for (i, v) in a.iter_mut().enumerate().take(cell_width as usize) {
+                    *v = i as f64 / cell_width as f64;
+                }
+                a
+            },
+            frac_y: {
+                assert!(cell_height as usize <= MAX_FRAC, "cell_height {cell_height} exceeds frac table MAX_FRAC");
+                let mut a = [0.0; MAX_FRAC];
+                for (i, v) in a.iter_mut().enumerate().take(cell_height as usize) {
+                    *v = i as f64 / cell_height as f64;
+                }
+                a
+            },
+            frac_z: {
+                let mut a = [0.0; MAX_FRAC];
+                for (i, v) in a.iter_mut().enumerate().take(cell_width as usize) {
+                    *v = i as f64 / cell_width as f64;
+                }
+                a
+            },
             ap2_scratch: Vec::new(),
             tile,
             tile_epoch,
+            // R2#1: per-node last-slot front memo, sentinel-initialized
+            // (world block coords never reach i32::MIN, and a real
+            // (0, i32::MIN, i32::MIN) triple is impossible).
+            last_tile: vec![(0u64, i32::MIN, i32::MIN, 0.0f64); template.wnodes.len()],
         };
         // FlatCache eager priming (computeValues = true) — PER-CHUNK because
         // the quart grid positions are chunk-relative. Values are identical
@@ -1321,6 +1375,7 @@ impl<'a> NoiseChunkSim<'a> {
     // compute
     // ------------------------------------------------------------------
 
+    #[inline]
     fn pos_now(&self) -> Ctx {
         Ctx {
             x: self.cell_start_block_x + self.in_cell_x,
@@ -1335,7 +1390,29 @@ impl<'a> NoiseChunkSim<'a> {
         // pure f(spec, seed, world x, z); memoizing returns bit-identical f64
         // (values stored raw, no rounding). See tile.rs soundness contract.
         if self.template.node_flags[w] == 2 && self.tile.is_some() {
-            let key = crate::tile::tile_key(self.template.subtree_hash[w], ctx.x, ctx.z, self.tile_epoch);
+            let hash = self.template.subtree_hash[w];
+            // R2#1 per-node LAST-SLOT front memo: a slice fill evaluates
+            // the same (node, world column) once per y corner (overworld:
+            // 49x per column) and every repeat paid 3 fnv mixes + a
+            // RefCell probe (+ hit/miss counter writes) for a
+            // bit-identical f64. The slot collapses repeats to 3 integer
+            // compares. FRONT memo only: tile semantics (persistence,
+            // eviction, epoch, counters) are untouched — a slot miss
+            // falls through to the tile probe exactly as before, and
+            // every tile outcome (hit OR freshly computed miss after
+            // put) refreshes the slot. Soundness: the tile contract
+            // already makes f(w, x, z) a pure function for flag-2 nodes,
+            // so the last (hash, x, z) -> value per node id is
+            // bit-identical; a same-(w,x,z) re-entry through a
+            // DESCENDANT is impossible (finite acyclic DAG — module
+            // header), so no in-flight call can observe a stale slot.
+            // (ncf_profile note: front-memo hits bypass the tile counters,
+            // so hit/miss ratios shift — diagnostic-only, cfg-gated.)
+            let slot = self.last_tile[w];
+            if slot.0 == hash && slot.1 == ctx.x && slot.2 == ctx.z {
+                return slot.3;
+            }
+            let key = crate::tile::tile_key(hash, ctx.x, ctx.z, self.tile_epoch);
             // SAFETY of the unwrap: checked is_some above
             let tile = self.tile.unwrap();
             if let Some(v) = tile.get(key) {
@@ -1345,6 +1422,7 @@ impl<'a> NoiseChunkSim<'a> {
                     // site; tile.rs internals untouched).
                     N1_TILE_HITS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 }
+                self.last_tile[w] = (hash, ctx.x, ctx.z, v);
                 return v;
             }
             #[cfg(ncf_profile)]
@@ -1353,6 +1431,7 @@ impl<'a> NoiseChunkSim<'a> {
             }
             let v = self.compute_body(w, ctx);
             tile.put(key, v);
+            self.last_tile[w] = (hash, ctx.x, ctx.z, v);
             return v;
         }
         self.compute_body(w, ctx)
@@ -1489,13 +1568,24 @@ impl<'a> NoiseChunkSim<'a> {
                     }
                     if self.filling_cell {
                         let n = self.interpolators[*id].noise; // [000,001,100,101,010,011,110,111]
-                        // R2#2: the three per-visit int->f64 divisions are
-                        // hoisted into the per-chunk frac tables — same
-                        // operands, same quotient bits, zero float change.
+                        // R2#2 + R2 free-win 5: the three per-visit fracs
+                        // come from the fixed per-chunk tables — same
+                        // operands/quotient bits as the original divisions
+                        // (zero float change); fixed-capacity storage drops
+                        // the Vec header/len load and, with it, the bounds
+                        // check.
+                        // SAFETY: filling_cell guarantees in_cell_x/z in
+                        // [0, cell_width) and in_cell_y in [0, cell_height)
+                        // (forIndex + fillAllDirectly loop bounds), and
+                        // instantiate asserts cell_width/cell_height <=
+                        // MAX_FRAC — so every index below is < MAX_FRAC.
+                        let (fx, fy, fz) = unsafe { (
+                            *self.frac_x.get_unchecked(self.in_cell_x as usize),
+                            *self.frac_y.get_unchecked(self.in_cell_y as usize),
+                            *self.frac_z.get_unchecked(self.in_cell_z as usize),
+                        ) };
                         mth::lerp3(
-                            self.frac_x[self.in_cell_x as usize],
-                            self.frac_y[self.in_cell_y as usize],
-                            self.frac_z[self.in_cell_z as usize],
+                            fx, fy, fz,
                             n[0], n[2], n[4], n[6], n[1], n[3], n[5], n[7],
                         )
                     } else {
@@ -1895,20 +1985,27 @@ impl<'a> NoiseChunkSim<'a> {
     fn select_cell_yz(&mut self, y: i32, z: i32) {
         // De-alloc: iterate the id range directly (the range captures len()
         // once, like the collected Vec did) — no per-cell Vec allocation.
+        // R2#3: flat slices — the 8 double-indirect corner reads become
+        // single-offset reads at [z*cols + y] (and the z+1 / y+1
+        // neighbors), one contiguous buffer per slice.
+        let cols = (self.cell_count_y + 1) as usize;
         for id in 0..self.interpolators.len() {
             // Java order: noise000 = slice0[z][y]; noise001 = slice0[z+1][y];
             // noise100 = slice1[z][y]; noise101 = slice1[z+1][y];
             // noise010 = slice0[z][y+1]; noise011 = slice0[z+1][y+1];
             // noise110 = slice1[z][y+1]; noise111 = slice1[z+1][y+1]
-            let n000 = self.interpolators[id].slice0[z as usize][y as usize];
-            let n001 = self.interpolators[id].slice0[(z + 1) as usize][y as usize];
-            let n100 = self.interpolators[id].slice1[z as usize][y as usize];
-            let n101 = self.interpolators[id].slice1[(z + 1) as usize][y as usize];
-            let n010 = self.interpolators[id].slice0[z as usize][(y + 1) as usize];
-            let n011 = self.interpolators[id].slice0[(z + 1) as usize][(y + 1) as usize];
-            let n110 = self.interpolators[id].slice1[z as usize][(y + 1) as usize];
-            let n111 = self.interpolators[id].slice1[(z + 1) as usize][(y + 1) as usize];
-            self.interpolators[id].noise = [n000, n001, n100, n101, n010, n011, n110, n111];
+            let st = &mut self.interpolators[id];
+            let zoff = z as usize * cols;
+            let yu = y as usize;
+            let n000 = st.slice0[zoff + yu];
+            let n001 = st.slice0[zoff + cols + yu];
+            let n100 = st.slice1[zoff + yu];
+            let n101 = st.slice1[zoff + cols + yu];
+            let n010 = st.slice0[zoff + yu + 1];
+            let n011 = st.slice0[zoff + cols + yu + 1];
+            let n110 = st.slice1[zoff + yu + 1];
+            let n111 = st.slice1[zoff + cols + yu + 1];
+            st.noise = [n000, n001, n100, n101, n010, n011, n110, n111];
         }
         self.filling_cell = true;
         self.cell_start_block_y = (y + self.cell_noise_min_y) * self.cell_height;
@@ -2003,24 +2100,33 @@ impl<'a> NoiseChunkSim<'a> {
     fn fill_slice(&mut self, is_slice0: bool, start: i32) {
         self.cell_start_block_x = start * self.cell_width;
         self.in_cell_x = 0;
+        // R2#3: flat slice storage — a row is the contiguous sub-slice
+        // flat[row..row + cols]. The buffer is taken OUT of self so
+        // fill_array keeps a private &mut (same take/put shape as the old
+        // per-row Vec), and the PER-ROW fill_array calls are preserved
+        // verbatim: the array_interpolation_counter increments are
+        // call-order-observable through the CacheOnce lastArray epochs —
+        // rows are NOT batched.
+        let cols = (self.cell_count_y + 1) as usize;
         for i in 0..(self.cell_count_xz + 1) {
             let i1 = self.first_cell_z + i;
             self.cell_start_block_z = i1 * self.cell_width;
             self.in_cell_z = 0;
             self.array_interpolation_counter += 1;
             // De-alloc: id range iteration — no per-slice Vec allocation.
+            let row = i as usize * cols;
             for id in 0..self.interpolators.len() {
-                let mut arr = if is_slice0 {
-                    std::mem::take(&mut self.interpolators[id].slice0[i as usize])
+                let mut flat = if is_slice0 {
+                    std::mem::take(&mut self.interpolators[id].slice0)
                 } else {
-                    std::mem::take(&mut self.interpolators[id].slice1[i as usize])
+                    std::mem::take(&mut self.interpolators[id].slice1)
                 };
                 let inner = self.interpolators[id].inner;
-                self.fill_array(inner, &mut arr, Provider::Slice);
+                self.fill_array(inner, &mut flat[row..row + cols], Provider::Slice);
                 if is_slice0 {
-                    self.interpolators[id].slice0[i as usize] = arr;
+                    self.interpolators[id].slice0 = flat;
                 } else {
-                    self.interpolators[id].slice1[i as usize] = arr;
+                    self.interpolators[id].slice1 = flat;
                 }
             }
         }
@@ -2215,6 +2321,7 @@ impl<'a> NoiseChunkSim<'a> {
 }
 
 /// ChunkPos.asLong — x in the LOW 32 bits, z in the HIGH 32 bits.
+#[inline]
 fn chunk_as_long(x: i32, z: i32) -> i64 {
     (x as i64 & 0xFFFF_FFFF) | ((z as i64 & 0xFFFF_FFFF) << 32)
 }

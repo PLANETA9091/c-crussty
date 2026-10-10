@@ -459,12 +459,27 @@ impl PerlinNoise {
         for (i, level) in self.noise_levels.iter().enumerate() {
             if let Some(improved) = level {
                 let y_arg = if use_fixed_y { -improved.yo } else { Self::wrap(y * d1) };
+                // T5b: when y_scale == 0.0 (the PerlinNoise.getValue default
+                // and every Noise/Shift node path through it), BOTH scaled
+                // args are dead inside noise_scaled — its weird_delta branch
+                // is gated on `y_scale != 0.0` and neither y_scale nor y_max
+                // is read anywhere else — so the per-octave multiplies
+                // `y_scale * d1` and `y_max * d1` produce values that are
+                // computed and discarded. Skipping them passes the raw
+                // operands through: with d1 finite and positive,
+                // `0.0 * d1` is exactly `±0.0` (same bits as y_scale), and
+                // y_max is never read, so this is bit-safe by construction.
+                let (ys_arg, ym_arg) = if y_scale == 0.0 {
+                    (y_scale, y_max)
+                } else {
+                    (y_scale * d1, y_max * d1)
+                };
                 let d3 = improved.noise_scaled(
                     Self::wrap(x * d1),
                     y_arg,
                     Self::wrap(z * d1),
-                    y_scale * d1,
-                    y_max * d1,
+                    ys_arg,
+                    ym_arg,
                 );
                 d += self.amplitudes[i] * d3 * d2; // (amp * d3) * d2 — Java order
             }
