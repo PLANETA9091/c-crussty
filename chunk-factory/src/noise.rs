@@ -35,9 +35,96 @@ pub const GRADIENT: [[i32; 3]; 16] = [
 ];
 
 /// SimplexNoise.dot(int[] gradient, double x, double y, double z).
+///
+/// N1-H3 micro-opt: every gradient this function receives comes from the
+/// `{-1, 0, 1}`-valued tables (ImprovedNoise GRADIENT), so the three
+/// int→f64 converts + multiplies are replaced by a tristate select that
+/// reproduces each product's bits EXACTLY:
+///
+/// Exactness lemma (IEEE-754 round-to-nearest, no FMA). For finite `a`:
+/// * `1.0 * a == a` — multiplication by 1.0 is exact (keeps every bit,
+///   subnormals included);
+/// * `-1.0 * a == -a` — exact sign flip (note `-1.0 * -0.0 == +0.0`, which
+///   the `-a` negation also produces);
+/// * `0.0 * a == copysign(+0.0, a)` — the ZERO case must COPY the sign bit
+///   of its operand (in particular `0.0 * -0.0 == -0.0`), hence the
+///   `is_sign_negative` branch.
+/// All products are therefore reproduced bit-for-bit, and the sum keeps the
+/// Java left-associated shape `(g0*x + g1*y) + g2*z` — identical add
+/// instructions over identical operands ⇒ bit-identical results.
+///
+/// Precondition: every call site passes FINITE values (perlin deltas are
+/// differences of exactly-representable values, |x| <= the wrap bound
+/// 2^25 ≈ 3.36e7 — never NaN/±inf, so the `0.0 * inf == NaN` hazard can
+/// never arise). Asserted below in debug builds only; compiled out in
+/// release.
 #[inline]
 pub fn gradient_dot(g: [i32; 3], x: f64, y: f64, z: f64) -> f64 {
-    g[0] as f64 * x + g[1] as f64 * y + g[2] as f64 * z
+    debug_assert!(!x.is_nan() && x.is_finite(), "gradient_dot: non-finite x");
+    debug_assert!(!y.is_nan() && y.is_finite(), "gradient_dot: non-finite y");
+    debug_assert!(!z.is_nan() && z.is_finite(), "gradient_dot: non-finite z");
+    // GRADIENT components are exactly {-1, 0, 1} by table construction;
+    // the `_` arm covers the 0 case (and would mask a corrupt table in
+    // release exactly like the old multiply would).
+    let t0 = match g[0] {
+        1 => x,
+        -1 => -x,
+        _ => {
+            if x.is_sign_negative() {
+                -0.0
+            } else {
+                0.0
+            }
+        }
+    };
+    let t1 = match g[1] {
+        1 => y,
+        -1 => -y,
+        _ => {
+            if y.is_sign_negative() {
+                -0.0
+            } else {
+                0.0
+            }
+        }
+    };
+    let t2 = match g[2] {
+        1 => z,
+        -1 => -z,
+        _ => {
+            if z.is_sign_negative() {
+                -0.0
+            } else {
+                0.0
+            }
+        }
+    };
+    (t0 + t1) + t2 // Java: g0*x + g1*y + g2*z — strict left association
+}
+
+// --------------------------------------------------------------------------
+// N1 probe counters (cfg(ncf_profile) only — probe builds, standing order
+// R5): the perlin-vs-walk split for the N1 SIMD gate (NCF_WORKLIST: perlin
+// share >= 25%?). Counts ImprovedNoise SAMPLE kernels — sample_and_lerp
+// (noise / noise_scaled) and sample_with_derivative (noise_with_derivative)
+// — i.e. one tick per full gradient-lattice + lerp3 evaluation. Pattern
+// follows the S2_/S2B_ statics in surface_rules.rs; zero code in release
+// builds without --cfg ncf_profile.
+// --------------------------------------------------------------------------
+#[cfg(ncf_profile)]
+pub static N1_PERLIN_CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N1_PERLIN_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// N1 tick: add one sample's wall nanos + call count (Relaxed — probe only).
+#[cfg(ncf_profile)]
+#[inline]
+fn n1_perlin_tick(t: std::time::Instant) {
+    N1_PERLIN_NANOS.fetch_add(
+        t.elapsed().as_nanos() as u64,
+        std::sync::atomic::Ordering::Relaxed,
+    );
+    N1_PERLIN_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 }
 
 // --------------------------------------------------------------------------
@@ -139,6 +226,8 @@ impl ImprovedNoise {
         delta_z: f64,
         delta_y: f64,
     ) -> f64 {
+        #[cfg(ncf_profile)]
+        let prof_n1 = std::time::Instant::now();
         let i = self.p(grid_x);
         let i1 = self.p(grid_x + 1);
         let i2 = self.p(i + grid_y);
@@ -161,7 +250,10 @@ impl ImprovedNoise {
         let d8 = crate::mth::smoothstep(delta_x);
         let d9 = crate::mth::smoothstep(delta_y);
         let d10 = crate::mth::smoothstep(delta_z);
-        crate::mth::lerp3(d8, d9, d10, d, d1, d2, d3, d4, d5, d6, d7)
+        let r = crate::mth::lerp3(d8, d9, d10, d, d1, d2, d3, d4, d5, d6, d7);
+        #[cfg(ncf_profile)]
+        n1_perlin_tick(prof_n1);
+        r
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -175,6 +267,8 @@ impl ImprovedNoise {
         delta_z: f64,
         values: &mut [f64; 3],
     ) -> f64 {
+        #[cfg(ncf_profile)]
+        let prof_n1 = std::time::Instant::now();
         let i = self.p(grid_x);
         let i1 = self.p(grid_x + 1);
         let i2 = self.p(i + grid_y);
@@ -223,7 +317,10 @@ impl ImprovedNoise {
         values[0] += d20;
         values[1] += d21;
         values[2] += d22;
-        crate::mth::lerp3(d8, d9, d10, d, d1, d2, d3, d4, d5, d6, d7)
+        let r = crate::mth::lerp3(d8, d9, d10, d, d1, d2, d3, d4, d5, d6, d7);
+        #[cfg(ncf_profile)]
+        n1_perlin_tick(prof_n1);
+        r
     }
 }
 
@@ -379,10 +476,23 @@ impl PerlinNoise {
 
     /// PerlinNoise.wrap: `value - lfloor(value / 3.3554432E7 + 0.5) * 3.3554432E7`
     /// (2^25 = 33554432.0).
+    ///
+    /// N1-H3 micro-opt: `value / C` → `value * INV_2P25`. Exactness proof:
+    /// C = 2^25 is a power of two, so its reciprocal 2^-25 = 1.0/33554432.0
+    /// is EXACTLY representable (the const evaluates to that one bit pattern,
+    /// zero rounding). Division by 2^25 and multiplication by 2^-25 compute
+    /// the identical real number (a pure binary-exponent scaling), so IEEE
+    /// round-to-nearest yields identical bits for EVERY input class: normal,
+    /// subnormal, ±0 (sign preserved: -0.0/2^25 == -0.0 == -0.0·2^-25),
+    /// ±inf, NaN. The input bits of the subsequent `lfloor` are unchanged,
+    /// hence the wrapped result is bit-identical for all inputs.
+    /// (The variable-divisor `d6 / y_scale` in `noise_scaled` is deliberately
+    /// NOT touched — a non-power-of-two divisor changes rounding.)
     #[inline]
     pub fn wrap(value: f64) -> f64 {
-        const C: f64 = 3.3554432E7;
-        value - crate::mth::lfloor(value / C + 0.5) as f64 * C
+        const C: f64 = 33554432.0; // 2^25 = 3.3554432E7
+        const INV_2P25: f64 = 1.0 / 33554432.0; // exact 2^-25
+        value - crate::mth::lfloor(value * INV_2P25 + 0.5) as f64 * C
     }
 }
 
@@ -711,5 +821,136 @@ mod tests {
             let v = cache.next_gaussian(r.as_mut());
             assert!(v.is_finite());
         }
+    }
+
+    // ------------------------------------------------------------------
+    // N1-H3 bit-exactness proofs (IMP-A perlin micro-opts)
+    // ------------------------------------------------------------------
+
+    /// OLD gradient application (pre-N1-H3): literal int→f64 converts +
+    /// multiplies, strict left association — kept verbatim as the oracle.
+    fn gradient_dot_old(g: [i32; 3], x: f64, y: f64, z: f64) -> f64 {
+        g[0] as f64 * x + g[1] as f64 * y + g[2] as f64 * z
+    }
+
+    /// OLD wrap (pre-N1-H3): division by the 2^25 constant. Oracle only.
+    fn wrap_old(value: f64) -> f64 {
+        const C: f64 = 33554432.0;
+        value - crate::mth::lfloor(value / C + 0.5) as f64 * C
+    }
+
+    #[test]
+    fn n1_h3_gradient_dot_tristate_matches_multiply_bitwise() {
+        // Representative deltas: signed zeros (the sign-copy case), boundary
+        // deltas (0, 1, largest f64 < 1), negatives, subnormals, smallest
+        // normal, epsilon, and the |x| <= 2^25 wrap-bound scale.
+        let deltas: [f64; 15] = [
+            0.0,
+            -0.0,
+            1.0,
+            -1.0,
+            0.5,
+            -0.5,
+            0.137,
+            -0.0311,
+            1.0 - f64::EPSILON / 2.0, // largest f64 below 1.0
+            f64::EPSILON,
+            f64::MIN_POSITIVE, // smallest normal
+            -f64::MIN_POSITIVE,
+            f64::from_bits(1), // smallest subnormal
+            -f64::from_bits(1),
+            33554432.0, // 2^25 wrap bound
+        ];
+        // All 16 table rows together exercise every component in {1, -1, 0}.
+        for g in GRADIENT.iter() {
+            for &x in &deltas {
+                for &y in &deltas {
+                    for &z in &deltas {
+                        let a = gradient_dot(*g, x, y, z);
+                        let b = gradient_dot_old(*g, x, y, z);
+                        assert_eq!(
+                            a.to_bits(),
+                            b.to_bits(),
+                            "gradient {:?} deltas ({x:?}, {y:?}, {z:?})",
+                            g
+                        );
+                    }
+                }
+            }
+        }
+        // Lemma spot checks (legibility):
+        // (a) the ZERO term copies its operand's sign bit — 0.0 * -0.0
+        //     == -0.0 — demonstrated at term level with a synthetic all-zero
+        //     gradient: (-0.0 + -0.0) + -0.0 stays -0.0 in both impls.
+        assert_eq!(gradient_dot_old([0, 0, 0], -0.0, -0.0, -0.0).to_bits(), (-0.0f64).to_bits());
+        assert_eq!(
+            gradient_dot([0, 0, 0], -0.0, -0.0, -0.0).to_bits(),
+            gradient_dot_old([0, 0, 0], -0.0, -0.0, -0.0).to_bits()
+        );
+        // (b) full sum: 0.0*-0.0 + 1.0*0.0 + 0.0*0.0 = (-0.0 + 0.0) + 0.0
+        //     = +0.0 — IEEE RN sums opposite-signed zeros to +0.0.
+        assert_eq!(gradient_dot_old([0, 1, 0], -0.0, 0.0, 0.0).to_bits(), 0f64.to_bits());
+        assert_eq!(gradient_dot([0, 1, 0], -0.0, 0.0, 0.0).to_bits(), 0f64.to_bits());
+        // (c) -1.0 * -0.0 == +0.0 == -(-0.0) — the negation arm is exact too.
+        assert_eq!(
+            gradient_dot([-1, 0, 0], -0.0, 0.0, 0.0).to_bits(),
+            gradient_dot_old([-1, 0, 0], -0.0, 0.0, 0.0).to_bits()
+        );
+    }
+
+    #[test]
+    fn n1_h3_wrap_mul_by_inv_2p25_matches_div_bitwise() {
+        let mut vs: Vec<f64> = Vec::new();
+        // Exact 2^25 boundaries and the lfloor integer landings
+        // (v/2^25 + 0.5 ∈ ℤ exactly ⇔ v = k·2^25 ± 2^24), plus adjacent
+        // representable neighbors (bit ± 1).
+        for k in -33i32..=33 {
+            let c = k as f64 * 33554432.0;
+            vs.push(c);
+            vs.push(c + 16777216.0); // 2^24: +0.5 lands exactly on an integer
+            vs.push(c - 16777216.0);
+            vs.push(c + 4.0);
+            vs.push(c - 4.0);
+            if c != 0.0 {
+                vs.push(f64::from_bits(c.to_bits() + 1));
+                vs.push(f64::from_bits(c.to_bits() - 1));
+            }
+        }
+        // Every input class from the proof: signed zeros, subnormals,
+        // smallest normal, the seed-scale value, saturation-scale magnitudes
+        // (lfloor's `as i64` clamp path), ±inf, NaN.
+        vs.push(0.0);
+        vs.push(-0.0);
+        vs.push(f64::from_bits(1));
+        vs.push(-f64::from_bits(1));
+        vs.push(f64::MIN_POSITIVE);
+        vs.push(-f64::MIN_POSITIVE);
+        vs.push(3053459.0);
+        vs.push(-3053459.0);
+        vs.push(1.0e300);
+        vs.push(-1.0e300);
+        vs.push(f64::INFINITY);
+        vs.push(f64::NEG_INFINITY);
+        vs.push(f64::NAN);
+        // Deterministic LCG sweep, dense over ±4·2^25 (the wrap band).
+        let mut s: u64 = 0x9E37_79B9_7F4A_7C15;
+        for _ in 0..10_000 {
+            s = s
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            let u = (s >> 11) as f64 / (1u64 << 53) as f64; // [0, 1)
+            vs.push((u - 0.5) * 4.0 * 33554432.0);
+        }
+        for &v in &vs {
+            assert_eq!(
+                PerlinNoise::wrap(v).to_bits(),
+                wrap_old(v).to_bits(),
+                "wrap({v:e}) bits differ"
+            );
+        }
+        // Self-check of the oracle: wrap is periodic with 2^25.
+        assert_eq!(PerlinNoise::wrap(33554432.0), 0.0);
+        assert_eq!(PerlinNoise::wrap(-33554432.0), 0.0);
+        assert_eq!(PerlinNoise::wrap(3.0 * 33554432.0), 0.0);
     }
 }
