@@ -4,23 +4,25 @@
 # .nbt are mapping-independent, so the paperclip-patched jar is sufficient).
 # Output: /tmp/wg-extract (bench default NCF_WG).
 set -euo pipefail
-SERVER_DIR=/tmp/purpur-server
-EXTRACT=/tmp/wg-extract
+SERVER_DIR="${NCF_SERVER_DIR:-/home/z/my-project/wg-build/purpur-server}"
+EXTRACT="${NCF_OUT:-/tmp/wg-extract}"
 PURPUR_URL="https://api.purpurmc.org/v2/purpur/1.21.10/2535/download"
 mkdir -p "$SERVER_DIR/versions"
-if [ ! -f "$SERVER_DIR/versions/purpur-1.21.10.jar" ]; then
+if [ ! -f "$SERVER_DIR/versions/purpur-1.21.10.jar" ] || [ "$(stat -c%s "$SERVER_DIR/versions/purpur-1.21.10.jar" 2>/dev/null || echo 0)" -lt 50000000 ]; then
     echo "[extract] downloading purpur 2535..."
     curl -fsSL --retry 3 -o "$SERVER_DIR/versions/purpur-1.21.10.jar" "$PURPUR_URL"
+    SZ=$(stat -c%s "$SERVER_DIR/versions/purpur-1.21.10.jar" 2>/dev/null || echo 0)
+    [ "$SZ" -gt 50000000 ] || { echo "[extract] FATAL jar truncated ($SZ bytes)"; exit 1; }
 fi
-if [ ! -f "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar" ]; then
+if [ ! -f "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar" ] || [ "$(stat -c%s "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar" 2>/dev/null || echo 0)" -lt 50000000 ]; then
     echo "[extract] paperclip patchOnly (java)..."
+    command -v java >/dev/null || { echo "[extract] FATAL no java"; exit 1; }
+    rm -f "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar"
     cd "$SERVER_DIR"
-    java -Dpaperclip.patchOnly=true -jar versions/purpur-1.21.10.jar > patchonly.log 2>&1 &
-    for i in $(seq 1 120); do
-        [ -f versions/1.21.10/purpur-1.21.10.jar ] && break
-        sleep 2
-    done
+    java -Dpaperclip.patchOnly=true -jar versions/purpur-1.21.10.jar > patchonly.log 2>&1
     [ -f versions/1.21.10/purpur-1.21.10.jar ] || { echo "[extract] FATAL no patched jar"; tail -5 patchonly.log; exit 1; }
+    SZ=$(stat -c%s versions/1.21.10/purpur-1.21.10.jar)
+    [ "$SZ" -gt 20000000 ] || { echo "[extract] FATAL patched jar truncated ($SZ)"; tail -5 patchonly.log; exit 1; }
 fi
 mkdir -p "$EXTRACT"
 python3 - "$SERVER_DIR/versions/1.21.10/purpur-1.21.10.jar" "$EXTRACT" <<'PY'

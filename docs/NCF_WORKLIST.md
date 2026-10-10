@@ -42,22 +42,31 @@ DONE-closed (2026-10-09, falsified-and-reverted; target <= 8 ms abandoned —
 not reachable via classify flags; evidence: NCF_SPEED.md history row + S2
 probe line, same commit).
 
-## S3 [SURFACE, no String] [ ]
-biome as an interned id (u16) instead of String in probe, ctx.biome and the
-condition at ~905. Target: <= 4 ms total.
-S2 probe 2026-10-09: the per-column vote itself is only 0.35 ms — S3's real
-prize is the biome STRING work inside Cond::BiomeIs evals (29,976 try_apply
-runs/chunk, each may String-compare ctx.biome): that lives INSIDE rule.apply
-(see S4). Re-scope after the S4 inner split.
-S4 probe 2026-10-09 (NCF_S2B): BiomeIs nested = 2.94/2.92 ms over 21,021
-epoch misses/chunk (vote 0.35 incl.) — SECOND place after S4's intern 4.65.
-S3 keeps its u16 scope but runs AFTER the S4 fix; re-profile then.
-After S1-S4 re-profile and write the next 3 surface items.
+## S3 [SURFACE, no String] [x]
+DONE (2026-10-10, commit 837905d): u16 biome registry — String-free resolve +
+integer BiomeIs/probe compares. Surface 2.46 -> 2.17 ms/chunk; stagediff
+surface 64/64 + carvers 16/16 EQUAL; 217 tests. Evidence: commit message +
+NCF_SPEED.md history row. S1-S4 re-profile: surface has no >= 5% lever left
+(R3-S4-RESEARCH 2026-10-10): remaining set_block/y-loop classify id-flags
+measure 2-5% = R2-revert territory; per-column probe vote 0.35 ms is
+Java-faithful BiomeSource cache — untouchable.
 
-## N1 [NOISE 19.0 ms -> <= 8.27] [ ]
-Addendum 78: AVX2 gather SIMD was slower on this KVM rig and was reverted.
-Do NOT retry gather SIMD. First probe: perlin-core time vs tree-walk time
-split. Then HYP candidates, each proven by a counter before coding:
+## N1 [NOISE 19.0 ms -> <= 8.27] [~]
+PROBE DONE (2026-10-10, NCF_N1_PROBE bench section, this commit): clean ledger
+x2 noise 17.23 ms/chunk = 81% of PORTED 21.16 (master 5ddfbbf rig-local).
+perlin-core 9.27-9.73 ms/chunk PROBE-INFLATED (129,140 calls/chunk x 2
+Instant clock-pairs ~ 5.5 ms pure clock overhead) -> honest perlin ~ 4-4.5
+ms = 23-26% of stage, straddling the 25% SoA gate. COARSE (no-inflation)
+clocks: substance(final_density CacheAllInCell) fill = 3.16 ms/chunk over
+98,304 elems and only 3,840 W-node visits (precompiled ~5-node tree, 768
+cells x 128 elems); y-free tile cache 133 hits / 99 misses per chunk (57%)
+on 232 lookups — tiles barely engaged. Remaining split (slice fills +
+per-block drive + climate + biomes) ~ 9.5-10 ms UNDECOMPOSED — next probe:
+clock drive_blocks + slice-fill sites coarse. Gather SIMD FORBIDDEN (P2.13);
+grad_dot is GRADIENT-table-based -> octave-SoA needs gather or 32 scalar
+loads per 4 octaves = weak. N1(a) duplicate-eval verdict pending focused
+research (first attempt timed out; epoch-trap analysis required: CacheOnce
+lastArray epochs are call-order-observable, memo must stay within row).
 (a) duplicate evaluation of the same noise at the same coordinates across
     router subtrees (memoize per node id + quart coords),
 (b) weaker caching than Java's Cache2D/FlatCache/CacheOnce/CacheAllInCell
@@ -88,18 +97,12 @@ biomes) -> fancy_trunk_placer (7) -> glowstone_blob (5) / vines (4) ->
 stagediff features-status on the special corpus (3x3-replay spiral
 GoldenDumper).
 
-## S4 [SURFACE, rule.apply internals] [~]
-rule.apply is ~78% of the 8.5 ms surface stage (S2 probe 2026-10-09: rule
-nested 8.86 of build 11.39 in the counter-instrumented build; clean stage
-8.46-8.58). try_apply 29,976/chunk, set_block 16,974/chunk.
-PROBE DONE (2026-10-09, NCF_S2B, R5 satisfied; x2 runs counts bit-identical,
-timings within 1%; slices are upper bounds — probe clock-pair overhead ~190k
-reads/chunk, rule nested 8.86 -> 14.11 on the same corpus): try 5.54/5.51,
-intern 4.65/4.62, set 0.61/0.62 ms/chunk; biomeis nested 2.94/2.92 over
-21,021 misses; intern_calls 16,974 = set_blocks. HYP CONFIRMED:
-intern_canonical per hit is the TOP inner cost, BiomeIs String compares
-second, set_block cheap. Evidence: NCF_SPEED.md S2B probe paragraph.
-Fix (next step, code proven by the counter): allocation-free canonical
-lookup for prop-less states (first-char/len dispatch, intern on miss), and a
-rule-result memo where Java reuses constant states.
-Target: surface <= 6.5 ms.
+## S4 [SURFACE, rule.apply internals] [x]
+DONE (2026-10-10, commit 3cb07cb): hit path -> u32 slot ids + per-node hit
+memo + FxHash StateTable — kills per-hit parse/format/SipHash. Probe baseline
+(NCF_S2B): try 5.54, intern 4.65, set 0.61 ms/chunk, intern_calls 16,974 ->
+after: intern 0.005, intern_calls 4/chunk. Surface 8.5 -> 2.46 ms (S4) then
+2.17 (S3, 837905d). Target <= 6.5 beaten 2.9x. Evidence: commit messages +
+NCF_SPEED.md rows + R3-S4-RESEARCH re-measure at HEAD 5ddfbbf (surface
+2.23/2.29/2.24 x3, stagediff A/B vs 2bfd0ec: vanilla surface 64/64,
+carvers 16/16, seed 90210 64/64, Terralith 36/36 BYTE-IDENTICAL).

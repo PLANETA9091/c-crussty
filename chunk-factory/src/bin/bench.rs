@@ -83,6 +83,18 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         chunk_factory::surface_rules::S2B_BIOMEIS_MISS.load(std::sync::atomic::Ordering::Relaxed),
     );
 
+    // N1 probe snapshot (after warmup, before the corpus)
+    #[cfg(ncf_profile)]
+    let n1_before = (
+        chunk_factory::noise::N1_PERLIN_CALLS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::noise::N1_PERLIN_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N1_TILE_HITS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N1_TILE_MISSES.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N1_FILL_NODE_VISITS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N1_FILL_ELEMS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N1_FILL_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+    );
+
     let mut acc = [0f64; 4]; // noise, surface, carvers, serialization
     let mut n = 0usize;
     let t_all = Instant::now();
@@ -180,6 +192,36 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
             t + i + st,
             g(&s::S2B_INTERN_CALLS, c_intern) / (n as u64).max(1),
             g(&s::S2B_BIOMEIS_MISS, c_miss) / (n as u64).max(1),
+        );
+    }
+    // N1 probe (standing order R5): perlin-core vs tree-walk split (SIMD gate).
+    #[cfg(ncf_profile)]
+    if std::env::var("NCF_N1_PROBE").is_ok() {
+        use std::sync::atomic::Ordering::Relaxed as R;
+        let (c0, n0, th0, tm0, v0, e0, fn0) = n1_before;
+        let g = |a: &std::sync::atomic::AtomicU64, b: u64| a.load(R) - b;
+        let calls = g(&chunk_factory::noise::N1_PERLIN_CALLS, c0);
+        let nanos = g(&chunk_factory::noise::N1_PERLIN_NANOS, n0);
+        let perlin_ms = nanos as f64 / n as f64 / 1e6;
+        let noise_ms = per[0];
+        let th = g(&chunk_factory::interpolator::N1_TILE_HITS, th0);
+        let tm = g(&chunk_factory::interpolator::N1_TILE_MISSES, tm0);
+        let visits = g(&chunk_factory::interpolator::N1_FILL_NODE_VISITS, v0);
+        let elems = g(&chunk_factory::interpolator::N1_FILL_ELEMS, e0);
+        let fill_ms = g(&chunk_factory::interpolator::N1_FILL_NANOS, fn0) as f64 / n as f64 / 1e6;
+        eprintln!(
+            "[N1-probe] perlin-core {perlin_ms:.3} ms/chunk of noise-stage {noise_ms:.3} = {:.1}% | calls/chunk = {} | tree-walk+biomes+rest = {:.3} ms/chunk (probe clock-pairs inflate slices)",
+            100.0 * perlin_ms / noise_ms.max(1e-9),
+            calls / (n as u64).max(1),
+            (noise_ms - perlin_ms).max(0.0),
+        );
+        eprintln!(
+            "[N1-probe] substance(final_density) fill = {fill_ms:.3} ms/chunk (COARSE clock, no inflation) | visits/chunk = {} elems/chunk = {} | y-free tiles: hit = {} miss = {} (rate = {:.1}%)",
+            visits / (n as u64).max(1),
+            elems / (n as u64).max(1),
+            th / (n as u64).max(1),
+            tm / (n as u64).max(1),
+            100.0 * th as f64 / (th + tm).max(1) as f64,
         );
     }
     let ported_total: f64 = per.iter().sum();

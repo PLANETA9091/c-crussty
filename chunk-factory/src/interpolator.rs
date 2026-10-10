@@ -1294,6 +1294,8 @@ pub static N1_FILL_NODE_VISITS: std::sync::atomic::AtomicU64 =
     std::sync::atomic::AtomicU64::new(0);
 #[cfg(ncf_profile)]
 pub static N1_FILL_ELEMS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N1_FILL_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 // Substance-fill phase marker (probe only): true exactly while the
 // select_cell_yz substance fill walks the tree. thread_local — like FDEPTH —
@@ -2034,9 +2036,17 @@ impl<'a> NoiseChunkSim<'a> {
                 N1_IN_SUBSTANCE_FILL.with(|c| c.set(true));
                 N1_FILL_ELEMS.fetch_add(arr.len() as u64, std::sync::atomic::Ordering::Relaxed);
             }
+            #[cfg(ncf_profile)]
+            let n1_t0 = std::time::Instant::now();
             self.fill_array(self.root_fields[11], &mut arr, Provider::Cell);
             #[cfg(ncf_profile)]
-            N1_IN_SUBSTANCE_FILL.with(|c| c.set(false));
+            {
+                N1_FILL_NANOS.fetch_add(
+                    n1_t0.elapsed().as_nanos() as u64,
+                    std::sync::atomic::Ordering::Relaxed,
+                );
+                N1_IN_SUBSTANCE_FILL.with(|c| c.set(false));
+            }
             self.substance_cache = arr;
         }
         self.array_interpolation_counter += 1;
