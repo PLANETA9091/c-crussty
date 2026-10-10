@@ -594,6 +594,11 @@ pub struct NoiseChunkSim<'a> {
     frac_x: Vec<f64>,
     frac_y: Vec<f64>,
     frac_z: Vec<f64>,
+    /// De-alloc: reusable secondary buffer for the fillArray Ap2::Add
+    /// override (Java allocates `doubles = new double[...]` per visit).
+    /// Taken/put around each use so nested Ap2::Add levels still get
+    /// private storage (identical per-level buffers, identical writes).
+    ap2_scratch: Vec<f64>,
     /// P2.12 cross-chunk tile cache (None = disabled).
     tile: Option<&'a crate::tile::TileCache>,
     tile_epoch: u64,
@@ -789,6 +794,7 @@ impl<'a> NoiseChunkSim<'a> {
             frac_x: (0..cell_width).map(|i| i as f64 / cell_width as f64).collect(),
             frac_y: (0..cell_height).map(|i| i as f64 / cell_height as f64).collect(),
             frac_z: (0..cell_width).map(|i| i as f64 / cell_width as f64).collect(),
+            ap2_scratch: Vec::new(),
             tile,
             tile_epoch,
         };
@@ -1520,20 +1526,26 @@ impl<'a> NoiseChunkSim<'a> {
     }
 
     fn spline_apply(&mut self, s: usize, ctx: Ctx) -> f32 {
-        let (coordinate, locations_len, locations, derivatives, values) = {
-            let sp = &self.template.wsplines[s];
-            (sp.coordinate, sp.locations.len(), sp.locations.clone(), sp.derivatives.clone(), sp.values.clone())
-        };
-        let f = self.compute(coordinate, ctx) as f32;
-        let i = crate::density::find_interval_start(&locations, f);
-        let i1 = (locations_len - 1) as i32;
+        // De-alloc: copy the template ref out first (same pattern as
+        // compute_body) so the spline slices borrow the SHARED template
+        // ('a) and not `self` — the three per-eval Vec clones are gone.
+        // The immutable sp borrows cross the child self.compute calls
+        // unchanged; reads are bit-identical (same Vecs, same order).
+        let template = self.template;
+        let sp = &template.wsplines[s];
+        let locations = &sp.locations;
+        let derivatives = &sp.derivatives;
+        let values = &sp.values;
+        let f = self.compute(sp.coordinate, ctx) as f32;
+        let i = crate::density::find_interval_start(locations, f);
+        let i1 = (locations.len() - 1) as i32;
         if i < 0 {
             let value = self.spline_value(&values[0], ctx);
-            return crate::density::linear_extend(f, &locations, value, &derivatives, 0);
+            return crate::density::linear_extend(f, locations, value, derivatives, 0);
         }
         if i == i1 {
             let value = self.spline_value(&values[i1 as usize], ctx);
-            return crate::density::linear_extend(f, &locations, value, &derivatives, i1 as usize);
+            return crate::density::linear_extend(f, locations, value, derivatives, i1 as usize);
         }
         let f1 = locations[i as usize];
         let f2 = locations[i as usize + 1];
@@ -1570,86 +1582,101 @@ impl<'a> NoiseChunkSim<'a> {
         struct GF;
         impl Drop for GF { fn drop(&mut self) { FDEPTH.with(|c| c.set(c.get() - 1)); } }
         let _gf = GF;
-        let node = self.template.wnodes[w].clone();
+        // De-alloc: match on a REFERENCE into the shared template (copied
+        // ref, same pattern as compute_body) — the per-visit 48-byte
+        // `wnodes[w].clone()` is gone; every arm keeps its verbatim logic.
+        let template = self.template;
+        let node = &template.wnodes[w];
         match node {
             WNode::Const(v) => {
-                array.fill(f64::from_bits(v));
+                array.fill(f64::from_bits(*v));
             }
             WNode::Ap2 { ty, a1, a2, a2_min, a2_max } => match ty {
                 Ap2Type::Add => {
-                    self.fill_array(a1, array, provider);
-                    let mut doubles = vec![0.0; array.len()];
-                    self.fill_array(a2, &mut doubles, provider);
+                    self.fill_array(*a1, array, provider);
+                    // De-alloc: reuse the machine's scratch buffer instead of
+                    // a fresh `vec![0.0; len]` per visit. Same size, same
+                    // zero init, fully overwritten by the a2 fill, same add
+                    // loop -> bit-identical; take/put keeps nested Ap2::Add
+                    // levels on private buffers.
+                    let mut doubles = std::mem::take(&mut self.ap2_scratch);
+                    doubles.clear();
+                    doubles.resize(array.len(), 0.0);
+                    self.fill_array(*a2, &mut doubles, provider);
                     for i in 0..array.len() {
                         array[i] += doubles[i];
                     }
+                    self.ap2_scratch = doubles;
                 }
                 Ap2Type::Mul => {
-                    self.fill_array(a1, array, provider);
+                    self.fill_array(*a1, array, provider);
                     for i1 in 0..array.len() {
                         let d = array[i1];
-                        array[i1] = if d == 0.0 { 0.0 } else { d * self.compute_for_index(a2, i1, provider) };
+                        array[i1] = if d == 0.0 { 0.0 } else { d * self.compute_for_index(*a2, i1, provider) };
                     }
                 }
                 Ap2Type::Min => {
-                    let d1 = f64::from_bits(a2_min);
-                    self.fill_array(a1, array, provider);
+                    let d1 = f64::from_bits(*a2_min);
+                    self.fill_array(*a1, array, provider);
                     for i2 in 0..array.len() {
                         let d2 = array[i2];
                         array[i2] = if d2 < d1 {
                             d2
                         } else {
-                            mth::java_min(d2, self.compute_for_index(a2, i2, provider))
+                            mth::java_min(d2, self.compute_for_index(*a2, i2, provider))
                         };
                     }
                 }
                 Ap2Type::Max => {
-                    let d1 = f64::from_bits(a2_max);
-                    self.fill_array(a1, array, provider);
+                    let d1 = f64::from_bits(*a2_max);
+                    self.fill_array(*a1, array, provider);
                     for i2 in 0..array.len() {
                         let d2 = array[i2];
                         array[i2] = if d2 > d1 {
                             d2
                         } else {
-                            mth::java_max(d2, self.compute_for_index(a2, i2, provider))
+                            mth::java_max(d2, self.compute_for_index(*a2, i2, provider))
                         };
                     }
                 }
             },
             WNode::Mapped { ty, input } => {
-                self.fill_array(input, array, provider);
+                self.fill_array(*input, array, provider);
                 for i in 0..array.len() {
-                    array[i] = self.mapped_transform(ty, array[i]);
+                    array[i] = self.mapped_transform(*ty, array[i]);
                 }
             }
             WNode::RangeChoice { input, min, max, in_range, out_of_range } => {
-                self.fill_array(input, array, provider);
+                self.fill_array(*input, array, provider);
                 for i in 0..array.len() {
                     let d = array[i];
-                    array[i] = if d >= f64::from_bits(min) && d < f64::from_bits(max) {
-                        self.compute_for_index(in_range, i, provider)
+                    array[i] = if d >= f64::from_bits(*min) && d < f64::from_bits(*max) {
+                        self.compute_for_index(*in_range, i, provider)
                     } else {
-                        self.compute_for_index(out_of_range, i, provider)
+                        self.compute_for_index(*out_of_range, i, provider)
                     };
                 }
             }
             WNode::W(WKind::CacheOnceW(id)) => {
-                let counter_hit = self.cacheonces[id]
+                let counter_hit = self.cacheonces[*id]
                     .last_array
                     .as_ref()
-                    .map(|_| self.cacheonces[id].last_array_counter == self.array_interpolation_counter)
+                    .map(|_| self.cacheonces[*id].last_array_counter == self.array_interpolation_counter)
                     .unwrap_or(false);
                 if counter_hit {
                     // Java: System.arraycopy(lastArray, 0, array, 0, array.length)
                     // — a length mismatch would throw (vanilla never hits it).
-                    let last = self.cacheonces[id].last_array.as_ref().unwrap().clone();
+                    // De-alloc: copy straight from the stored array (take/put
+                    // shape of select_cell_yz is unnecessary here — no &mut
+                    // overlap) — the per-hit Vec clone is gone.
+                    let last = self.cacheonces[*id].last_array.as_ref().unwrap();
                     assert_eq!(last.len(), array.len(), "CacheOnce lastArray length changed on the read path (Java would throw)");
-                    array.copy_from_slice(&last);
+                    array.copy_from_slice(last);
                     return;
                 }
-                let inner = self.cacheonces[id].inner;
+                let inner = self.cacheonces[*id].inner;
                 self.fill_array(inner, array, provider);
-                let st = &mut self.cacheonces[id];
+                let st = &mut self.cacheonces[*id];
                 let counter_now = self.array_interpolation_counter;
                 if let Some(last) = &mut st.last_array {
                     if last.len() == array.len() {
@@ -1663,14 +1690,14 @@ impl<'a> NoiseChunkSim<'a> {
                 st.last_array_counter = counter_now;
             }
             WNode::W(WKind::Cache2DW(id)) => {
-                let inner = self.cache2ds[id].inner;
+                let inner = self.cache2ds[*id].inner;
                 self.fill_array(inner, array, provider);
             }
             WNode::W(WKind::Interp(id)) => {
                 if self.filling_cell {
                     self.provider_fill_all_directly(w, array, provider);
                 } else {
-                    let inner = self.interpolators[id].inner;
+                    let inner = self.interpolators[*id].inner;
                     self.fill_array(inner, array, provider);
                 }
             }
@@ -1748,8 +1775,9 @@ impl<'a> NoiseChunkSim<'a> {
     // ------------------------------------------------------------------
 
     fn select_cell_yz(&mut self, y: i32, z: i32) {
-        let ids: Vec<usize> = (0..self.interpolators.len()).collect();
-        for id in ids {
+        // De-alloc: iterate the id range directly (the range captures len()
+        // once, like the collected Vec did) — no per-cell Vec allocation.
+        for id in 0..self.interpolators.len() {
             // Java order: noise000 = slice0[z][y]; noise001 = slice0[z+1][y];
             // noise100 = slice1[z][y]; noise101 = slice1[z+1][y];
             // noise010 = slice0[z][y+1]; noise011 = slice0[z+1][y+1];
@@ -1768,8 +1796,8 @@ impl<'a> NoiseChunkSim<'a> {
         self.cell_start_block_y = (y + self.cell_noise_min_y) * self.cell_height;
         self.cell_start_block_z = (self.first_cell_z + z) * self.cell_width;
         self.array_interpolation_counter += 1;
-        let cache_ids: Vec<usize> = (0..self.cell_caches.len()).collect();
-        for cid in cache_ids {
+        // De-alloc: id range iteration — no per-cell Vec allocation.
+        for cid in 0..self.cell_caches.len() {
             // The cache's own field is the array being filled (Java passes
             // cacheAllInCell.values); take/put is safe because a cache's
             // filler can never contain the cache's own wrapper (proper
@@ -1853,8 +1881,8 @@ impl<'a> NoiseChunkSim<'a> {
             self.cell_start_block_z = i1 * self.cell_width;
             self.in_cell_z = 0;
             self.array_interpolation_counter += 1;
-            let ids: Vec<usize> = (0..self.interpolators.len()).collect();
-            for id in ids {
+            // De-alloc: id range iteration — no per-slice Vec allocation.
+            for id in 0..self.interpolators.len() {
                 let mut arr = if is_slice0 {
                     std::mem::take(&mut self.interpolators[id].slice0[i as usize])
                 } else {
