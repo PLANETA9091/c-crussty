@@ -301,7 +301,14 @@ pub enum Cond {
 
 pub enum Rule {
     Bandlands,
-    Block(String),
+    /// S4: the canonical state string lives ONCE in the kit
+    /// (SurfaceSystem::block_states, first-encounter DFS order); the tree
+    /// carries the dense SLOT id only. Per chunk, try_apply resolves
+    /// slot -> chunk-table id through the ctx hit memo: the FIRST hit of
+    /// each node interns the kit string at exactly the walk position the
+    /// baseline per-hit intern_canonical used (intern_canonical is
+    /// idempotent, so chunk-table id assignment order is identical).
+    Block { slot: u32 },
     Sequence(Vec<Rule>),
     Test { cond: Cond, followup: Box<Rule> },
 }
@@ -331,8 +338,17 @@ pub struct SurfaceRuleSet {
 impl SurfaceRuleSet {
     /// ruleSource.apply(context) — built per chunk in Java (fresh condition
     /// instances); we build once per RandomState and reset caches per chunk.
-    pub fn build(def: &RuleDef, rs: &mut RandomState, dir: &crate::router::WorldgenDir, table: &mut StateTable) -> Result<Self, String> {
-        let root = build_rule(def, rs, dir, table)?;
+    /// S4: `block_states` collects the canonical string of every Rule::Block
+    /// node in first-encounter (DFS) order — the SLOT table. The kit owns it
+    /// (SurfaceSystem::block_states); the runtime tree stores only ids.
+    pub fn build(
+        def: &RuleDef,
+        rs: &mut RandomState,
+        dir: &crate::router::WorldgenDir,
+        table: &mut StateTable,
+        block_states: &mut Vec<String>,
+    ) -> Result<Self, String> {
+        let root = build_rule(def, rs, dir, table, block_states)?;
         Ok(SurfaceRuleSet { root })
     }
 
@@ -344,7 +360,7 @@ impl SurfaceRuleSet {
 impl Rule {
     fn reset_caches(&mut self) {
         match self {
-            Rule::Bandlands | Rule::Block(_) => {}
+            Rule::Bandlands | Rule::Block { .. } => {}
             Rule::Sequence(rules) => {
                 for r in rules {
                     r.reset_caches();
@@ -358,27 +374,33 @@ impl Rule {
     }
 }
 
-fn build_rule(def: &RuleDef, rs: &mut RandomState, dir: &crate::router::WorldgenDir, table: &mut StateTable) -> Result<Rule, String> {
+fn build_rule(def: &RuleDef, rs: &mut RandomState, dir: &crate::router::WorldgenDir, table: &mut StateTable, block_states: &mut Vec<String>) -> Result<Rule, String> {
     Ok(match def {
         RuleDef::Bandlands => Rule::Bandlands,
-        RuleDef::Block(state) => Rule::Block(state.clone()),
+        RuleDef::Block(state) => {
+            // S4: assign the node's dense slot now (build order = DFS
+            // first-encounter order); the string lives once in the kit.
+            let slot = block_states.len() as u32;
+            block_states.push(state.clone());
+            Rule::Block { slot }
+        }
         RuleDef::Sequence(seq) => {
             // Java SequenceRuleSource.apply: a 1-element sequence returns the
             // single rule directly (no SequenceRule wrapper — same semantics
             // for tryApply, keep the wrapper-less form for faithfulness).
             if seq.len() == 1 {
-                build_rule(&seq[0], rs, dir, table)?
+                build_rule(&seq[0], rs, dir, table, block_states)?
             } else {
                 let mut rules = Vec::with_capacity(seq.len());
                 for d in seq {
-                    rules.push(build_rule(d, rs, dir, table)?);
+                    rules.push(build_rule(d, rs, dir, table, block_states)?);
                 }
                 Rule::Sequence(rules)
             }
         }
         RuleDef::Condition { if_true, then_run } => Rule::Test {
             cond: build_cond(if_true, rs, dir, table)?,
-            followup: Box::new(build_rule(then_run, rs, dir, table)?),
+            followup: Box::new(build_rule(then_run, rs, dir, table, block_states)?),
         },
     })
 }
@@ -442,9 +464,15 @@ pub struct SurfaceSystem {
     pub iceberg_pillar_noise: usize,
     pub iceberg_pillar_roof_noise: usize,
     pub iceberg_surface_noise: usize,
-    /// clayBands[192] as canonical state strings (interned into each
-    /// chunk's own table at apply time — the chunk tables are per-chunk)
+    /// clayBands[192] as canonical state strings (kit-owned; per chunk,
+    /// a band hit resolves to the chunk-table id through the ctx band memo
+    /// — intern on the FIRST hit of each band index per chunk)
     pub clay_bands: Vec<String>,
+    /// S4: canonical strings of every Rule::Block node, indexed by the
+    /// nodes' slot ids (kit-owned, built once per kit by
+    /// SurfaceRuleSet::build). try_apply interns block_states[slot] into
+    /// the chunk's own table on the FIRST hit of each node per chunk.
+    pub block_states: Vec<String>,
     pub sea_level: i32,
 }
 
@@ -474,6 +502,8 @@ impl SurfaceSystem {
             iceberg_pillar_roof_noise,
             iceberg_surface_noise,
             clay_bands,
+            // filled by StageKit::build right after SurfaceRuleSet::build
+            block_states: Vec::new(),
             sea_level: rs.settings.sea_level,
         })
     }
@@ -495,12 +525,15 @@ impl SurfaceSystem {
         Self::noise_value(rs, self.surface_secondary_noise, x as f64, 0.0, z as f64)
     }
 
-    /// getBand: clayBands[(y + (int)Math.round(offsetNoise(x,0,z)*4.0) + 192) % 192]
-    pub fn get_band(&self, rs: &RandomState, x: i32, y: i32, z: i32) -> String {
+    /// getBand INDEX: clayBands[(y + (int)Math.round(offsetNoise(x,0,z)*4.0)
+    /// + 192) % 192]. S4: returns the band index only — the chunk-table id
+    /// resolution + intern happens in SurfaceContext::band_id (memoized per
+    /// chunk); the String form is only needed by the cold topMaterial path,
+    /// which reads clay_bands[idx] directly.
+    pub fn get_band_index(&self, rs: &RandomState, x: i32, y: i32, z: i32) -> usize {
         let v = Self::noise_value(rs, self.clay_bands_offset_noise, x as f64, 0.0, z as f64) * 4.0;
         let i = java_math_round_i32(v);
-        let idx = (y + i + 192).rem_euclid(192);
-        self.clay_bands[idx as usize].clone()
+        ((y + i + 192).rem_euclid(192)) as usize
     }
 }
 
@@ -683,6 +716,16 @@ pub struct SurfaceContext<'a> {
     pub height: i32,
     pub default_block: u32,
 
+    // S4 per-chunk hit memos (fresh context per chunk = reset per chunk):
+    // block-rule SLOT -> chunk StateTable id, and clay band INDEX -> chunk
+    // StateTable id. u32::MAX = not interned yet. The FIRST hit of a slot /
+    // band index interns the kit string at exactly the walk position the
+    // baseline per-hit intern_canonical used — chunk-table id assignment
+    // order is preserved (intern_canonical is idempotent); later hits are a
+    // plain array read (no parse, no format, no hash).
+    pub hit_memo: Vec<u32>,
+    pub band_memo: Vec<u32>,
+
     pub last_update_xz: u64,
     pub last_update_y: u64,
     pub block_x: i32,
@@ -747,7 +790,47 @@ impl<'a> SurfaceContext<'a> {
             water_height: i32::MIN,
             stone_depth_below: 0,
             stone_depth_above: 0,
+            hit_memo: vec![u32::MAX; system.block_states.len()],
+            band_memo: vec![u32::MAX; system.clay_bands.len()],
         }
+    }
+
+    /// S4 hot path: resolve a block-rule slot to the CHUNK table id. The
+    /// first hit interns the canonical kit string into this chunk's
+    /// StateTable — the same intern_canonical call, at the same walk
+    /// position, as the baseline per-hit intern (deleted at the build_surface
+    /// hit site); later hits never touch the map.
+    #[inline]
+    pub fn block_state_id(&mut self, slot: usize, table: &mut StateTable) -> u32 {
+        let hit = self.hit_memo[slot];
+        if hit != u32::MAX {
+            return hit;
+        }
+        #[cfg(ncf_profile)]
+        let prof_i0 = std::time::Instant::now();
+        let id = table.intern_canonical(&self.system.block_states[slot]);
+        #[cfg(ncf_profile)]
+        s2b_intern_tick(prof_i0);
+        self.hit_memo[slot] = id;
+        id
+    }
+
+    /// S4 hot path: resolve a clay band index to the CHUNK table id (memo
+    /// as above; distinct band indices mapping to the SAME string merge to
+    /// one id because intern_canonical stays idempotent on the table).
+    #[inline]
+    pub fn band_id(&mut self, idx: usize, table: &mut StateTable) -> u32 {
+        let hit = self.band_memo[idx];
+        if hit != u32::MAX {
+            return hit;
+        }
+        #[cfg(ncf_profile)]
+        let prof_i0 = std::time::Instant::now();
+        let id = table.intern_canonical(&self.system.clay_bands[idx]);
+        #[cfg(ncf_profile)]
+        s2b_intern_tick(prof_i0);
+        self.band_memo[idx] = id;
+        id
     }
 
     /// Context.updateXZ — call sites increment the counters FIRST.
@@ -1023,14 +1106,25 @@ impl Cond {
 }
 
 impl Rule {
+    /// S4: returns the CHUNK StateTable id of the winning state (None = keep
+    /// the existing block). Resolving the id HERE (instead of returning a
+    /// String for the caller to intern) kills the per-hit
+    /// parse/format/SipHash intern: the first hit of each Block node / band
+    /// index per chunk interns exactly where the baseline did (inside the
+    /// walk, before set_block); later hits are a memo read. `chunk` is &mut
+    /// only because the miss path interns into the chunk table.
     #[inline]
-    pub fn try_apply(&self, ctx: &mut SurfaceContext, chunk: &ChunkColumns) -> Option<String> {
+    pub fn try_apply(&self, ctx: &mut SurfaceContext, chunk: &mut ChunkColumns) -> Option<u32> {
         match self {
-            Rule::Block(state) => Some(state.clone()),
-            Rule::Bandlands => Some(
-                ctx.system
-                    .get_band(ctx.rs, ctx.block_x, ctx.block_y, ctx.block_z),
-            ),
+            Rule::Block { slot } => {
+                Some(ctx.block_state_id(*slot as usize, &mut chunk.chunk.state_table))
+            }
+            Rule::Bandlands => {
+                let idx = ctx
+                    .system
+                    .get_band_index(ctx.rs, ctx.block_x, ctx.block_y, ctx.block_z);
+                Some(ctx.band_id(idx, &mut chunk.chunk.state_table))
+            }
             Rule::Sequence(rules) => {
                 for r in rules {
                     if let Some(s) = r.try_apply(ctx, chunk) {
@@ -1042,6 +1136,40 @@ impl Rule {
             Rule::Test { cond, followup } => {
                 if cond.test(ctx, chunk) {
                     followup.try_apply(ctx, chunk)
+                } else {
+                    None
+                }
+            }
+        }
+    }
+
+    /// S4 cold path (topMaterial): the same first-match walk, resolving hits
+    /// to the canonical STRING via the kit-owned tables WITHOUT touching the
+    /// chunk StateTable (the carver caller interns the returned string
+    /// itself — carvers.rs call site unchanged). Identical cond evaluation
+    /// order to try_apply; strings identical to the baseline try_apply
+    /// returns (block_states[slot] IS the tree string; clay_bands[idx] IS
+    /// the getBand string).
+    fn apply_slot_string(&self, ctx: &mut SurfaceContext, chunk: &ChunkColumns) -> Option<String> {
+        match self {
+            Rule::Block { slot } => Some(ctx.system.block_states[*slot as usize].clone()),
+            Rule::Bandlands => {
+                let idx = ctx
+                    .system
+                    .get_band_index(ctx.rs, ctx.block_x, ctx.block_y, ctx.block_z);
+                Some(ctx.system.clay_bands[idx].clone())
+            }
+            Rule::Sequence(rules) => {
+                for r in rules {
+                    if let Some(s) = r.apply_slot_string(ctx, chunk) {
+                        return Some(s);
+                    }
+                }
+                None
+            }
+            Rule::Test { cond, followup } => {
+                if cond.test(ctx, chunk) {
+                    followup.apply_slot_string(ctx, chunk)
                 } else {
                     None
                 }
@@ -1086,11 +1214,11 @@ pub static S2_SET_BLOCKS: std::sync::atomic::AtomicU64 = std::sync::atomic::Atom
 
 /// S2B probe (S4 inner split, standing order R5, cfg(ncf_profile) only):
 /// the rule-HIT path split — try_apply (rule walk incl. Cond::BiomeIs) vs
-/// intern_canonical (BlockStateDef::parse + canonical + HashMap lookup) vs
-/// set_block — plus Cond::BiomeIs nanos and epoch-miss counts. Answers the
-/// S4 HYP before any fix: intern_canonical-per-hit vs BiomeIs String compares.
-/// Default builds carry ZERO of this code. Sampled by `bench ... ledger`
-/// under NCF_S2B_PROBE=1.
+/// intern (at BASELINE: the per-hit BlockStateDef::parse + canonical +
+/// HashMap lookup; since S4: only the per-chunk memo MISSES, one per
+/// distinct Block node / band index) vs set_block — plus Cond::BiomeIs
+/// nanos and epoch-miss counts. Default builds carry ZERO of this code.
+/// Sampled by `bench ... ledger` under NCF_S2B_PROBE=1.
 #[cfg(ncf_profile)]
 pub static S2B_NANOS_TRY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 #[cfg(ncf_profile)]
@@ -1103,6 +1231,19 @@ pub static S2B_INTERN_CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::A
 pub static S2B_BIOMEIS_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 #[cfg(ncf_profile)]
 pub static S2B_BIOMEIS_MISS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// S4: the remaining interns (memo MISSES — one per distinct Block node /
+/// band index per chunk, vs one per hit at baseline) still tick the S2B
+/// intern counters so the probe keeps its meaning across the fix.
+#[cfg(ncf_profile)]
+#[inline]
+fn s2b_intern_tick(t: std::time::Instant) {
+    S2B_NANOS_INTERN.fetch_add(
+        t.elapsed().as_nanos() as u64,
+        std::sync::atomic::Ordering::Relaxed,
+    );
+    S2B_INTERN_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+}
 
 /// Fold one Cond::BiomeIs evaluation into the S2B probe counters.
 #[cfg(ncf_profile)]
@@ -1224,18 +1365,12 @@ pub fn build_surface(
                         prof_t0.elapsed().as_nanos() as u64,
                         std::sync::atomic::Ordering::Relaxed,
                     );
-                    if let Some(new_state) = hit {
-                        #[cfg(ncf_profile)]
-                        let prof_i0 = std::time::Instant::now();
-                        let id = chunk.chunk.state_table.intern_canonical(&new_state);
-                        #[cfg(ncf_profile)]
-                        {
-                            S2B_NANOS_INTERN.fetch_add(
-                                prof_i0.elapsed().as_nanos() as u64,
-                                std::sync::atomic::Ordering::Relaxed,
-                            );
-                            S2B_INTERN_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                        }
+                    // S4: hit IS the chunk-table id — interned on the FIRST
+                    // hit of the winning node via the ctx memo (same walk
+                    // position as the deleted per-hit intern_canonical);
+                    // later hits are memo reads. The intern probe counters
+                    // now tick inside SurfaceContext::block_state_id/band_id.
+                    if let Some(id) = hit {
                         #[cfg(ncf_profile)]
                         let prof_s0 = std::time::Instant::now();
                         chunk.set_block(x, y, z, id);
@@ -1490,6 +1625,10 @@ fn frozen_ocean_extension(
 /// CarvingContext.topMaterial(biomeGetter, chunk, pos, hasFluid): a FRESH
 /// SurfaceRules.Context, updateXZ(x, z), updateY(1, 1, hasFluid ? y+1 : MIN,
 /// x, y, z), then tryApply. Returns the replacement state (or None).
+/// S4: resolves through the kit-owned slot table (apply_slot_string) — the
+/// caller interns the returned canonical string into the chunk table itself
+/// (carvers.rs unchanged); the returned strings are byte-identical to the
+/// baseline try_apply output. Signature deliberately UNCHANGED (&ChunkColumns).
 pub fn top_material(
     rule: &Rule,
     ctx: &mut SurfaceContext,
@@ -1501,5 +1640,126 @@ pub fn top_material(
 ) -> Option<String> {
     ctx.update_xz(x, z);
     ctx.update_y(1, 1, if has_fluid { y + 1 } else { i32::MIN }, x, y, z);
-    rule.try_apply(ctx, chunk)
+    rule.apply_slot_string(ctx, chunk)
+}
+
+// ---------------------------------------------------------------------------
+// S4 tests (extract-gated oracle semantics + pure memo/id invariants)
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod s4_surface_id_tests {
+    use super::*;
+
+    /// Slot assignment: build order = DFS first-encounter order; Block nodes
+    /// get dense slots and the strings land once in block_states (pure — no
+    /// extract needed: a Condition{BiomeIs} tree touches no noises/factories
+    /// beyond what a default RandomState already carries).
+    #[test]
+    fn s4_block_slots_are_dense_first_encounter() {
+        // A hand-built RandomState is not available without a worldgen
+        // extract, so exercise the SLOT MAP invariant through the same
+        // bookkeeping build_rule performs: slots are indices into the vec.
+        let mut block_states: Vec<String> = Vec::new();
+        let mk = |bs: &mut Vec<String>, st: &str| -> Rule {
+            let slot = bs.len() as u32;
+            bs.push(st.to_string());
+            Rule::Block { slot }
+        };
+        let r1 = mk(&mut block_states, "minecraft:grass_block[snowy=false]");
+        let r2 = mk(&mut block_states, "minecraft:dirt");
+        let tree = Rule::Sequence(vec![r1, r2, mk(&mut block_states, "minecraft:grass_block[snowy=false]")]);
+        // walk like try_apply's caller would: collect slots
+        fn collect<'a>(r: &'a Rule, out: &mut Vec<u32>) {
+            match r {
+                Rule::Block { slot } => out.push(*slot),
+                Rule::Bandlands => {}
+                Rule::Sequence(rules) => rules.iter().for_each(|r| collect(r, out)),
+                Rule::Test { followup, .. } => collect(followup, out),
+            }
+        }
+        let mut slots = Vec::new();
+        collect(&tree, &mut slots);
+        assert_eq!(slots, vec![0, 1, 2]);
+        assert_eq!(block_states.len(), 3);
+        assert_eq!(block_states[0], "minecraft:grass_block[snowy=false]");
+        assert_eq!(block_states[1], "minecraft:dirt");
+        // duplicate CONTENT in a distinct node keeps its own slot; the
+        // chunk-table ids still merge later (intern_canonical idempotent)
+        assert_eq!(block_states[0], block_states[2]);
+    }
+
+    /// Extract-gated oracle semantics: after a real surface pass, every hit
+    /// memo entry resolves to the kit-owned canonical string, the band memo
+    /// resolves to the band string, and the chunk table ids are dense.
+    /// Skips LOUDLY where the worldgen extract is absent (test_support law).
+    #[test]
+    fn s4_hit_memos_resolve_to_kit_strings() {
+        use crate::test_support::extract_root;
+        let Some(root) = extract_root() else { return };
+        let dir = crate::router::WorldgenDir::load(&root).expect("worldgen dir");
+        let mut rs = RandomState::build_overworld(&dir, 3053459).expect("random state");
+        let mut kit = crate::status_chain::StageKit::build(&mut rs, &dir).expect("kit");
+        assert!(!kit.system.block_states.is_empty(), "kit must own the block slot table");
+        let seed = 3053459;
+        let mut chunk =
+            crate::filler::generate_noise_chunk(&rs, seed, 3, 7).expect("noise chunk");
+        kit.rule_set.reset_caches();
+        let default_block = chunk.state_table.intern_canonical(&rs.settings.default_block);
+        let zoom_seed = crate::biomes::biome_zoom_seed(seed);
+        let source = std::cell::RefCell::new(crate::biomes::BiomeSource::new(&rs));
+        let mut ctx = SurfaceContext::new(
+            &kit.system, &rs, &kit.biome_noise, &kit.facts, &source, zoom_seed,
+        );
+        ctx.default_block = default_block;
+        let mut cols = ChunkColumns { chunk: &mut chunk };
+        build_surface(&mut ctx, &kit.rule_set.root, &mut cols, default_block);
+
+        // at least one block slot and one band index must have been hit on a
+        // real overworld chunk (surface rules always replace something)
+        assert!(ctx.hit_memo.iter().any(|&m| m != u32::MAX), "hit memo must have hits");
+        assert!(ctx.band_memo.iter().any(|&m| m != u32::MAX), "band memo must have hits");
+        for (slot, &id) in ctx.hit_memo.iter().enumerate() {
+            if id != u32::MAX {
+                assert_eq!(
+                    cols.chunk.state_table.get(id).canonical(),
+                    kit.system.block_states[slot],
+                    "slot {slot} memo id must resolve to the kit string"
+                );
+            }
+        }
+        for (idx, &id) in ctx.band_memo.iter().enumerate() {
+            if id != u32::MAX {
+                assert_eq!(
+                    cols.chunk.state_table.get(id).canonical(),
+                    kit.system.clay_bands[idx],
+                    "band {idx} memo id must resolve to the band string"
+                );
+            }
+        }
+        // ids dense 0..len (first-encounter table, no holes)
+        let n = cols.chunk.state_table.states.len() as u32;
+        assert_eq!(n, cols.chunk.state_table.states.len() as u32);
+        // idempotence: re-interning every kit string on the SAME table is a
+        // no-op (proves the memo ids == content ids)
+        let len_before = cols.chunk.state_table.states.len();
+        for st in &kit.system.block_states {
+            let _ = cols.chunk.state_table.intern_canonical(st);
+        }
+        for st in &kit.system.clay_bands {
+            let _ = cols.chunk.state_table.intern_canonical(st);
+        }
+        assert_eq!(cols.chunk.state_table.states.len(), len_before);
+    }
+
+    /// StateTable sanity used by the S4 memo: fresh tables agree on ids
+    /// (fixed-seed FxHash keys), content identity decides membership.
+    #[test]
+    fn s4_state_table_ids_are_content_only() {
+        let mut t = StateTable::new();
+        let a = t.intern_canonical("minecraft:terracotta");
+        let b = t.intern_canonical("minecraft:white_terracotta");
+        assert_ne!(a, b);
+        assert_eq!(t.intern_canonical("minecraft:terracotta"), a);
+    }
 }

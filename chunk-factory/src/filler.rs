@@ -20,6 +20,7 @@ use crate::interpolator::NoiseChunkSim;
 use crate::router::RandomState;
 use crate::xoroshiro::XoroshiroRandomSource;
 use std::collections::HashMap;
+use std::hash::{BuildHasherDefault, Hasher};
 
 // ---------------------------------------------------------------------------
 // Block state table (contract shared with sections.rs / stagediff)
@@ -66,12 +67,72 @@ impl BlockStateDef {
     }
 }
 
+/// FxHash (rustc-hash) — fixed-seed multiply-xor hasher for the StateTable
+/// keys map (S4/S5, R1#4): replaces the std RandomState (SipHash) so every
+/// lookup is deterministic and free of per-map seed setup. The map is a pure
+/// lookup structure (NEVER iterated; id values come from insertion order into
+/// `states`), so the bucket layout is output-invisible. Same arithmetic as
+/// rustc-hash 1.x: rotate-left 5, xor, wrap-mul by the fixed seed.
+#[derive(Default)]
+struct FxHasher {
+    hash: u64,
+}
+
+const FX_SEED: u64 = 0x51_7c_c1_b7_27_22_0a_95;
+
+impl FxHasher {
+    #[inline]
+    fn add_to_hash(&mut self, i: u64) {
+        self.hash = (self.hash.rotate_left(5) ^ i).wrapping_mul(FX_SEED);
+    }
+}
+
+impl Hasher for FxHasher {
+    // str/String hash through here: write(payload bytes) + write_u8(0xff).
+    #[inline]
+    fn write(&mut self, mut bytes: &[u8]) {
+        while bytes.len() >= 8 {
+            self.add_to_hash(u64::from_le_bytes(bytes[..8].try_into().unwrap()));
+            bytes = &bytes[8..];
+        }
+        if bytes.len() >= 4 {
+            self.add_to_hash(u32::from_le_bytes(bytes[..4].try_into().unwrap()) as u64);
+            bytes = &bytes[4..];
+        }
+        if bytes.len() >= 2 {
+            self.add_to_hash(u16::from_le_bytes(bytes[..2].try_into().unwrap()) as u64);
+            bytes = &bytes[2..];
+        }
+        if let Some(&b) = bytes.first() {
+            self.add_to_hash(b as u64);
+        }
+    }
+
+    #[inline]
+    fn write_u8(&mut self, i: u8) {
+        self.add_to_hash(i as u64);
+    }
+
+    #[inline]
+    fn write_u64(&mut self, i: u64) {
+        self.add_to_hash(i);
+    }
+
+    #[inline]
+    fn finish(&self) -> u64 {
+        self.hash
+    }
+}
+
 /// Intern table for block states (first-encounter ids; the contract only
 /// requires CONTENT equality, palette order is irrelevant to stagediff).
+/// Keys use a FIXED-SEED FxHasher (deterministic, no per-map RandomState);
+/// `intern_canonical` hashes the input &str DIRECTLY (S4: zero parse/format
+/// on hits — callers pass canonical strings, see the debug_assert on insert).
 #[derive(Default)]
 pub struct StateTable {
     pub states: Vec<BlockStateDef>,
-    keys: HashMap<String, u32>,
+    keys: HashMap<String, u32, BuildHasherDefault<FxHasher>>,
 }
 
 impl StateTable {
@@ -96,12 +157,20 @@ impl StateTable {
         id
     }
 
+    /// S4 (R1#4): the hit path hashes the input &str DIRECTLY (no parse, no
+    /// canonical re-format, no String alloc); BlockStateDef::parse + canonical
+    /// run ONLY on the insert (miss) path. Callers must pass canonical strings
+    /// ("name" or "name[k=v,...]" with props sorted) — every current call site
+    /// does: parse_block_state_rule sorts props (surface_rules.rs), the clay
+    /// band / ore constants are propless, and the serial palettes round-trip
+    /// canonical form. The debug_assert is the tripwire for new callers.
     pub fn intern_canonical(&mut self, canonical: &str) -> u32 {
-        let def = BlockStateDef::parse(canonical);
-        let key = def.canonical();
-        if let Some(&id) = self.keys.get(&key) {
+        if let Some(&id) = self.keys.get(canonical) {
             return id;
         }
+        let def = BlockStateDef::parse(canonical);
+        let key = def.canonical();
+        debug_assert_eq!(key, canonical, "intern_canonical input must be canonical");
         let id = self.states.len() as u32;
         self.states.push(def);
         self.keys.insert(key, id);
@@ -526,4 +595,55 @@ pub fn generate_noise_chunk_with_beardifier(
         heightmaps: vec![hm_ocean, hm_surface],
         post_processing,
     })
+}
+
+#[cfg(test)]
+mod s4_intern_tests {
+    use super::*;
+
+    /// S4 (R1#4): intern_canonical dedups on CONTENT via the FxHash keys map;
+    /// two FRESH tables assign IDENTICAL ids for the same strings (fixed-seed
+    /// hasher — no RandomState nondeterminism; id values come from insertion
+    /// order into `states`, the map is never iterated).
+    #[test]
+    fn fx_intern_canonical_is_content_idempotent_and_deterministic() {
+        let mut a = StateTable::new();
+        let s1 = a.intern_canonical("minecraft:stone");
+        assert_eq!(a.intern_canonical("minecraft:stone"), s1, "repeat hit must return the same id");
+        let l1 = a.intern_canonical("minecraft:oak_leaves[distance=1,persistent=false]");
+        assert_eq!(
+            a.intern_canonical("minecraft:oak_leaves[distance=1,persistent=false]"),
+            l1,
+            "props string hit must return the same id"
+        );
+        assert_ne!(s1, l1);
+        assert_eq!(a.get(l1).canonical(), "minecraft:oak_leaves[distance=1,persistent=false]");
+
+        let mut b = StateTable::new();
+        assert_eq!(b.intern_canonical("minecraft:stone"), s1, "fixed-seed map: fresh table, same ids");
+        assert_eq!(
+            b.intern_canonical("minecraft:oak_leaves[distance=1,persistent=false]"),
+            l1,
+            "fixed-seed map: fresh table, same ids"
+        );
+        // distinct contents must not collapse into one id
+        assert_ne!(b.intern_canonical("minecraft:deepslate"), s1);
+        // the (name,props) path and the canonical path share one key space
+        let w = b.intern("minecraft:water", &[("level", "0")]);
+        assert_eq!(b.intern_canonical("minecraft:water[level=0]"), w);
+    }
+
+    /// The debug_assert contract: parse∘canonical is the identity on
+    /// canonical inputs (guards every intern_canonical call site).
+    #[test]
+    fn parse_canonical_is_identity() {
+        for s in [
+            "minecraft:air",
+            "minecraft:water[level=0]",
+            "minecraft:oak_leaves[distance=1,persistent=false]",
+            "minecraft:chest[facing=north,type=single,waterlogged=false]",
+        ] {
+            assert_eq!(BlockStateDef::parse(s).canonical(), s, "{s} must round-trip");
+        }
+    }
 }
