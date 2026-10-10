@@ -62,8 +62,14 @@ impl StageKit {
         let default_block = rs.settings.default_block.clone();
         let mut table = StateTable::new();
         table.intern_canonical(&default_block);
-        let rule_set = SurfaceRuleSet::build(&rule_def, rs, dir, &mut table)?;
-        let system = SurfaceSystem::new(rs, dir, &mut table)?;
+        // S4: the kit build assigns every Rule::Block node a dense slot id
+        // (first-encounter DFS order); the canonical strings ride in the kit
+        // via system.block_states. The throwaway kit table below only shapes
+        // the kit-build-time interning (unchanged semantics).
+        let mut block_states = Vec::new();
+        let rule_set = SurfaceRuleSet::build(&rule_def, rs, dir, &mut table, &mut block_states)?;
+        let mut system = SurfaceSystem::new(rs, dir, &mut table)?;
+        system.block_states = block_states;
         let facts = load_biome_facts(dir)?;
         let biome_noise = BiomeNoise::new();
         // configured carvers: parse ONLY the refs referenced by overworld
@@ -423,15 +429,24 @@ pub fn trace_surface(
                 }
                 i6 += 1;
                 ctx.update_y(i6, y - i8 + 1, i7, x, y, z);
-                let replacement = if block == default_block {
-                    kit.rule_set
-                        .root
-                        .try_apply(&mut ctx, &cols)
-                        .map(|s| s.replace(['[', ']', '{', '}', '=', ','], ""))
-                        .unwrap_or_else(|| "-".to_string())
+                // S4: ONE try_apply (the baseline called it twice per hit
+                // row: string for the TSV + re-eval for the set_block id).
+                // The hit is the chunk-table id, interned on the FIRST hit of
+                // the winning node via the ctx memo at the same walk position
+                // as the baseline intern; the TSV replacement column maps
+                // id -> canonical() — the identical string (intern_canonical
+                // is idempotent on canonical input), so the TSV stays
+                // byte-identical.
+                let hit = if block == default_block {
+                    kit.rule_set.root.try_apply(&mut ctx, &mut cols)
                 } else {
-                    "-".to_string()
+                    None
                 };
+                let replacement = hit
+                    .map(|id| {
+                        cols.chunk.state_table.get(id).canonical().replace(['[', ']', '{', '}', '=', ','], "")
+                    })
+                    .unwrap_or_else(|| "-".to_string());
                 let min_surface = ctx.get_min_surface_level();
                 let secondary = ctx.get_surface_secondary();
                 // S1 lazy biome: this row READS the biome like Java reads the
@@ -455,12 +470,7 @@ pub fn trace_surface(
                     ctx.stone_depth_below,
                     replacement,
                 );
-                if let Some(new_state) = if block == default_block {
-                    kit.rule_set.root.try_apply(&mut ctx, &cols)
-                } else {
-                    None
-                } {
-                    let id = cols.chunk.state_table.intern_canonical(&new_state);
+                if let Some(id) = hit {
                     cols.set_block(x, y, z, id);
                 }
                 y -= 1;
