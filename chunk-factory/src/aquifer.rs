@@ -958,9 +958,21 @@ impl VeinType {
 }
 
 /// OreVeinifier.create's BlockStateFiller, hoisted into an explicit struct.
-/// `toggle`/`ridged`/`gap` values MUST be the NoiseChunk-interpolated per-block
-/// values for toggle/ridged (they contain `interpolated` markers); `gap` has
-/// none, but the caller passes the bound value anyway (identical).
+/// `toggle`/`ridged` values MUST be the NoiseChunk-interpolated per-block
+/// values (they contain `interpolated` markers ⇒ the caller's reads are
+/// O(1) interp-state reads). `gap` has no interpolated wrapper — it is a
+/// full NormalNoise evaluation per block, so the caller passes it LAZILY:
+/// `gap_fn` is invoked exactly at the observation site (the
+/// `next_f32() < d2 && gap > -0.3` short-circuit), i.e. only for the
+/// ~1-2k blocks/chunk that pass the bounds ∧ abs-d1 ∧ random-0.7 ∧ ridged
+/// gates instead of every solid block. Bit-exact by construction:
+/// (a) the gap value is a pure function of (x,y,z) on the scalar path
+/// (Df::Noise touches no machine state; interp roots are read-only while
+/// interpolating — see interpolator.rs compute/compute_body), so skipping
+/// never-observed evaluations changes no bit of any observed value;
+/// (b) the per-block RNG draws keep their exact order/count — the closures
+/// run no RNG, and the first gap read stays at the same sequence point;
+/// (c) blocks that never read the value previously don't read it now.
 pub struct OreVeinifierRule {
     pub ore_random: XoroshiroPositionalRandomFactory,
 }
@@ -970,7 +982,7 @@ impl OreVeinifierRule {
         &self,
         toggle: f64,
         ridged: f64,
-        gap: f64,
+        gap_fn: &mut dyn FnMut() -> f64,
         x: i32,
         y: i32,
         z: i32,
@@ -1006,7 +1018,7 @@ impl OreVeinifierRule {
             0.300_000_011_920_928_96, // (double)0.3f
         );
         // (double)-0.3f
-        if (random_source.next_f32() as f64) < d2 && gap > -0.300_000_011_920_928_96 {
+        if (random_source.next_f32() as f64) < d2 && gap_fn() > -0.300_000_011_920_928_96 {
             return Some(if random_source.next_f32() < 0.019_999_999_552_965_164 {
                 // (double)0.02f
                 ids.raw_ore(vein_type)

@@ -387,8 +387,8 @@ fn run(csv_path: &str, meta_path: &str, wg: &str, seed: i64) -> Result<i32, Stri
         if ore_veins_enabled && state.is_none() {
             let toggle = sim.compute_field(12);
             let ridged = sim.compute_field(13);
-            let gap = sim.compute_field(14);
-            state = ore_rule.compute(toggle, ridged, gap, bx, by, bz, &ore_ids);
+            // lazy gap at the compute() observation site (filler.rs parity)
+            state = ore_rule.compute(toggle, ridged, &mut || sim.compute_field(14), bx, by, bz, &ore_ids);
         }
         let sched = aquifer_ref.should_schedule_fluid_update();
         if sched != row.sched {

@@ -144,11 +144,12 @@ impl<'a> ColumnHeightSource<'a> {
             let mut state =
                 aquifer_ref.compute_substance(bx, by, bz, substance, air, water, lava);
             if state.is_none() && ore_veins_enabled {
-                // OreVeinifier order: toggle, ridged, gap (filler.rs parity).
+                // OreVeinifier order: toggle, ridged (O(1) interp reads);
+                // gap LAZILY at the compute() short-circuit site (filler.rs
+                // parity — see aquifer.rs OreVeinifierRule doc).
                 let toggle = sim.compute_field(12);
                 let ridged = sim.compute_field(13);
-                let gap = sim.compute_field(14);
-                state = ore_ref.compute(toggle, ridged, gap, bx, by, bz, ore_ids);
+                state = ore_ref.compute(toggle, ridged, &mut || sim.compute_field(14), bx, by, bz, ore_ids);
             }
             let state = match state {
                 Some(s) => s,

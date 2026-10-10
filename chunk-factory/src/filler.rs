@@ -435,12 +435,16 @@ pub fn generate_noise_chunk_with_beardifier(
             aquifer_ref.compute_substance(bx, by, bz, substance, air, water, lava)
         };
         if state.is_none() && ore_veins_enabled && !skip_veins {
-            // OreVeinifier order: toggle, ridged, gap — bound (interpolated
-            // containing) values from the sim, never scalar.
+            // OreVeinifier order: toggle, ridged — O(1) interp reads (the
+            // roots contain `interpolated` markers); gap LAZILY — a plain
+            // noise node ⇒ full NormalNoise eval per block, evaluated only
+            // at the compute() short-circuit site (see aquifer.rs
+            // OreVeinifierRule doc: bit-exact by construction, RNG order
+            // preserved). Probe: the eager trio cost 7.33 ms/chunk
+            // (NCF_SKIP_VEINS A/B, profile build), the gap eval dominates.
             let toggle = sim.compute_field(12);
             let ridged = sim.compute_field(13);
-            let gap = sim.compute_field(14);
-            state = ore_ref.compute(toggle, ridged, gap, bx, by, bz, &ore_ids);
+            state = ore_ref.compute(toggle, ridged, &mut || sim.compute_field(14), bx, by, bz, &ore_ids);
         }
         let state = match state {
             Some(s) => s,
