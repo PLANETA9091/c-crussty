@@ -361,6 +361,29 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
                     share(per_interp[0]),
                     i0_min, i0_max, ic_min, ic_max,
                 );
+                // NP4 go/no-go (R5): per-row fill cost (all interps of one row),
+                // per fill call. Row-0 total f0 gates the parent-assist: with
+                // rows=5 and F-W = (worker-walk)/3 per column, p=1 gain =
+                // min(f0, (F-W)-f0) per hidden fill — GO iff 3*(0.795-f0) >= 0.70.
+                if fill_calls > 0 {
+                    let mut row_line = String::new();
+                    for r in 0..rows_seen {
+                        let mut row_total = 0u64;
+                        for id in 0..interps.min(ip::N2_UNIT_LEN) {
+                            let idx = r * interps + id;
+                            if idx < ip::N2_UNIT_LEN {
+                                row_total += ip::N2_UNIT_NANOS[idx].load(R)
+                                    - n2_units_before.0[idx];
+                            }
+                        }
+                        row_line.push_str(&format!(
+                            "row[{r}]={:.3}",
+                            row_total as f64 / fill_calls as f64 / 1e6
+                        ));
+                        row_line.push(' ');
+                    }
+                    eprintln!("[N2-probe] unit per-row ms/fill (all interps, unit-clock incl. overhead): {row_line}");
+                }
             }
         }
     }

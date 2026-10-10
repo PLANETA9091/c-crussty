@@ -84,7 +84,10 @@ NP1 noise-parallel (below — biggest), SUB1 substance/interp kernel share,
 L4 y-corner SoA (borderline). Anything skipping work must be bit-exact;
 gate-p2 decides.
 
-## H1 [HYBRID MEASUREMENT] [ ]
+## H1 [HYBRID MEASUREMENT] [!]
+BLOCKED: no Java hybrid E2E rig on this sandbox (JAVA_WARM_* are model
+constants; the mod harness + fixed 1024-chunk Java region bench do not
+exist here). Unblocks when a rig with the Java side is available.
 The 3.32x figure is a model (unported stages at 1x, incl. jvm_other 48.9 ms).
 Measure the real hybrid: same machine, fixed 1024-chunk region (the E2E region
 bench exists), pure Java vs native-then-Java-completion, world restored
@@ -177,6 +180,11 @@ bar KEEP; target noise <= 12 REACHED. N3 probe: walk 6.686 worker 9.132
 join_block 2.695 -> exposed residual 2.519 ms/chunk -> NP4 assist queued.
 
 ## SUB1 [SUBSTANCE+INTERP kernel share] [ ]
+PIPELINE NOTE (2026-10-11): under mode2 the noise wall is worker-bound
+(F > W on quiet rig), so walk-side substance cuts have ~0 wall leverage —
+SUB1 serves the SERIAL default path (mode0, substance ~2.1 of 16.68) and
+re-enters the pipeline ladder only after NP5 lands or when F <= W. Order:
+run AFTER NP5.
 HYP: substance final_density fill 3.16 ms COARSE / ~2.1 clean (98,304
 elems, 3,840 visits/chunk) is dominated by per-element 8-corner
 interpolation arithmetic + cache reads (dispatch already array-wise); a
@@ -220,7 +228,7 @@ ms/column + walk-wall ms/column (N2_* clocks extended); fix only if
 hideable window >= 0.70 ms (5% of noise 14.02). Target: noise <= 12
 ms/chunk. Effort: high.
 
-## NP4 [PIPELINE PARENT-ASSIST, recover exposed fill residual] [ ]
+## NP4 [PIPELINE PARENT-ASSIST, recover exposed fill residual] [x]
 HYP: N3 probe shows worker fill (9.132 ms/chunk) > walk (6.686): parent
 idles 2.519 ms/chunk at h.join() (exact per-scope residual). Parent-assist:
 before walking column k the parent runs p prefix rows of the hidden fill
@@ -232,3 +240,35 @@ to a rows range; merge is phase-1-proven delta-sum). Probe FIRST (R5): N3
 residual clock already exact (2.519 on 64-ch probe); re-measure paired on
 quiet rig; fix only if residual >= 0.70 ms paired. I2: unchanged protocol.
 Target: noise <= 10.5 ms/chunk. Effort: medium.
+
+PROBE FALSIFIED (2026-10-11, this commit: N2 per-row unit print, R5 gate
+run BEFORE any fix code): quiet rig x2 (64ch mode2): walk 6.584/7.054,
+worker 8.971/9.519 (ratio 1.346-1.363, 4th+5th independent reproduction),
+exposed residual 2.410/2.546. f0 = row-0 fill cost (all 8 interps) =
+1.810/2.001 ms/chunk over 5 fill executions per chunk = 0.724-0.800 ms/fill;
+unit-clock overhead ~0 (unit sum 17.191 == rows sum 17.20 ms/chunk
+cross-check). F-W = 0.778-0.822 ms/column -> p=1 wall gain = (F-W) - f0 =
+0.054/0.022 ms/column = 0.02-0.16 ms/chunk over 3 hidden fills << R2 bar
+0.70 (also < strict 5% = 0.57). p>=2 regresses (prefix 1.5+ ms > window).
+Sub-row split REJECTED on correctness: boundary-row halves share one aic ->
+CacheOnce array-memo len-mismatch (assert) or epoch divergence; whole rows
+are the only safe granularity and one row (0.72-0.80) > the whole F-W
+window (0.78-0.82). Residual is real but not harvestable at row granularity
+-> NP4 CLOSED per R2 (arithmetic falsification, NP2/df28217 precedent).
+PIPELINE ECONOMICS (carried forward): mode2 is worker-bound (F > W), so
+WALK-side cuts (SUB1 substance) have ~0 wall leverage while F > W;
+WORKER fill-kernel speedups convert ~1:1 into wall (window F-W = 2.33-2.77
+ms/chunk) -> NP5 opened, SUB1 re-ordered below it.
+
+## NP5 [FILL-KERNEL SPEEDUP UNDER PIPELINE, worker-side wall leverage] [ ]
+HYP: mode2 is worker-bound (F = 3.025-3.173 vs W = 2.247-2.351 ms/column,
+quiet rig x2): the 3 overlapped columns contribute 3xF wall, so worker
+fill-kernel speedups land ~1:1 on noise (window F-W = 2.33-2.77 ms/chunk) —
+unlike pre-pipeline where they were Amdahl-diluted. interp[0] = 87.9% of
+fill unit mass (N2 unit table x2 runs) = wrapped per-element scalar compute;
+L4 SoA y-corner batching was gated pre-pipeline at ceiling 0.8-0.9 ms = AT
+bar, now converts fully while F > W. Probe FIRST (R5): re-measure the L4
+premise under mode2 (slice-fill kernel share via existing unit clocks +
+scoped arm prototype in an isolated worktree, byte-identical A/B stagediff +
+paired ledger x2); implement only if projected paired gain >= 0.70 ms.
+Target: noise <= 10.5 ms/chunk. Effort: medium-high.
