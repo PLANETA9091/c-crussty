@@ -179,7 +179,7 @@ mode2 11.93/11.47 noise, PORTED 15.36-15.81, paired gain +2.3-2.8 >= 0.70
 bar KEEP; target noise <= 12 REACHED. N3 probe: walk 6.686 worker 9.132
 join_block 2.695 -> exposed residual 2.519 ms/chunk -> NP4 assist queued.
 
-## SUB1 [SUBSTANCE+INTERP kernel share] [ ]
+## SUB1 [SUBSTANCE+INTERP kernel share] [~]
 PIPELINE NOTE (2026-10-11): under mode2 the noise wall is worker-bound
 (F > W on quiet rig), so walk-side substance cuts have ~0 wall leverage —
 SUB1 serves the SERIAL default path (mode0, substance ~2.1 of 16.68) and
@@ -195,6 +195,39 @@ I2-safe (same ops per element). Probe: ncf_profile exclusive-time split
 substance fill; gate the SoA rework ONLY if the arithmetic share >= 1.2 ms
 (5% of noise stage). Target: substance <= 1.5 ms clean. Effort: high —
 run only after NP1 lands or is falsified.
+PROBE LANDED (2026-10-11, this commit: SUB1 probe clocks cfg ncf_profile
++ NCF_SUB1_PROBE gate — 10 scope statics tiling the N1_FILL_NANOS envelope
+pairwise-disjointly (N2 unit-clock precedent) + 2 expect-0 counters;
+sub1-research agent mapped the tree FIRST per owner order: vanilla fd top
+= Add(fd,Beardifier) -> Min -> Mapped(squeeze) -> MulOrAdd(0.64, interp0),
+so the interp0 trilerp lives in the `_`-arm fillAllDirectly of MulOrAdd,
+NOT the Interp fill_array arm; Beardifier pfd = zero-lerp dispatch-floor
+control, mulora-beard per element = the harvestable trilerp share).
+EVIDENCE (64ch mode0 x2, profile build): E = 3.338/3.260 probe-scale
+(2.19/2.14 clean via s = 16.71/25.45 = 0.657 — matches the ed9a255
+3.16-COARSE/~2.1-clean precedent); squeeze 0.149/0.145, add 0.034/0.034,
+min_loop 1.314/1.280, mulora_pfd 1.082/1.049, beard_pfd 0.564/0.555
+(5.7/5.6 ns/elem), interp_pfd 0, pfd_other 0, mul/max/rc 0 — vanilla
+shape EXACTLY as researched; noise_leaves = 0 AND cachewraps = 0
+(premises verified: no ImprovedNoise, no cache wrapper inside the fill);
+cross-check sum(scopes) 3.142/3.063 vs E (residual 5.9/6.0% =
+dispatch+scratch+probe). VERDICT: ARITH_HIGH 2.578/2.508 -> 1.69/1.65
+clean; ARITH_LOW 1.451/1.399 -> 0.95/0.92 clean. BAND vs the written 1.2
+gate (HIGH passes, LOW fails) -> per the pre-committed template decide on
+GATE_HIGH -> GO on the full-chain SoA track. Honest notes: (a) the written
+1.2 gate = 5% of PRE-NP noise ~24; the live R2 5% bar for mode0 = 0.834
+and even conservative LOW 0.92-0.95 exceeds it; (b) LOW subtracts the FULL
+beard floor from both mixed scopes — right for a kernel-only partial
+rewrite (n1-arms precedent, sub-bar), but a FULL-CHAIN SoA rewrite of the
+fd top also removes the per-element dispatch itself (beard 0.37 + residual
+0.13 clean + in-scope dispatch), so the realistic harvest window is
+~1.0-1.7 clean = 6-10% of mode0 noise = 2-3x the R2 bar. NEXT (one step
+per tick): full-chain SoA design research FIRST (vanilla-shape detection
+at wrap time; batched kernels: corners-shared trilerp + rc lane-select +
+noodle lane-select + squeeze/min/add; I2 = identical per-element op
+sequence, no gather), then worktree prototype, stagediff 4/4 + paired
+mode0 ledger x2; land only if >= 5% of stage. mode2 leverage stays ~0
+while F > W — serves mode0 (default) only.
 
 ## NP2 [NOISE-PARALLEL PHASE 2, persistent workers + dynamic partition] [x]
 HYP: phase-1 NP1 leaves 4 of 5 spawn pairs per chunk and a fixed 3/2 heavy-row

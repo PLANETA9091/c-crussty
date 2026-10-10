@@ -1443,7 +1443,11 @@ thread_local! {
 #[cfg(ncf_profile)]
 #[inline]
 fn n1_slice_leaf_tick(y_free: bool) {
-    if N1_IN_SLICE_FILL.with(|c| c.get()) {
+    if N1_IN_SUBSTANCE_FILL.with(|c| c.get()) {
+        // SUB1: a noise leaf inside the substance fill would break the
+        // "no ImprovedNoise behind the fd top tree" premise — count it.
+        SUB_NOISE_LEAF_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    } else if N1_IN_SLICE_FILL.with(|c| c.get()) {
         if y_free {
             N1_SLICE_LEAF_YFREE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         } else {
@@ -1458,6 +1462,100 @@ fn n1_slice_leaf_tick(y_free: bool) {
 #[cfg(ncf_profile)]
 thread_local! {
     static N1_IN_SUBSTANCE_FILL: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+// --------------------------------------------------------------------------
+// SUB1 probe clocks (cfg ncf_profile only, env gate NCF_SUB1_PROBE=1) — the
+// exclusive-time interior split of the substance (final_density) fill. The
+// scopes tile the N1_FILL_NANOS envelope (select_cell_yz fill_array on
+// root_fields[11]) pairwise-disjointly — no clock nests inside another, so
+// sum(scopes) <= E and the difference is dispatch+scratch+probe overhead
+// (N2 unit-clock precedent: accumulate per call-site scope, never self-time).
+// Vanilla overworld fd top tree = Add(fd, Beardifier) -> Min ->
+// Mapped(squeeze) -> MulOrAdd(0.64, interp0-chain), plus the per-element
+// noodle chain via Min's compute_for_index; the interp0 trilerp therefore
+// runs inside the `_`-arm fillAllDirectly of MulOrAdd (NOT the Interp
+// fill_array arm — that one is 0 on vanilla, kept for other templates):
+//   SUB_SQUEEZE_NANOS    — Mapped transform loop (pure float)
+//   SUB_ADD_NANOS        — Ap2::Add add loop (pure float)
+//   SUB_MIN_NANOS        — Ap2::Min loop (mixed: per-element noodle/interp2
+//                          compute_for_index + compare)
+//   SUB_MUL/MAX/RC_NANOS — defensive; not visited by the vanilla fd tree
+//   SUB_MULORA_NANOS     — `_`-arm pfd for MulOrAdd (per-element interp0
+//                          trilerp + mul: the arithmetic mass)
+//   SUB_BEARD_NANOS      — `_`-arm pfd for Beardifier: the ZERO-LERP
+//                          dispatch-floor control (same pfd shape, trivial
+//                          compute) — mulora - beard per element = the
+//                          harvestable trilerp share
+//   SUB_PFD_INTERP_NANOS — Interp-arm pfd under filling_cell (0 on vanilla)
+//   SUB_PFD_OTHER_NANOS  — CellCache/FlatCache arm + other `_` kinds
+//   SUB_NOISE_LEAF_CALLS / SUB_CACHEWRAP_CALLS — expect 0 (all ImprovedNoise
+//                          and cache wrappers sit behind interp inners =
+//                          slice-fill territory; verifying keeps the R5
+//                          verdict honest)
+// Verdict (R5): ARITH_HIGH = all scopes except beard; ARITH_LOW = squeeze +
+// add + mul/max/rc + max(0, min - beard) + max(0, mulora - beard); scale by
+// s = clean/probe-build noise stage before the 1.2 ms worklist gate.
+#[cfg(ncf_profile)]
+pub static SUB_SQUEEZE_NANOS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_ADD_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_MIN_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_MUL_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_MAX_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_RC_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_MULORA_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_BEARD_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_PFD_INTERP_NANOS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_PFD_OTHER_NANOS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_NOISE_LEAF_CALLS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static SUB_CACHEWRAP_CALLS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+
+#[cfg(ncf_profile)]
+static SUB1_PROBE_GATE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+
+/// SUB1 clock gate: env-enabled AND inside the substance fill (TLS marker).
+#[cfg(ncf_profile)]
+#[inline]
+fn sub1_active() -> bool {
+    *SUB1_PROBE_GATE.get_or_init(|| std::env::var("NCF_SUB1_PROBE").as_deref() == Ok("1"))
+        && N1_IN_SUBSTANCE_FILL.with(|c| c.get())
+}
+
+#[cfg(ncf_profile)]
+#[inline]
+fn sub1_t0() -> Option<std::time::Instant> {
+    if sub1_active() {
+        Some(std::time::Instant::now())
+    } else {
+        None
+    }
+}
+
+#[cfg(ncf_profile)]
+#[inline]
+fn sub1_t_end(t: Option<std::time::Instant>, clock: &std::sync::atomic::AtomicU64) {
+    if let Some(t0) = t {
+        clock.fetch_add(
+            t0.elapsed().as_nanos() as u64,
+            std::sync::atomic::Ordering::Relaxed,
+        );
+    }
 }
 
 // --------------------------------------------------------------------------
@@ -1812,6 +1910,10 @@ impl<'a> NoiseChunkSim<'a> {
                     }
                 }
                 WKind::FlatCacheW(id) => {
+                    #[cfg(ncf_profile)]
+                    if sub1_active() {
+                        SUB_CACHEWRAP_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    }
                     let (qx, qz) = (ctx.x.div_euclid(4), ctx.z.div_euclid(4));
                     let i = qx - self.first_noise_x;
                     let i1 = qz - self.first_noise_z;
@@ -1828,6 +1930,10 @@ impl<'a> NoiseChunkSim<'a> {
                     }
                 }
                 WKind::Cache2DW(id) => {
+                    #[cfg(ncf_profile)]
+                    if sub1_active() {
+                        SUB_CACHEWRAP_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    }
                     let packed = chunk_as_long(ctx.x, ctx.z);
                     if self.cache2ds[*id].last_pos2d == packed {
                         self.cache2ds[*id].last_value
@@ -1841,6 +1947,10 @@ impl<'a> NoiseChunkSim<'a> {
                     }
                 }
                 WKind::CacheOnceW(id) => {
+                    #[cfg(ncf_profile)]
+                    if sub1_active() {
+                        SUB_CACHEWRAP_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    }
                     if !ctx.in_chunk {
                         let inner = self.cacheonces[*id].inner;
                         return self.compute(inner, ctx);
@@ -1864,6 +1974,10 @@ impl<'a> NoiseChunkSim<'a> {
                     v
                 }
                 WKind::CellCacheW(id) => {
+                    #[cfg(ncf_profile)]
+                    if sub1_active() {
+                        SUB_CACHEWRAP_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    }
                     if !ctx.in_chunk {
                         let inner = self.cell_caches[*id].inner;
                         return self.compute(inner, ctx);
@@ -1998,21 +2112,31 @@ impl<'a> NoiseChunkSim<'a> {
                     doubles.clear();
                     doubles.resize(array.len(), 0.0);
                     self.fill_array(*a2, &mut doubles, provider);
+                    #[cfg(ncf_profile)]
+                    let sub1_t = sub1_t0();
                     for i in 0..array.len() {
                         array[i] += doubles[i];
                     }
+                    #[cfg(ncf_profile)]
+                    sub1_t_end(sub1_t, &SUB_ADD_NANOS);
                     self.ap2_scratch = doubles;
                 }
                 Ap2Type::Mul => {
                     self.fill_array(*a1, array, provider);
+                    #[cfg(ncf_profile)]
+                    let sub1_t = sub1_t0();
                     for i1 in 0..array.len() {
                         let d = array[i1];
                         array[i1] = if d == 0.0 { 0.0 } else { d * self.compute_for_index(*a2, i1, provider) };
                     }
+                    #[cfg(ncf_profile)]
+                    sub1_t_end(sub1_t, &SUB_MUL_NANOS);
                 }
                 Ap2Type::Min => {
                     let d1 = f64::from_bits(*a2_min);
                     self.fill_array(*a1, array, provider);
+                    #[cfg(ncf_profile)]
+                    let sub1_t = sub1_t0();
                     for i2 in 0..array.len() {
                         let d2 = array[i2];
                         array[i2] = if d2 < d1 {
@@ -2021,10 +2145,14 @@ impl<'a> NoiseChunkSim<'a> {
                             mth::java_min(d2, self.compute_for_index(*a2, i2, provider))
                         };
                     }
+                    #[cfg(ncf_profile)]
+                    sub1_t_end(sub1_t, &SUB_MIN_NANOS);
                 }
                 Ap2Type::Max => {
                     let d1 = f64::from_bits(*a2_max);
                     self.fill_array(*a1, array, provider);
+                    #[cfg(ncf_profile)]
+                    let sub1_t = sub1_t0();
                     for i2 in 0..array.len() {
                         let d2 = array[i2];
                         array[i2] = if d2 > d1 {
@@ -2033,16 +2161,24 @@ impl<'a> NoiseChunkSim<'a> {
                             mth::java_max(d2, self.compute_for_index(*a2, i2, provider))
                         };
                     }
+                    #[cfg(ncf_profile)]
+                    sub1_t_end(sub1_t, &SUB_MAX_NANOS);
                 }
             },
             WNode::Mapped { ty, input } => {
                 self.fill_array(*input, array, provider);
+                #[cfg(ncf_profile)]
+                let sub1_t = sub1_t0();
                 for i in 0..array.len() {
                     array[i] = self.mapped_transform(*ty, array[i]);
                 }
+                #[cfg(ncf_profile)]
+                sub1_t_end(sub1_t, &SUB_SQUEEZE_NANOS);
             }
             WNode::RangeChoice { input, min, max, in_range, out_of_range } => {
                 self.fill_array(*input, array, provider);
+                #[cfg(ncf_profile)]
+                let sub1_t = sub1_t0();
                 for i in 0..array.len() {
                     let d = array[i];
                     array[i] = if d >= f64::from_bits(*min) && d < f64::from_bits(*max) {
@@ -2051,6 +2187,8 @@ impl<'a> NoiseChunkSim<'a> {
                         self.compute_for_index(*out_of_range, i, provider)
                     };
                 }
+                #[cfg(ncf_profile)]
+                sub1_t_end(sub1_t, &SUB_RC_NANOS);
             }
             WNode::W(WKind::CacheOnceW(id)) => {
                 let counter_hit = self.cacheonces[*id]
@@ -2090,16 +2228,40 @@ impl<'a> NoiseChunkSim<'a> {
             }
             WNode::W(WKind::Interp(id)) => {
                 if self.filling_cell {
+                    #[cfg(ncf_profile)]
+                    let sub1_t = sub1_t0();
                     self.provider_fill_all_directly(w, array, provider);
+                    #[cfg(ncf_profile)]
+                    sub1_t_end(sub1_t, &SUB_PFD_INTERP_NANOS);
                 } else {
                     let inner = self.interpolators[*id].inner;
                     self.fill_array(inner, array, provider);
                 }
             }
             WNode::W(WKind::CellCacheW(_)) | WNode::W(WKind::FlatCacheW(_)) => {
+                #[cfg(ncf_profile)]
+                let sub1_t = sub1_t0();
                 self.provider_fill_all_directly(w, array, provider);
+                #[cfg(ncf_profile)]
+                sub1_t_end(sub1_t, &SUB_PFD_OTHER_NANOS);
             }
-            _ => self.provider_fill_all_directly(w, array, provider),
+            _ => {
+                #[cfg(ncf_profile)]
+                let sub1_t = sub1_t0();
+                self.provider_fill_all_directly(w, array, provider);
+                #[cfg(ncf_profile)]
+                {
+                    // Node-kind routing: Beardifier = zero-lerp dispatch-floor
+                    // control; MulOrAdd = the per-element interp0 trilerp mass.
+                    if matches!(node, WNode::Beardifier) {
+                        sub1_t_end(sub1_t, &SUB_BEARD_NANOS);
+                    } else if matches!(node, WNode::MulOrAdd { .. }) {
+                        sub1_t_end(sub1_t, &SUB_MULORA_NANOS);
+                    } else {
+                        sub1_t_end(sub1_t, &SUB_PFD_OTHER_NANOS);
+                    }
+                }
+            }
         }
     }
 

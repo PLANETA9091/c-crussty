@@ -132,6 +132,28 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         (nanos, icd)
     };
 
+    // SUB1 probe snapshot (after warmup, before the corpus) — substance-fill
+    // interior split (see the SUB1 block in interpolator.rs).
+    #[cfg(ncf_profile)]
+    let sub1_before = (
+        chunk_factory::interpolator::SUB_SQUEEZE_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_ADD_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_MIN_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_MUL_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_MAX_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_RC_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_MULORA_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_BEARD_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_PFD_INTERP_NANOS
+            .load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_PFD_OTHER_NANOS
+            .load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_NOISE_LEAF_CALLS
+            .load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::SUB_CACHEWRAP_CALLS
+            .load(std::sync::atomic::Ordering::Relaxed),
+    );
+
     // N3 probe snapshot (after warmup, before the corpus) — NP3 pipelined
     // drive overlap split (all zero unless NCF_PAR_FILL=2).
     #[cfg(ncf_profile)]
@@ -284,6 +306,63 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
             ydep / (n as u64).max(1),
             yfree / (n as u64).max(1),
             100.0 * ydep as f64 / (ydep + yfree).max(1) as f64,
+        );
+    }
+    // SUB1 probe (R5): exclusive-time interior split of the substance fill.
+    // Scopes tile the N1_FILL_NANOS envelope pairwise-disjointly; the
+    // Beardifier pfd is the zero-lerp dispatch-floor control for the MulOrAdd
+    // (interp0 trilerp) scope. Verdict arithmetic vs the 1.2 ms worklist gate
+    // happens offline (scale s = clean/probe-build noise stage).
+    #[cfg(ncf_profile)]
+    if std::env::var("NCF_SUB1_PROBE").is_ok() {
+        use std::sync::atomic::Ordering::Relaxed as R;
+        use chunk_factory::interpolator as ip;
+        let (sq0, ad0, mn0, mu0, mx0, rc0, mo0, bd0, pi0, po0, nl0, cw0) = sub1_before;
+        let g = |a: &std::sync::atomic::AtomicU64, b: u64| a.load(R) - b;
+        let ms = |nanos: u64| nanos as f64 / n as f64 / 1e6;
+        let sq = g(&ip::SUB_SQUEEZE_NANOS, sq0);
+        let ad = g(&ip::SUB_ADD_NANOS, ad0);
+        let mn = g(&ip::SUB_MIN_NANOS, mn0);
+        let mu = g(&ip::SUB_MUL_NANOS, mu0);
+        let mx = g(&ip::SUB_MAX_NANOS, mx0);
+        let rc = g(&ip::SUB_RC_NANOS, rc0);
+        let mo = g(&ip::SUB_MULORA_NANOS, mo0);
+        let bd = g(&ip::SUB_BEARD_NANOS, bd0);
+        let pi = g(&ip::SUB_PFD_INTERP_NANOS, pi0);
+        let po = g(&ip::SUB_PFD_OTHER_NANOS, po0);
+        let nl = g(&ip::SUB_NOISE_LEAF_CALLS, nl0);
+        let cw = g(&ip::SUB_CACHEWRAP_CALLS, cw0);
+        let env = g(&ip::N1_FILL_NANOS, n1_before.6);
+        let elems = g(&ip::N1_FILL_ELEMS, n1_before.5);
+        let env_ms = ms(env);
+        let sum_ms = ms(sq + ad + mn + mu + mx + rc + mo + bd + pi + po);
+        let arith_high = ms(sq + ad + mn + mu + mx + rc + mo + pi + po);
+        let arith_low =
+            ms(sq + ad + mu + mx + rc + mn.saturating_sub(bd) + mo.saturating_sub(bd));
+        eprintln!(
+            "[SUB1-probe] interior split ms/chunk: envelope E = {env_ms:.3} | squeeze = {:.3} add = {:.3} min_loop = {:.3} | mulora_pfd = {:.3} beard_pfd = {:.3} (floor ctrl) | interp_pfd = {:.3} pfd_other = {:.3} | mul/max/rc = {:.3}/{:.3}/{:.3}",
+            ms(sq),
+            ms(ad),
+            ms(mn),
+            ms(mo),
+            ms(bd),
+            ms(pi),
+            ms(po),
+            ms(mu),
+            ms(mx),
+            ms(rc),
+        );
+        eprintln!(
+            "[SUB1-probe] counts/chunk: noise_leaves = {} (expect 0) cachewraps = {} (expect 0) elems = {} | beard floor = {:.1} ns/elem | cross-check: sum(scopes) = {sum_ms:.3} vs E = {env_ms:.3} (residual = {:.3} = {:.1}%)",
+            nl / (n as u64).max(1),
+            cw / (n as u64).max(1),
+            elems / (n as u64).max(1),
+            bd as f64 / (elems as f64).max(1.0),
+            (env_ms - sum_ms).max(0.0),
+            100.0 * (env_ms - sum_ms).max(0.0) / env_ms.max(1e-9),
+        );
+        eprintln!(
+            "[SUB1-probe] ARITH_HIGH = {arith_high:.3} ARITH_LOW = {arith_low:.3} ms/chunk PROBE-BUILD scale (mulora+min_loop hold the trilerp mass; scale s = clean/probe before gate 1.200 worklist / 0.834 = 5% of mode0 noise 16.68)",
         );
     }
     // N2 probe (NP2 go/no-go, standing order R5): parallel fill_slice split.
