@@ -93,6 +93,10 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         chunk_factory::interpolator::N1_FILL_NODE_VISITS.load(std::sync::atomic::Ordering::Relaxed),
         chunk_factory::interpolator::N1_FILL_ELEMS.load(std::sync::atomic::Ordering::Relaxed),
         chunk_factory::interpolator::N1_FILL_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N1_SLICE_NANOS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N1_SLICE_LEAF_YDEP.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N1_SLICE_LEAF_YFREE.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N1_DRIVE_NANOS.load(std::sync::atomic::Ordering::Relaxed),
     );
 
     let mut acc = [0f64; 4]; // noise, surface, carvers, serialization
@@ -198,7 +202,7 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
     #[cfg(ncf_profile)]
     if std::env::var("NCF_N1_PROBE").is_ok() {
         use std::sync::atomic::Ordering::Relaxed as R;
-        let (c0, n0, th0, tm0, v0, e0, fn0) = n1_before;
+        let (c0, n0, th0, tm0, v0, e0, fn0, sl0, yd0, yf0, dr0) = n1_before;
         let g = |a: &std::sync::atomic::AtomicU64, b: u64| a.load(R) - b;
         let calls = g(&chunk_factory::noise::N1_PERLIN_CALLS, c0);
         let nanos = g(&chunk_factory::noise::N1_PERLIN_NANOS, n0);
@@ -209,6 +213,10 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         let visits = g(&chunk_factory::interpolator::N1_FILL_NODE_VISITS, v0);
         let elems = g(&chunk_factory::interpolator::N1_FILL_ELEMS, e0);
         let fill_ms = g(&chunk_factory::interpolator::N1_FILL_NANOS, fn0) as f64 / n as f64 / 1e6;
+        let slice_ms = g(&chunk_factory::interpolator::N1_SLICE_NANOS, sl0) as f64 / n as f64 / 1e6;
+        let ydep = g(&chunk_factory::interpolator::N1_SLICE_LEAF_YDEP, yd0);
+        let yfree = g(&chunk_factory::interpolator::N1_SLICE_LEAF_YFREE, yf0);
+        let drive_ms = g(&chunk_factory::interpolator::N1_DRIVE_NANOS, dr0) as f64 / n as f64 / 1e6;
         eprintln!(
             "[N1-probe] perlin-core {perlin_ms:.3} ms/chunk of noise-stage {noise_ms:.3} = {:.1}% | calls/chunk = {} | tree-walk+biomes+rest = {:.3} ms/chunk (probe clock-pairs inflate slices)",
             100.0 * perlin_ms / noise_ms.max(1e-9),
@@ -222,6 +230,12 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
             th / (n as u64).max(1),
             tm / (n as u64).max(1),
             100.0 * th as f64 / (th + tm).max(1) as f64,
+        );
+        eprintln!(
+            "[N1-probe] slice fills = {slice_ms:.3} ms/chunk COARSE | drive_blocks total = {drive_ms:.3} ms/chunk COARSE (drive includes substance+slice fills, subtract) | slice leaf calls/chunk: ydep = {} yfree = {} (ydep share = {:.1}%)",
+            ydep / (n as u64).max(1),
+            yfree / (n as u64).max(1),
+            100.0 * ydep as f64 / (ydep + yfree).max(1) as f64,
         );
     }
     let ported_total: f64 = per.iter().sum();

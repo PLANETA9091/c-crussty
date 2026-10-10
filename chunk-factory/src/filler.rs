@@ -425,6 +425,8 @@ pub fn generate_noise_chunk_with_beardifier(
     let skip_drive = cfg!(ncf_profile) && std::env::var("NCF_SKIP_DRIVE").is_ok();
     let skip_biome = cfg!(ncf_profile) && std::env::var("NCF_SKIP_BIOME").is_ok();
     if !skip_drive {
+    #[cfg(ncf_profile)]
+    let n1_drive_t0 = std::time::Instant::now();
     sim.drive_blocks(&mut |bx: i32, by: i32, bz: i32, sim: &mut NoiseChunkSim| {
         // substance = cacheAllInCell(finalDensity + BeardifierMarker) — the
         // per-cell batch-filled cache (selectCellYZ), read at this block.
@@ -477,6 +479,11 @@ pub fn generate_noise_chunk_with_beardifier(
             post_processing[sec_idx].push(packed);
         }
     });
+    #[cfg(ncf_profile)]
+    crate::interpolator::N1_DRIVE_NANOS.fetch_add(
+        n1_drive_t0.elapsed().as_nanos() as u64,
+        std::sync::atomic::Ordering::Relaxed,
+    );
     } // end skip_drive
 
     // Biome quarts (fillBiomesFromNoise): per section, 4x4x4 quarts, order

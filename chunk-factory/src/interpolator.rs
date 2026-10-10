@@ -1296,6 +1296,37 @@ pub static N1_FILL_NODE_VISITS: std::sync::atomic::AtomicU64 =
 pub static N1_FILL_ELEMS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 #[cfg(ncf_profile)]
 pub static N1_FILL_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+// N1 probe (R3-N1B): slice-fill decomposition — COARSE clock around the
+// whole fill_slice (5-10 calls/chunk, no inflation), leaf-call counters
+// split y-free (tile-cacheable, node_flags==2) vs y-dependent (the SoA
+// batchable mass), and a coarse clock around the whole drive_blocks call
+// (filler.rs, 1 call/chunk). Decision rule (worklist N1): L4 slice-leaf
+// SoA batching is alive iff SLICE_NANOS >= ~2.5 ms AND YDEP leaves are a
+// major share of noise-leaf calls.
+#[cfg(ncf_profile)]
+pub static N1_SLICE_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N1_SLICE_LEAF_YDEP: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N1_SLICE_LEAF_YFREE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N1_DRIVE_NANOS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+thread_local! {
+    static N1_IN_SLICE_FILL: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+/// N1 leaf tick on the slice-fill path (probe only).
+#[cfg(ncf_profile)]
+#[inline]
+fn n1_slice_leaf_tick(y_free: bool) {
+    if N1_IN_SLICE_FILL.with(|c| c.get()) {
+        if y_free {
+            N1_SLICE_LEAF_YFREE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        } else {
+            N1_SLICE_LEAF_YDEP.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+    }
+}
 
 // Substance-fill phase marker (probe only): true exactly while the
 // select_cell_yz substance fill walks the tree. thread_local — like FDEPTH —
@@ -1460,24 +1491,36 @@ impl<'a> NoiseChunkSim<'a> {
                 f64::from_bits(*from_value),
                 f64::from_bits(*to_value),
             ),
-            WNode::Noise(idx, xz, ys) => self.bank.noises[*idx].get_value(
-                ctx.x as f64 * f64::from_bits(*xz),
-                ctx.y as f64 * f64::from_bits(*ys),
-                ctx.z as f64 * f64::from_bits(*xz),
-            ),
+            WNode::Noise(idx, xz, ys) => {
+                #[cfg(ncf_profile)]
+                n1_slice_leaf_tick(template.node_flags[w] == 2);
+                self.bank.noises[*idx].get_value(
+                    ctx.x as f64 * f64::from_bits(*xz),
+                    ctx.y as f64 * f64::from_bits(*ys),
+                    ctx.z as f64 * f64::from_bits(*xz),
+                )
+            }
             WNode::ShiftedNoise { sx, sy, sz, xz, ys, noise } => {
+                #[cfg(ncf_profile)]
+                n1_slice_leaf_tick(template.node_flags[w] == 2);
                 let d = ctx.x as f64 * f64::from_bits(*xz) + self.compute(*sx, ctx);
                 let d1 = ctx.y as f64 * f64::from_bits(*ys) + self.compute(*sy, ctx);
                 let d2 = ctx.z as f64 * f64::from_bits(*xz) + self.compute(*sz, ctx);
                 self.bank.noises[*noise].get_value(d, d1, d2)
             }
             WNode::ShiftA(idx) => {
+                #[cfg(ncf_profile)]
+                n1_slice_leaf_tick(template.node_flags[w] == 2);
                 self.bank.noises[*idx].get_value(ctx.x as f64 * 0.25, 0.0, ctx.z as f64 * 0.25) * 4.0
             }
             WNode::ShiftB(idx) => {
+                #[cfg(ncf_profile)]
+                n1_slice_leaf_tick(template.node_flags[w] == 2);
                 self.bank.noises[*idx].get_value(ctx.z as f64 * 0.25, ctx.x as f64 * 0.25, 0.0) * 4.0
             }
             WNode::Shift(idx) => {
+                #[cfg(ncf_profile)]
+                n1_slice_leaf_tick(template.node_flags[w] == 2);
                 self.bank.noises[*idx].get_value(ctx.x as f64 * 0.25, ctx.y as f64 * 0.25, ctx.z as f64 * 0.25) * 4.0
             }
             WNode::BlendDensity(i) => self.compute(*i, ctx), // Blender.empty identity
@@ -2108,6 +2151,10 @@ impl<'a> NoiseChunkSim<'a> {
     /// the initializeForFirstCellX call; every advanceCellX fills slice1 and
     /// the column-end swapSlices alternates the physical buffers).
     fn fill_slice(&mut self, is_slice0: bool, start: i32) {
+        #[cfg(ncf_profile)]
+        let n1_t0 = std::time::Instant::now();
+        #[cfg(ncf_profile)]
+        N1_IN_SLICE_FILL.with(|c| c.set(true));
         self.cell_start_block_x = start * self.cell_width;
         self.in_cell_x = 0;
         // R2#3: flat slice storage — a row is the contiguous sub-slice
@@ -2141,6 +2188,14 @@ impl<'a> NoiseChunkSim<'a> {
             }
         }
         self.array_interpolation_counter += 1;
+        #[cfg(ncf_profile)]
+        {
+            N1_IN_SLICE_FILL.with(|c| c.set(false));
+            N1_SLICE_NANOS.fetch_add(
+                n1_t0.elapsed().as_nanos() as u64,
+                std::sync::atomic::Ordering::Relaxed,
+            );
+        }
     }
 
     /// Drive the doFill loop and collect per-block values for every
