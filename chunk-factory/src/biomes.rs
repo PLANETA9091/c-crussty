@@ -12,7 +12,6 @@
 //! All semantics decompiled from Paper 1.21.10 (BiomeManager.java, Biome.java,
 //! Biome$TemperatureModifier.java, LinearCongruentialGenerator.java).
 
-use crate::climate::ParameterList;
 use crate::router::RandomState;
 use crate::sha256::obfuscate_seed;
 use crate::simplex::PerlinSimplexNoise;
@@ -230,8 +229,14 @@ fn get_fiddle(seed: i64) -> f64 {
     (((seed >> 24) & 0x3FF) - 512) as f64 * 8.789_062_5e-4
 }
 
+/// The LCG chain of the reference get_fiddled_distance, stopped after the
+/// third fiddle: 6 LCG steps over the corner quart ints, then 2 seed
+/// re-mixes. The chain consumes ONLY (seed, corner quart x/y/z) — no block
+/// fraction — so it is constant per (corner, quart cell) and is exactly what
+/// the vote-plan memo stores (R3#1). Extracted VERBATIM from the reference
+/// body; the test-only wrapper below re-assembles the line-246 square-sum.
 #[inline]
-fn get_fiddled_distance(seed: i64, x: i32, y: i32, z: i32, x_noise: f64, y_noise: f64, z_noise: f64) -> f64 {
+fn corner_fiddles(seed: i64, x: i32, y: i32, z: i32) -> [f64; 3] {
     let mut l = lcg_next(seed, x as i64);
     l = lcg_next(l, y as i64);
     l = lcg_next(l, z as i64);
@@ -243,7 +248,151 @@ fn get_fiddled_distance(seed: i64, x: i32, y: i32, z: i32, x_noise: f64, y_noise
     let fiddle1 = get_fiddle(l);
     l = lcg_next(l, seed);
     let fiddle2 = get_fiddle(l);
+    [fiddle, fiddle1, fiddle2]
+}
+
+/// REFERENCE implementation (frozen, test-only since the S3 vote-plan memo):
+/// the production path resolves the corner fiddles through VotePlanMemo and
+/// re-runs ONLY this square-sum per block, in exactly this grouping
+/// (f64 + is non-associative — no folding, no reassociation). Kept as the
+/// bit-exactness oracle for the 10^5-position property test and T35; the
+/// fiddles come from corner_fiddles — the chain verbatim — so reference and
+/// memoized operands are the same f64s by construction.
+#[cfg(test)]
+fn get_fiddled_distance(seed: i64, x: i32, y: i32, z: i32, x_noise: f64, y_noise: f64, z_noise: f64) -> f64 {
+    let [fiddle, fiddle1, fiddle2] = corner_fiddles(seed, x, y, z);
     mth::square(z_noise + fiddle2) + mth::square(y_noise + fiddle1) + mth::square(x_noise + fiddle)
+}
+
+// ---------------------------------------------------------------------------
+// R3#1 — the per-(x, z, quart-y) vote-plan memo
+// ---------------------------------------------------------------------------
+
+/// Fixed-seed multiply-rotate hasher for the vote-plan keys (fx-hash style:
+/// h = rotl(h, 5) ^ w; h *= M). Keys are internal quart coords — not
+/// attacker-controlled — and the table is only get/insert-ed (iteration
+/// order never observed), so a deterministic fixed-seed hash is safe and
+/// removes the SipHash cost from ~5-21k vote lookups per chunk.
+#[derive(Default)]
+struct VoteHasher(u64);
+
+impl VoteHasher {
+    #[inline]
+    fn mix(&mut self, w: u64) {
+        self.0 = (self.0.rotate_left(5) ^ w).wrapping_mul(0x517C_C1B7_2722_0A95);
+    }
+}
+
+impl std::hash::Hasher for VoteHasher {
+    #[inline]
+    fn finish(&self) -> u64 {
+        self.0
+    }
+    #[inline]
+    fn write(&mut self, bytes: &[u8]) {
+        for &b in bytes {
+            self.mix(b as u64);
+        }
+    }
+    #[inline]
+    fn write_u8(&mut self, v: u8) {
+        self.mix(v as u64);
+    }
+    #[inline]
+    fn write_i32(&mut self, v: i32) {
+        self.mix(v as u32 as u64);
+    }
+}
+
+/// (i3, i5, i4) -> the 8 corner (fiddle, fiddle1, fiddle2) triples; the
+/// array index is the corner bit pattern i7 = (dx<<2)|(dz<<1)|(dy) exactly
+/// as in the reference vote loop.
+type VotePlanMap = HashMap<(i32, i32, i32), [[f64; 3]; 8], std::hash::BuildHasherDefault<VoteHasher>>;
+
+/// The 8 corner fiddle triples for one vote cell. Within a cell (i3, i4, i5
+/// fixed — the 4x4x4 BLOCKS whose (coord-2)>>2 is constant) the corner quart
+/// ints (i8, i9, i10) take the same 8 (i3|i3+1, i4|i4+1, i5|i5+1)
+/// combinations for EVERY block, and the LCG chain consumes only those ints
+/// plus the seed — so all 24 fiddle values are cell-constants (R3 research
+/// Q2). Only the square-sum operands d4/d5/d6 (the (coord-2)&3 / 4
+/// fractions) vary per block and are NOT memoized.
+fn build_vote_plan(seed: i64, i3: i32, i4: i32, i5: i32) -> [[f64; 3]; 8] {
+    let mut plan = [[0.0f64; 3]; 8];
+    for (i7, slot) in plan.iter_mut().enumerate() {
+        let i8 = if (i7 & 4) == 0 { i3 } else { i3 + 1 };
+        let i9 = if (i7 & 2) == 0 { i4 } else { i4 + 1 };
+        let i10 = if (i7 & 1) == 0 { i5 } else { i5 + 1 };
+        *slot = corner_fiddles(seed, i8, i9, i10);
+    }
+    plan
+}
+
+/// Per-BiomeSource vote-plan memo: kills the redundant 64-LCG chains for the
+/// 64 blocks sharing a quart cell (was ~100ns of dependency-chained integer
+/// math per vote, ~5-21k votes/chunk; ~50x less chain work at equal reuse).
+/// Bit-exactness: integer hoisting only (the wrapping LCG is pure — same
+/// inputs, same wrapping i64s, hence same f64 conversions); the per-block
+/// recombination keeps the exact f64 grouping of the reference —
+/// square(z+f2) + square(y+f1) + square(x+f), left-to-right, NO folding —
+/// with fiddle operands that are the previously recomputed f64s
+/// bit-for-bit. The winner comparison sequence is byte-for-byte the
+/// reference's (strictly-less wins, INFINITY start, index 0 default).
+#[derive(Default)]
+struct VotePlanMemo {
+    /// the zoom seed the plan table was built for — cleared on change (the
+    /// seed is a per-world constant in production; the guard keeps the memo
+    /// correct for ANY caller pattern, incl. the multi-seed property test).
+    seed: i64,
+    plan: VotePlanMap,
+}
+
+impl VotePlanMemo {
+    /// BiomeManager.getBiome winner selection, memoized. Decision logic is
+    /// byte-for-byte the reference vote_best_corner's; only the corner
+    /// fiddle provisioning differs (table lookup vs recomputation).
+    fn vote(&mut self, zoom_seed: i64, x: i32, y: i32, z: i32) -> (i32, i32, i32) {
+        let i = x - 2;
+        let i1 = y - 2;
+        let i2 = z - 2;
+        let i3 = i >> 2;
+        let i4 = i1 >> 2;
+        let i5 = i2 >> 2;
+        let d = (i & 3) as f64 / 4.0;
+        let d1 = (i1 & 3) as f64 / 4.0;
+        let d2 = (i2 & 3) as f64 / 4.0;
+        if self.seed != zoom_seed {
+            self.plan.clear();
+            self.seed = zoom_seed;
+        }
+        let plan = self
+            .plan
+            .entry((i3, i5, i4))
+            .or_insert_with(|| build_vote_plan(zoom_seed, i3, i4, i5));
+        let mut best_idx = 0usize;
+        let mut best = f64::INFINITY;
+        for i7 in 0..8usize {
+            let flag = (i7 & 4) == 0;
+            let flag1 = (i7 & 2) == 0;
+            let flag2 = (i7 & 1) == 0;
+            let d4 = if flag { d } else { d - 1.0 };
+            let d5 = if flag1 { d1 } else { d1 - 1.0 };
+            let d6 = if flag2 { d2 } else { d2 - 1.0 };
+            let [fiddle, fiddle1, fiddle2] = plan[i7];
+            // EXACT reference grouping: square(z+f2) + square(y+f1) +
+            // square(x+f), evaluated left-to-right with the same operands.
+            let fiddled =
+                mth::square(d6 + fiddle2) + mth::square(d5 + fiddle1) + mth::square(d4 + fiddle);
+            // Java: if (!(d3 > fiddledDistance)) continue; -> strictly-less wins
+            if best > fiddled {
+                best_idx = i7;
+                best = fiddled;
+            }
+        }
+        let qx = if (best_idx & 4) == 0 { i3 } else { i3 + 1 };
+        let qy = if (best_idx & 2) == 0 { i4 } else { i4 + 1 };
+        let qz = if (best_idx & 1) == 0 { i5 } else { i5 + 1 };
+        (qx, qy, qz)
+    }
 }
 
 /// The biome-source resolution: quart coords in, biome name out. Backed by
@@ -257,32 +406,64 @@ pub struct BiomeSource<'a> {
     /// bit-gates were validated with (climate::RTree::search).
     memo: Option<usize>,
     cache: HashMap<(i32, i32, i32), String>,
+    /// R3#1: the per-(x, z, quart-y) vote-plan memo (see VotePlanMemo).
+    vote_plan: VotePlanMemo,
+    /// R3#2: per-instance climate column memo threaded into Df::compute_memo
+    /// (density.rs): memoizes every provably y-free climate subtree per
+    /// (x, z) BLOCK column; bit-identical to Df::compute by the density.rs
+    /// equivalence argument — the SAME machinery filler's initial biome
+    /// paint already runs under (filler.rs climate_fields). Keys hold node
+    /// pointers of self.rs, which outlives this instance and interns its
+    /// nodes immutably — no ABA within the per-instance lifetime.
+    climate_memo: crate::density::ColumnMemo,
 }
 
 impl<'a> BiomeSource<'a> {
     pub fn new(rs: &'a RandomState) -> Self {
-        BiomeSource { rs, list: rs.biome_list(), memo: None, cache: HashMap::new() }
+        BiomeSource {
+            rs,
+            list: rs.biome_list(),
+            memo: None,
+            cache: HashMap::new(),
+            vote_plan: VotePlanMemo::default(),
+            climate_memo: HashMap::new(),
+        }
+    }
+
+    /// The shared single-allocation resolution path: on a cache miss one
+    /// String is built for the caller and one clone goes into the cache;
+    /// the vote wrappers hand that SAME String to their caller instead of
+    /// cloning it a second time via `.to_string()` (R4#2 micro). The RTree
+    /// hint chain is untouched — find_value still runs per distinct quart,
+    /// in the same order, with the same (bit-identical) TargetPoint inputs.
+    fn resolve_noise_biome(&mut self, qx: i32, qy: i32, qz: i32) -> String {
+        if let Some(b) = self.cache.get(&(qx, qy, qz)) {
+            return b.clone();
+        }
+        let (bx, by, bz) = (qx * 4, qy * 4, qz * 4);
+        // copy the &'a RandomState out first: the router/bank borrows must
+        // not alias the &mut climate_memo below
+        let rs = self.rs;
+        let r = &rs.router;
+        let bank = &rs.bank;
+        let memo = &mut self.climate_memo;
+        let t = crate::climate::TargetPoint {
+            temperature: crate::climate::quantize_coord(r.temperature.compute_memo(bank, bx, by, bz, memo) as f32),
+            humidity: crate::climate::quantize_coord(r.vegetation.compute_memo(bank, bx, by, bz, memo) as f32),
+            continentalness: crate::climate::quantize_coord(r.continents.compute_memo(bank, bx, by, bz, memo) as f32),
+            erosion: crate::climate::quantize_coord(r.erosion.compute_memo(bank, bx, by, bz, memo) as f32),
+            depth: crate::climate::quantize_coord(r.depth.compute_memo(bank, bx, by, bz, memo) as f32),
+            weirdness: crate::climate::quantize_coord(r.ridges.compute_memo(bank, bx, by, bz, memo) as f32),
+        };
+        let name = self.list.find_value(&t, &mut self.memo).to_string();
+        self.cache.insert((qx, qy, qz), name.clone());
+        name
     }
 
     /// MultiNoiseBiomeSource.getNoiseBiome(quartX, quartY, quartZ): the
     /// sampler takes QUART coords and evaluates at BLOCK coords (T29).
     pub fn get_noise_biome(&mut self, qx: i32, qy: i32, qz: i32) -> String {
-        if let Some(b) = self.cache.get(&(qx, qy, qz)) {
-            return b.clone();
-        }
-        let (bx, by, bz) = (qx * 4, qy * 4, qz * 4);
-        let r = &self.rs.router;
-        let t = crate::climate::TargetPoint {
-            temperature: crate::climate::quantize_coord(r.temperature.compute(&self.rs.bank, bx, by, bz) as f32),
-            humidity: crate::climate::quantize_coord(r.vegetation.compute(&self.rs.bank, bx, by, bz) as f32),
-            continentalness: crate::climate::quantize_coord(r.continents.compute(&self.rs.bank, bx, by, bz) as f32),
-            erosion: crate::climate::quantize_coord(r.erosion.compute(&self.rs.bank, bx, by, bz) as f32),
-            depth: crate::climate::quantize_coord(r.depth.compute(&self.rs.bank, bx, by, bz) as f32),
-            weirdness: crate::climate::quantize_coord(r.ridges.compute(&self.rs.bank, bx, by, bz) as f32),
-        };
-        let name = self.list.find_value(&t, &mut self.memo).to_string();
-        self.cache.insert((qx, qy, qz), name.clone());
-        name
+        self.resolve_noise_biome(qx, qy, qz)
     }
 }
 
@@ -293,8 +474,8 @@ impl<'a> BiomeSource<'a> {
 /// climate sample — the semantics of a NoiseBiomeSource that is the
 /// MultiNoiseBiomeSource itself (structure/spawn probing).
 pub fn get_biome_voted(source: &mut BiomeSource, zoom_seed: i64, x: i32, y: i32, z: i32) -> String {
-    let (qx, qy, qz) = vote_best_corner(zoom_seed, x, y, z);
-    source.get_noise_biome(qx, qy, qz).to_string()
+    let (qx, qy, qz) = source.vote_plan.vote(zoom_seed, x, y, z);
+    source.resolve_noise_biome(qx, qy, qz)
 }
 
 /// ChunkAccess.getNoiseBiome(x, y, z) — the STORED quart read used by the
@@ -355,14 +536,16 @@ pub fn get_biome_voted_region(
 ) -> String {
     #[cfg(ncf_profile)]
     S1_VOTE_CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let (qx, qy, qz) = vote_best_corner(zoom_seed, x, y, z);
+    let (qx, qy, qz) = source.vote_plan.vote(zoom_seed, x, y, z);
     let qy = stored_quart_y(qy, min_section, section_count);
-    source.get_noise_biome(qx, qy, qz).to_string()
+    source.resolve_noise_biome(qx, qy, qz)
 }
 
-/// BiomeManager.getBiome: the 8-corner fiddled-distance vote. Returns the
-/// winning corner's quart coords (the resolver is queried ONCE, for the
-/// winner only — the distances themselves never touch the biome source).
+/// REFERENCE vote (frozen, test-only since the S3 vote-plan memo): the
+/// production path is VotePlanMemo::vote (identical decision logic, hoisted
+/// corner fiddles). Kept VERBATIM as the old-vs-new oracle for the
+/// 10^5-position property test and the T35 region-clamp test.
+#[cfg(test)]
 fn vote_best_corner(zoom_seed: i64, x: i32, y: i32, z: i32) -> (i32, i32, i32) {
     let i = x - 2;
     let i1 = y - 2;
@@ -489,5 +672,124 @@ mod t35_tests {
         let raw_at_y = src.get_noise_biome(fx, 500, fz).to_string();
         let clamped_at_79 = src.get_noise_biome(fx, 79, fz).to_string();
         let _ = (raw_at_y != clamped_at_79); // informational, not a hard gate
+    }
+}
+
+#[cfg(test)]
+mod vote_memo_tests {
+    use super::*;
+    use crate::xoroshiro::Xoroshiro128PlusPlus;
+
+    /// R3#1 bit-exactness property: over 4 seeds x 25_000 = 100_000
+    /// pseudo-random block positions (fixed-seed crate-internal
+    /// xoroshiro128++ — fully deterministic), the memoized vote must
+    /// (a) agree with the reference vote_best_corner on the winning corner
+    /// and (b) reproduce every per-corner fiddled distance BIT-IDENTICALLY
+    /// (f64::to_bits) against the frozen reference get_fiddled_distance.
+    /// One memo instance is reused across the 4 seeds, which also exercises
+    /// the clear-on-seed-change guard (a stale entry would flip bits here).
+    /// Coordinate ranges keep quart cells densely revisited, so the run is
+    /// dominated by the memo-hit path — the same shape as the surface walk.
+    #[test]
+    fn vote_plan_memo_bit_exact_over_100k_positions() {
+        let mut rng = Xoroshiro128PlusPlus::new(0x5DEE_CE6D, 0x2545_F491_4F6C_DD1D);
+        let seeds = [
+            -3053459i64,
+            0x9E37_79B9_7F4A_7C15u64 as i64,
+            1234567890123456789i64,
+            42i64,
+        ];
+        let mut checked = 0usize;
+        // ONE memo instance across all 4 seeds — the clear-on-seed-change
+        // guard is exercised (a stale entry would flip bits in phase (b)).
+        let mut memo = VotePlanMemo::default();
+        for &seed in &seeds {
+            for _ in 0..25_000 {
+                let x = (rng.next_long().rem_euclid(16384)) as i32 - 8192;
+                let z = (rng.next_long().rem_euclid(16384)) as i32 - 8192;
+                let y = (rng.next_long().rem_euclid(1024)) as i32 - 512;
+
+                // (a) winner agreement old vs new
+                let old = vote_best_corner(seed, x, y, z);
+                let new = memo.vote(seed, x, y, z);
+                assert_eq!(old, new, "vote winner diverged at ({x},{y},{z}) seed {seed}");
+
+                // (b) bit-level: all 8 corner distances from the plan must
+                // equal the reference chain+square-sum, to_bits for bits.
+                let (i, i1, i2) = (x - 2, y - 2, z - 2);
+                let (i3, i4, i5) = (i >> 2, i1 >> 2, i2 >> 2);
+                let plan = memo
+                    .plan
+                    .get(&(i3, i5, i4))
+                    .expect("plan must be memoized right after the vote");
+                let d = (i & 3) as f64 / 4.0;
+                let d1 = (i1 & 3) as f64 / 4.0;
+                let d2 = (i2 & 3) as f64 / 4.0;
+                for i7 in 0..8usize {
+                    let i8 = if (i7 & 4) == 0 { i3 } else { i3 + 1 };
+                    let i9 = if (i7 & 2) == 0 { i4 } else { i4 + 1 };
+                    let i10 = if (i7 & 1) == 0 { i5 } else { i5 + 1 };
+                    let d4 = if (i7 & 4) == 0 { d } else { d - 1.0 };
+                    let d5 = if (i7 & 2) == 0 { d1 } else { d1 - 1.0 };
+                    let d6 = if (i7 & 1) == 0 { d2 } else { d2 - 1.0 };
+                    let reference = get_fiddled_distance(seed, i8, i9, i10, d4, d5, d6);
+                    let [fiddle, fiddle1, fiddle2] = plan[i7];
+                    let recomputed =
+                        mth::square(d6 + fiddle2) + mth::square(d5 + fiddle1) + mth::square(d4 + fiddle);
+                    assert_eq!(
+                        recomputed.to_bits(),
+                        reference.to_bits(),
+                        "fiddled distance bits diverged at ({x},{y},{z}) corner {i7} seed {seed}"
+                    );
+                }
+                checked += 1;
+            }
+        }
+        assert_eq!(checked, 100_000, "property run must cover 10^5 positions");
+    }
+
+    /// R3#2 guard (NCF_WG-gated like T35): Df::compute_memo must be
+    /// bit-identical to Df::compute on all 6 climate router fields at
+    /// assorted block coords — first call (pure-compute + memo fill) and
+    /// second call (memo-hit) — the exact equivalence get_noise_biome's
+    /// switch relies on (density.rs documents it; filler.rs already runs
+    /// the same path for the initial biome paint).
+    #[test]
+    fn climate_compute_memo_matches_compute_bitwise() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = crate::router::WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = crate::router::RandomState::build(&dir, "minecraft", "overworld", 3053459)
+            .expect("random state");
+        let r = &rs.router;
+        let fields = [
+            &r.temperature,
+            &r.vegetation,
+            &r.continents,
+            &r.erosion,
+            &r.depth,
+            &r.ridges,
+        ];
+        let coords = [
+            (400i32, 64i32, 400i32),
+            (-41, -17, 17),
+            (1616, 300, -400),
+            (0, 0, 0),
+            (12345, -200, -9999),
+            (4, -64, -4),
+        ];
+        let mut memo = crate::density::ColumnMemo::new();
+        for pass in 0..2 {
+            for &(bx, by, bz) in &coords {
+                for (fi, field) in fields.iter().enumerate() {
+                    let a = field.compute(&rs.bank, bx, by, bz);
+                    let b = field.compute_memo(&rs.bank, bx, by, bz, &mut memo);
+                    assert_eq!(
+                        a.to_bits(),
+                        b.to_bits(),
+                        "climate field {fi} pass {pass} diverged at ({bx},{by},{bz})"
+                    );
+                }
+            }
+        }
     }
 }
