@@ -369,3 +369,36 @@ NP5 CLOSED (NP2/NP4 precedent). N3 residual 2.471 (6th reproduction).
 Worker-fill wall is now MEASURED-irreducible: pipeline shape (NP3) +
 kernel economics are at their R3 optimum; next live item = SUB1 probe
 (mode0 serial path value; mode2 walk-side leverage still ~0 while F > W).
+
+## NP6 [SLICE-FILL CSE, interp[0] under the new F/W split] [x]
+The SUB1 land (b27ca0c) moved the mode2 split to worker F 9.321 vs walk
+5.367 (probe-scale) — worker-side levers regained 1:1 wall conversion inside
+the F-W window. np6-research agent (tick 0818, read-only, BEFORE any code)
+found the lever NP5's close had written off: the vanilla fd top chain
+evaluates the sloped_cheese subtree TWICE per element (RC input + one branch
+use — IN and OUT both reference the same interned node id) and the
+jaggedness Noise node (ys bits == 0.0) per ELEMENT despite being exactly
+y-invariant (ImprovedNoise d1 = ±0.0 + yo == yo for every octave, IEEE-754,
+incl. yo == 0.0; ±0.0 survives every freq>0 octave scale). Both skipped
+re-evaluations are VALUE-PURE (whitelist walk: no mutating cache kinds in
+sc; flag-2 nodes inside sc provably front-memo-HIT on visit 2 = no
+mutation), so the implementation is a MEMO LAYER, not a straight-line
+kernel: detect_slice_cse at wrap time (fingerprint = MulOrAdd(add C1,
+Mul(YCG1, MulOrAdd(add C2, MulOrAdd(add C3, Mul(YCG2, MulOrAdd(add C4,
+RC)))))) — ap2_create folds every const-operand Add/Mul into MulOrAdd
+(density.rs 635-661); the first draft matched unfolded Ap2::Add chains and
+MISSED the real tree, t9 caught it), sc elem-slot keyed on
+interpolation_counter, jag row-slot keyed on array_interpolation_counter
+(monotonic keys -> stale slots can only miss -> value-transparent across
+fills and merges, same class as last_tile), cse_active ONLY around the plan
+unit's fill_array in fill_slice_rows (one funnel = mode0/1/2 incl NP1
+row-split + NP3 worker clones), cse_eval bypass guard (nested jag visits
+inside the bypassed sc eval still hit the row memo). Gate NCF_SLICESOA
+default OFF = byte-identical; flip candidate after CI judges the ON path.
+DONE (2026-10-11, ab5af7c): t9 bit-identical (drives+slices+substance+ic/
+aic+scalars, 2 origins) + t10 detector positives/negatives x7, 231/0 tests;
+stagediff A/B 5/5 EMPTY (surface 256 x TC0/1 + carvers 16 x TC0/1 + mode2
+surface = 800 chunks equal); paired ledger mode0 OFF 14.86/14.83 -> ON
+13.59/13.41 = gain 1.27-1.42 (1.7-1.9x bar 0.74); mode2 OFF 9.89/9.98 -> ON
+9.11/9.04 = gain 0.78-0.94 (1.6-1.9x bar 0.50) — NEW mode2 RECORD 9.04-9.11
+(was 10.14-10.23). Same-commit LOG evidence per worklist contract.
