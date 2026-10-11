@@ -179,7 +179,7 @@ mode2 11.93/11.47 noise, PORTED 15.36-15.81, paired gain +2.3-2.8 >= 0.70
 bar KEEP; target noise <= 12 REACHED. N3 probe: walk 6.686 worker 9.132
 join_block 2.695 -> exposed residual 2.519 ms/chunk -> NP4 assist queued.
 
-## SUB1 [SUBSTANCE+INTERP kernel share] [~]
+## SUB1 [SUBSTANCE+INTERP kernel share] [x]
 PIPELINE NOTE (2026-10-11): under mode2 the noise wall is worker-bound
 (F > W on quiet rig), so walk-side substance cuts have ~0 wall leverage —
 SUB1 serves the SERIAL default path (mode0, substance ~2.1 of 16.68) and
@@ -228,6 +228,47 @@ noodle lane-select + squeeze/min/add; I2 = identical per-element op
 sequence, no gather), then worktree prototype, stagediff 4/4 + paired
 mode0 ledger x2; land only if >= 5% of stage. mode2 leverage stays ~0
 while F > W — serves mode0 (default) only.
+
+LANDED (2026-10-11, this commit): full-chain SoA via NCF_SUB1_SOA=1 (default
+OFF), research-first (sub1soa-research agent design doc -> orchestrator
+implementation in worktree sub1-soa). Two research corrections: (a) the
+substance fill runs on the WALK side in EVERY mode (select_cell_yz is called
+by drive_blocks AND drive_blocks_pipelined) — one branch serves mode0/1/2;
+(b) the Min loop compares the squeezed fd array against a per-element freshly
+computed NOODLE value (RangeChoice(Interp(i_main), -1e6, 0, Const(64),
+Add(Interp(i_thick), MulOrAdd(1.5, Max(Mapped(Abs, I_ra), Mapped(Abs,
+I_rb)))))), not two array halves. Detector at SimTemplate::build (once per
+RandomState): structural match + constants read from nodes + NO flag-2 node
+in the matched region (first draft required flags==0 — WRONG: the in_range
+Const is flag-1 in vanilla; t7 caught it, fixed to flags!=2 — flag 0/1 = no
+memo interaction in compute()). Kernels: per-cell passes in visit order —
+hoisted z-plane lerp2 tables (manual LICM over pure loads: corners shared
+per cell, fracs from the fixed tables; 4x fewer lerps, same bits), squeeze
+via mapped_transform (all 7 arms), noodle chain straight-line (a1-before-a2,
+Abs inlined, java_max bound shortcircuit, NO zero-check on the folded
+MulOrAdd, java_min at the Min loop), Beardifier pfd its own pass, root add
+UNCONDITIONAL (-0.0 quirk), end machine state (in_cell_*/array_index) set
+explicitly. EVIDENCE: stagediff A/B 5/5 EMPTY (surface 256 x NCF_TILE_CACHE
+0/1 + carvers 16 x 0/1 + mode2 surface); t7 bit-identical (drive values +
+slice0/1 + substance_cache bits + ic/aic + csby/icy/csbz/icz/array_index, 2
+origins) + t8 detector negatives (nether top, non-Const in_range, flag-2) +
+flag-1 positive, 229/0 BOTH builds (+2 tests); probe honesty: soa_cells =
+768/chunk, all SUB_* scopes 0.000, envelope E 3.338/3.260 -> 0.862
+probe-scale = ~2.14 -> ~0.57 clean (substance target <= 1.5 BEATEN); paired
+ledger mode0 OFF 16.96/17.05 (0.5%) -> ON 14.78/14.85 (0.5%) = gain
+2.18-2.20 ms = 12.7-12.9% of the stage = 2.6x the live R2 bar 0.834 -> KEEP;
+PORTED 20.90/20.67 -> 18.49/18.58. SURPRISE: mode2 OFF 11.97/11.68 -> ON
+10.23/10.14 = gain 1.54-1.74 — the "walk-side leverage ~0 while F > W"
+premise is FALSIFIED at the current regime (mode2 wall = walk + blocked
+join: cutting walk-side work also cuts the join block and gives the contended
+worker more core time); N3 probe SOA=1: walk 5.367 (was 7.279), join_block
+4.174 (was 2.948), residual 4.002, worker 9.321 (was 9.897) — the worker is
+no longer the binding side; NEW mode2 RECORD 10.14-10.23, the NP5-era
+"noise <= 10.5" target REACHED by SUB1. PORTED 15.89/15.39 -> 14.13/13.91.
+NEXT: re-rank the ladder at the new regime (worker fill kernel F 9.3 vs walk
+5.4 probe-scale — the pipeline window moved; NP5-style worker-side levers
+regain priority), then per-section serialization / carvers rework toward the
+1 ms mandate.
 
 ## NP2 [NOISE-PARALLEL PHASE 2, persistent workers + dynamic partition] [x]
 HYP: phase-1 NP1 leaves 4 of 5 spawn pairs per chunk and a fixed 3/2 heavy-row

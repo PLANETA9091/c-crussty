@@ -152,6 +152,8 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
             .load(std::sync::atomic::Ordering::Relaxed),
         chunk_factory::interpolator::SUB_CACHEWRAP_CALLS
             .load(std::sync::atomic::Ordering::Relaxed),
+        // 12: SUB1 SoA kernel cells (honesty counter; expect 768/chunk ON)
+        chunk_factory::interpolator::SUB_SOA_CELLS.load(std::sync::atomic::Ordering::Relaxed),
     );
 
     // N3 probe snapshot (after warmup, before the corpus) — NP3 pipelined
@@ -317,7 +319,7 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
     if std::env::var("NCF_SUB1_PROBE").is_ok() {
         use std::sync::atomic::Ordering::Relaxed as R;
         use chunk_factory::interpolator as ip;
-        let (sq0, ad0, mn0, mu0, mx0, rc0, mo0, bd0, pi0, po0, nl0, cw0) = sub1_before;
+        let (sq0, ad0, mn0, mu0, mx0, rc0, mo0, bd0, pi0, po0, nl0, cw0, sc0) = sub1_before;
         let g = |a: &std::sync::atomic::AtomicU64, b: u64| a.load(R) - b;
         let ms = |nanos: u64| nanos as f64 / n as f64 / 1e6;
         let sq = g(&ip::SUB_SQUEEZE_NANOS, sq0);
@@ -363,6 +365,14 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         );
         eprintln!(
             "[SUB1-probe] ARITH_HIGH = {arith_high:.3} ARITH_LOW = {arith_low:.3} ms/chunk PROBE-BUILD scale (mulora+min_loop hold the trilerp mass; scale s = clean/probe before gate 1.200 worklist / 0.834 = 5% of mode0 noise 16.68)",
+        );
+        // SUB1 SoA honesty: cells through the kernel (768/chunk when
+        // NCF_SUB1_SOA=1 and the detector matched; 0 = generic path ran —
+        // SUB_* scopes then tile the envelope as before).
+        let soa_cells = g(&ip::SUB_SOA_CELLS, sc0);
+        eprintln!(
+            "[SUB1-probe] soa_cells = {} (expect 768 x chunks when NCF_SUB1_SOA=1 + detector matched; 0 = generic path)",
+            soa_cells / (n as u64).max(1),
         );
     }
     // N2 probe (NP2 go/no-go, standing order R5): parallel fill_slice split.

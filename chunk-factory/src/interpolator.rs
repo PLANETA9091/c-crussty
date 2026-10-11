@@ -647,6 +647,10 @@ pub struct NoiseChunkSim<'a> {
     /// bit-identical hit. FRONT memo only — tile cache semantics
     /// (persistence, eviction, epoch, counters) are untouched.
     last_tile: Vec<(u64, i32, i32, f64)>,
+    /// SUB1: the template's detected vanilla-shape plan when the gate is ON
+    /// (None = generic fill_array path). Copy — the worker clone carries it
+    /// harmlessly (workers never run the substance fill).
+    sub_plan: Option<SubSoaPlan>,
 }
 
 /// P2.12: the chunk-INDEPENDENT part of the machine — interned arena, wrapped
@@ -665,6 +669,9 @@ pub struct SimTemplate {
     pub c1ce_inners: Vec<usize>,
     pub flat_inners: Vec<usize>,
     pub cell_volume: usize,
+    /// SUB1: vanilla-shape substance plan detected at wrap time (None =
+    /// generic fill_array path — nether/end/packs and gate-Off machines).
+    pub sub_plan: Option<SubSoaPlan>,
 }
 
 impl SimTemplate {
@@ -692,6 +699,9 @@ impl SimTemplate {
             let w = b.wrap(f, &mut dedup);
             root_fields.push(w);
         }
+        // SUB1: detect the vanilla-shape substance root ONCE per RandomState
+        // (the wrapped tree is complete after all 15 roots are wrapped).
+        let sub_plan = detect_sub_soa(&b.wnodes, &root_fields, &b.node_flags);
         SimTemplate {
             wnodes: b.wnodes,
             node_flags: b.node_flags,
@@ -705,6 +715,7 @@ impl SimTemplate {
             flat_inners: b.flat_inners,
             // overworld cell volume; instantiate() resizes per-chunk anyway
             cell_volume: 4 * 4 * 8,
+            sub_plan,
         }
     }
 }
@@ -870,6 +881,9 @@ impl<'a> NoiseChunkSim<'a> {
             // (world block coords never reach i32::MIN, and a real
             // (0, i32::MIN, i32::MIN) triple is impossible).
             last_tile: vec![(0u64, i32::MIN, i32::MIN, 0.0f64); template.wnodes.len()],
+            // SUB1: per-machine plan — gated by the env/test force ONCE per
+            // process (a per-ROOT decision from the template, never per cell).
+            sub_plan: if sub1_soa_mode() != 0 { template.sub_plan } else { None },
         };
         // FlatCache eager priming (computeValues = true) — PER-CHUNK because
         // the quart grid positions are chunk-relative. Values are identical
@@ -1557,6 +1571,200 @@ fn sub1_t_end(t: Option<std::time::Instant>, clock: &std::sync::atomic::AtomicU6
         );
     }
 }
+
+// --------------------------------------------------------------------------
+// SUB1: full-chain SoA fast path for the substance (final_density) fill.
+//
+// The vanilla overworld fd top is a FIXED shape —
+//   Add(Min(Mapped(ty, MulOrAdd(mul_arg, Interp(i0))), noodle), Beardifier)
+//   noodle = RangeChoice(Interp(i_main), min, max, Const, Add(Interp(i_thick),
+//            MulOrAdd(ridge_arg, Max(Mapped(Abs, Interp(i_ra)),
+//                                    Mapped(Abs, Interp(i_rb))))))
+// — so the whole per-cell fill can run as straight-line kernels over the
+// 128-element cell array: the per-element VIRTUAL DISPATCH (compute/
+// compute_for_index/pos_now match chains) is removed, the per-element FLOAT
+// op sequences are kept bit-identical (same functions, same operands, same
+// nesting — I2 by construction). Corners are PER-CELL SHARED (select_cell_yz
+// loads them once per interp), only fracs are per-element, so the two
+// z-plane lerp2s of each trilerp hoist out of the element loop (manual LICM
+// over pure loads — same bits, 4x fewer lerps). Detection runs ONCE at wrap
+// time (SimTemplate::build): any structural mismatch -> None -> generic
+// fill_array path (nether/end/packs keep the verbatim code). Gate:
+// NCF_SUB1_SOA=1 (OnceLock, PAR_FILL shape) — default OFF = byte-identical.
+// The substance fill runs on the WALK side in every mode (select_cell_yz is
+// called by drive_blocks AND drive_blocks_pipelined), so one branch serves
+// mode0/mode1/mode2; mode2 wall leverage ~0 while F > W (worker-bound) —
+// this serves the serial default path.
+// --------------------------------------------------------------------------
+
+/// The detected vanilla-shape plan (Copy; stored on the template + the
+/// per-chunk machine). Constants are read from the matched NODES as raw
+/// bits — the contract is "kernel implements this shape", not "kernel
+/// implements vanilla specifically".
+#[derive(Debug, Clone, Copy)]
+pub struct SubSoaPlan {
+    /// interp ids: substance trilerp, noodle main chooser, thickness, ridge a/b
+    interp0: usize,
+    i_main: usize,
+    i_thick: usize,
+    i_ra: usize,
+    i_rb: usize,
+    /// MulOrAdd(mul_arg, Interp0) — the 0.64 slope factor
+    mul_arg: u64,
+    /// RangeChoice window bits
+    rc_min: u64,
+    rc_max: u64,
+    /// Const value when in-range (bits)
+    in_range: u64,
+    /// MulOrAdd(ridge_arg, Max(...)) — the 1.5 ridge factor
+    ridge_arg: u64,
+    /// Min(a2_min) shortcircuit threshold (bits)
+    min_a2_min: u64,
+    /// Max(a2_max) bound shortcircuit threshold (bits)
+    ra_max: u64,
+    /// The squeeze-level Mapped type (kernel dispatches all 7 arms via
+    /// mapped_transform — shape-generic; the two noodle Mapped levels are
+    /// detector-required Abs and inlined as .abs()).
+    mapped_ty: MappedType,
+}
+
+/// Wrap-time detector for the vanilla-shape substance root (root_fields[11]).
+/// Structural match + no flag-2 (tile-cacheable) node in the matched region
+/// (the generic compute() would probe the tile/front memo there — skipping
+/// compute() must not skip a memo probe; flag 0/1 are plain dispatch).
+/// Any mismatch -> None -> the verbatim generic fill_array path.
+fn detect_sub_soa(wnodes: &[WNode], roots: &[usize], flags: &[u8]) -> Option<SubSoaPlan> {
+    let root = *roots.get(11)?;
+    // root = Add(fd_chain, Beardifier) — Beardifier is NOT folded (not Const)
+    let WNode::Ap2 { ty: Ap2Type::Add, a1, a2, .. } = &wnodes[root] else {
+        return None;
+    };
+    if !matches!(&wnodes[*a2], WNode::Beardifier) {
+        return None;
+    }
+    // fd_chain = Min(squeeze, noodle) with the frozen a2_min bits
+    let WNode::Ap2 { ty: Ap2Type::Min, a1: sq, a2: noodle, a2_min, .. } = &wnodes[*a1] else {
+        return None;
+    };
+    // squeeze = Mapped(ty, MulOrAdd(mul_arg, Interp(i0)))
+    let WNode::Mapped { ty: mapped_ty, input: mo } = &wnodes[*sq] else {
+        return None;
+    };
+    let WNode::MulOrAdd { is_add: false, argument: mul_arg, input: mo_in } = &wnodes[*mo] else {
+        return None;
+    };
+    let WNode::W(WKind::Interp(interp0)) = &wnodes[*mo_in] else {
+        return None;
+    };
+    // noodle = RangeChoice(Interp(i_main), min, max, Const, out_of_range)
+    let WNode::RangeChoice { input: rc_in, min: rc_min, max: rc_max, in_range, out_of_range } =
+        &wnodes[*noodle]
+    else {
+        return None;
+    };
+    let WNode::W(WKind::Interp(i_main)) = &wnodes[*rc_in] else {
+        return None;
+    };
+    let WNode::Const(in_range_val) = &wnodes[*in_range] else {
+        return None;
+    };
+    // out_of_range = Add(Interp(i_thick), MulOrAdd(ridge_arg, Max(...)))
+    let WNode::Ap2 { ty: Ap2Type::Add, a1: th, a2: ridge, .. } = &wnodes[*out_of_range] else {
+        return None;
+    };
+    let WNode::W(WKind::Interp(i_thick)) = &wnodes[*th] else {
+        return None;
+    };
+    let WNode::MulOrAdd { is_add: false, argument: ridge_arg, input: ridge_in } = &wnodes[*ridge]
+    else {
+        return None;
+    };
+    // Max(Mapped(Abs, Interp(i_ra)), Mapped(Abs, Interp(i_rb))) with a2_max
+    let WNode::Ap2 { ty: Ap2Type::Max, a1: m1, a2: m2, a2_max, .. } = &wnodes[*ridge_in] else {
+        return None;
+    };
+    let WNode::Mapped { ty: mty1, input: ra_in } = &wnodes[*m1] else {
+        return None;
+    };
+    if *mty1 != MappedType::Abs {
+        return None;
+    }
+    let WNode::W(WKind::Interp(i_ra)) = &wnodes[*ra_in] else {
+        return None;
+    };
+    let WNode::Mapped { ty: mty2, input: rb_in } = &wnodes[*m2] else {
+        return None;
+    };
+    if *mty2 != MappedType::Abs {
+        return None;
+    }
+    let WNode::W(WKind::Interp(i_rb)) = &wnodes[*rb_in] else {
+        return None;
+    };
+    // No matched node may be flag-2 (tile-cacheable): the generic compute()
+    // would probe the tile cache + refresh the last-slot front memo there —
+    // skipping compute() must not skip any memo probe. Flag 0/1 = plain
+    // dispatch (flag 1 = y-free non-tileable, zero memo interaction), so
+    // skipping it diverges NO machine state. Vanilla overworld: all matched
+    // nodes are flag 0 except the in_range Const (flag 1).
+    let matched = [
+        root, *a2, *a1, *sq, *mo, *mo_in, *noodle, *rc_in, *in_range, *out_of_range, *th,
+        *ridge, *ridge_in, *m1, *ra_in, *m2, *rb_in,
+    ];
+    if !matched.iter().all(|&i| flags[i] != 2) {
+        return None;
+    }
+    Some(SubSoaPlan {
+        interp0: *interp0,
+        i_main: *i_main,
+        i_thick: *i_thick,
+        i_ra: *i_ra,
+        i_rb: *i_rb,
+        mul_arg: *mul_arg,
+        rc_min: *rc_min,
+        rc_max: *rc_max,
+        in_range: *in_range_val,
+        ridge_arg: *ridge_arg,
+        min_a2_min: *a2_min,
+        ra_max: *a2_max,
+        mapped_ty: *mapped_ty,
+    })
+}
+
+/// SUB1 SoA gate (NCF_SUB1_SOA): 0 = OFF (default, byte-identical), 1 = ON.
+static SUB1_SOA: std::sync::OnceLock<u8> = std::sync::OnceLock::new();
+
+#[cfg(test)]
+static SUB1_SOA_FORCE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
+
+#[inline]
+fn sub1_soa_mode() -> u8 {
+    #[cfg(test)]
+    {
+        match SUB1_SOA_FORCE.load(std::sync::atomic::Ordering::Relaxed) {
+            1 => return 1,
+            2 => return 0,
+            _ => {}
+        }
+    }
+    *SUB1_SOA.get_or_init(|| match std::env::var("NCF_SUB1_SOA").as_deref() {
+        Ok("1") => 1,
+        _ => 0,
+    })
+}
+
+/// Test-only gate override: 0 = follow NCF_SUB1_SOA, 1 = force ON, 2 = force
+/// OFF. GATE_LOCK serializes the flips (see the test module).
+#[cfg(test)]
+pub(crate) fn force_sub1_soa(mode: u8) {
+    SUB1_SOA_FORCE.store(mode, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Probe honesty: cells filled through the kernel (expect 768/chunk). The
+/// per-visit SUB_*/N1_FILL_NODE_VISITS counters go quiet under the kernel —
+/// this static distinguishes "kernel ran" from "fill didn't run".
+#[cfg(ncf_profile)]
+pub static SUB_SOA_CELLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 // --------------------------------------------------------------------------
 // NP1/NP3: fill/drive parallelism gate (NCF_PAR_FILL, default OFF)
@@ -2421,7 +2629,14 @@ impl<'a> NoiseChunkSim<'a> {
             }
             #[cfg(ncf_profile)]
             let n1_t0 = std::time::Instant::now();
-            self.fill_array(self.root_fields[11], &mut arr, Provider::Cell);
+            // SUB1: vanilla-shape fast path (detected at wrap time, gated
+            // NCF_SUB1_SOA) — straight-line kernels, bit-identical output;
+            // any other shape keeps the verbatim generic fill_array path.
+            if let Some(plan) = self.sub_plan {
+                self.fill_substance_soa(plan, &mut arr);
+            } else {
+                self.fill_array(self.root_fields[11], &mut arr, Provider::Cell);
+            }
             #[cfg(ncf_profile)]
             {
                 N1_FILL_NANOS.fetch_add(
@@ -2441,6 +2656,175 @@ impl<'a> NoiseChunkSim<'a> {
     /// reads the beardifier through the wired tree).
     pub fn set_beardifier(&mut self, beard: crate::beardifier::Beardifier) {
         self.beard = beard;
+    }
+
+    /// SUB1: the vanilla-shape substance fill as straight-line kernels.
+    ///
+    /// I2 CONTRACT (bit-exactness by construction): every per-element float
+    /// op sequence of the generic path is replicated 1:1, in visit order —
+    ///   (1) MulOrAdd pfd: array[k] = lerp3(fx,fy,fz, corners0) * mul_arg
+    ///   (2) Mapped loop:  array[k] = mapped_transform(ty, array[k])
+    ///   (3) Min loop:     array[k] = d2 < a2_min ? d2
+    ///                     : java_min(d2, noodle(d2-element))
+    ///       noodle(e) = RangeChoice(lerp3(main) in [rc_min, rc_max) ?
+    ///           Const : lerp3(thick) + max_abs(lerp3(ra), lerp3(rb),
+    ///                     bound a2_max) * ridge_arg)   [a1 BEFORE a2, Abs
+    ///           inlined, java_max at the Max arm, NO zero-check anywhere —
+    ///           folded MulOrAdd has none in the generic path either]
+    ///   (4) Beardifier pfd: scratch[k] = beard.compute(x,y,z)  (own pass)
+    ///   (5) Add loop:     array[i] += scratch[i]   (UNCONDITIONAL — the
+    ///                     (-0.0)+(+0.0)=+0.0 IEEE quirk at router.rs)
+    /// The two z-plane lerp2s of the interp0 and i_main trilerps are hoisted
+    /// per (iy, ix) — manual LICM over PURE loads (corners/fracs: no side
+    /// effects, no counters) with the SAME lerp2 calls and operand order the
+    /// generic per-element lerp3 executes, so every element's z-lerp consumes
+    /// exactly the bits it would have recomputed. Integer index math is the
+    /// same mapping compute_for_index derives (pure integers). End machine
+    /// state = the generic Beardifier-pfd end state (set explicitly below).
+    /// Probe honesty: SUB_*/N1_FILL_NODE_VISITS go quiet under the kernel;
+    /// SUB_SOA_CELLS counts kernel cells (expect 768/chunk) and the
+    /// N1_FILL_NANOS envelope still wraps this call.
+    fn fill_substance_soa(&mut self, plan: SubSoaPlan, arr: &mut [f64]) {
+        #[cfg(ncf_profile)]
+        SUB_SOA_CELLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let cw = self.cell_width as usize;
+        let ch = self.cell_height as usize;
+
+        // Pass 0 — hoist per-cell invariants: the (fx, fy) plane lerps of the
+        // interp0 trilerp (corners shared per cell; frac tables fixed).
+        let n = self.interpolators[plan.interp0].noise; // [000,001,100,101,010,011,110,111]
+        let mut pl0 = [0.0f64; MAX_FRAC * MAX_FRAC]; // z-plane 0: lerp2(fx, fy, n0, n2, n4, n6)
+        let mut pl1 = [0.0f64; MAX_FRAC * MAX_FRAC]; // z-plane 1: lerp2(fx, fy, n1, n3, n5, n7)
+        for iy in 0..ch {
+            let fy = self.frac_y[iy];
+            for ix in 0..cw {
+                let fx = self.frac_x[ix];
+                // lerp3(fx, fy, fz, n0, n2, n4, n6, n1, n3, n5, n7)
+                //   = lerp(fz, lerp2(fx,fy, n0,n2,n4,n6), lerp2(fx,fy, n1,n3,n5,n7))
+                pl0[iy * cw + ix] = mth::lerp2(fx, fy, n[0], n[2], n[4], n[6]);
+                pl1[iy * cw + ix] = mth::lerp2(fx, fy, n[1], n[3], n[5], n[7]);
+            }
+        }
+
+        // Passes 1+2 (visits: MulOrAdd pfd, then the Mapped loop) — one
+        // per-element chain, same order, same widths.
+        let mul_arg = f64::from_bits(plan.mul_arg);
+        for iy in (0..ch).rev() {
+            for ix in 0..cw {
+                let p = iy * cw + ix;
+                for iz in 0..cw {
+                    let fz = self.frac_z[iz];
+                    let k = ((ch - 1 - iy) * cw + ix) * cw + iz;
+                    let v = mth::lerp(fz, pl0[p], pl1[p]) * mul_arg;
+                    arr[k] = self.mapped_transform(plan.mapped_ty, v);
+                }
+            }
+        }
+
+        // Pass 3 (visit: the Min loop) — noodle value per element, hoisted
+        // i_main plane lerps, straight-line conditional chain.
+        let d1 = f64::from_bits(plan.min_a2_min);
+        let rc_min = f64::from_bits(plan.rc_min);
+        let rc_max = f64::from_bits(plan.rc_max);
+        let in_range = f64::from_bits(plan.in_range);
+        let ridge_arg = f64::from_bits(plan.ridge_arg);
+        let ra_bound = f64::from_bits(plan.ra_max);
+        let nm = self.interpolators[plan.i_main].noise;
+        let nt = self.interpolators[plan.i_thick].noise;
+        let nra = self.interpolators[plan.i_ra].noise;
+        let nrb = self.interpolators[plan.i_rb].noise;
+        let mut plm0 = [0.0f64; MAX_FRAC * MAX_FRAC];
+        let mut plm1 = [0.0f64; MAX_FRAC * MAX_FRAC];
+        for iy in 0..ch {
+            let fy = self.frac_y[iy];
+            for ix in 0..cw {
+                let fx = self.frac_x[ix];
+                plm0[iy * cw + ix] = mth::lerp2(fx, fy, nm[0], nm[2], nm[4], nm[6]);
+                plm1[iy * cw + ix] = mth::lerp2(fx, fy, nm[1], nm[3], nm[5], nm[7]);
+            }
+        }
+        for iy in (0..ch).rev() {
+            for ix in 0..cw {
+                let p = iy * cw + ix;
+                let fx = self.frac_x[ix];
+                let fy = self.frac_y[iy];
+                for iz in 0..cw {
+                    let fz = self.frac_z[iz];
+                    let k = ((ch - 1 - iy) * cw + ix) * cw + iz;
+                    let d2 = arr[k];
+                    if d2 < d1 {
+                        // shortcircuit: keep d2 (the generic path writes it
+                        // back unchanged — same bits)
+                    } else {
+                        let n_main = mth::lerp(fz, plm0[p], plm1[p]);
+                        let nv = if n_main >= rc_min && n_main < rc_max {
+                            in_range
+                        } else {
+                            // Add arm: a1 (thickness trilerp) BEFORE a2.
+                            let t = mth::lerp3(
+                                fx, fy, fz, nt[0], nt[2], nt[4], nt[6], nt[1], nt[3], nt[5],
+                                nt[7],
+                            );
+                            // Max arm: a1 first, bound shortcircuit, java_max.
+                            let ra = mth::lerp3(
+                                fx, fy, fz, nra[0], nra[2], nra[4], nra[6], nra[1], nra[3],
+                                nra[5], nra[7],
+                            )
+                            .abs();
+                            let rb = mth::lerp3(
+                                fx, fy, fz, nrb[0], nrb[2], nrb[4], nrb[6], nrb[1], nrb[3],
+                                nrb[5], nrb[7],
+                            )
+                            .abs();
+                            let m = if ra > ra_bound {
+                                ra
+                            } else {
+                                mth::java_max(ra, rb)
+                            };
+                            // folded MulOrAdd mul — NO zero check (generic
+                            // parity), then the Add.
+                            t + m * ridge_arg
+                        };
+                        arr[k] = mth::java_min(d2, nv);
+                    }
+                }
+            }
+        }
+
+        // Passes 4+5 (visits: Beardifier pfd into the scratch, then the root
+        // Add loop) — SEPARATE loops, visit order preserved; take/put of
+        // ap2_scratch exactly like the generic Ap2::Add arm.
+        let mut doubles = std::mem::take(&mut self.ap2_scratch);
+        doubles.clear();
+        doubles.resize(arr.len(), 0.0);
+        let bx = self.cell_start_block_x;
+        let by = self.cell_start_block_y;
+        let bz = self.cell_start_block_z;
+        for iy in (0..ch).rev() {
+            let y = by + iy as i32;
+            for ix in 0..cw {
+                let x = bx + ix as i32;
+                for iz in 0..cw {
+                    let z = bz + iz as i32;
+                    let k = ((ch - 1 - iy) * cw + ix) * cw + iz;
+                    doubles[k] = self.beard.compute(x, y, z);
+                }
+            }
+        }
+        // UNCONDITIONAL add — skipping it for an empty beardifier would flip
+        // -0.0 elements ((-0.0) + (+0.0) = +0.0, the router.rs quirk).
+        for i in 0..arr.len() {
+            arr[i] += doubles[i];
+        }
+        self.ap2_scratch = doubles;
+
+        // End machine state = the generic Beardifier-pfd end state (the last
+        // state-setting pass of the generic fill; consumers re-derive
+        // in_cell_* before reads, T2-style tests pin these).
+        self.in_cell_x = self.cell_width - 1;
+        self.in_cell_y = 0;
+        self.in_cell_z = self.cell_width - 1;
+        self.array_index = arr.len();
     }
 
     /// CacheAllInCell.compute: read the substance value for the CURRENT
@@ -3561,5 +3945,183 @@ mod tests {
             force_par_fill(0);
             assert_pipeline_bit_equal(&serial, &out_s, &par, &out_p, (bx, bz));
         }
+    }
+
+    /// SUB1 driver: one drive on a fresh machine under a forced SoA gate.
+    /// GATE_LOCK is held by the caller (serializes the process-global force).
+    fn drive_with_soa(
+        rs: &RandomState,
+        bx: i32,
+        bz: i32,
+        soa: u8,
+    ) -> (
+        NoiseChunkSim<'_>,
+        Vec<(u32, i32, i32, i32, f64)>,
+    ) {
+        force_sub1_soa(soa);
+        let mut sim = NoiseChunkSim::from_random_state(rs, 4, bx, bz);
+        let (n, out) = sim.drive_and_collect();
+        force_sub1_soa(0);
+        let _ = n;
+        (sim, out)
+    }
+
+    /// T7 (shaped on NCF_WG, skips gracefully when the extract is absent):
+    /// the SUB1 SoA substance kernel must be BIT-EXACT against the generic
+    /// fill_array path. Full overworld noise drive on identical fresh
+    /// machines (SOA forced off vs on); compares every collected drive
+    /// value, all interpolator slice0/slice1 buffers, the substance cache
+    /// (f64 BITS, I2), the CacheOnce epochs (ic/aic) and the final scalar
+    /// state the fill mutates — at two chunk origins (768 cells x 128 elems
+    /// x 2 drives covers both RangeChoice branches, the Max bound
+    /// shortcircuit and the +-0.0 add quirk).
+    #[test]
+    fn t7_sub1_soa_bit_identical() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = RandomState::build_overworld(&dir, 3053459).expect("build_overworld");
+        let _g = GATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        for (bx, bz) in [(0, 0), (112, 144)] {
+            let (off, out_off) = drive_with_soa(&rs, bx, bz, 2);
+            let (on, out_on) = drive_with_soa(&rs, bx, bz, 1);
+            // detector must have matched the vanilla overworld fd top
+            assert!(on.sub_plan.is_some(), "detector must match overworld fd top ({bx},{bz})");
+            assert!(off.sub_plan.is_none(), "gate-off machine must hold no plan");
+            assert_eq!(out_off.len(), out_on.len(), "drive output length ({bx},{bz})");
+            for (a, b) in out_off.iter().zip(out_on.iter()) {
+                assert_eq!(a.0, b.0);
+                assert_eq!(a.1, b.1);
+                assert_eq!(a.2, b.2);
+                assert_eq!(a.3, b.3);
+                assert_eq!(
+                    a.4.to_bits(),
+                    b.4.to_bits(),
+                    "drive value diverged at ({},{},{}) interp {} chunk ({bx},{bz})",
+                    a.1,
+                    a.2,
+                    a.3,
+                    a.0
+                );
+            }
+            for id in 0..off.interpolators.len() {
+                assert_eq!(
+                    bits(&off.interpolators[id].slice0),
+                    bits(&on.interpolators[id].slice0),
+                    "slice0 interp {id} chunk ({bx},{bz})"
+                );
+                assert_eq!(
+                    bits(&off.interpolators[id].slice1),
+                    bits(&on.interpolators[id].slice1),
+                    "slice1 interp {id} chunk ({bx},{bz})"
+                );
+            }
+            assert_eq!(
+                bits(&off.substance_cache),
+                bits(&on.substance_cache),
+                "substance cache chunk ({bx},{bz})"
+            );
+            // epochs (CacheOnce state) + the final scalars the fill mutates
+            assert_eq!(off.interpolation_counter, on.interpolation_counter, "ic ({bx},{bz})");
+            assert_eq!(
+                off.array_interpolation_counter, on.array_interpolation_counter,
+                "aic ({bx},{bz})"
+            );
+            assert_eq!(off.cell_start_block_y, on.cell_start_block_y, "csby ({bx},{bz})");
+            assert_eq!(off.in_cell_y, on.in_cell_y, "icy ({bx},{bz})");
+            assert_eq!(off.cell_start_block_z, on.cell_start_block_z, "csbz ({bx},{bz})");
+            assert_eq!(off.in_cell_z, on.in_cell_z, "icz ({bx},{bz})");
+            assert_eq!(off.array_index, on.array_index, "ai ({bx},{bz})");
+        }
+    }
+
+    /// T8: detector negatives + the positive's field extraction. Hand-built
+    /// wrapped trees (same shapes the wg-extract JSONs produce): the nether/
+    /// end top (a1 = Mapped, not Min) and a non-Const in_range must fall
+    /// back; the overworld shape must produce the right ids and raw bits.
+    #[test]
+    fn t8_detector_shape_and_negatives() {
+        use crate::density::{Ap2Type, MappedType};
+        let b = |v: f64| v.to_bits();
+        // overworld shape: Add(Min(Mapped(Squeeze, MulOrAdd(0.64, I0)),
+        // RangeChoice(I1, -1e6, 0, Const(64), Add(I2, MulOrAdd(1.5,
+        // Max(Mapped(Abs, I3), Mapped(Abs, I4), 0.5))))), Beardifier)
+        let pos: Vec<WNode> = vec![
+            WNode::W(WKind::Interp(0)),                         // 0 interp0
+            WNode::MulOrAdd { is_add: false, input: 0, argument: b(0.64) }, // 1
+            WNode::Mapped { ty: MappedType::Squeeze, input: 1 }, // 2 squeeze
+            WNode::W(WKind::Interp(1)),                         // 3 i_main
+            WNode::Const(b(64.0)),                              // 4 in_range
+            WNode::W(WKind::Interp(2)),                         // 5 i_thick
+            WNode::W(WKind::Interp(3)),                         // 6 i_ra
+            WNode::W(WKind::Interp(4)),                         // 7 i_rb
+            WNode::Mapped { ty: MappedType::Abs, input: 6 },    // 8
+            WNode::Mapped { ty: MappedType::Abs, input: 7 },    // 9
+            WNode::Ap2 { ty: Ap2Type::Max, a1: 8, a2: 9, a2_min: 0, a2_max: b(0.5) }, // 10
+            WNode::MulOrAdd { is_add: false, input: 10, argument: b(1.5) }, // 11
+            WNode::Ap2 { ty: Ap2Type::Add, a1: 5, a2: 11, a2_min: 0, a2_max: 0 }, // 12
+            WNode::RangeChoice { input: 3, min: b(-1e6), max: b(0.0), in_range: 4, out_of_range: 12 }, // 13
+            WNode::Ap2 { ty: Ap2Type::Min, a1: 2, a2: 13, a2_min: b(-0.1), a2_max: 0 }, // 14
+            WNode::Beardifier,                                  // 15
+            WNode::Ap2 { ty: Ap2Type::Add, a1: 14, a2: 15, a2_min: 0, a2_max: 0 }, // 16 root
+        ];
+        let flags_pos = vec![0u8; pos.len()];
+        let mut roots = vec![0usize; 15];
+        roots[11] = 16; // roots[11] = the substance root (Add node)
+        let plan = detect_sub_soa(&pos, &roots, &flags_pos).expect("overworld shape must match");
+        assert_eq!(plan.interp0, 0);
+        assert_eq!(plan.i_main, 1);
+        assert_eq!(plan.i_thick, 2);
+        assert_eq!(plan.i_ra, 3);
+        assert_eq!(plan.i_rb, 4);
+        assert_eq!(plan.mul_arg, b(0.64));
+        assert_eq!(plan.rc_min, b(-1e6));
+        assert_eq!(plan.rc_max, b(0.0));
+        assert_eq!(plan.in_range, b(64.0));
+        assert_eq!(plan.ridge_arg, b(1.5));
+        assert_eq!(plan.min_a2_min, b(-0.1));
+        assert_eq!(plan.ra_max, b(0.5));
+        assert_eq!(plan.mapped_ty, MappedType::Squeeze);
+        // nether/end top: a1 is Mapped (no Min level) -> fallback
+        let nether: Vec<WNode> = vec![
+            WNode::W(WKind::Interp(0)),                         // 0
+            WNode::MulOrAdd { is_add: false, input: 0, argument: b(0.64) }, // 1
+            WNode::Mapped { ty: MappedType::Squeeze, input: 1 }, // 2
+            WNode::Beardifier,                                  // 3
+            WNode::Ap2 { ty: Ap2Type::Add, a1: 2, a2: 3, a2_min: 0, a2_max: 0 }, // 4 root
+        ];
+        let mut roots_n = vec![0usize; 15];
+        roots_n[11] = 4;
+        assert!(detect_sub_soa(&nether, &roots_n, &vec![0u8; nether.len()]).is_none());
+        // non-Const in_range (e.g. a wrapped node) -> fallback
+        let neg2: Vec<WNode> = vec![
+            WNode::W(WKind::Interp(0)),                         // 0 interp0
+            WNode::MulOrAdd { is_add: false, input: 0, argument: b(0.64) }, // 1
+            WNode::Mapped { ty: MappedType::Squeeze, input: 1 }, // 2
+            WNode::W(WKind::Interp(1)),                         // 3 i_main
+            WNode::W(WKind::Interp(5)),                         // 4 in_range (NOT Const)
+            WNode::W(WKind::Interp(2)),                         // 5 i_thick
+            WNode::W(WKind::Interp(3)),                         // 6 i_ra
+            WNode::W(WKind::Interp(4)),                         // 7 i_rb
+            WNode::Mapped { ty: MappedType::Abs, input: 6 },    // 8
+            WNode::Mapped { ty: MappedType::Abs, input: 7 },    // 9
+            WNode::Ap2 { ty: Ap2Type::Max, a1: 8, a2: 9, a2_min: 0, a2_max: b(0.5) }, // 10
+            WNode::MulOrAdd { is_add: false, input: 10, argument: b(1.5) }, // 11
+            WNode::Ap2 { ty: Ap2Type::Add, a1: 5, a2: 11, a2_min: 0, a2_max: 0 }, // 12
+            WNode::RangeChoice { input: 3, min: b(-1e6), max: b(0.0), in_range: 4, out_of_range: 12 }, // 13
+            WNode::Ap2 { ty: Ap2Type::Min, a1: 2, a2: 13, a2_min: b(-0.1), a2_max: 0 }, // 14
+            WNode::Beardifier,                                  // 15
+            WNode::Ap2 { ty: Ap2Type::Add, a1: 14, a2: 15, a2_min: 0, a2_max: 0 }, // 16 root
+        ];
+        let mut roots_2 = vec![0usize; 15];
+        roots_2[11] = 16;
+        assert!(detect_sub_soa(&neg2, &roots_2, &vec![0u8; neg2.len()]).is_none());
+        // flag-2 anywhere in the matched region -> fallback (memo-state
+        // conservatism); flag-1 (y-free non-tileable, plain dispatch) is OK
+        let mut flags2 = vec![0u8; pos.len()];
+        flags2[1] = 2;
+        assert!(detect_sub_soa(&pos, &roots, &flags2).is_none());
+        let mut flags1 = vec![0u8; pos.len()];
+        flags1[4] = 1; // the in_range Const — vanilla carries exactly this
+        assert!(detect_sub_soa(&pos, &roots, &flags1).is_some());
     }
 }
