@@ -2070,13 +2070,16 @@ pub(crate) fn force_sub1_soa(mode: u8) {
 pub static SUB_SOA_CELLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 // --------------------------------------------------------------------------
-// NP1/NP3: fill/drive parallelism gate (NCF_PAR_FILL, default OFF)
+// NP1/NP3: fill/drive parallelism gate (NCF_PAR_FILL, DEFAULT 2 = pipelined
+// since the NP7 flip; "0" = serial opt-out, "1" = phase-1 only)
 // --------------------------------------------------------------------------
 
-/// NP gate, read ONCE per process: 0 = serial (unset / "0" / anything else),
-/// 1 = NP1 phase-1 row-split parallel slice fills, 2 = NP3 pipelined drive
-/// (hidden fill of column k+2 overlaps the walk of column k). Default OFF =
-/// byte- and codepath-identical. Never read per call.
+/// NP gate, read ONCE per process: 2 = NP3 pipelined drive (DEFAULT since
+/// the NP7 flip — mode2 is the measured record and CI-judged bit-exact;
+/// NCF_PAR_FILL=0 = explicit serial opt-out, "1" = NP1 phase-1 only).
+/// 0 = serial, 1 = NP1 phase-1 row-split parallel slice fills, 2 = NP3
+/// pipelined drive (hidden fill of column k+2 overlaps the walk of
+/// column k). Never read per call.
 static PAR_FILL: std::sync::OnceLock<u8> = std::sync::OnceLock::new();
 
 #[cfg(test)]
@@ -2097,9 +2100,9 @@ fn par_fill_mode() -> u8 {
         }
     }
     *PAR_FILL.get_or_init(|| match std::env::var("NCF_PAR_FILL").as_deref() {
+        Ok("0") => 0,
         Ok("1") => 1,
-        Ok("2") => 2,
-        _ => 0,
+        _ => 2,
     })
 }
 
@@ -2117,6 +2120,83 @@ fn par_fill_enabled() -> bool {
 #[cfg(test)]
 pub(crate) fn force_par_fill(mode: u8) {
     PAR_FORCE.store(mode, std::sync::atomic::Ordering::Relaxed);
+}
+
+// --------------------------------------------------------------------------
+// NP7: spawn-capability flag — graceful serial fallback on thread-spawn
+// failure (OS thread exhaustion / RLIMIT_NPROC / constrained containers).
+// --------------------------------------------------------------------------
+
+/// Sticky process-wide spawn capability. Set false the FIRST time a worker
+/// spawn fails (phase-1 row fork or NP3 pipelined fork); every later gate
+/// read then routes to the serial fallback without touching the OS again.
+/// Healthy runs never write it (one Relaxed load per gate read).
+static SPAWN_OK: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
+
+/// Honesty counter: spawn failures that degraded to a serial fallback
+/// (either fork site). Expected 0 in healthy runs.
+pub static NCF_SPAWN_FALLBACKS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+
+#[cfg(test)]
+static SPAWN_FORCE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
+
+/// NP7 spawn gate. Test builds may force the outcome (SPAWN_FORCE: 0 =
+/// follow the real flag, 1 = force OK, 2 = force FAIL at the gate level,
+/// 3 = gate OK but the spawn call itself errors — exercises the real Err
+/// arm incl. the sticky write + honesty counter). The fallback branches
+/// are CI-testable without OS-level thread limits (ulimit -v cannot
+/// isolate thread-spawn failure on overcommit kernels — the heap dies
+/// first; RLIMIT_NPROC is user-global and strangles the harness).
+#[inline]
+fn spawn_ok() -> bool {
+    #[cfg(test)]
+    {
+        match SPAWN_FORCE.load(std::sync::atomic::Ordering::Relaxed) {
+            1 => return true,
+            2 => return false,
+            _ => {}
+        }
+    }
+    SPAWN_OK.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// Test-only spawn-capability override (GATE_LOCK-serialized like the
+/// other force helpers).
+#[cfg(test)]
+pub(crate) fn force_spawn_ok(mode: u8) {
+    SPAWN_FORCE.store(mode, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Test-only: reset the REAL capability flag + honesty counter after the
+/// injection tests (the Err arms write the real sticky flag — without the
+/// reset, later tests in the same process would silently run serial).
+#[cfg(test)]
+pub(crate) fn reset_spawn_capability() {
+    SPAWN_OK.store(true, std::sync::atomic::Ordering::Relaxed);
+    NCF_SPAWN_FALLBACKS.store(0, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// NP7 spawn funnel for BOTH fork sites (phase-1 row fork + NP3 pipelined
+/// fork): Builder::spawn_scoped returns io::Result instead of
+/// scope.spawn's panic-on-failure. Test builds may inject the error to
+/// exercise the Err arms deterministically — the injection lives INLINE
+/// at the two call sites (a wrapper fn cannot take the scope reference:
+/// Scope is invariant in 'scope, so a fresh inferred lifetime cannot
+/// unify with a fixed generic instantiation). Injection levels:
+/// SPAWN_FORCE=3 = every spawn errs; 4 = ONLY the NP3 drive fork errs
+/// (the phase-1 hoisted fills spawn fine, so the mid-drive Err arm runs
+/// against a clean capability state).
+#[inline]
+fn spawn_inject_fail(site: u8) -> bool {
+    #[cfg(test)]
+    {
+        let f = SPAWN_FORCE.load(std::sync::atomic::Ordering::Relaxed);
+        if f == 3 || (f == 4 && site == 2) {
+            return true;
+        }
+    }
+    false
 }
 
 // --------------------------------------------------------------------------
@@ -3255,7 +3335,7 @@ impl<'a> NoiseChunkSim<'a> {
         // trailing array_interpolation_counter bump stays HERE (parent-side)
         // in both arms.
         let rows = 0..(self.cell_count_xz + 1) as usize;
-        if par_fill_enabled() && self.cell_count_xz >= 2 && rows.len() >= 2 {
+        if par_fill_enabled() && spawn_ok() && self.cell_count_xz >= 2 && rows.len() >= 2 {
             self.fill_slice_parallel(is_slice0, start, rows);
         } else {
             self.fill_slice_rows(is_slice0, start, rows);
@@ -3420,7 +3500,15 @@ impl<'a> NoiseChunkSim<'a> {
         #[cfg(ncf_profile)]
         let n2_t_scope = std::time::Instant::now();
         std::thread::scope(|scope| {
-            let h = scope.spawn(move || {
+            // NP7: spawn_np_worker returns io::Result instead of
+            // panicking on thread exhaustion — the Err arm degrades THIS
+            // fill to the verbatim serial rows (nothing has run yet, so
+            // the full range is serial-exact) and sticky-disables the
+            // parallel arms process-wide.
+            let h = match if spawn_inject_fail(1) {
+                Err(std::io::Error::other("t11 spawn injection"))
+            } else {
+                std::thread::Builder::new().spawn_scoped(scope, move || {
                 #[cfg(ncf_profile)]
                 let n2_t_worker = std::time::Instant::now();
                 worker.fill_slice_rows(is_slice0_c, start_c, mid..rows_end);
@@ -3430,7 +3518,17 @@ impl<'a> NoiseChunkSim<'a> {
                     std::sync::atomic::Ordering::Relaxed,
                 );
                 worker // return the owned clone
-            });
+                })
+            } {
+                Ok(h) => h,
+                Err(_) => {
+                    NCF_SPAWN_FALLBACKS
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    SPAWN_OK.store(false, std::sync::atomic::Ordering::Relaxed);
+                    self.fill_slice_rows(is_slice0, start, rows);
+                    return;
+                }
+            };
             #[cfg(ncf_profile)]
             let n2_t_main = std::time::Instant::now();
             self.fill_slice_rows(is_slice0, start, rows.start..mid);
@@ -3703,9 +3801,17 @@ impl<'a> NoiseChunkSim<'a> {
         // advanceCellX(0): the cx=0 fill, hoisted out of the loop so every
         // in-loop iteration can overlap its NEXT-next column fill.
         self.fill_slice(false, self.first_cell_x + 1);
+        // NP7 degrade state: 0 = pipelined; 1 = degraded with this
+        // iteration's serial fill pre-done by the pipelined machinery
+        // (walk+swap only); 2 = degraded, verbatim serial body
+        // (fill+walk+swap, INCLUDING the last column's never-walked
+        // first+n fill so the final machine state stays serial-exact).
+        // spawn_ok()==false at loop entry ≡ degraded at cx=0 (the hoisted
+        // fills pre-did col first+1).
+        let mut degrade: u8 = if spawn_ok() { 0 } else { 1 };
         for cx in 0..self.cell_count_xz {
             self.cell_start_block_x = (self.first_cell_x + cx) * self.cell_width;
-            if cx < self.cell_count_xz - 1 {
+            if degrade == 0 && cx < self.cell_count_xz - 1 {
                 // Hidden fill of column cx+2 on the worker clone while the
                 // parent walks column cx.
                 let fork_ic = self.interpolation_counter;
@@ -3728,7 +3834,16 @@ impl<'a> NoiseChunkSim<'a> {
                 #[cfg(ncf_profile)]
                 let n3_t_walk = std::time::Instant::now();
                 std::thread::scope(|scope| {
-                    let h = scope.spawn(move || {
+                    // NP7: spawn_np_worker returns io::Result instead
+                    // of panicking on thread exhaustion — the Err arm degrades
+                    // the drive: walk column cx (verbatim), serial swap, and
+                    // every remaining iteration runs the serial body. The
+                    // failed hidden fill's target column (cx+2) is exactly
+                    // serial's cx+1 fill, patched by the degrade=2 arm.
+                    let h = match if spawn_inject_fail(2) {
+                        Err(std::io::Error::other("t11 spawn injection"))
+                    } else {
+                        std::thread::Builder::new().spawn_scoped(scope, move || {
                         #[cfg(ncf_profile)]
                         let n3_t_worker = std::time::Instant::now();
                         worker.pipeline_worker_fill(start);
@@ -3738,7 +3853,41 @@ impl<'a> NoiseChunkSim<'a> {
                             std::sync::atomic::Ordering::Relaxed,
                         );
                         worker // return the owned clone
-                    });
+                        })
+                    } {
+                        Ok(h) => h,
+                        Err(_) => {
+                            NCF_SPAWN_FALLBACKS
+                                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                            SPAWN_OK.store(false, std::sync::atomic::Ordering::Relaxed);
+                            for cz in 0..self.cell_count_xz {
+                                for cy in (0..self.cell_count_y).rev() {
+                                    self.select_cell_yz(cy, cz);
+                                    for in_y in (0..self.cell_height).rev() {
+                                        let by =
+                                            (self.cell_noise_min_y + cy) * self.cell_height + in_y;
+                                        let frac_y = in_y as f64 / self.cell_height as f64;
+                                        self.update_for_y(by, frac_y);
+                                        for in_x in 0..self.cell_width {
+                                            let bx = self.cell_start_block_x + in_x;
+                                            let frac_x = in_x as f64 / self.cell_width as f64;
+                                            self.update_for_x(bx, frac_x);
+                                            for in_z in 0..self.cell_width {
+                                                let bz = self.cell_start_block_z + in_z;
+                                                let frac_z =
+                                                    in_z as f64 / self.cell_width as f64;
+                                                self.update_for_z(bz, frac_z);
+                                                f(bx, by, bz, self);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            self.swap_slices();
+                            degrade = 2;
+                            return;
+                        }
+                    };
                     // ---- walk of column cx: VERBATIM drive_blocks -------
                     for cz in 0..self.cell_count_xz {
                         for cy in (0..self.cell_count_y).rev() {
@@ -3834,6 +3983,58 @@ impl<'a> NoiseChunkSim<'a> {
                         std::sync::atomic::Ordering::Relaxed,
                     );
                 });
+            } else if degrade == 1 {
+                for cz in 0..self.cell_count_xz {
+                    for cy in (0..self.cell_count_y).rev() {
+                        self.select_cell_yz(cy, cz);
+                        for in_y in (0..self.cell_height).rev() {
+                            let by = (self.cell_noise_min_y + cy) * self.cell_height + in_y;
+                            let frac_y = in_y as f64 / self.cell_height as f64;
+                            self.update_for_y(by, frac_y);
+                            for in_x in 0..self.cell_width {
+                                let bx = self.cell_start_block_x + in_x;
+                                let frac_x = in_x as f64 / self.cell_width as f64;
+                                self.update_for_x(bx, frac_x);
+                                for in_z in 0..self.cell_width {
+                                    let bz = self.cell_start_block_z + in_z;
+                                    let frac_z = in_z as f64 / self.cell_width as f64;
+                                    self.update_for_z(bz, frac_z);
+                                    f(bx, by, bz, self);
+                                }
+                            }
+                        }
+                    }
+                }
+                self.swap_slices();
+                degrade = 2;
+            } else if degrade == 2 {
+                self.fill_slice(false, self.first_cell_x + cx + 1);
+                // Serial resets cell_start_block_x AFTER the advanceCellX
+                // fill (fill_slice sets it to the fill column) — the walk
+                // below needs the WALK column, not the fill column.
+                self.cell_start_block_x = (self.first_cell_x + cx) * self.cell_width;
+                for cz in 0..self.cell_count_xz {
+                    for cy in (0..self.cell_count_y).rev() {
+                        self.select_cell_yz(cy, cz);
+                        for in_y in (0..self.cell_height).rev() {
+                            let by = (self.cell_noise_min_y + cy) * self.cell_height + in_y;
+                            let frac_y = in_y as f64 / self.cell_height as f64;
+                            self.update_for_y(by, frac_y);
+                            for in_x in 0..self.cell_width {
+                                let bx = self.cell_start_block_x + in_x;
+                                let frac_x = in_x as f64 / self.cell_width as f64;
+                                self.update_for_x(bx, frac_x);
+                                for in_z in 0..self.cell_width {
+                                    let bz = self.cell_start_block_z + in_z;
+                                    let frac_z = in_z as f64 / self.cell_width as f64;
+                                    self.update_for_z(bz, frac_z);
+                                    f(bx, by, bz, self);
+                                }
+                            }
+                        }
+                    }
+                }
+                self.swap_slices();
             } else {
                 #[cfg(ncf_profile)]
                 N3_SKIP_FILLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -4106,11 +4307,11 @@ mod tests {
         assert_eq!(par_fill_mode(), 2);
         assert!(par_fill_enabled());
         force_par_fill(0);
-        // mode 0 mirrors the env gate
+        // mode 0 mirrors the env gate (DEFAULT 2 = pipelined since NP7)
         let env_mode = match std::env::var("NCF_PAR_FILL").as_deref() {
-            Ok("1") => 1u8,
-            Ok("2") => 2,
-            _ => 0,
+            Ok("0") => 0u8,
+            Ok("1") => 1,
+            _ => 2,
         };
         assert_eq!(par_fill_mode(), env_mode);
         assert_eq!(par_fill_enabled(), env_mode >= 1);
@@ -4304,6 +4505,112 @@ mod tests {
             force_par_fill(0);
             assert_pipeline_bit_equal(&serial, &out_s, &par, &out_p, (bx, bz));
         }
+    }
+
+    /// T11 (shaped on NCF_WG, skips gracefully when the extract is absent):
+    /// NP7 spawn-failure fallbacks. Three degraded drives, all must be
+    /// BIT-IDENTICAL to serial (outputs + slices + substance, then the t5
+    /// state shape on the degraded pipelined machine):
+    /// (a) pipelined + SPAWN_FORCE=3 — the REAL Err arm fires mid-drive
+    ///     (cx=0's hidden fill): walk+swap at the degrade point, verbatim
+    ///     serial body after, incl. the last column's never-walked fill;
+    /// (b) pipelined + SPAWN_FORCE=2 — gate-level fail at drive entry:
+    ///     degrade state 1 (hoisted fills pre-did col first+1);
+    /// (c) phase-1 + SPAWN_FORCE=3 — every fill_slice fork errors and
+    ///     degrades to the verbatim serial rows.
+    /// NCF_SPAWN_FALLBACKS must advance in (a)/(c) (the Err arms actually
+    /// ran); the REAL sticky flag is restored afterwards so later tests
+    /// are not poisoned into silent serial runs.
+    #[test]
+    fn t11_spawn_fallback_bit_identical() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = RandomState::build_overworld(&dir, 3053459).expect("build_overworld");
+        let mut total_fallbacks = 0u64;
+        for (bx, bz) in [(0, 0), (112, 144)] {
+            let _g = GATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+            let collect = |sim: &mut NoiseChunkSim,
+                           out: &mut Vec<(i32, i32, i32, Vec<u64>)>| {
+                sim.drive_blocks(&mut |bx, by, bz, sim| {
+                    let mut vals: Vec<u64> =
+                        sim.interpolators.iter().map(|st| st.value.to_bits()).collect();
+                    vals.push(sim.compute_field(12).to_bits());
+                    vals.push(sim.substance_value().to_bits());
+                    out.push((bx, by, bz, vals));
+                });
+            };
+            // --- serial reference ---
+            force_par_fill(2); // test encoding: 2 = serial
+            let mut serial = NoiseChunkSim::from_random_state(&rs, 4, bx, bz);
+            let mut out_s: Vec<(i32, i32, i32, Vec<u64>)> = Vec::new();
+            collect(&mut serial, &mut out_s);
+            // --- (a) pipelined, ONLY the drive fork errors (force=4): the
+            // hoisted fills spawn fine, degrade starts 0, the REAL NP3 Err
+            // arm fires at cx=0 (walk+swap inside the scope, sticky write,
+            // counter) and the verbatim serial body takes over. ---
+            force_par_fill(3); // test encoding: 3 = NP3 pipelined
+            force_spawn_ok(4); // gate OK everywhere, NP3 fork injects Err
+            let mut par = NoiseChunkSim::from_random_state(&rs, 4, bx, bz);
+            let mut out_p: Vec<(i32, i32, i32, Vec<u64>)> = Vec::new();
+            collect(&mut par, &mut out_p);
+            assert_pipeline_bit_equal(&serial, &out_s, &par, &out_p, (bx, bz));
+            // t5 state shape: degraded final state == serial final state.
+            assert_eq!(
+                serial.interpolation_counter, par.interpolation_counter,
+                "t11(a) ic ({bx},{bz})"
+            );
+            assert_eq!(
+                serial.array_interpolation_counter, par.array_interpolation_counter,
+                "t11(a) aic ({bx},{bz})"
+            );
+            assert_eq!(serial.cell_start_block_x, par.cell_start_block_x, "t11(a) csbx");
+            assert_eq!(serial.in_cell_x, par.in_cell_x, "t11(a) icx");
+            assert_eq!(serial.cell_start_block_z, par.cell_start_block_z, "t11(a) csbz");
+            assert_eq!(serial.in_cell_z, par.in_cell_z, "t11(a) icz");
+            assert_eq!(serial.cell_start_block_y, par.cell_start_block_y, "t11(a) csby");
+            assert_eq!(serial.in_cell_y, par.in_cell_y, "t11(a) icy");
+            assert_eq!(serial.array_index, par.array_index, "t11(a) array_index");
+            for id in 0..serial.cacheonces.len() {
+                let a = &serial.cacheonces[id];
+                let b = &par.cacheonces[id];
+                assert_eq!(a.last_counter, b.last_counter, "t11(a) cacheonce {id} lc");
+                assert_eq!(
+                    a.last_array_counter, b.last_array_counter,
+                    "t11(a) cacheonce {id} lac"
+                );
+                assert_eq!(
+                    a.last_value.to_bits(),
+                    b.last_value.to_bits(),
+                    "t11(a) cacheonce {id} last_value"
+                );
+                match (&a.last_array, &b.last_array) {
+                    (None, None) => {}
+                    (Some(x), Some(y)) => assert_eq!(bits(x), bits(y), "t11(a) cacheonce {id} la"),
+                    _ => panic!("t11(a) cacheonce {id} last_array presence divergence"),
+                }
+            }
+            // --- (b) pipelined, gate-level fail at drive entry ---
+            force_spawn_ok(2); // gate says fail before any spawn attempt
+            let mut par2 = NoiseChunkSim::from_random_state(&rs, 4, bx, bz);
+            let mut out_p2: Vec<(i32, i32, i32, Vec<u64>)> = Vec::new();
+            collect(&mut par2, &mut out_p2);
+            assert_pipeline_bit_equal(&serial, &out_s, &par2, &out_p2, (bx, bz));
+            // --- (c) phase-1, every fork errors -> verbatim serial rows ---
+            force_par_fill(1); // test encoding: 1 = phase-1 row split
+            force_spawn_ok(3);
+            let mut p1 = NoiseChunkSim::from_random_state(&rs, 4, bx, bz);
+            let mut out_1: Vec<(i32, i32, i32, Vec<u64>)> = Vec::new();
+            collect(&mut p1, &mut out_1);
+            assert_pipeline_bit_equal(&serial, &out_s, &p1, &out_1, (bx, bz));
+            total_fallbacks +=
+                NCF_SPAWN_FALLBACKS.load(std::sync::atomic::Ordering::Relaxed);
+            // restore before dropping GATE_LOCK: the Err arms wrote the
+            // REAL sticky flag — later tests must not inherit it.
+            force_spawn_ok(0);
+            reset_spawn_capability();
+            force_par_fill(0);
+        }
+        assert!(total_fallbacks > 0, "NCF_SPAWN_FALLBACKS did not advance — the Err arms never ran");
     }
 
     /// SUB1 driver: one drive on a fresh machine under a forced SoA gate.

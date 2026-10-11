@@ -413,22 +413,36 @@ the new regime: walk 5.490/5.853, worker 7.270/7.339, join 1.798-2.039,
 residual 1.617-1.884 (was 4.002) — worker still binding (1.25-1.32x).
 Shipped default stays mode0 serial until NP7.
 
-## NP7 [MODE2-AS-DEFAULT ARCHITECTURE CALL, ~4.1 ms shipped on the table] [ ]
-HYP: shipped default is mode0 serial (PORTED 16.87-17.01) while mode2 is
-the measured record (PORTED 12.87-12.90, 9.13-9.15 noise) — flipping the
-NCF_PAR_FILL default to "2" nearly doubles the shipped win with zero new
-math (NP1/NP3/NP6 stagediff + 33/33 CI already judge mode2 bit-exact).
-RISKS to close BEFORE the flip: (a) spawn failure under thread exhaustion —
-std::thread::scope panics if the OS refuses; need a graceful serial
-fallback (catch scope construction or pre-check) so constrained
-environments degrade to mode0 instead of aborting; (b) height_feed cc=1
-degenerate path (T6 covers); (c) borrow of NCF_PAR_FILL in tests that pin
-modes (GATE_LOCK-style force already exists for SLICE_SOA/SUB1_SOA).
-Probe FIRST (R5): spawn-failure drill (ulimit -u in a subprocess, verify
-serial fallback + byte-identical output), then paired ledger default-old
-vs default-new x2, stagediff 4/4. Target: shipped PORTED <= 13.5. Effort:
-medium. OWNER-Q (worklog, no waiting): default flip touches shipped
-threading semantics — evidence posted, flip next tick if drill green.
+## NP7 [MODE2-AS-DEFAULT + SPAWN-FAILURE FALLBACK] [x]
+DONE (2026-10-11, this commit): two-part land. (1) FALLBACK: both fork
+sites (phase-1 fill_slice_parallel + NP3 pipelined fork) now spawn via
+Builder::spawn_scoped (io::Result, no panic) into a match: on Err they
+degrade serially (phase-1 = verbatim full-range fill_slice_rows; NP3 =
+walk+swap at the degrade point then the verbatim serial body per
+iteration incl. the last column's never-walked fill — a 3-state machine
+0=pipelined/1=degraded-fill-pre-done/2=serial-body) + sticky process-wide
+SPAWN_OK flag (one Relaxed load per gate read, healthy runs never write)
++ NCF_SPAWN_FALLBACKS honesty counter. Serial-exactness: the degrade
+states re-derive serial's fill/walk column coverage exactly (the fill's
+cell_start_block_x side effect is re-reset after the advanceCellX fill,
+matching serial line-for-line — t11 caught the first draft missing it).
+(2) FLIP: NCF_PAR_FILL now defaults to "2" (unset) = pipelined; "0" =
+explicit serial opt-out, "1" = phase-1 only. DRILL OF RECORD: t11 (new
+test, +1 = 232/0 BOTH builds) — SPAWN_FORCE=3/4/2 injection levels
+exercise the REAL Err arms deterministically (OS-level ulimit cannot
+isolate thread-spawn failure on this overcommit rig: -v kills the heap
+first, RLIMIT_NPROC is user-global — documented in the gate comment);
+(a) NP3-fork-only Err mid-drive + (b) gate-level fail at entry + (c)
+every phase-1 fork errs — ALL bit-identical to serial (outputs + slices +
+substance + ic/aic + full scalar set + CacheOnce memos incl. last_array,
+2 origins) with NCF_SPAWN_FALLBACKS advancing. EVIDENCE: stagediff A/B
+5/5 EMPTY (surface 256 x TC0/1 + carvers 16 x TC0/1 + seed-8675309
+surface 64 = 544 chunks, default-old NCF_PAR_FILL=0 vs default-new
+unset); paired ledger on the flip build (same binary): default-new noise
+9.24/9.25 PORTED 13.06/13.06 (0.1% spread) vs default-old 13.36 / 17.07
+= shipped gain ~4.0-4.1 ms (4.7x R2 bar) — NP7 target PORTED <= 13.5
+BEATEN; tests 232/0 both builds incl. profile-cfg. This commit's own CI
+run judges the shipped threaded default directly.
 
 ## NP8 [WALK-SIDE RESIDUAL UNDER PIPELINE, select_cell_yz + callback] [ ]
 HYP: N3 at the new regime shows walk 5.490-5.853 probe-scale of mode2 wall
@@ -454,3 +468,18 @@ visit_count > 1 within one fill, ncf_profile, 64ch mode2), value-purity
 whitelist walk for candidates; implement only if projected >= 0.70
 paired (or >= 0.46 = live 5% bar for mode2 — decide on the conservative
 0.70). Target: noise <= 8.75 mode2. Effort: medium.
+
+## NP10 [E2E 1MS LADDER, unported Amdahl audit] [ ]
+HYP: the 1ms mandate is now gated by the UNPORTED stages, not the ported
+ones: at the new shipped default (mode2 PORTED 13.06) the Amdahl table
+still shows unported features+light+scheduler+jvm_other = 67.1 CPU-ms/chunk
+(18.48% at 1x -> 4.32x pregen speedup). Even a 0 ms PORTED TOTAL leaves
+the E2E wall at ~67 CPU-ms + unhideable scheduling — the 1ms order needs
+the unported stages ported and/or parallelized. Probe FIRST (R5): the
+ledger already prints the CPU-ms table (features 4.8 of 363 Java;
+light/scheduler/jvm_other shares from the NCF_TIMING=1 gen-batch runs) —
+research FIRST (owner order): map each unported stage to (a) port-to-Rust
+effort, (b) parallelizability (position-pure vs sequential), (c) Java
+CPU-ms; rank by ms/chunk removed per effort. No code this item until the
+research memo lands. Target: the 1ms path plan (which stage order gets
+E2E wall under 10, then 1). Effort: research-first, high.
