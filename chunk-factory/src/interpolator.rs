@@ -651,6 +651,28 @@ pub struct NoiseChunkSim<'a> {
     /// (None = generic fill_array path). Copy — the worker clone carries it
     /// harmlessly (workers never run the substance fill).
     sub_plan: Option<SubSoaPlan>,
+    /// NP6: the template's detected slice-CSE plan when the gate is ON
+    /// (None = generic path). Copy — worker/NP1 clones carry it and
+    /// activate it around their own fills (per-machine flag below).
+    slice_plan: Option<SliceCsePlan>,
+    /// NP6: active ONLY around the plan unit's fill_array call inside
+    /// fill_slice_rows. Set/cleared on the machine instance that runs the
+    /// fill (never shared across threads) — outside slice fills the memo
+    /// block below is one not-taken branch.
+    cse_active: bool,
+    /// NP6: bypass guard — the node id currently being evaluated through
+    /// the normal path for a memo store (usize::MAX = none). Prevents
+    /// re-entrant memo recursion while still letting a nested jag visit
+    /// INSIDE the bypassed sc evaluation hit the row memo.
+    cse_eval: usize,
+    /// NP6: elem-CSE slot for sc_root — (interpolation_counter, value).
+    /// Value-transparent across fills/merges: keys are monotonic, a stale
+    /// key can only miss (same soundness class as last_tile, not merged).
+    cse_sc: (u64, f64),
+    /// NP6: row-CSE slot for the jag node — (array_interpolation_counter,
+    /// value). aic +1 per slice row (fill_slice_rows), constant within one
+    /// row's fill; stale keys can only miss.
+    cse_jag: (u64, f64),
 }
 
 /// P2.12: the chunk-INDEPENDENT part of the machine — interned arena, wrapped
@@ -672,6 +694,9 @@ pub struct SimTemplate {
     /// SUB1: vanilla-shape substance plan detected at wrap time (None =
     /// generic fill_array path — nether/end/packs and gate-Off machines).
     pub sub_plan: Option<SubSoaPlan>,
+    /// NP6: vanilla-shape slice-CSE plan for interp[0] detected at wrap
+    /// time (None = generic path).
+    pub slice_plan: Option<SliceCsePlan>,
 }
 
 impl SimTemplate {
@@ -702,6 +727,9 @@ impl SimTemplate {
         // SUB1: detect the vanilla-shape substance root ONCE per RandomState
         // (the wrapped tree is complete after all 15 roots are wrapped).
         let sub_plan = detect_sub_soa(&b.wnodes, &root_fields, &b.node_flags);
+        // NP6: detect the slice-CSE shape in interp[0]'s inner (same pass
+        // budget — one structural walk at wrap time per RandomState).
+        let slice_plan = detect_slice_cse(&b.wnodes, &b.interp_inners);
         SimTemplate {
             wnodes: b.wnodes,
             node_flags: b.node_flags,
@@ -716,6 +744,7 @@ impl SimTemplate {
             // overworld cell volume; instantiate() resizes per-chunk anyway
             cell_volume: 4 * 4 * 8,
             sub_plan,
+            slice_plan,
         }
     }
 }
@@ -884,6 +913,13 @@ impl<'a> NoiseChunkSim<'a> {
             // SUB1: per-machine plan — gated by the env/test force ONCE per
             // process (a per-ROOT decision from the template, never per cell).
             sub_plan: if sub1_soa_mode() != 0 { template.sub_plan } else { None },
+            // NP6: per-machine slice-CSE plan + memo state (gate OFF = None;
+            // slots are sentineled so no real monotonic key can false-hit).
+            slice_plan: if slice_soa_mode() != 0 { template.slice_plan } else { None },
+            cse_active: false,
+            cse_eval: usize::MAX,
+            cse_sc: (u64::MAX, 0.0),
+            cse_jag: (u64::MAX, 0.0),
         };
         // FlatCache eager priming (computeValues = true) — PER-CHUNK because
         // the quart grid positions are chunk-relative. Values are identical
@@ -1416,6 +1452,20 @@ pub static N5_FCM_HITS: std::sync::atomic::AtomicU64 = std::sync::atomic::Atomic
 #[cfg(ncf_profile)]
 pub static N5_FCM_MISSES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
+// NP6 honesty counters (cfg ncf_profile only): the CSE memo hit/store
+// tallies. Sanity vs anatomy: per chunk, sc stores = interp0 slice elements
+// (rows x cols per fill x fills) and sc hits = stores (the 2nd visit per
+// element); jag stores = 1 per slice row, jag hits = (elements-per-row - 1)
+// per row plus one per later sc evaluation in the same row.
+#[cfg(ncf_profile)]
+pub static N6_SC_HITS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N6_SC_STORES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N6_JAG_HITS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+#[cfg(ncf_profile)]
+pub static N6_JAG_STORES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
 // --------------------------------------------------------------------------
 // NP3 probe clocks (cfg ncf_profile only) — pipelined-drive overlap split.
 // Same rules as N1/N2: Relaxed atomics summed across threads, compiled out
@@ -1735,6 +1785,248 @@ fn detect_sub_soa(wnodes: &[WNode], roots: &[usize], flags: &[u8]) -> Option<Sub
     })
 }
 
+// --------------------------------------------------------------------------
+// NP6: slice-fill CSE memos for interp[0] (the fd interpolator) — research
+// agent np6-research (tick 2026-10-11 08:18) designed this BEFORE
+// implementation as the SUB1-analog for the WORKER-side slice fill.
+//
+// Anatomy (quoted per-element facts): the vanilla overworld fd top chain
+// BlendDensity(Add(0.1171875, Mul(YCG1, Add(-0.1171875, Add(-0.078125,
+// Mul(YCG2, Add(0.078125, RC(sloped_cheese, [-1e6, 1.5625), IN, OUT))))))))
+// evaluates the sloped_cheese subtree TWICE per element (the RC input plus
+// one branch use — both IN and OUT reference the SAME interned node id),
+// and the jaggedness Noise node (ys bits == 0.0) once per ELEMENT even
+// though it is exactly y-invariant: compute_body's Noise arm feeds
+// ctx.y * 0.0 = ±0.0 into ImprovedNoise::noise_scaled, where
+// d1 = (±0.0) + yo == yo in IEEE-754 for every yo (incl. yo == 0.0, where
+// both sums give +0.0), and every PerlinNoise octave receives
+// y * freq with freq > 0 so the zero's sign never survives. NP5 measured
+// interp[0] at 87.9% of the fill-unit mass; the duplicate sc evaluation
+// doubles the BlendedNoise/PerlinNoise octave work (~40 of ~96-150 noise
+// samples per element are paid twice).
+//
+// I2 soundness: BOTH skipped re-evaluations are VALUE-PURE. The sc subtree
+// whitelist below contains no state-mutating node kind (CacheOnceW /
+// Cache2DW mutate; CellCacheW/Interp/Spline/RangeChoice/ShiftedNoise/
+// FindTopSurface/EndIslands are excluded for tightness), so a re-run at
+// the same ctx returns the same bits. A flag-2 node inside sc only ever
+// front-memo HITs on the 2nd visit (same (x,z) within the row; hit = no
+// mutation, and the slot state after the element is what visit 1 set —
+// identical either way). The memos are control-flow-transparent: they
+// only intercept visits that actually happen (a YClampedGradient
+// zero-check short-circuit that skips sc today skips it identically
+// tomorrow — the slot simply stays stale and is never consulted).
+//
+// Keys are monotonic (interpolation_counter +1 per element in the Slice
+// pfd; array_interpolation_counter +1 per slice row), so a stale slot can
+// only MISS — the slots are value-transparent across fills and mode2
+// merges (same soundness class as last_tile, which is not merged either).
+// cse_active is set ONLY around the plan unit's fill_array call inside
+// fill_slice_rows (one funnel serves mode0/1/2 incl. the NP1 row-split
+// clones and the NP3 worker clone — each activates around its own fill on
+// its own machine state; no cross-thread sharing). cse_eval carries the
+// bypassed node id so the memo is not re-entrant, while a nested jag
+// visit INSIDE the bypassed sc evaluation still hits the row memo.
+//
+// Detection runs ONCE at wrap time (SimTemplate::build): any structural
+// mismatch -> None -> verbatim generic path (nether/end/packs). Gate:
+// NCF_SLICESOA (OnceLock, SUB1 shape) — default OFF = byte-identical;
+// flip candidate after this commit's CI run judges the ON path.
+// --------------------------------------------------------------------------
+
+/// NP6 detected plan (Copy; stored on the template + the per-chunk machine).
+#[derive(Debug, Clone, Copy)]
+pub struct SliceCsePlan {
+    /// the interp unit whose inner matched (interp[0] for vanilla overworld)
+    pub interp_id: usize,
+    /// sloped_cheese root node id (elem-CSE slot, keyed on interpolation_counter)
+    pub sc_root: usize,
+    /// jaggedness Noise node id inside sc (row-CSE slot, keyed on
+    /// array_interpolation_counter); None unless sc holds EXACTLY one
+    /// ys-bits==0.0 Noise node (the vanilla jaggedness sampler)
+    pub jag_node: Option<usize>,
+}
+
+/// Purity whitelist for the sc subtree walk: only node kinds whose
+/// evaluation reads immutable state (template/noise bank/flat-cache values)
+/// and mutates nothing. Any other kind fails the detector.
+#[inline]
+fn sc_pure_kind(node: &WNode) -> bool {
+    matches!(
+        node,
+        WNode::Const(_)
+            | WNode::YClampedGradient { .. }
+            | WNode::Noise(..)
+            | WNode::Blended(_)
+            | WNode::Ap2 { .. }
+            | WNode::Mapped { .. }
+            | WNode::MulOrAdd { .. }
+            | WNode::BlendDensity(_)
+            | WNode::BlendAlpha
+            | WNode::BlendOffset
+            | WNode::W(WKind::FlatCacheW(_))
+            | WNode::ShiftA(_)
+            | WNode::ShiftB(_)
+            | WNode::Shift(_)
+    )
+}
+
+/// Recursive sc-subtree walk: purity check + jag census (ys bits == 0.0
+/// Noise nodes). The W-tree is a finite acyclic DAG; the depth cap is
+/// belt-and-suspenders (vanilla sc depth is ~14).
+fn walk_sc(wnodes: &[WNode], w: usize, depth: usize, jag: &mut Vec<usize>) -> bool {
+    if depth > 64 {
+        return false;
+    }
+    let node = &wnodes[w];
+    if !sc_pure_kind(node) {
+        return false;
+    }
+    match node {
+        WNode::Ap2 { a1, a2, .. } => {
+            walk_sc(wnodes, *a1, depth + 1, jag) && walk_sc(wnodes, *a2, depth + 1, jag)
+        }
+        WNode::Mapped { input, .. } | WNode::MulOrAdd { input, .. } => {
+            walk_sc(wnodes, *input, depth + 1, jag)
+        }
+        WNode::BlendDensity(i) => walk_sc(wnodes, *i, depth + 1, jag),
+        WNode::Noise(_, _, ys) => {
+            if *ys == 0u64 {
+                jag.push(w);
+            }
+            true
+        }
+        // Const / YClampedGradient / Blended / BlendAlpha / BlendOffset /
+        // FlatCacheW (pure load) / ShiftA / ShiftB / Shift: leaves.
+        _ => true,
+    }
+}
+
+/// Direct-structural search for a node id inside a subtree (no wrapper
+/// descent — if sc were referenced behind a cache wrapper the detector
+/// returns None and the generic path runs; vanilla references sc directly
+/// from the RC input and both branch bodies).
+fn subtree_has(wnodes: &[WNode], w: usize, target: usize, depth: usize) -> bool {
+    if w == target {
+        return true;
+    }
+    if depth > 64 {
+        return false;
+    }
+    match &wnodes[w] {
+        WNode::Ap2 { a1, a2, .. } => {
+            subtree_has(wnodes, *a1, target, depth + 1)
+                || subtree_has(wnodes, *a2, target, depth + 1)
+        }
+        WNode::Mapped { input, .. } | WNode::MulOrAdd { input, .. } => {
+            subtree_has(wnodes, *input, target, depth + 1)
+        }
+        WNode::BlendDensity(i) => subtree_has(wnodes, *i, target, depth + 1),
+        WNode::RangeChoice { input, in_range, out_of_range, .. } => {
+            subtree_has(wnodes, *input, target, depth + 1)
+                || subtree_has(wnodes, *in_range, target, depth + 1)
+                || subtree_has(wnodes, *out_of_range, target, depth + 1)
+        }
+        WNode::Clamp { input, .. } => subtree_has(wnodes, *input, target, depth + 1),
+        WNode::WeirdScaledSampler { input, .. } => {
+            subtree_has(wnodes, *input, target, depth + 1)
+        }
+        _ => false,
+    }
+}
+
+/// Wrap-time detector for the vanilla-shape fd top chain in interp[0]'s
+/// inner. ap2_create folds EVERY Add/Mul with a Const operand into MulOrAdd
+/// (density.rs 635-661, const-argument1 first), so the vanilla chain
+/// BlendDensity(add(0.1171875, mul(YCG1, add(-0.1171875, add(-0.078125,
+/// mul(YCG2, add(0.078125, RC))))))) wraps as
+/// MulOrAdd(add C1, Mul(YCG1, MulOrAdd(add C2, MulOrAdd(add C3,
+///   Mul(YCG2, MulOrAdd(add C4, RC)))))).
+/// The constants are NOT matched (kernel-agnostic); the two YCG-bearing
+/// Ap2::Mul levels + the RC bottom are the fingerprint. Requires: sc
+/// subtree passes the purity walk, sc is referenced directly from BOTH RC
+/// branches (else there is no duplicate evaluation to CSE), and the jag
+/// census yields exactly one ys==0.0 Noise (else jag_node = None and only
+/// the elem-CSE arms).
+fn detect_slice_cse(wnodes: &[WNode], interp_inners: &[usize]) -> Option<SliceCsePlan> {
+    let inner0 = *interp_inners.first()?;
+    let mut top = inner0;
+    if let WNode::BlendDensity(i) = &wnodes[top] {
+        top = *i;
+    }
+    let WNode::MulOrAdd { is_add: true, input: m1, .. } = &wnodes[top] else {
+        return None;
+    };
+    let WNode::Ap2 { ty: Ap2Type::Mul, a1: ycg1, a2: s1, .. } = &wnodes[*m1] else {
+        return None;
+    };
+    if !matches!(&wnodes[*ycg1], WNode::YClampedGradient { .. }) {
+        return None;
+    }
+    let WNode::MulOrAdd { is_add: true, input: s2, .. } = &wnodes[*s1] else {
+        return None;
+    };
+    let WNode::MulOrAdd { is_add: true, input: m2, .. } = &wnodes[*s2] else {
+        return None;
+    };
+    let WNode::Ap2 { ty: Ap2Type::Mul, a1: ycg2, a2: s3, .. } = &wnodes[*m2] else {
+        return None;
+    };
+    if !matches!(&wnodes[*ycg2], WNode::YClampedGradient { .. }) {
+        return None;
+    }
+    let WNode::MulOrAdd { is_add: true, input: rc, .. } = &wnodes[*s3] else {
+        return None;
+    };
+    let WNode::RangeChoice { input: sc_root, in_range, out_of_range, .. } = &wnodes[*rc] else {
+        return None;
+    };
+    let mut jag = Vec::new();
+    if !walk_sc(wnodes, *sc_root, 0, &mut jag) {
+        return None;
+    }
+    if !subtree_has(wnodes, *in_range, *sc_root, 0)
+        || !subtree_has(wnodes, *out_of_range, *sc_root, 0)
+    {
+        return None;
+    }
+    let jag_node = if jag.len() == 1 { Some(jag[0]) } else { None };
+    Some(SliceCsePlan {
+        interp_id: 0,
+        sc_root: *sc_root,
+        jag_node,
+    })
+}
+
+/// NP6 gate (NCF_SLICESOA): 0 = OFF (default, byte-identical), 1 = ON.
+static SLICE_SOA: std::sync::OnceLock<u8> = std::sync::OnceLock::new();
+
+#[cfg(test)]
+static SLICE_SOA_FORCE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
+
+#[inline]
+fn slice_soa_mode() -> u8 {
+    #[cfg(test)]
+    {
+        match SLICE_SOA_FORCE.load(std::sync::atomic::Ordering::Relaxed) {
+            1 => return 1,
+            2 => return 0,
+            _ => {}
+        }
+    }
+    *SLICE_SOA.get_or_init(|| match std::env::var("NCF_SLICESOA").as_deref() {
+        Ok("1") => 1,
+        _ => 0,
+    })
+}
+
+/// Test-only gate override: 0 = follow NCF_SLICESOA, 1 = force ON, 2 = force
+/// OFF. GATE_LOCK serializes the flips (see the test module).
+#[cfg(test)]
+pub(crate) fn force_slice_soa(mode: u8) {
+    SLICE_SOA_FORCE.store(mode, std::sync::atomic::Ordering::Relaxed);
+}
+
 /// SUB1 SoA gate (NCF_SUB1_SOA): DEFAULT ON (1); NCF_SUB1_SOA=0 = explicit
 /// opt-out (generic fill_array path). Flipped default-ON after b27ca0c CI
 /// 30/30 green — see the SUB1 header block above for the soundness chain.
@@ -1957,6 +2249,49 @@ impl<'a> NoiseChunkSim<'a> {
     }
 
     fn compute_body(&mut self, w: usize, ctx: Ctx) -> f64 {
+        // NP6: slice-fill CSE memos (see the NP6 header block). Checked ONLY
+        // while the plan unit's fill_array runs (cse_active) and never for
+        // the node currently being bypass-evaluated (cse_eval) — every other
+        // visit pays one not-taken branch here. On a hit the memo returns
+        // the bit-identical value a re-evaluation would (the subtree is
+        // whitelisted value-pure); on a miss the node is evaluated through
+        // the NORMAL path (compute -> compute_body with the bypass set) and
+        // stored, so evaluation order for the first visit per key is
+        // unchanged.
+        if self.cse_active && self.cse_eval == usize::MAX {
+            if let Some(plan) = self.slice_plan {
+                if w == plan.sc_root {
+                    let ic = self.interpolation_counter;
+                    if self.cse_sc.0 == ic {
+                        #[cfg(ncf_profile)]
+                        N6_SC_HITS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                        return self.cse_sc.1;
+                    }
+                    self.cse_eval = w;
+                    let v = self.compute(w, ctx);
+                    self.cse_eval = usize::MAX;
+                    self.cse_sc = (ic, v);
+                    #[cfg(ncf_profile)]
+                    N6_SC_STORES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    return v;
+                }
+                if plan.jag_node == Some(w) {
+                    let aic = self.array_interpolation_counter;
+                    if self.cse_jag.0 == aic {
+                        #[cfg(ncf_profile)]
+                        N6_JAG_HITS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                        return self.cse_jag.1;
+                    }
+                    self.cse_eval = w;
+                    let v = self.compute(w, ctx);
+                    self.cse_eval = usize::MAX;
+                    self.cse_jag = (aic, v);
+                    #[cfg(ncf_profile)]
+                    N6_JAG_STORES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    return v;
+                }
+            }
+        }
         // R2#1: the per-node TLS DEPTH guard (get + set + Drop on EVERY node
         // visit) is gone. The W-tree is a finite acyclic DAG (interning
         // guarantees no cycles — module header), so the guard was purely
@@ -2984,7 +3319,20 @@ impl<'a> NoiseChunkSim<'a> {
                     std::mem::take(&mut self.interpolators[id].slice1)
                 };
                 let inner = self.interpolators[id].inner;
+                // NP6: activate the CSE memos ONLY for the plan's interp unit
+                // (interp[0] for vanilla). fill_array runs VERBATIM — the
+                // memos live in compute_body and only short-circuit
+                // provably-pure DUPLICATE evaluations (see the NP6 header).
+                // Worker/NP1 clones set/clear around their own fills on
+                // their own machine state; no cross-thread sharing.
+                let np6 = matches!(self.slice_plan, Some(p) if p.interp_id == id);
+                if np6 {
+                    self.cse_active = true;
+                }
                 self.fill_array(inner, &mut flat[row..row + cols], Provider::Slice);
+                if np6 {
+                    self.cse_active = false;
+                }
                 if is_slice0 {
                     self.interpolators[id].slice0 = flat;
                 } else {
@@ -4129,5 +4477,179 @@ mod tests {
         let mut flags1 = vec![0u8; pos.len()];
         flags1[4] = 1; // the in_range Const — vanilla carries exactly this
         assert!(detect_sub_soa(&pos, &roots, &flags1).is_some());
+    }
+
+    /// NP6 driver: one drive on a fresh machine under a forced slice-CSE
+    /// gate (SUB1 t7 shape). GATE_LOCK held by the caller.
+    fn drive_with_slice_cse(
+        rs: &RandomState,
+        bx: i32,
+        bz: i32,
+        soa: u8,
+    ) -> (
+        NoiseChunkSim<'_>,
+        Vec<(u32, i32, i32, i32, f64)>,
+    ) {
+        force_slice_soa(soa);
+        let mut sim = NoiseChunkSim::from_random_state(rs, 4, bx, bz);
+        let (n, out) = sim.drive_and_collect();
+        force_slice_soa(0);
+        let _ = n;
+        (sim, out)
+    }
+
+    /// T9 (shaped on NCF_WG, skips gracefully when the extract is absent):
+    /// the NP6 slice-CSE memos must be BIT-EXACT against the generic slice
+    /// fill. Full overworld noise drive on identical fresh machines (CSE
+    /// forced off vs on); compares every collected drive value, all
+    /// interpolator slice0/slice1 buffers, the substance cache (f64 BITS,
+    /// I2), the CacheOnce epochs (ic/aic) and the final scalar state the
+    /// fill mutates — at two chunk origins (both RangeChoice branches and
+    /// both YClampedGradient clamp regimes covered).
+    #[test]
+    fn t9_slice_cse_bit_identical() {
+        let Ok(wg) = std::env::var("NCF_WG") else { return };
+        let Ok(dir) = WorldgenDir::load(std::path::Path::new(&wg)) else { return };
+        let rs = RandomState::build_overworld(&dir, 3053459).expect("build_overworld");
+        let _g = GATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        for (bx, bz) in [(0, 0), (112, 144)] {
+            let (off, out_off) = drive_with_slice_cse(&rs, bx, bz, 2);
+            let (on, out_on) = drive_with_slice_cse(&rs, bx, bz, 1);
+            // detector must have matched the vanilla overworld fd top chain
+            assert!(
+                on.slice_plan.is_some(),
+                "slice detector must match overworld fd top ({bx},{bz})"
+            );
+            assert!(
+                on.slice_plan.unwrap().jag_node.is_some(),
+                "vanilla sc holds exactly one ys==0.0 Noise (jaggedness) ({bx},{bz})"
+            );
+            assert!(
+                off.slice_plan.is_none(),
+                "gate-off machine must hold no slice plan"
+            );
+            assert_eq!(out_off.len(), out_on.len(), "drive output length ({bx},{bz})");
+            for (a, b) in out_off.iter().zip(out_on.iter()) {
+                assert_eq!(a.0, b.0);
+                assert_eq!(a.1, b.1);
+                assert_eq!(a.2, b.2);
+                assert_eq!(a.3, b.3);
+                assert_eq!(
+                    a.4.to_bits(),
+                    b.4.to_bits(),
+                    "drive value diverged at ({},{},{}) interp {} chunk ({bx},{bz})",
+                    a.1,
+                    a.2,
+                    a.3,
+                    a.0
+                );
+            }
+            for id in 0..off.interpolators.len() {
+                assert_eq!(
+                    bits(&off.interpolators[id].slice0),
+                    bits(&on.interpolators[id].slice0),
+                    "slice0 interp {id} chunk ({bx},{bz})"
+                );
+                assert_eq!(
+                    bits(&off.interpolators[id].slice1),
+                    bits(&on.interpolators[id].slice1),
+                    "slice1 interp {id} chunk ({bx},{bz})"
+                );
+            }
+            assert_eq!(
+                bits(&off.substance_cache),
+                bits(&on.substance_cache),
+                "substance cache chunk ({bx},{bz})"
+            );
+            // epochs (CacheOnce state) + the final scalars the fill mutates
+            assert_eq!(off.interpolation_counter, on.interpolation_counter, "ic ({bx},{bz})");
+            assert_eq!(
+                off.array_interpolation_counter, on.array_interpolation_counter,
+                "aic ({bx},{bz})"
+            );
+            assert_eq!(off.cell_start_block_y, on.cell_start_block_y, "csby ({bx},{bz})");
+            assert_eq!(off.in_cell_y, on.in_cell_y, "icy ({bx},{bz})");
+            assert_eq!(off.cell_start_block_z, on.cell_start_block_z, "csbz ({bx},{bz})");
+            assert_eq!(off.in_cell_z, on.in_cell_z, "icz ({bx},{bz})");
+            assert_eq!(off.array_index, on.array_index, "ai ({bx},{bz})");
+        }
+    }
+
+    /// T10: NP6 detector negatives + the positive's field extraction.
+    /// Hand-built wrapped tree shaped exactly like the vanilla fd top chain
+    /// (BlendDensity passthrough -> Add(Const, Mul(YCG, Add(Const, Add(Const,
+    /// Mul(YCG, Add(Const, RC))))))) with a whitelisted sc subtree holding
+    /// exactly one ys==0.0 Noise; negatives break the chain at each level,
+    /// break the branch-reference requirement, and inject a state-mutating
+    /// kind into sc (purity walk).
+    #[test]
+    fn t10_slice_cse_detector_shape_and_negatives() {
+        use crate::density::{Ap2Type, MappedType};
+        let b = |v: f64| v.to_bits();
+        // vanilla-shape mini tree (0-indexed ids, ap2_create fold shape):
+        //  0 jag = Noise(0, xz 0.25, ys 0.0)  (y-invariant sampler)
+        //  1 blended = Blended(0)
+        //  2 sc = Ap2::Add(0, 1)   (both operands non-Const -> stays Ap2)
+        //  3 IN = MulOrAdd(mul -0.64, sc)     (folded mul, references sc)
+        //  4 OUT = MulOrAdd(mul 1.5, sc)      (folded mul, references sc)
+        //  5 RC(sc, -1e6, 1.5625, IN, OUT)
+        //  6 mo4 = MulOrAdd(add 0.078125, RC)  (folded add C4)
+        //  7 YCG2 {240,256,1->0}
+        //  8 M2 = Ap2::Mul(YCG2, mo4)          (non-Const operands)
+        //  9 mo3 = MulOrAdd(add -0.078125, M2) (folded add C3)
+        // 10 mo2 = MulOrAdd(add -0.1171875, mo3) (folded add C2)
+        // 11 YCG1 {-64,-40,0->1}
+        // 12 M1 = Ap2::Mul(YCG1, mo2)          (non-Const operands)
+        // 13 mo1 = MulOrAdd(add 0.1171875, M1) (folded add C1)
+        // 14 BlendDensity(13) = inner0
+        let wnodes: Vec<WNode> = vec![
+            WNode::Noise(0, b(0.25), 0),                                    // 0 jag
+            WNode::Blended(0),                                              // 1
+            WNode::Ap2 { ty: Ap2Type::Add, a1: 0, a2: 1, a2_min: 0, a2_max: 0 }, // 2 sc
+            WNode::MulOrAdd { is_add: false, input: 2, argument: b(-0.64) }, // 3 IN
+            WNode::MulOrAdd { is_add: false, input: 2, argument: b(1.5) },  // 4 OUT
+            WNode::RangeChoice { input: 2, min: b(-1e6), max: b(1.5625), in_range: 3, out_of_range: 4 }, // 5
+            WNode::MulOrAdd { is_add: true, input: 5, argument: b(0.078125) }, // 6 mo4
+            WNode::YClampedGradient { from_y: 240, to_y: 256, from_value: b(1.0), to_value: b(0.0) }, // 7
+            WNode::Ap2 { ty: Ap2Type::Mul, a1: 7, a2: 6, a2_min: 0, a2_max: 0 }, // 8 M2
+            WNode::MulOrAdd { is_add: true, input: 8, argument: b(-0.078125) }, // 9 mo3
+            WNode::MulOrAdd { is_add: true, input: 9, argument: b(-0.1171875) }, // 10 mo2
+            WNode::YClampedGradient { from_y: -64, to_y: -40, from_value: b(0.0), to_value: b(1.0) }, // 11
+            WNode::Ap2 { ty: Ap2Type::Mul, a1: 11, a2: 10, a2_min: 0, a2_max: 0 }, // 12 M1
+            WNode::MulOrAdd { is_add: true, input: 12, argument: b(0.1171875) }, // 13 mo1
+            WNode::BlendDensity(13),                                        // 14 inner0
+        ];
+        let plan = detect_slice_cse(&wnodes, &[14]).expect("vanilla shape must match");
+        assert_eq!(plan.interp_id, 0);
+        assert_eq!(plan.sc_root, 2);
+        assert_eq!(plan.jag_node, Some(0));
+        // neg 1: sc missing from the IN branch (no duplicate evaluation)
+        let mut neg = wnodes.clone();
+        neg[3] = WNode::Const(b(-0.5)); // IN no longer references sc
+        assert!(detect_slice_cse(&neg, &[14]).is_none());
+        // neg 2: sc missing from the OUT branch
+        let mut neg = wnodes.clone();
+        neg[4] = WNode::Const(b(0.5)); // OUT no longer references sc
+        assert!(detect_slice_cse(&neg, &[14]).is_none());
+        // neg 3: top chain mismatch (Mul level replaced by Add)
+        let mut neg = wnodes.clone();
+        neg[12] = WNode::Ap2 { ty: Ap2Type::Add, a1: 11, a2: 10, a2_min: 0, a2_max: 0 };
+        assert!(detect_slice_cse(&neg, &[14]).is_none());
+        // neg 4: YCG replaced by Const at the second Mul
+        let mut neg = wnodes.clone();
+        neg[11] = WNode::Const(b(1.0));
+        assert!(detect_slice_cse(&neg, &[14]).is_none());
+        // neg 5: purity — a state-mutating Cache2DW inside sc fails the walk
+        let mut neg = wnodes.clone();
+        neg[2] = WNode::W(WKind::Cache2DW(0)); // sc root itself mutates state
+        assert!(detect_slice_cse(&neg, &[14]).is_none());
+        // neg 6: an Interp inside sc (recursion/interp-state hazard) fails
+        let mut neg = wnodes.clone();
+        neg[2] = WNode::W(WKind::Interp(1));
+        assert!(detect_slice_cse(&neg, &[14]).is_none());
+        // neg 7: inner root = the sc Add itself (no RC level below it)
+        assert!(detect_slice_cse(&wnodes, &[2]).is_none());
+        // mapped_ty import guard (same shape as t8's use)
+        let _ = MappedType::Abs;
     }
 }

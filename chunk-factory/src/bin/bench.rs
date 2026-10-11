@@ -118,6 +118,13 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         chunk_factory::interpolator::N5_FCM_MISSES.load(std::sync::atomic::Ordering::Relaxed),
     );
     #[cfg(ncf_profile)]
+    let n6_cse_before = (
+        chunk_factory::interpolator::N6_SC_HITS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N6_SC_STORES.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N6_JAG_HITS.load(std::sync::atomic::Ordering::Relaxed),
+        chunk_factory::interpolator::N6_JAG_STORES.load(std::sync::atomic::Ordering::Relaxed),
+    );
+    #[cfg(ncf_profile)]
     let n2_units_before: (
         [u64; chunk_factory::interpolator::N2_UNIT_LEN],
         [u64; chunk_factory::interpolator::N2_UNIT_LEN],
@@ -417,6 +424,24 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
                 fcm_h / (n as u64).max(1),
                 fcm_m / (n as u64).max(1),
                 100.0 * fcm_m as f64 / (fcm_h + fcm_m).max(1) as f64,
+            );
+        }
+        // NP6 probe: slice-CSE memo tallies. Sanity: sc stores ≈ interp0
+        // slice elements/chunk, sc hits ≈ stores (2nd visit per element);
+        // jag stores ≈ 1 per slice row, jag hits ≫ stores. All-zero with
+        // NCF_SLICESOA=1 means the detector did NOT match (honesty check).
+        {
+            let (sc_h, sc_s, j_h, j_s) = n6_cse_before;
+            let sc_h = g(&ip::N6_SC_HITS, sc_h);
+            let sc_s = g(&ip::N6_SC_STORES, sc_s);
+            let j_h = g(&ip::N6_JAG_HITS, j_h);
+            let j_s = g(&ip::N6_JAG_STORES, j_s);
+            eprintln!(
+                "[N6-probe] slice-CSE/chunk: sc hit {} store {} | jag hit {} store {}",
+                sc_h / (n as u64).max(1),
+                sc_s / (n as u64).max(1),
+                j_h / (n as u64).max(1),
+                j_s / (n as u64).max(1),
             );
         }
         if ip::n2_unit_probe_enabled() {
