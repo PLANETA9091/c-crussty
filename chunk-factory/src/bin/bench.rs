@@ -429,7 +429,8 @@ fn run_ledger(seed: i64, chunks: usize, dir: &WorldgenDir) {
         // NP6 probe: slice-CSE memo tallies. Sanity: sc stores ≈ interp0
         // slice elements/chunk, sc hits ≈ stores (2nd visit per element);
         // jag stores ≈ 1 per slice row, jag hits ≫ stores. All-zero with
-        // NCF_SLICESOA=1 means the detector did NOT match (honesty check).
+        // the gate active (default ON since the flip, or NCF_SLICESOA=1)
+        // means the detector did NOT match (honesty check).
         {
             let (sc_h, sc_s, j_h, j_s) = n6_cse_before;
             let sc_h = g(&ip::N6_SC_HITS, sc_h);

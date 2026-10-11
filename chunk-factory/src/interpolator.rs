@@ -1830,8 +1830,11 @@ fn detect_sub_soa(wnodes: &[WNode], roots: &[usize], flags: &[u8]) -> Option<Sub
 //
 // Detection runs ONCE at wrap time (SimTemplate::build): any structural
 // mismatch -> None -> verbatim generic path (nether/end/packs). Gate:
-// NCF_SLICESOA (OnceLock, SUB1 shape) — default OFF = byte-identical;
-// flip candidate after this commit's CI run judges the ON path.
+// NCF_SLICESOA (OnceLock, SUB1 shape) — DEFAULT ON since the flip commit
+// (this one): 33/33 CI incl. golden-harness judged the gate-OFF path on
+// ab5af7c/3a9e897; ON == OFF by t9 bit-identity + 5/5 EMPTY stagediff A/B
+// (800 chunks) -> ON == golden by transitivity; this commit's own CI run
+// judges the ON path directly. NCF_SLICESOA=0 = explicit opt-out.
 // --------------------------------------------------------------------------
 
 /// NP6 detected plan (Copy; stored on the template + the per-chunk machine).
@@ -1998,7 +2001,9 @@ fn detect_slice_cse(wnodes: &[WNode], interp_inners: &[usize]) -> Option<SliceCs
     })
 }
 
-/// NP6 gate (NCF_SLICESOA): 0 = OFF (default, byte-identical), 1 = ON.
+/// NP6 gate (NCF_SLICESOA): DEFAULT ON (1); NCF_SLICESOA=0 = explicit
+/// opt-out (verbatim generic path). Flipped default-ON after 3a9e897 CI
+/// 33/33 green judged the OFF path — see the NP6 header block above.
 static SLICE_SOA: std::sync::OnceLock<u8> = std::sync::OnceLock::new();
 
 #[cfg(test)]
@@ -2015,8 +2020,8 @@ fn slice_soa_mode() -> u8 {
         }
     }
     *SLICE_SOA.get_or_init(|| match std::env::var("NCF_SLICESOA").as_deref() {
-        Ok("1") => 1,
-        _ => 0,
+        Ok("0") => 0,
+        _ => 1,
     })
 }
 

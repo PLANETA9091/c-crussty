@@ -402,3 +402,55 @@ surface = 800 chunks equal); paired ledger mode0 OFF 14.86/14.83 -> ON
 13.59/13.41 = gain 1.27-1.42 (1.7-1.9x bar 0.74); mode2 OFF 9.89/9.98 -> ON
 9.11/9.04 = gain 0.78-0.94 (1.6-1.9x bar 0.50) — NEW mode2 RECORD 9.04-9.11
 (was 10.14-10.23). Same-commit LOG evidence per worklist contract.
+DEFAULT FLIPPED ON (2026-10-11, this commit): CI 33/33 green on 3a9e897
+judged the gate-OFF path incl. golden-harness -> ON == golden by
+transitivity (exact b40eba6 precedent); NCF_SLICESOA=0 = opt-out. Paired
+ledger on the flip build (same binary): mode0 OFF 14.87 -> ON 13.34/13.38;
+mode2 OFF 10.06 -> ON 9.13/9.15 (record reproduced). N6 honesty: sc
+975/975 = 100% 2nd-visit hits; jag 0/0 = jag_node=None on vanilla corpus
+(line-1952 census branch -> sc-only lever, inert by design). N3 probe at
+the new regime: walk 5.490/5.853, worker 7.270/7.339, join 1.798-2.039,
+residual 1.617-1.884 (was 4.002) — worker still binding (1.25-1.32x).
+Shipped default stays mode0 serial until NP7.
+
+## NP7 [MODE2-AS-DEFAULT ARCHITECTURE CALL, ~4.1 ms shipped on the table] [ ]
+HYP: shipped default is mode0 serial (PORTED 16.87-17.01) while mode2 is
+the measured record (PORTED 12.87-12.90, 9.13-9.15 noise) — flipping the
+NCF_PAR_FILL default to "2" nearly doubles the shipped win with zero new
+math (NP1/NP3/NP6 stagediff + 33/33 CI already judge mode2 bit-exact).
+RISKS to close BEFORE the flip: (a) spawn failure under thread exhaustion —
+std::thread::scope panics if the OS refuses; need a graceful serial
+fallback (catch scope construction or pre-check) so constrained
+environments degrade to mode0 instead of aborting; (b) height_feed cc=1
+degenerate path (T6 covers); (c) borrow of NCF_PAR_FILL in tests that pin
+modes (GATE_LOCK-style force already exists for SLICE_SOA/SUB1_SOA).
+Probe FIRST (R5): spawn-failure drill (ulimit -u in a subprocess, verify
+serial fallback + byte-identical output), then paired ledger default-old
+vs default-new x2, stagediff 4/4. Target: shipped PORTED <= 13.5. Effort:
+medium. OWNER-Q (worklog, no waiting): default flip touches shipped
+threading semantics — evidence posted, flip next tick if drill green.
+
+## NP8 [WALK-SIDE RESIDUAL UNDER PIPELINE, select_cell_yz + callback] [ ]
+HYP: N3 at the new regime shows walk 5.490-5.853 probe-scale of mode2 wall
+(walk + blocked-join shape, SUB1 falsified the walk-leverage-~0 premise):
+the walk mass = substance SoA kernel (already ~0.57 clean) + per-block
+drive callback + select_cell_yz cache reads + swap bookkeeping. Probe
+FIRST (R5): walk-side scope split (extend N3 with a walk-interior clock
+pair: select_cell_yz vs per-block callback vs swap_slices), 64ch mode2 x2;
+implement only if a walk lever >= 0.70 ms paired projected (live bar 5%
+of noise 9.13 = 0.46 -> use 0.70 conservative). I2: callback order is
+y/x/z-serial and RNG-position-pure; any rework must keep per-block visit
+order. Target: noise <= 8.5 mode2. Effort: medium-high.
+
+## NP9 [DEEPER SLICE CSE CENSUS, next duplicate level inside interp[0]] [ ]
+HYP: NP6 sc slot (975/975 hits, 100%) killed the sloped_cheese duplicate;
+the remaining worker fill mass (7.27-7.34 probe-scale) is per-element
+spline+noise math (NP5-closed as irreducible short of compiled rework) —
+but a duplicate-EVAL census of interned-node visits inside interp[0] post-
+sc has never been run: if any subtree is still evaluated >1x per element
+(same interned id, value-pure), a second memo slot harvests it at NP6
+marginal cost. Probe FIRST (R5): visit-counter census (per-node
+visit_count > 1 within one fill, ncf_profile, 64ch mode2), value-purity
+whitelist walk for candidates; implement only if projected >= 0.70
+paired (or >= 0.46 = live 5% bar for mode2 — decide on the conservative
+0.70). Target: noise <= 8.75 mode2. Effort: medium.
