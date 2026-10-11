@@ -1590,7 +1590,11 @@ fn sub1_t_end(t: Option<std::time::Instant>, clock: &std::sync::atomic::AtomicU6
 // over pure loads — same bits, 4x fewer lerps). Detection runs ONCE at wrap
 // time (SimTemplate::build): any structural mismatch -> None -> generic
 // fill_array path (nether/end/packs keep the verbatim code). Gate:
-// NCF_SUB1_SOA=1 (OnceLock, PAR_FILL shape) — default OFF = byte-identical.
+// NCF_SUB1_SOA (OnceLock, PAR_FILL shape) — DEFAULT ON since b27ca0c CI
+// went 30/30 green (golden-harness judged the OFF path; the 5/5 EMPTY
+// stagediff A/B + t7 give ON == OFF == golden by transitivity, and the
+// flip commit's own CI run judges the ON path directly). NCF_SUB1_SOA=0
+// restores the generic path (opt-out).
 // The substance fill runs on the WALK side in every mode (select_cell_yz is
 // called by drive_blocks AND drive_blocks_pipelined), so one branch serves
 // mode0/mode1/mode2; mode2 wall leverage ~0 while F > W (worker-bound) —
@@ -1731,7 +1735,9 @@ fn detect_sub_soa(wnodes: &[WNode], roots: &[usize], flags: &[u8]) -> Option<Sub
     })
 }
 
-/// SUB1 SoA gate (NCF_SUB1_SOA): 0 = OFF (default, byte-identical), 1 = ON.
+/// SUB1 SoA gate (NCF_SUB1_SOA): DEFAULT ON (1); NCF_SUB1_SOA=0 = explicit
+/// opt-out (generic fill_array path). Flipped default-ON after b27ca0c CI
+/// 30/30 green — see the SUB1 header block above for the soundness chain.
 static SUB1_SOA: std::sync::OnceLock<u8> = std::sync::OnceLock::new();
 
 #[cfg(test)]
@@ -1748,8 +1754,8 @@ fn sub1_soa_mode() -> u8 {
         }
     }
     *SUB1_SOA.get_or_init(|| match std::env::var("NCF_SUB1_SOA").as_deref() {
-        Ok("1") => 1,
-        _ => 0,
+        Ok("0") => 0,
+        _ => 1,
     })
 }
 
